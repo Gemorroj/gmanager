@@ -1,0 +1,3 @@
+function check(form,name,checked){for(var i=0; i<form[name].length; i++) form[name][i].checked=checked;}
+function paste(ptn){o=document.forms['post']['sql'];if(ptn!=''&&o)insAtCaret(o,ptn);}
+function insAtCaret(o,s){o.focus();if(typeof(document.selection)!='undefined'){r=document.selection.createRange();if(r.parentElement()!=o)return;r.text=s;r.select();}else if(typeof(o.selectionStart)!='undefined'){st=o.selectionStart;o.value=o.value.substr(0,st)+s+o.value.substr(o.selectionEnd,o.value.length);st+=s.length;o.setSelectionRange(st,st);}else{o.value+=s;}o.focus();}
