@@ -131,23 +131,13 @@ echo '<div>
             	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                 if ($mode->is_dir($_POST['check'][$i])) {
                     echo del_dir($_POST['check'][$i] . '/');
-                    if ($mode->file_exists($_POST['check'][$i])) {
-                        $err .= htmlspecialchars($_POST['check'][$i], ENT_NOQUOTES, 'UTF-8') . '<br/>';
-                    }
                 } else {
                     echo del_file($_POST['check'][$i]);
-                    if ($mode->file_exists($_POST['check'][$i])) {
-                        $err .= htmlspecialchars($_POST['check'][$i], ENT_NOQUOTES, 'UTF-8') . '<br/>';
-                    }
                 }
             }
 
-            if ($err) {
-                echo '<div class="red"><br/>' . $lng['full_del_file_dir_false'] . '<br/>' . $err .
-                    '</div>';
-            } else {
-                echo '<div class="red"><br/>' . $lng['full_del_file_dir_true'] . '<br/></div>';
-            }
+			echo '<div class="red"><br/>' . $lng['full_del_file_dir_true'] . '<br/></div>';
+
         } elseif ($_POST['full_chmod']) {
             if (!$_POST['chmod']) {
                 echo '<div class="input">

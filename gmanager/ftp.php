@@ -40,7 +40,6 @@ class ftp
         
         // формируем строку URL
         $this->url = 'ftp://'.$this->user.':'.$this->password.'@'.$this->host.':'.$this->port;
-
     }
 
 
@@ -59,11 +58,13 @@ class ftp
 	
     public function mkdir($dir = '', $chmod = '0755')
     {
+    	ftp_chdir($this->res, '/');
         return ftp_mkdir($this->res, $dir);
     }
 
     public function chmod($file = '', $chmod = '0755')
     {
+    	ftp_chdir($this->res, '/');
     	settype($chmod, 'string');
   		$strlen = strlen($chmod);
 		if(!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)){
@@ -72,11 +73,12 @@ class ftp
    		if($strlen == 3){
     		$chmod = '0' . $chmod;
    		}
-   		
+
         return ftp_chmod($this->res, octdec(intval($chmod)), $file);
     }
 
 	public function file_get_contents($str = ''){
+		ftp_chdir($this->res, '/');
     	$tmp = fopen('php://temp', 'r+');
 
  		if(ftp_fget($this->res, $tmp, $str, FTP_ASCII, 0)){
@@ -142,6 +144,7 @@ class ftp
    	
     public function filesize($str = ''){
     	//$str = self::change_symbol($str);
+    	ftp_chdir($this->res, '/');
     	return sprintf('%u', ftp_size($this->res, $str));
    	}
 
@@ -163,12 +166,14 @@ class ftp
    	
     public function unlink($str = ''){
     	//$str = self::change_symbol($str);
+    	ftp_chdir($this->res, '/');
     	return ftp_delete($this->res, $str);
    	}
    	
     public function rename($from = '', $to = ''){
     	//$from = self::change_symbol($from);
     	//$to = self::change_symbol($to);
+    	ftp_chdir($this->res, '/');
     	return ftp_rename($this->res, $from, $to);
    	}
    	
@@ -185,6 +190,7 @@ class ftp
    	
     public function rmdir($str = ''){
     	//$str = self::change_symbol($str);
+    	ftp_chdir($this->res, '/');
     	return ftp_rmdir($this->res, $str);
    	}
    	
@@ -223,6 +229,7 @@ class ftp
    	}
 
    	private function rawlist($dir = '/'){
+   		ftp_chdir($this->res, '/');
    		$raw_dir = $dir = str_replace('\\', '/', $dir);
    		if(preg_match('/^[A-Z]+?:[\\*|\/*]+(.*)/', $dir, $match)){
    			$raw_dir = $match[1] ? '/'.$match[1] : '/';

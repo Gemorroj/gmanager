@@ -174,10 +174,7 @@ function look($current = '')
     $i = 1;
     
     if(is_array($dir)){
-    	function callback($d){
-    		return basename($d);
-   		}
-    	$dir = array_map('callback', $dir);
+    	$dir = array_map('basename', $dir);
    	}
    	else{
     	$tmp = array();
@@ -364,8 +361,21 @@ function copy_files($d = '', $dest = '', $static = '')
 {
     global $lng, $mode;
 
-    $f = $mode->opendir($d);
-    while (($file = readdir($f)) !== false) {
+    $dir = $mode->opendir($d);
+
+    if(is_array($dir)){
+    	$dir = array_map('basename', $dir);
+   	}
+   	else{
+    	$tmp = array();
+		while (($file = readdir($dir)) !== false){
+			$tmp[] = $file;
+		}
+		closedir($dir);
+		$dir = &$tmp;
+	}
+
+    foreach($dir as $file) {
         if ($file == '.' || $file == '..' || $file == $static) {
             continue;
         }
@@ -384,7 +394,6 @@ function copy_files($d = '', $dest = '', $static = '')
             $mode->copy($d . '/' . $file, $dest . '/' . $file, $ch);
         }
     }
-    closedir($f);
 
     return '<div class="red">' . htmlspecialchars(str_replace('%dir%', $dest, $lng['copy_files_true'])) .
         '<br/></div>';
@@ -394,8 +403,21 @@ function copy_files($d = '', $dest = '', $static = '')
 function move_files($d = '', $dest = '', $static = '')
 {
     global $lng, $mode;
-    $f = $mode->opendir($d);
-    while (($file = readdir($f)) !== false) {
+    $dir = $mode->opendir($d);
+
+    if(is_array($dir)){
+    	$dir = array_map('basename', $dir);
+   	}
+   	else{
+    	$tmp = array();
+		while (($file = readdir($dir)) !== false){
+			$tmp[] = $file;
+		}
+		closedir($dir);
+		$dir = &$tmp;
+	}
+
+    foreach($dir as $file) {
         if ($file == '.' || $file == '..' || $file == $static) {
             continue;
         }
@@ -417,7 +439,7 @@ function move_files($d = '', $dest = '', $static = '')
             }
         }
     }
-    closedir($f);
+
     $mode->rmdir($d);
 
     return '<div class="red">' . htmlspecialchars(str_replace('%dir%', $dest, $lng['move_files_true'])) .
@@ -490,7 +512,19 @@ function del_dir($d = '')
 
     $mode->chmod($d, '0777');
     $dir = $mode->opendir($d);
-    while (($f = readdir($dir)) !== false) {
+    if(is_array($dir)){
+    	$dir = array_map('basename', $dir);
+   	}
+   	else{
+    	$tmp = array();
+		while (($file = readdir($dir)) !== false){
+			$tmp[] = $file;
+		}
+		closedir($dir);
+		$dir = &$tmp;
+	}
+
+    foreach($dir as $f) {
         if ($f == '.' || $f == '..') {
             continue;
         }
@@ -507,7 +541,7 @@ function del_dir($d = '')
             del_dir($f . '/');
         }
     }
-    closedir($dir);
+
     if (!$mode->rmdir($d)) {
         $err .= error() . '<br/>';
     }
@@ -528,8 +562,21 @@ function dir_size($file = '')
     $sz = 0;
     do {
         $d = array_shift($ds);
-        $h = $mode->opendir($d);
-        while (($file = readdir($h)) !== false) {
+        $dir = $mode->opendir($d);
+        
+    if(is_array($dir)){
+    	$dir = array_map('basename', $dir);
+   	}
+   	else{
+    	$tmp = array();
+		while (($file = readdir($dir)) !== false){
+			$tmp[] = $file;
+		}
+		closedir($dir);
+		$dir = &$tmp;
+	}
+        
+        foreach($dir as $file) {
             if ($file != '.' && $file != '..'/* && $mode->is_readable($d . '/' . $file)*/) {
                 if ($mode->is_dir($d . '/' . $file)) {
                     $ds[] = $d . '/' . $file;
@@ -537,7 +584,6 @@ function dir_size($file = '')
                 $sz += $mode->filesize($d . '/' . $file);
             }
         }
-        closedir($h);
     } while (sizeof($ds) > 0);
 
     return file_size($sz, false);
@@ -596,7 +642,7 @@ function rechmod($current = '', $chmod = '0755')
 	if(!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)){
 		return '<div class="red">' . $lng['chmod_mode_false'] . '<br/></div>';
 	}
-	
+
     if ($strlen == 3) {
         $chmod = '0' . $chmod;
     }
@@ -1193,7 +1239,7 @@ function add_archive($c = '')
     $current = dirname($c) . '/';
     $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-    print '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -1482,9 +1528,9 @@ function show_eval($eval = '')
             '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($ret, ENT_NOQUOTES) .
             '</textarea></div>';
     } else {
-        print '<pre class="code"><code>';
+        echo '<pre class="code"><code>';
         eval($eval);
-        print '</code></pre>';
+        echo '</code></pre>';
         return;
     }
 }
@@ -1585,10 +1631,7 @@ function search($c = '', $s = '', $w = '', $r = '')
     $dir = $mode->opendir($c);
 
 	if(is_array($dir)){
-    	function callback($d){
-    		return basename($d);
-   		}
-    	$dir = array_map('callback', $dir);
+    	$dir = array_map('basename', $dir);
    	}
    	else{
     	$tmp = array();
