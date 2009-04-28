@@ -76,10 +76,8 @@ switch ($_GET['go']) {
 <div>
 <textarea name="text" rows="18" cols="64" wrap="off">' . $content['text'] . '</textarea>
 <br/>
-<input type="submit" value="' . $lng['save'] .
-            '"/> <input type="submit" name="get" value="' . $lng['get'] . '"/><br/>
-' . $lng['chmod'] . ' <input type="text" name="chmod" value="' . look_chmod($current) .
-            '" size="4" maxlength="4" style="width:28pt;"/>
+<input type="submit" value="' . $lng['save'] . '"/> <input type="submit" name="get" value="' . $lng['get'] . '"/><br/>
+' . $lng['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . look_chmod($current) . '" size="4" maxlength="4" style="width:28pt;"/>
 </div>
 </form>
 </div>
@@ -87,8 +85,7 @@ switch ($_GET['go']) {
 <form action="edit.php?go=replace&amp;c=' . $r_current . $f . '" method="post">
 <div>
 ' . $lng['replace_from'] . '<br/>
-<input type="text" name="from" style="width:128pt;"/>' . $lng['replace_to'] .
-            '<input type="text" name="to" style="width:128pt;"/><br/>
+<input type="text" name="from" style="width:128pt;"/>' . $lng['replace_to'] . '<input type="text" name="to" style="width:128pt;"/><br/>
 <input type="checkbox" name="regexp" value="1"/>' . $lng['regexp'] . '<br/>
 <input type="submit" value="' . $lng['replace'] . '"/>
 </div>

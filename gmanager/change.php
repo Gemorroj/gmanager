@@ -80,8 +80,7 @@ echo '<div>
 ' . $lng['change_del'] . '<br/>
 <input type="checkbox" name="del" value="1"/><br/>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' .
-            look_chmod($current) . '"/><br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
 <input type="submit" value="' . $lng['ch'] . '"/>
 </div>
 </form>
@@ -155,9 +154,9 @@ echo '<div>
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_chmod'] . ' ' . $lng['of files'] . '<br/>
-<input type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0644"/><br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0644"/><br/>
 ' . $lng['change_chmod'] . ' ' . $lng['of folders'] . '<br/>
-<input type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/><br/>
 <input name="full_chmod" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -180,15 +179,15 @@ echo '<div>
             }
         } elseif ($_REQUEST['mega_full_extract']) {
             if (!$_POST['name'] || !$_POST['chmod']) {
-                print '<div class="input">
+                echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
 ' . $lng['change_chmod'] . ' '.$lng['of files'].'<br/>
-<input type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
 ' . $lng['change_chmod'] . ' '.$lng['of folders'].'<br/>
-<input type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="mega_full_extract" type="hidden" value="1"/>
 <input type="submit" value="' . $lng['extract_archive'] . '"/>
 </div>
@@ -197,22 +196,22 @@ echo '<div>
             } else {
                 $type = strtoupper(strrchr($h_current, '.'));
                 if ($type == '.ZIP' || $type == '.JAR') {
-                    print extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
+                    echo extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
                 } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
-                    print extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
+                    echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
                 } elseif ($type == '.GZ') {
-                    print gz_extract($current, $_POST['name'], $_POST['chmod']);
+                    echo gz_extract($current, $_POST['name'], $_POST['chmod']);
                 }
             }
         } elseif ($_POST['full_extract']) {
             if (!$_POST['name'] || !$_POST['chmod']) {
-                print '<div class="input">
+                echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="full_extract" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -225,37 +224,37 @@ echo '<div>
             	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
                 $type = strtoupper(strrchr($h_current, '.'));
                 if ($type == '.ZIP' || $type == '.JAR') {
-                    print extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+                    echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
-                    print extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+                    echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 }
             }
         } elseif ($_POST['gz_extract']) {
             if (!$_POST['name'] || !$_POST['chmod']) {
-                print '<div class="input">
+                echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="gz_extract" type="hidden" value="1"/>
 <input type="submit" value="' . $lng['extract_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
-                print gz_extract($current, $_POST['name'], $_POST['chmod']);
+                echo gz_extract($current, $_POST['name'], $_POST['chmod']);
             }
         } elseif ($_POST['create_archive']) {
             if (!$_POST['name'] || !$_POST['chmod']) {
-                print '<div class="input">
+                echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . 'archive.zip"/><br/>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
 <input name="create_archive" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -338,12 +337,11 @@ echo '<div>
 
     case 'chmod':
         if (!$_POST['chmod']) {
-            print '<div class="input">
+            echo '<div class="input">
 <form action="change.php?go=chmod&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' .
-                look_chmod($current) . '"/><br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
 <input type="submit" value="' . $lng['ch'] . '"/>
 </div>
 </form>
@@ -355,13 +353,13 @@ echo '<div>
 
     case 'create_dir':
         if (!$_POST['name'] || !$_POST['chmod']) {
-            print '<div class="input">
+            echo '<div class="input">
 <form action="change.php?go=create_dir&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_name'] . '<br/>
 <input type="text" name="name" value="dir"/><br/>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input type="submit" value="' . $lng['cr'] . '"/>
 </div>
 </form>
@@ -374,7 +372,7 @@ echo '<div>
     case 'create_file':
         include 'pattern.dat';
         if (!$_POST['name'] || !$_POST['chmod']) {
-            print '<div class="input">
+            echo '<div class="input">
 <form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['change_name'] . '<br/>
@@ -388,7 +386,7 @@ echo '<div>
 
             print '</select><br/>
 ' . $lng['change_chmod'] . '<br/>
-<input type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
 <input type="submit" value="' . $lng['cr'] . '"/>
 </div>
 </form>
@@ -412,7 +410,7 @@ echo '<div>
                     $realpath = $h_current . $_POST['name'];
                 }
 
-                print '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_current .
+                echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_current .
                     $_POST['name'] . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] .
                     ')<br/></div>' . create_file($current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
             }
@@ -436,24 +434,23 @@ echo '<div>
         if ((((!$_POST['url'] || $_POST['url'] == 'http://') && ($_FILES['f']['error'] ||
             !$_FILES)) && !$_POST['f']) || !$_POST['name'] || !$_POST['chmod']) {
             print '<div class="input">
-<form action="change.php?go=upload&amp;c=' . $r_current .
-                '" method="post" enctype="multipart/form-data">
+<form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
-' . $lng['url'] . '<br/><textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>
-' . $lng['headers'] .
-                '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' .
-                htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
+' . $lng['url'] . '<br/>
+<textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>
+' . $lng['headers'] .'<br/>
+<textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
 Referer:
 Accept: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
 Accept-Charset: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
 Accept-Language: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
 Connection: Close</textarea><br/>
-' . $lng['file'] . ' (' . ini_get('upload_max_filesize') .
-                ')<br/><input type="file" name="f"/><br/>
-' . $lng['name'] . '<br/><input type="text" name="name" value="' . $h_current .
-                '"/><br/>
-' . $lng['change_chmod'] .
-                '<br/><input type="text" name="chmod" value="0644" size="4" maxlength="4" style="width:28pt;"/><br/>
+' . $lng['file'] . ' (' . ini_get('upload_max_filesize') . ')<br/>
+<input type="file" name="f"/><br/>
+' . $lng['name'] . '<br/>
+<input type="text" name="name" value="' . $h_current . '"/><br/>
+' . $lng['change_chmod'] . '<br/>
+<input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="width:28pt;"/><br/>
 <input type="submit" value="' . $lng['upload'] . '"/>
 </div>
 </form>
@@ -469,32 +466,22 @@ Connection: Close</textarea><br/>
         break;
 
     case 'mod':
-        print '<div class="red">
+        echo '<div class="red">
 <ul>
-<li><a href="change.php?go=search&amp;c=' . $r_current . '">' . $lng['search'] .
-            '</a></li>
-<li><a href="change.php?go=eval&amp;c=' . $r_current . '">' . $lng['eval'] .
-            '</a></li>
-<li><a href="change.php?go=sql&amp;c=' . $r_current . '">' . $lng['sql'] .
-            '</a></li>
-<li><a href="change.php?go=tables&amp;c=' . $r_current . '">' . $lng['tables'] .
-            '</a></li>
-<li><a href="change.php?go=installer&amp;c=' . $r_current . '">' . $lng['create_sql_installer'] .
-            '</a></li>
-<li><a href="change.php?go=scan&amp;c=' . $r_current . '">' . $lng['scan'] .
-            '</a></li>
-<li><a href="change.php?go=send_mail&amp;c=' . $r_current . '">' . $lng['send_mail'] .
-            '</a></li>
-<li><a href="change.php?phpinfo">' . $lng['phpinfo'] . '</a> (' . htmlspecialchars(PHP_VERSION, ENT_NOQUOTES) .
-            ')</li>
-<li><a href="change.php?go=new_version&amp;c=' . $r_current . '">' . $lng['new_version'] .
-            '</a></li>
+<li><a href="change.php?go=search&amp;c=' . $r_current . '">' . $lng['search'] . '</a></li>
+<li><a href="change.php?go=eval&amp;c=' . $r_current . '">' . $lng['eval'] . '</a></li>
+<li><a href="change.php?go=sql&amp;c=' . $r_current . '">' . $lng['sql'] . '</a></li>
+<li><a href="change.php?go=tables&amp;c=' . $r_current . '">' . $lng['tables'] . '</a></li>
+<li><a href="change.php?go=installer&amp;c=' . $r_current . '">' . $lng['create_sql_installer'] . '</a></li>
+<li><a href="change.php?go=scan&amp;c=' . $r_current . '">' . $lng['scan'] . '</a></li>
+<li><a href="change.php?go=send_mail&amp;c=' . $r_current . '">' . $lng['send_mail'] . '</a></li>
+<li><a href="change.php?phpinfo">' . $lng['phpinfo'] . '</a> (' . PHP_VERSION . ')</li>
+<li><a href="change.php?go=new_version&amp;c=' . $r_current . '">' . $lng['new_version'] . '</a></li>
 </ul>
 <span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/>
 <span style="color:#000;">&#187;</span> ' . htmlspecialchars(php_uname(), ENT_NOQUOTES) . '<br/>
-<span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') .
-            '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
-        break;
+<span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
+	break;
 
     case 'new_version':
     
@@ -776,9 +763,8 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . $lng['tables_file'] . '<br/>
 <input type="text" name="tables" value="' . $h_current . '"/><br/>
 ' . $lng['chmod'] . '<br/>
-<input type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-<input name="save_as" type="submit" value="' . $lng['save_as'] .
-                '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+<input name="save_as" type="submit" value="' . $lng['save_as'] . '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/>
 </div>
 </form>
 </div>';
