@@ -57,7 +57,7 @@ switch ($_GET['go']) {
             $f = '&amp;f=' . $_GET['f'];
         } else {
             $content['text'] = htmlspecialchars($mode->file_get_contents($current), ENT_NOQUOTES);
-            $content['size'] = file_size($current);
+            $content['size'] = file_size($current, true);
             $content['lines'] = sizeof(explode("\n", $content['text']));
             $f = '';
         }

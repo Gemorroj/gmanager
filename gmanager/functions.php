@@ -187,12 +187,14 @@ function look($current = '')
 		closedir($dir);
 		$dir = &$tmp;
 	}
+	
 
     foreach($dir as $file){
+/*
 		if(substr($file, -1) == '/'){
 			$file = iconv_substr($file, 0, iconv_strlen($file)-1);	
 		}
-
+*/
         if ($file == '.' || $file == '..') {
             continue;
         }
@@ -215,7 +217,7 @@ function look($current = '')
 		$r_file = str_replace('%2F', '/', rawurlencode($file));
         $type = htmlspecialchars(strtoupper(strrchr($basename, '.')), ENT_NOQUOTES);
         $time = $mode->filemtime($file);
-        $name = htmlspecialchars(str_link($name));
+        $name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
         $i++;
 
         if (isset($_GET['time'])) {
@@ -247,7 +249,7 @@ function look($current = '')
                     '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file .
                     '&amp;mega_full_extract=1">' . $lng['extract_archive'] .
                     '</a></td><td><a href="change.php?get=' . $r_file . '">' . $lng['get'] .
-                    '</a></td><td>' . $type . '</td><td>' . file_size($file) .
+                    '</a></td><td>' . $type . '</td><td>' . file_size($file, true) .
                     '</td><td><a href="change.php?' . $r_file . '">' . $lng['ch'] .
                     '</a></td><td><a href="change.php?go=del&amp;c=' . $r_file . '">' . $lng['dl'] .
                     '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($file) .
@@ -256,7 +258,7 @@ function look($current = '')
                 $page2[$key] = '<td><input name="check[]" type="checkbox" value="' . $r_file .
                     '"/></td><td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name .
                     '</a></td><td><a href="change.php?get=' . $r_file . '">' . $lng['get'] .
-                    '</a></td><td>' . $type . '</td><td>' . file_size($file) .
+                    '</a></td><td>' . $type . '</td><td>' . file_size($file, true) .
                     '</td><td><a href="change.php?' . $r_file . '">' . $lng['ch'] .
                     '</a></td><td><a href="change.php?go=del&amp;c=' . $r_file . '">' . $lng['dl'] .
                     '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($file) .
@@ -295,8 +297,15 @@ function look($current = '')
 
     if ($page) {
         $i = 1;
+        $line = false;
         foreach ($page as $var) {
-            print '<tr class="border">' . $var . '<td>' . ($i++) . '</td></tr>';
+  	    	$line = !$line;
+    		if($line){
+    			echo '<tr class="border">' . $var . '<td>' . ($i++) . '</td></tr>';
+   			}
+   			else{
+   				echo '<tr class="border2">' . $var . '<td>' . ($i++) . '</td></tr>';
+			}
         }
 
         if (isset($_GET['time'])) {
@@ -306,7 +315,7 @@ function look($current = '')
         }
 
     } else {
-        print '<tr class="border"><th colspan="9">' . $lng['dir_empty'] . '</th></tr>';
+        echo '<tr class="border"><th colspan="9">' . $lng['dir_empty'] . '</th></tr>';
     }
 
     echo go($pg, $all, '&amp;c=' . $current . $time . $add);
@@ -531,14 +540,14 @@ function dir_size($file = '')
         closedir($h);
     } while (sizeof($ds) > 0);
 
-    return file_size($sz);
+    return file_size($sz, false);
 }
 
 
-function file_size($file = '')
+function file_size($file = '', $is_file = false)
 {
 	global $mode;
-    if ($mode->is_file($file)) {
+    if ($is_file) {
         $size = $mode->filesize($file);
     } else {
         $size = $file;
@@ -850,7 +859,7 @@ function list_zip_archive($current = '')
                 $type = strtoupper(strrchr($list[$i]['filename'], '.'));
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' .
                     htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
-                $size = file_size($list[$i]['size']);
+                $size = file_size($list[$i]['size'], false);
             }
             $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' .
                 $r_name . '"/></td><td>' . $name .
@@ -892,7 +901,7 @@ function list_tar_archive($current = '')
                 $type = strtoupper(strrchr($list[$i]['filename'], '.'));
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' .
                     htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
-                $size = file_size($list[$i]['size']);
+                $size = file_size($list[$i]['size'], false);
             }
             $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' .
                 $r_name . '"/></td><td>' . $name .
@@ -920,7 +929,7 @@ function edit_zip_file($current = '', $f = '')
     if (!$ext) {
         return array('text' => $lng['archive_error'], 'size' => 0, 'lines' => 0);
     } else {
-        return array('text' => trim($ext[0]['content']), 'size' => file_size($ext[0]['size']),
+        return array('text' => trim($ext[0]['content']), 'size' => file_size($ext[0]['size'], false),
             'lines' => sizeof(explode("\n", $ext[0]['content'])));
     }
 }
@@ -975,8 +984,8 @@ function look_zip_file($current = '', $f = '')
     if (!$ext) {
         return '<div class="red">' . $lng['archive_error'] . '<br/></div>';
     } else {
-        return '<div class="red">' . $lng['archive_size'] . ': ' . file_size($ext[0]['compressed_size']) .
-            '<br/>' . $lng['real_size'] . ': ' . file_size($ext[0]['size']) . '<br/>' . $lng['archive_date'] .
+        return '<div class="red">' . $lng['archive_size'] . ': ' . file_size($ext[0]['compressed_size'], false) .
+            '<br/>' . $lng['real_size'] . ': ' . file_size($ext[0]['size'], false) . '<br/>' . $lng['archive_date'] .
             ': ' . strftime($date_format, $ext[0]['mtime']) .
             '<br/>&#187;<a href="edit.php?c=' . rawurlencode($current) . '&amp;f=' . rawurlencode($f) . '">' . $lng['edit'] .
             '</a><br/></div>' . archive_fl(trim($ext[0]['content']));
@@ -1002,7 +1011,7 @@ function look_tar_file($current = '', $f = '')
             if ($list[$i]['filename'] != $f) {
                 continue;
             } else {
-                return '<div class="red">' . $lng['real_size'] . ': ' . file_size($list[$i]['size']) .
+                return '<div class="red">' . $lng['real_size'] . ': ' . file_size($list[$i]['size'], false) .
                     '<br/>' . $lng['archive_date'] . ': ' . strftime($date_format, $list[$i]['mtime']) .
                     '<br/></div>' . archive_fl(trim($ext));
             }
@@ -1293,7 +1302,7 @@ function gz($c = '')
         return '<div class="red">' . $lng['archive_error'] . '<br/></div>';
     } else {
         return '<div class="red">' . $lng['name'] . ': ' . htmlspecialchars($gz[1], ENT_NOQUOTES) . '<br/>' . $lng['archive_size'] .
-            ': ' . file_size($c) . '<br/>' . $lng['real_size'] . ': ' . file_size(strlen($ext)) .
+            ': ' . file_size($c, true) . '<br/>' . $lng['real_size'] . ': ' . file_size(strlen($ext), false) .
             '<br/>' . $lng['archive_date'] . ': ' . strftime($date_format, $mode->filemtime($c)) .
             '<br/></div>' . archive_fl(trim($ext));
     }
@@ -1574,7 +1583,25 @@ function search($c = '', $s = '', $w = '', $r = '')
     $in = '';
     $page = array();
     $dir = $mode->opendir($c);
-    while (($f = readdir($dir)) !== false) {
+
+	if(is_array($dir)){
+    	function callback($d){
+    		return basename($d);
+   		}
+    	$dir = array_map('callback', $dir);
+   	}
+   	else{
+    	$tmp = array();
+		while (($file = readdir($dir)) !== false){
+			$tmp[] = $file;
+		}
+		closedir($dir);
+		$dir = &$tmp;
+	}
+
+
+
+    foreach($dir as $f) {
         if ($f == '.' || $f == '..') {
             continue;
         }
@@ -1630,34 +1657,40 @@ function search($c = '', $s = '', $w = '', $r = '')
             
         if ($type == '.ZIP' || $type == '.JAR' || $type == '.GZ' || $type == '.TAR' ||
         $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
-            $page[$f] .= '<tr class="ch"><td><input name="check[]" type="checkbox" value="' .
+            $page[$f] .= '<td><input name="check[]" type="checkbox" value="' .
                 $r_file . '"/></td><td><a href="index.php?' . $r_file . '">' . $name . '</a>' .
                 $in . '</td><td><a href="change.php?get=' . $r_file . '">' . $lng['get'] .
-                '</a></td><td>' . $type . '</td><td>' . file_size($c . $f) .
+                '</a></td><td>' . $type . '</td><td>' . file_size($c . $f, true) .
                 '</td><td><a href="change.php?' . $r_file . '">' . $lng['ch'] .
                 '</a></td><td><a href="change.php?go=del&amp;c=' . $r_file . '">' . $lng['dl'] .
                 '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($c .
                 $f) . '</a></td><td>' . strftime($date_format, $time) . '</td><td>' . $i .
-                '</td></tr>';
+                '</td>';
         } else {
-            $page[$f] .= '<tr class="ch"><td><input name="check[]" type="checkbox" value="' .
+            $page[$f] .= '<td><input name="check[]" type="checkbox" value="' .
                 $r_file . '"/></td><td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name .
                 '</a>' . $in . '</td><td><a href="change.php?get=' . $r_file . '">' . $lng['get'] .
-                '</a></td><td>' . $type . '</td><td>' . file_size($c . $f) .
+                '</a></td><td>' . $type . '</td><td>' . file_size($c . $f, true) .
                 '</td><td><a href="change.php?' . $r_file . '">' . $lng['ch'] .
                 '</a></td><td><a href="change.php?go=del&amp;c=' . $r_file . '">' . $lng['dl'] .
                 '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($c .
                 $f) . '</a></td><td>' . strftime($date_format, $time) . '</td><td>' . $i .
-                '</td></tr>';
+                '</td>';
         }
     }
-    closedir($dir);
 
     ksort($page, $sort);
-
-    foreach ($page as $f) {
-        echo $f;
-    }
+    
+    $line = false;
+    foreach ($page as $var) {
+   		$line = !$line;
+   		if($line){
+  			echo '<tr class="border">' . $var . '</tr>';
+		}
+		else{
+   			echo '<tr class="border2">' . $var . '</tr>';
+		}
+	}
 
     return;
 }

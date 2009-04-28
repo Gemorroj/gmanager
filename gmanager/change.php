@@ -66,7 +66,7 @@ switch ($_GET['go']) {
         if ($mode->is_dir($current)) {
             $size = dir_size($current);
         } elseif ($mode->is_file($current) || $mode->is_link($current)) {
-            $size = file_size($current);
+            $size = file_size($current, true);
         }
 
 echo '<div>
