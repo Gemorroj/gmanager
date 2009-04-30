@@ -40,7 +40,7 @@ if ($mode->is_file($_GET['get'])) {
 $current = c($_SERVER['QUERY_STRING'], $_REQUEST['c']);
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
-$realpath = realpath($current);
+$realpath = realpath($current) . '/';
 $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h_current;
 
 
@@ -374,7 +374,7 @@ echo '<div>
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
 
-            print '</select><br/>
+            echo '</select><br/>
 ' . $lng['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
 <input type="submit" value="' . $lng['cr'] . '"/>
