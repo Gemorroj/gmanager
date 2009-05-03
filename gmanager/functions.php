@@ -1897,6 +1897,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 
     $i = 0;
     $out = '';
+    $time = 0;
     foreach ($query as $q) {
         $result = array();
         $str = '';
@@ -1905,8 +1906,12 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 			$q = iconv_substr($q, 0, -1);
 		}
 
-        if (!$r = mysql_query($q . ';', $connect)) {
-            return $lng['mysq_query_false'] . '<br/><code>' . mysql_error() . '</code>';
+		$start = microtime(true);
+			$r = mysql_query($q . ';', $connect);
+		$time = $time + (microtime(true) - $start);
+
+        if (!$r) {
+            return $lng['mysq_query_false'] . '<br/><code>' . mysql_error($connect) . '</code>';
         } else {
             while ($arr = mysql_fetch_assoc($r)) {
                 if ($arr && $arr !== true) {
@@ -1918,7 +1923,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 
         $str .= '<tr>';
         foreach ($result[0] as $k => $value) {
-            $str .= '<th>' . htmlspecialchars($k, ENT_NOQUOTES) . '</th>';
+            $str .= '<th> ' . htmlspecialchars($k, ENT_NOQUOTES) . ' </th>';
         }
         $str .= '</tr>';
 
@@ -1939,7 +1944,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
     }
 
     mysql_close($connect);
-    return $lng['mysql_true'] . $i . $out;
+    return $lng['mysql_true'] . $i . '<br/>' . str_replace('%time%', round($time, 4), $lng['microtime']) . $out;
 }
 
 

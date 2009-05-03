@@ -40,7 +40,10 @@ if ($mode->is_file($_GET['get'])) {
 $current = c($_SERVER['QUERY_STRING'], $_REQUEST['c']);
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
-$realpath = realpath($current) . '/';
+$realpath = realpath($current);
+if($mode->is_dir($current)){
+	$realpath .= '/';
+}
 $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h_current;
 
 
