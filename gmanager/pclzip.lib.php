@@ -63,7 +63,7 @@
   // define( 'PCLZIP_TEMPORARY_DIR', '/temp/' );
   // define( 'PCLZIP_TEMPORARY_DIR', 'C:/Temp/' );
   
-// укажите путь к временной папке
+// СѓРєР°Р¶РёС‚Рµ РїСѓС‚СЊ Рє РІСЂРµРјРµРЅРЅРѕР№ РїР°РїРєРµ
 define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
   
   if (!defined('PCLZIP_TEMPORARY_DIR')) {

@@ -15,9 +15,7 @@
 
 
 if (isset($_POST['get'])) {
-    header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] .
-        dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ?
-        '&f=' . $_GET['f'] : ''))));
+    header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ? '&f=' . $_GET['f'] : ''))));
     exit;
 }
 
@@ -34,7 +32,7 @@ $r_current = str_replace('%2F', '/', rawurlencode($current));
 
 send_header($_SERVER['HTTP_USER_AGENT']);
 
-print str_replace('%dir%', $h_current, $top) . '
+echo str_replace('%dir%', $h_current, $top) . '
 <div class="w2">
 ' . $lng['title_edit'] . '<br/>
 </div>
@@ -46,7 +44,7 @@ switch ($_GET['go']) {
     default:
 
         if (!$mode->is_file($current)) {
-            print '<div class="red">' . $lng['not_found'] . '<br/></div>';
+            echo report($lng['not_found'], true);
             break;
         }
 
@@ -69,7 +67,7 @@ switch ($_GET['go']) {
         }
 
 
-        echo '<div class="input">
+echo '<div class="input">
 ' . $lng['sz'] . ': ' . $content['size'] . '<br/>
 Строк: ' . $content['lines'] . '
 <form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post">
@@ -92,38 +90,35 @@ switch ($_GET['go']) {
 </form>
 </div>
 <div class="rb">
-<a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' .
-            $lng['syntax'] . '</a><br/>
+<a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $lng['syntax'] . '</a><br/>
 </div>';
         if ($type != '.ZIP' && $type != '.JAR' && extension_loaded('xml')) {
-            print '<div class="rb">
-<a href="edit.php?c=' . $r_current . '&amp;' . $full_charset . 'go=validator">' .
-                $lng['validator'] . '</a><br/>
+echo '<div class="rb">
+<a href="edit.php?c=' . $r_current . '&amp;' . $full_charset . 'go=validator">' . $lng['validator'] . '</a><br/>
 </div>';
         }
-        echo '<div class="rb">
+echo '<div class="rb">
 ' . $lng['charset'] . '
 <form action="edit.php?" method="get" style="padding:0; margin:0;">
 <div>
 <input type="hidden" name="c" value="' . $h_current . '"/>
 <input type="hidden" name="f" value="' . $_GET['f'] . '"/>';
         if ($charset == 'windows-1251') {
-            echo '<input type="radio" name="charset"/>' . $lng['charset_no'] . '
+echo '<input type="radio" name="charset"/>' . $lng['charset_no'] . '
 <input type="radio" name="charset" value="utf-8"/>' . $lng['charset_utf'] . '
 <input type="radio" name="charset" value="windows-1251" checked="checked"/>' . $lng['charset_win'];
         } elseif ($charset == 'utf-8') {
-            echo '<input type="radio" name="charset"/>' . $lng['charset_no'] . '
+echo '<input type="radio" name="charset"/>' . $lng['charset_no'] . '
 <input type="radio" name="charset" value="utf-8" checked="checked"/>' . $lng['charset_utf'] .
                 '
 <input type="radio" name="charset" value="windows-1251"/>' . $lng['charset_win'];
         } else {
-            echo '<input type="radio" name="charset" checked="checked"/>' . $lng['charset_no'] .
-                '
+echo '<input type="radio" name="charset" checked="checked"/>' . $lng['charset_no'] . '
 <input type="radio" name="charset" value="utf-8"/>' . $lng['charset_utf'] . '
 <input type="radio" name="charset" value="windows-1251"/>' . $lng['charset_win'];
         }
 
-        print '<br/><input type="submit" value="' . $lng['ch'] . '"/>
+echo '<br/><input type="submit" value="' . $lng['ch'] . '"/>
 </div>
 </form>
 </div>';
@@ -158,8 +153,7 @@ switch ($_GET['go']) {
         break;
 
     case 'validator':
-        echo validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/',
-            substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
+        echo validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
         break;
 }
 
