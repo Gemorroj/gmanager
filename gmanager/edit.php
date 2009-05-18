@@ -153,7 +153,10 @@ echo '<br/><input type="submit" value="' . $lng['ch'] . '"/>
         break;
 
     case 'validator':
+    /*
         echo validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
+    */
+    echo validator($current, $charset);
         break;
 }
 
