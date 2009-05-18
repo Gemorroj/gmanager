@@ -65,6 +65,7 @@ function send_header($u = '')
 function c($query = '', $c = '')
 {
 	global $mode;
+
     if (!$query) {
         return '.';
     } else {

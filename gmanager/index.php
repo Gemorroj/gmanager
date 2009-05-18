@@ -17,7 +17,7 @@
 require 'functions.php';
 
 
-$current = c($_SERVER['QUERY_STRING'], $_GET['c']);
+$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
 if($current == '.'){
 	$h_current = htmlspecialchars($mode->getcwd(), ENT_COMPAT);
 }

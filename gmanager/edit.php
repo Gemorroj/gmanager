@@ -26,7 +26,7 @@ if ($charset == 'utf-8' || $charset == 'windows-1251') {
     $full_charset = 'charset=' . $charset . '&amp;';
 }
 
-$current = c($_SERVER['QUERY_STRING'], $_GET['c']);
+$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 

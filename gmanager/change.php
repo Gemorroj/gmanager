@@ -37,7 +37,7 @@ if ($mode->is_file($_GET['get'])) {
 }
 
 
-$current = c($_SERVER['QUERY_STRING'], $_REQUEST['c']);
+$current = c($_SERVER['QUERY_STRING'], $_POST['c'] ? $_POST['c'] : rawurlencode($_GET['c']));
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 $realpath = realpath($current);
@@ -389,13 +389,13 @@ echo '<div class="red">' . $lng['warning'] . '<br/></div>
 </div>
 </form>';
             } else {
-                if ($realname) { 
-                    $realpath = $realpath . $_POST['name'];
+                if ($realname) {
+                    $realpath = $realpath . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 } else {
-                    $realpath = $h_current . $_POST['name'];
+                    $realpath = $h_current . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 }
 
-echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_current . $_POST['name'] . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . create_file($current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
+echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_current . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . create_file($current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
             }
         }
         break;

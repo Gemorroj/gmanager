@@ -58,7 +58,18 @@ class http
 	}
 
 	public function file_put_contents($file = '', $data){
-		return file_put_contents($file, $data);
+		if($data){
+			return file_put_contents($file, $data);
+		}
+		else{
+			if($f = fopen($file, 'w')){
+				fclose($f);
+				return 1;
+			}
+			else{
+				return 0;
+			}
+		}
 	}
 
 	public function is_dir($str = ''){
