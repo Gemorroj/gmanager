@@ -999,7 +999,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
         return 1;
     }
 
-    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb', PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD, 67108864);
+    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb', PCLZIP_OPT_TEMP_FILE_THRESHOLD, 67108864);
     unlink($tmp);
 
     if ($fl) {
@@ -1267,7 +1267,7 @@ function add_zip_archive($add_archive = '', $ext = '', $dir = '')
     require_once $pclzip;
 
     $zip = new PclZip($add_archive);
-    $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH, PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD, 67108864);
+    $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 67108864);
 
     if ($add) {
         return report($lng['add_archive_true'], false);
@@ -1311,7 +1311,7 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = '')
         $p_header['stored_filename'] = $test[1];
         return 1;
     }
-    $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb', PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD, 67108864);
+    $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb', PCLZIP_OPT_TEMP_FILE_THRESHOLD, 67108864);
 
     if ($mode->file_exists($name)) {
         if ($chmod) {

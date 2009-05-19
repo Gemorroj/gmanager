@@ -1,6 +1,6 @@
 <?php
 // --------------------------------------------------------------------------------
-// PhpConcept Library - Zip Module 2.7
+// PhpConcept Library - Zip Module 2.8
 // --------------------------------------------------------------------------------
 // License GNU/LGPL - Vincent Blavet - March 2006
 // http://www.phpconcept.net
@@ -22,7 +22,7 @@
 //   The use of this software is at the risk of the user.
 //
 // --------------------------------------------------------------------------------
-// $Id: pclzip.lib.php,v 1.50 2009/03/24 17:13:52 vblavet Exp $
+// $Id: pclzip.lib.php,v 1.55 2009/04/22 07:38:36 vblavet Exp $
 // --------------------------------------------------------------------------------
 
   // ----- Constants
@@ -65,9 +65,21 @@
   
 // укажите путь к временной папке
 define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
-  
+
   if (!defined('PCLZIP_TEMPORARY_DIR')) {
     define( 'PCLZIP_TEMPORARY_DIR', '' );
+  }
+
+  // ----- Optional threshold ratio for use of temporary files
+  //       Pclzip sense the size of the file to add/extract and decide to
+  //       use or not temporary file. The algorythm is looking for 
+  //       memory_limit of PHP and apply a ratio.
+  //       threshold = memory_limit * ratio.
+  //       Recommended values are under 0.5. Default 0.47.
+  //       Samples :
+  // define( 'PCLZIP_TEMPORARY_FILE_RATIO', 0.5 );
+  if (!defined('PCLZIP_TEMPORARY_FILE_RATIO')) {
+    define( 'PCLZIP_TEMPORARY_FILE_RATIO', 0.47 );
   }
 
 // --------------------------------------------------------------------------------
@@ -75,7 +87,7 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
 // --------------------------------------------------------------------------------
 
   // ----- Global variables
-  $g_pclzip_version = '2.7';
+  $g_pclzip_version = "2.8";
 
   // ----- Error codes
   //   -1 : Unable to open file in binary write mode
@@ -138,9 +150,12 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
   // which is not correctly supported by PHP ...
   //define( 'PCLZIP_OPT_CRYPT', 77018 );
   define( 'PCLZIP_OPT_EXTRACT_DIR_RESTRICTION', 77019 );
-  define( 'PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD', 77020 );
-  define( 'PCLZIP_OPT_ADD_TEMP_FILE_ON', 77021 );
-  define( 'PCLZIP_OPT_ADD_TEMP_FILE_OFF', 77022 );
+  define( 'PCLZIP_OPT_TEMP_FILE_THRESHOLD', 77020 );
+  define( 'PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD', 77020 ); // alias
+  define( 'PCLZIP_OPT_TEMP_FILE_ON', 77021 );
+  define( 'PCLZIP_OPT_ADD_TEMP_FILE_ON', 77021 ); // alias
+  define( 'PCLZIP_OPT_TEMP_FILE_OFF', 77022 );
+  define( 'PCLZIP_OPT_ADD_TEMP_FILE_OFF', 77022 ); // alias
   
   // ----- File description attributes
   define( 'PCLZIP_ATT_FILE_NAME', 79001 );
@@ -298,9 +313,9 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
                                                    PCLZIP_CB_POST_ADD => 'optional',
                                                    PCLZIP_OPT_NO_COMPRESSION => 'optional',
                                                    PCLZIP_OPT_COMMENT => 'optional',
-                                                   PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD => 'optional',
-                                                   PCLZIP_OPT_ADD_TEMP_FILE_ON => 'optional',
-                                                   PCLZIP_OPT_ADD_TEMP_FILE_OFF => 'optional'
+                                                   PCLZIP_OPT_TEMP_FILE_THRESHOLD => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_ON => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
                                                    //, PCLZIP_OPT_CRYPT => 'optional'
                                              ));
         if ($v_result != 1) {
@@ -332,9 +347,7 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     }
     
     // ----- Look for default option values
-    if (!isset($v_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD])) {
-      $this->privOptionDefaultThreshold($v_options);
-    }
+    $this->privOptionDefaultThreshold($v_options);
 
     // ----- Init
     $v_string_list = array();
@@ -497,9 +510,9 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
                                                    PCLZIP_OPT_COMMENT => 'optional',
                                                    PCLZIP_OPT_ADD_COMMENT => 'optional',
                                                    PCLZIP_OPT_PREPEND_COMMENT => 'optional',
-                                                   PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD => 'optional',
-                                                   PCLZIP_OPT_ADD_TEMP_FILE_ON => 'optional',
-                                                   PCLZIP_OPT_ADD_TEMP_FILE_OFF => 'optional'
+                                                   PCLZIP_OPT_TEMP_FILE_THRESHOLD => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_ON => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
                                                    //, PCLZIP_OPT_CRYPT => 'optional'
 												   ));
         if ($v_result != 1) {
@@ -533,9 +546,7 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     }
 
     // ----- Look for default option values
-    if (!isset($v_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD])) {
-      $this->privOptionDefaultThreshold($v_options);
-    }
+    $this->privOptionDefaultThreshold($v_options);
 
     // ----- Init
     $v_string_list = array();
@@ -774,7 +785,10 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
                                                    PCLZIP_OPT_EXTRACT_IN_OUTPUT => 'optional',
                                                    PCLZIP_OPT_REPLACE_NEWER => 'optional'
                                                    ,PCLZIP_OPT_STOP_ON_ERROR => 'optional'
-                                                   ,PCLZIP_OPT_EXTRACT_DIR_RESTRICTION => 'optional'
+                                                   ,PCLZIP_OPT_EXTRACT_DIR_RESTRICTION => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_THRESHOLD => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_ON => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
 												    ));
         if ($v_result != 1) {
           //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, 0);
@@ -823,6 +837,9 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
         }
       }
     }
+
+    // ----- Look for default option values
+    $this->privOptionDefaultThreshold($v_options);
 
     // ----- Trace
     //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "path='$v_path', remove_path='$v_remove_path', remove_all_path='".($v_remove_path?'true':'false')."'");
@@ -934,7 +951,10 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
                                                    PCLZIP_OPT_SET_CHMOD => 'optional',
                                                    PCLZIP_OPT_REPLACE_NEWER => 'optional'
                                                    ,PCLZIP_OPT_STOP_ON_ERROR => 'optional'
-                                                   ,PCLZIP_OPT_EXTRACT_DIR_RESTRICTION => 'optional'
+                                                   ,PCLZIP_OPT_EXTRACT_DIR_RESTRICTION => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_THRESHOLD => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_ON => 'optional',
+                                                   PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
 												   ));
         if ($v_result != 1) {
           //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, 0);
@@ -1006,6 +1026,9 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
         return 0;
     }
     $v_options[PCLZIP_OPT_BY_INDEX] = $v_options_trick[PCLZIP_OPT_BY_INDEX];
+
+    // ----- Look for default option values
+    $this->privOptionDefaultThreshold($v_options);
 
     // ----- Call the extracting fct
     if (($v_result = $this->privExtractByRule($p_list, $v_path, $v_remove_path, $v_remove_all_path, $v_options)) < 1) {
@@ -1526,7 +1549,7 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           $i++;
         break;
 
-        case PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD :
+        case PCLZIP_OPT_TEMP_FILE_THRESHOLD :
           // ----- Check the number of parameters
           if (($i+1) >= $p_size) {
             PclZip::privErrorLog(PCLZIP_ERR_MISSING_OPTION_VALUE, "Missing parameter value for option '".PclZipUtilOptionText($p_options_list[$i])."'");
@@ -1535,8 +1558,8 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           }
           
           // ----- Check for incompatible options
-          if (isset($v_result_list[PCLZIP_OPT_ADD_TEMP_FILE_OFF])) {
-            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_ADD_TEMP_FILE_OFF'");
+          if (isset($v_result_list[PCLZIP_OPT_TEMP_FILE_OFF])) {
+            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_TEMP_FILE_OFF'");
             //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
             return PclZip::errorCode();
           }
@@ -1555,10 +1578,10 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           $i++;
         break;
 
-        case PCLZIP_OPT_ADD_TEMP_FILE_ON :
+        case PCLZIP_OPT_TEMP_FILE_ON :
           // ----- Check for incompatible options
-          if (isset($v_result_list[PCLZIP_OPT_ADD_TEMP_FILE_OFF])) {
-            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_ADD_TEMP_FILE_OFF'");
+          if (isset($v_result_list[PCLZIP_OPT_TEMP_FILE_OFF])) {
+            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_TEMP_FILE_OFF'");
             //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
             return PclZip::errorCode();
           }
@@ -1567,16 +1590,16 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "".PclZipUtilOptionText($p_options_list[$i])." = '".$v_result_list[$p_options_list[$i]]."'");
         break;
 
-        case PCLZIP_OPT_ADD_TEMP_FILE_OFF :
+        case PCLZIP_OPT_TEMP_FILE_OFF :
           // ----- Check for incompatible options
-          if (isset($v_result_list[PCLZIP_OPT_ADD_TEMP_FILE_ON])) {
-            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_ADD_TEMP_FILE_ON'");
+          if (isset($v_result_list[PCLZIP_OPT_TEMP_FILE_ON])) {
+            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_TEMP_FILE_ON'");
             //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
             return PclZip::errorCode();
           }
           // ----- Check for incompatible options
-          if (isset($v_result_list[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD])) {
-            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD'");
+          if (isset($v_result_list[PCLZIP_OPT_TEMP_FILE_THRESHOLD])) {
+            PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Option '".PclZipUtilOptionText($p_options_list[$i])."' can not be used with option 'PCLZIP_OPT_TEMP_FILE_THRESHOLD'");
             //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
             return PclZip::errorCode();
           }
@@ -1911,7 +1934,7 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     }
     
     // ----- Look for default values
-    if (!isset($v_result_list[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD])) {
+    if (!isset($v_result_list[PCLZIP_OPT_TEMP_FILE_THRESHOLD])) {
       //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Calculate auto threshold");
       
     }
@@ -1933,6 +1956,12 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     //--(MAGIC-PclTrace)--//PclTraceFctStart(__FILE__, __LINE__, "PclZip::privOptionDefaultThreshold", "");
     $v_result=1;
     
+    if (isset($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD])
+        || isset($p_options[PCLZIP_OPT_TEMP_FILE_OFF])) {
+      //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
+      return $v_result;
+    }
+    
     //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Create an auto-threshold for use of temporay files");
     // ----- Get 'memory_limit' configuration value
     $v_memory_limit = ini_get('memory_limit');
@@ -1948,14 +1977,15 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     if($last == 'k')
         $v_memory_limit = $v_memory_limit*1024;
             
-    $p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD] = floor($v_memory_limit/2);
+    $p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD] = floor($v_memory_limit*PCLZIP_TEMPORARY_FILE_RATIO);
     
-    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Threshold value is : ".$p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD]." bytes");
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Current memory usage : ".memory_get_usage(TRUE)." bytes");
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Threshold value is : ".$p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD]." bytes");
 
     // ----- Sanity check : No threshold if value lower than 1M
-    if ($p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD] < 1048576) {
-      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Unset the threshold (value ".$p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD].") because under 1Mo sanity check)");
-      unset($p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD]);
+    if ($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD] < 1048576) {
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Unset the threshold (value ".$p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD].") because under 1Mo sanity check)");
+      unset($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD]);
     }
           
     // ----- Return
@@ -2778,10 +2808,12 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
 
     // ----- Look for filetime
     if (isset($p_filedescr['mtime'])) {
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3,"Overload mtime value with :'".$p_filedescr['mtime']."'");
       $p_header['mtime'] = $p_filedescr['mtime'];
     }
     else if ($p_filedescr['type'] == 'virtual_file') {
       $p_header['mtime'] = time();
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, "Virtual file : use current time '".$p_header['mtime']."' for mtime value.");
     }
     else {
       $p_header['mtime'] = filemtime($p_filename);
@@ -2839,20 +2871,22 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
       // ----- Look for a file
       if ($p_filedescr['type'] == 'file') {
         // ----- Look for using temporary file to zip
-        if ( (!isset($p_options[PCLZIP_OPT_ADD_TEMP_FILE_OFF])) 
-            && (isset($p_options[PCLZIP_OPT_ADD_TEMP_FILE_ON])
-                || (isset($p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD])
-                    && ($p_options[PCLZIP_OPT_ADD_TEMP_FILE_THRESHOLD] <= $p_header['size'])) ) ) {
+        if ( (!isset($p_options[PCLZIP_OPT_TEMP_FILE_OFF])) 
+            && (isset($p_options[PCLZIP_OPT_TEMP_FILE_ON])
+                || (isset($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD])
+                    && ($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD] <= $p_header['size'])) ) ) {
           $v_result = $this->privAddFileUsingTempFile($p_filedescr, $p_header, $p_options);
-          if ($v_result >= PCLZIP_ERR_NO_ERROR) {
+          if ($v_result < PCLZIP_ERR_NO_ERROR) {
             return $v_result;
           }
         }
         
         // ----- Use "in memory" zip algo
         else {
-          
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "'".$p_filename."' is a file");
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"In memory compression.");      
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"Current memory usage : ".memory_get_usage(TRUE)." bytes");      
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"Current memory peak : ".memory_get_peak_usage(TRUE)." bytes");      
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "'".$p_filename."' is a file");
 
         // ----- Open the source file
         if (($v_file = @fopen($p_filename, "rb")) == 0) {
@@ -2863,6 +2897,8 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
 
         // ----- Read the file content
         $v_content = @fread($v_file, $p_header['size']);
+        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"Memory usage after reading file : ".memory_get_usage(TRUE)." bytes");      
+        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"Memory peak after reading file : ".memory_get_peak_usage(TRUE)." bytes");      
 
         // ----- Close the file
         @fclose($v_file);
@@ -2883,35 +2919,14 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "File will be compressed");
           // ----- Compress the content
           $v_content = @gzdeflate($v_content);
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"Memory usage after gzdeflate : ".memory_get_usage(TRUE)." bytes");      
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2,"Memory peak after gzdeflate : ".memory_get_peak_usage(TRUE)." bytes");      
 
           // ----- Set header parameters
           $p_header['compressed_size'] = strlen($v_content);
           $p_header['compression'] = 8;
         }
         
-        // ----- Look for encryption
-        /*
-        if ((isset($p_options[PCLZIP_OPT_CRYPT]))
-		    && ($p_options[PCLZIP_OPT_CRYPT] != "")) {
-          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "File need to be crypted ....");
-          
-          // Should be a random header
-          $v_header = 'xxxxxxxxxxxx';
-	      $v_content_compressed = PclZipUtilZipEncrypt($v_content_compressed,
-		                                           $p_header['compressed_size'],
-	                                               $v_header,
-												   $p_header['crc'],
-												   "test");
-												   
-          $p_header['compressed_size'] += 12;
-          $p_header['flag'] = 1;
-          
-          // ----- Add the header to the data
-          $v_content_compressed = $v_header.$v_content_compressed;
-          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Size after header : ".strlen($v_content_compressed)."");
-        }
-        */
-
         // ----- Call the header generation
         if (($v_result = $this->privWriteFileHeader($p_header)) != 1) {
           @fclose($v_file);
@@ -2954,29 +2969,6 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           $p_header['compression'] = 8;
         }
         
-        // ----- Look for encryption
-        /*
-        if ((isset($p_options[PCLZIP_OPT_CRYPT]))
-		    && ($p_options[PCLZIP_OPT_CRYPT] != "")) {
-          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "File need to be crypted ....");
-          
-          // Should be a random header
-          $v_header = 'xxxxxxxxxxxx';
-	      $v_content_compressed = PclZipUtilZipEncrypt($v_content_compressed,
-		                                           $p_header['compressed_size'],
-	                                               $v_header,
-												   $p_header['crc'],
-												   "test");
-												   
-          $p_header['compressed_size'] += 12;
-          $p_header['flag'] = 1;
-          
-          // ----- Add the header to the data
-          $v_content_compressed = $v_header.$v_content_compressed;
-          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Size after header : ".strlen($v_content_compressed)."");
-        }
-        */
-
         // ----- Call the header generation
         if (($v_result = $this->privWriteFileHeader($p_header)) != 1) {
           @fclose($v_file);
@@ -3073,8 +3065,8 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     $v_size = filesize($p_filename);
     while ($v_size != 0) {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Read $v_read_size bytes");
-      $v_buffer = fread($v_file, $v_read_size);
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 4, "Read ".$v_read_size." bytes");
+      $v_buffer = @fread($v_file, $v_read_size);
       //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
       @gzputs($v_file_compressed, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
@@ -3153,8 +3145,8 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     while ($v_size != 0)
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Read $v_read_size bytes");
-      $v_buffer = fread($v_file_compressed, $v_read_size);
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 4, "Read ".$v_read_size." bytes");
+      $v_buffer = @fread($v_file_compressed, $v_read_size);
       //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
       @fwrite($this->zip_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
@@ -3545,8 +3537,10 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     $v_result=1;
 
     // ----- Get the interesting attributes
-    $p_info['filename'] = $p_header['filename'];
-    $p_info['stored_filename'] = $p_header['stored_filename'];
+    $v_temp_path = PclZipUtilPathReduction($p_header['filename']);
+    $p_info['filename'] = $v_temp_path;
+    $v_temp_path = PclZipUtilPathReduction($p_header['stored_filename']);
+    $p_info['stored_filename'] = $v_temp_path;
     $p_info['size'] = $p_header['size'];
     $p_info['compressed_size'] = $p_header['compressed_size'];
     $p_info['mtime'] = $p_header['mtime'];
@@ -4204,7 +4198,7 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
         if ($p_entry['compression'] == 0) {
           //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Extracting an un-compressed file");
 
-		  // ----- Opening destination file
+    		  // ----- Opening destination file
           if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0)
           {
             //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Error while opening '".$p_entry['filename']."' in write binary mode");
@@ -4247,59 +4241,65 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
           // ----- TBC
           // Need to be finished
           if (($p_entry['flag'] & 1) == 1) {
-              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "File is encrypted");
-            /*
-              // ----- Read the encryption header
-              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 5, "Read 12 encryption header bytes");
-              $v_encryption_header = @fread($this->zip_fd, 12);
-              
-              // ----- Read the encrypted & compressed file in a buffer
-              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 5, "Read '".($p_entry['compressed_size']-12)."' compressed & encrypted bytes");
-              $v_buffer = @fread($this->zip_fd, $p_entry['compressed_size']-12);
-              
-              // ----- Decrypt the buffer
-              $this->privDecrypt($v_encryption_header, $v_buffer,
-			                     $p_entry['compressed_size']-12, $p_entry['crc']);
-              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 5, "Buffer is '".$v_buffer."'");
-              */
+            //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "File is encrypted");
+            PclZip::privErrorLog(PCLZIP_ERR_UNSUPPORTED_ENCRYPTION, 'File \''.$p_entry['filename'].'\' is encrypted. Encrypted files are not supported.');
+            //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
+            return PclZip::errorCode();
           }
+
+
+          // ----- Look for using temporary file to unzip
+          if ( (!isset($p_options[PCLZIP_OPT_TEMP_FILE_OFF])) 
+              && (isset($p_options[PCLZIP_OPT_TEMP_FILE_ON])
+                  || (isset($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD])
+                      && ($p_options[PCLZIP_OPT_TEMP_FILE_THRESHOLD] <= $p_entry['size'])) ) ) {
+            $v_result = $this->privExtractFileUsingTempFile($p_entry, $p_options);
+            if ($v_result < PCLZIP_ERR_NO_ERROR) {
+              return $v_result;
+            }
+          }
+          
+          // ----- Look for extract in memory
           else {
-              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 5, "Read '".$p_entry['compressed_size']."' compressed bytes");
-              // ----- Read the compressed file in a buffer (one shot)
-              $v_buffer = @fread($this->zip_fd, $p_entry['compressed_size']);
-          }
-          
-          // ----- Decompress the file
-          $v_file_content = @gzinflate($v_buffer);
-          unset($v_buffer);
-          if ($v_file_content === FALSE) {
-            //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Unable to inflate compressed file");
 
-            // ----- Change the file status
-            // TBC
-            $p_entry['status'] = "error";
+            //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 5, "Read '".$p_entry['compressed_size']."' compressed bytes");
+          
+            // ----- Read the compressed file in a buffer (one shot)
+            $v_buffer = @fread($this->zip_fd, $p_entry['compressed_size']);
             
-            //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
-            return $v_result;
+            // ----- Decompress the file
+            $v_file_content = @gzinflate($v_buffer);
+            unset($v_buffer);
+            if ($v_file_content === FALSE) {
+              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Unable to inflate compressed file");
+  
+              // ----- Change the file status
+              // TBC
+              $p_entry['status'] = "error";
+              
+              //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
+              return $v_result;
+            }
+            
+            // ----- Opening destination file
+            if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
+              //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Error while opening '".$p_entry['filename']."' in write binary mode");
+  
+              // ----- Change the file status
+              $p_entry['status'] = "write_error";
+  
+              //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
+              return $v_result;
+            }
+  
+            // ----- Write the uncompressed data
+            @fwrite($v_dest_file, $v_file_content, $p_entry['size']);
+            unset($v_file_content);
+  
+            // ----- Closing the destination file
+            @fclose($v_dest_file);
+            
           }
-          
-          // ----- Opening destination file
-          if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
-            //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Error while opening '".$p_entry['filename']."' in write binary mode");
-
-            // ----- Change the file status
-            $p_entry['status'] = "write_error";
-
-            //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
-            return $v_result;
-          }
-
-          // ----- Write the uncompressed data
-          @fwrite($v_dest_file, $v_file_content, $p_entry['size']);
-          unset($v_file_content);
-
-          // ----- Closing the destination file
-          @fclose($v_dest_file);
 
           // ----- Change the file mtime
           @touch($p_entry['filename'], $p_entry['mtime']);
@@ -4342,6 +4342,95 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
       }
     }
 
+    // ----- Return
+    //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
+    return $v_result;
+  }
+  // --------------------------------------------------------------------------------
+
+  // --------------------------------------------------------------------------------
+  // Function : privExtractFileUsingTempFile()
+  // Description :
+  // Parameters :
+  // Return Values :
+  // --------------------------------------------------------------------------------
+  function privExtractFileUsingTempFile(&$p_entry, &$p_options)
+  {
+    //--(MAGIC-PclTrace)--//PclTraceFctStart(__FILE__, __LINE__, 'PclZip::privExtractFileUsingTempFile', "filename='".$p_entry['filename']."'");
+    $v_result=1;
+        
+    // ----- Creates a temporary file
+    $v_gzip_temp_name = PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.gz';
+    if (($v_dest_file = @fopen($v_gzip_temp_name, "wb")) == 0) {
+      fclose($v_file);
+      PclZip::privErrorLog(PCLZIP_ERR_WRITE_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary write mode');
+      //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
+      return PclZip::errorCode();
+    }
+
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Start extraction of '".$p_entry['filename']."'");
+
+    // ----- Write gz file format header
+    $v_binary_data = pack('va1a1Va1a1', 0x8b1f, Chr($p_entry['compression']), Chr(0x00), time(), Chr(0x00), Chr(3));
+    @fwrite($v_dest_file, $v_binary_data, 10);
+
+    // ----- Read the file by PCLZIP_READ_BLOCK_SIZE octets blocks
+    $v_size = $p_entry['compressed_size'];
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Compressed Size :".$v_size."");
+    while ($v_size != 0)
+    {
+      $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Read ".$v_read_size." bytes");
+      $v_buffer = @fread($this->zip_fd, $v_read_size);
+      //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
+      @fwrite($v_dest_file, $v_buffer, $v_read_size);
+      $v_size -= $v_read_size;
+    }
+
+    // ----- Write gz file format footer
+    $v_binary_data = pack('VV', $p_entry['crc'], $p_entry['size']);
+    @fwrite($v_dest_file, $v_binary_data, 8);
+
+    // ----- Close the temporary file
+    @fclose($v_dest_file);
+
+    // ----- Opening destination file
+    if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Error while opening '".$p_entry['filename']."' in write binary mode");
+      $p_entry['status'] = "write_error";
+      //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
+      return $v_result;
+    }
+
+    // ----- Open the temporary gz file
+    if (($v_src_file = @gzopen($v_gzip_temp_name, 'rb')) == 0) {
+      @fclose($v_dest_file);
+      $p_entry['status'] = "read_error";
+      PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary read mode');
+      //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, PclZip::errorCode(), PclZip::errorInfo());
+      return PclZip::errorCode();
+    }
+
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, 'File size is '.filesize($v_gzip_temp_name));
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Reading '".$p_entry['size']."' bytes");
+
+    // ----- Read the file by PCLZIP_READ_BLOCK_SIZE octets blocks
+    $v_size = $p_entry['size'];
+    //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Size :".$v_size."");
+    while ($v_size != 0) {
+      $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
+      //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 2, "Read ".$v_read_size." bytes");
+      $v_buffer = @gzread($v_src_file, $v_read_size);
+      //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
+      @fwrite($v_dest_file, $v_buffer, $v_read_size);
+      $v_size -= $v_read_size;
+    }
+    @fclose($v_dest_file);
+    @gzclose($v_src_file);
+
+    // ----- Delete the temporary file
+    @unlink($v_gzip_temp_name);
+    
     // ----- Return
     //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
     return $v_result;
@@ -4816,38 +4905,38 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     //--(MAGIC-PclTrace)--//PclTraceFctStart(__FILE__, __LINE__, "PclZip::privCheckFileHeaders", "");
     $v_result=1;
 
-	// ----- Check the static values
-	// TBC
-	if ($p_local_header['filename'] != $p_central_header['filename']) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "filename" : TBC To Be Completed');
-	}
-	if ($p_local_header['version_extracted'] != $p_central_header['version_extracted']) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "version_extracted" : TBC To Be Completed');
-	}
-	if ($p_local_header['flag'] != $p_central_header['flag']) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "flag" : TBC To Be Completed');
-	}
-	if ($p_local_header['compression'] != $p_central_header['compression']) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "compression" : TBC To Be Completed');
-	}
-	if ($p_local_header['mtime'] != $p_central_header['mtime']) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "mtime" : TBC To Be Completed');
-	}
-	if ($p_local_header['filename_len'] != $p_central_header['filename_len']) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "filename_len" : TBC To Be Completed');
-	}
-
-	// ----- Look for flag bit 3
-	if (($p_local_header['flag'] & 8) == 8) {
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Purpose bit flag bit 3 set !');
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'File size, compression size and crc found in central header');
-        $p_local_header['size'] = $p_central_header['size'];
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Size : \''.$p_local_header['size'].'\'');
-        $p_local_header['compressed_size'] = $p_central_header['compressed_size'];
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Compressed Size : \''.$p_local_header['compressed_size'].'\'');
-        $p_local_header['crc'] = $p_central_header['crc'];
-        //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'CRC : \''.sprintf("0x%X", $p_local_header['crc']).'\'');
-	}
+  	// ----- Check the static values
+  	// TBC
+  	if ($p_local_header['filename'] != $p_central_header['filename']) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "filename" : TBC To Be Completed');
+  	}
+  	if ($p_local_header['version_extracted'] != $p_central_header['version_extracted']) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "version_extracted" : TBC To Be Completed');
+  	}
+  	if ($p_local_header['flag'] != $p_central_header['flag']) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "flag" : TBC To Be Completed');
+  	}
+  	if ($p_local_header['compression'] != $p_central_header['compression']) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "compression" : TBC To Be Completed');
+  	}
+  	if ($p_local_header['mtime'] != $p_central_header['mtime']) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "mtime" : TBC To Be Completed');
+  	}
+  	if ($p_local_header['filename_len'] != $p_central_header['filename_len']) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Bad check "filename_len" : TBC To Be Completed');
+  	}
+  
+  	// ----- Look for flag bit 3
+  	if (($p_local_header['flag'] & 8) == 8) {
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Purpose bit flag bit 3 set !');
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'File size, compression size and crc found in central header');
+          $p_local_header['size'] = $p_central_header['size'];
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Size : \''.$p_local_header['size'].'\'');
+          $p_local_header['compressed_size'] = $p_central_header['compressed_size'];
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'Compressed Size : \''.$p_local_header['compressed_size'].'\'');
+          $p_local_header['crc'] = $p_central_header['crc'];
+          //--(MAGIC-PclTrace)--//PclTraceFctMessage(__FILE__, __LINE__, 3, 'CRC : \''.sprintf("0x%X", $p_local_header['crc']).'\'');
+  	}
 
     // ----- Return
     //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
@@ -5778,29 +5867,6 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
   // --------------------------------------------------------------------------------
 
   // --------------------------------------------------------------------------------
-  // Function : privDecrypt()
-  // Description :
-  // Parameters :
-  // Return Values :
-  // --------------------------------------------------------------------------------
-  function privDecrypt($p_encryption_header, &$p_buffer, $p_size, $p_crc)
-  {
-    //--(MAGIC-PclTrace)--//PclTraceFctStart(__FILE__, __LINE__, 'PclZip::privDecrypt', "size=".$p_size."");
-    $v_result=1;
-    
-    // ----- To Be Modified ;-)
-    $v_pwd = "test";
-    
-    $p_buffer = PclZipUtilZipDecrypt($p_buffer, $p_size, $p_encryption_header,
-	                                 $p_crc, $v_pwd);
-    
-    // ----- Return
-    //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_result);
-    return $v_result;
-  }
-  // --------------------------------------------------------------------------------
-
-  // --------------------------------------------------------------------------------
   // Function : privDisableMagicQuotes()
   // Description :
   // Parameters :
@@ -6172,13 +6238,13 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__).'/data/').'/');
     
     $v_list = get_defined_constants();
     for (reset($v_list); $v_key = key($v_list); next($v_list)) {
-	  $v_prefix = substr($v_key, 0, 10);
-	  if ((   ($v_prefix == 'PCLZIP_OPT')
-         || ($v_prefix == 'PCLZIP_CB_')
-         || ($v_prefix == 'PCLZIP_ATT'))
-	      && ($v_list[$v_key] == $p_option)) {
-          //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_key);
-          return $v_key;
+	    $v_prefix = substr($v_key, 0, 10);
+	    if ((   ($v_prefix == 'PCLZIP_OPT')
+           || ($v_prefix == 'PCLZIP_CB_')
+           || ($v_prefix == 'PCLZIP_ATT'))
+	        && ($v_list[$v_key] == $p_option)) {
+        //--(MAGIC-PclTrace)--//PclTraceFctEnd(__FILE__, __LINE__, $v_key);
+        return $v_key;
 	    }
     }
     
