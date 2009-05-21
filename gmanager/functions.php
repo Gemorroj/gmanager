@@ -503,6 +503,7 @@ function del_file($f = '')
 function del_dir($d = '')
 {
     global $lng, $mode;
+    $err = '';
     //$d = rawurldecode($d);
 
     $mode->chmod($d, '0777');
@@ -541,7 +542,7 @@ function del_dir($d = '')
         $err .= error() . '<br/>';
     }
     if ($err) {
-        return report($lng['del_dir_false'] . '<br/>' . iconv_substr($err, -6), true);
+        return report($lng['del_dir_false'] . '<br/>' . $err, true);
     }
     return report($lng['del_dir_true'] . ' (' . htmlspecialchars($d, ENT_NOQUOTES) . ')', false);
 }

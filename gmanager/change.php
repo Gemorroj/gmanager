@@ -134,7 +134,7 @@ echo '<input type="submit" value="' . $lng['rename'] . '"/>
                 }
             }
 
-			echo report('<br/>' . $lng['full_del_file_dir_true'], false);
+			// echo report('<br/>' . $lng['full_del_file_dir_true'], false);
 
         } elseif ($_POST['full_chmod']) {
             if (!$_POST['chmod']) {
