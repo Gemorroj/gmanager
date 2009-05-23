@@ -62,8 +62,7 @@ class http
 			return file_put_contents($file, $data);
 		}
 		else{
-			if($f = fopen($file, 'w')){
-				fclose($f);
+			if(touch($file)){
 				return 1;
 			}
 			else{
