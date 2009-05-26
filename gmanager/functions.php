@@ -396,7 +396,7 @@ function copy_files($d = '', $dest = '', $static = '')
         }
     }
 
-    return report(htmlspecialchars(str_replace('%dir%', $dest, $lng['copy_files_true'])), false);
+    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $lng['copy_files_true']), false);
 }
 
 
@@ -442,7 +442,7 @@ function move_files($d = '', $dest = '', $static = '')
 
     $mode->rmdir($d);
 
-    return report(htmlspecialchars(str_replace('%dir%', $dest, $lng['move_files_true'])), false);
+    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $lng['move_files_true']), false);
 }
 
 

@@ -49,7 +49,7 @@ $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h
 
 send_header($_SERVER['HTTP_USER_AGENT']);
 
-echo str_replace('%dir%', $_GET['go'], $top) . '
+echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : ($_POST['full_chmod'] ? $lng['chmod'] : ($_POST['full_del'] ? $lng['del'] : ($_POST['full_rename'] ? $lng['change'] : ($_POST['fname'] ? $lng['rename'] : ($_POST['create_archive'] ? $lng['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $top) . '
 <div class="w2">
 ' . $lng['title_change'] . '<br/>
 </div>
