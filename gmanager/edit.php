@@ -67,6 +67,17 @@ switch ($_GET['go']) {
         }
 
 
+
+if(get_class($mode) == 'http'){
+	$http = '<div class="rb">
+<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', iconv_substr(realpath($current), iconv_strlen($_SERVER['DOCUMENT_ROOT']))).'">'.$lng['look'].'</a><br/>
+</div>';
+}
+else{
+	$http = '';
+}
+
+
 echo '<div class="input">
 ' . $lng['sz'] . ': ' . $content['size'] . '<br/>
 Строк: ' . $content['lines'] . '
@@ -89,6 +100,7 @@ echo '<div class="input">
 </div>
 </form>
 </div>
+'.$http.'
 <div class="rb">
 <a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $lng['syntax'] . '</a><br/>
 </div>';

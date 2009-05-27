@@ -19,7 +19,7 @@ $mode = new ftp;
 class ftp
 {
 	private $user = 'root'; // логин
-	private $password = '1234'; // пароль
+	private $password = ''; // пароль
 	private $host = 'localhost'; // хост
 	private $port = 21; // порт
     private $res;
