@@ -183,7 +183,7 @@ function look($current = '')
 			$tmp[] = $file;
 		}
 		closedir($dir);
-		$dir = &$tmp;
+		$dir = $tmp;
 	}
 	
 
@@ -373,7 +373,7 @@ function copy_files($d = '', $dest = '', $static = '')
 			$tmp[] = $file;
 		}
 		closedir($dir);
-		$dir = &$tmp;
+		$dir = $tmp;
 	}
 
     foreach($dir as $file) {
@@ -414,7 +414,7 @@ function move_files($d = '', $dest = '', $static = '')
 			$tmp[] = $file;
 		}
 		closedir($dir);
-		$dir = &$tmp;
+		$dir = $tmp;
 	}
 
     foreach($dir as $file) {
@@ -517,7 +517,7 @@ function del_dir($d = '')
 			$tmp[] = $file;
 		}
 		closedir($dir);
-		$dir = &$tmp;
+		$dir = $tmp;
 	}
 
     foreach($dir as $f) {
@@ -554,7 +554,7 @@ function dir_size($file = '')
     if ((!$mode->is_dir($file) || !$mode->is_link($file)) && !$mode->is_readable($file)) {
         return $lng['unknown'];
     }
-    $ds[] = $file;
+    $ds = array($file);
     $sz = 0;
     do {
         $d = array_shift($ds);
@@ -569,7 +569,7 @@ function dir_size($file = '')
 			$tmp[] = $file;
 		}
 		closedir($dir);
-		$dir = &$tmp;
+		$dir = $tmp;
 	}
         
         foreach($dir as $file) {
@@ -577,7 +577,9 @@ function dir_size($file = '')
                 if ($mode->is_dir($d . '/' . $file)) {
                     $ds[] = $d . '/' . $file;
                 }
-                $sz += $mode->filesize($d . '/' . $file);
+                else{
+                	$sz += $mode->filesize($d . '/' . $file);
+            	}
             }
         }
     } while (sizeof($ds) > 0);
@@ -1627,7 +1629,7 @@ function search($c = '', $s = '', $w = '', $r = '')
 			$tmp[] = $file;
 		}
 		closedir($dir);
-		$dir = &$tmp;
+		$dir = $tmp;
 	}
 
 
@@ -1638,6 +1640,7 @@ function search($c = '', $s = '', $w = '', $r = '')
         }
         if ($mode->is_dir($c . $f)) {
             search($c . $f . '/', $s, $w, $r);
+            continue;
         }
 
 		//$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
