@@ -151,7 +151,7 @@ if (!$_GET['f'] && !$archive && !$add_archive) {
 echo '</table>
 <div class="ch">
 <input type="submit" name="full_chmod" value="' .$lng['chmod'] . '"/>
-<input type="submit" name="full_del" value="' . $lng['del'] . '"/>
+<input'.($del_notify ? ' onclick="return confirm(\''.$lng['del_notify'].'\')"' : '').' type="submit" name="full_del" value="' . $lng['del'] . '"/>
 <input type="submit" name="full_rename" value="' . $lng['change'] . '"/>
 <input type="submit" name="fname" value="' . $lng['rename'] . '"/>
 <input type="submit" name="create_archive" value="' . $lng['create_archive'] . '"/>

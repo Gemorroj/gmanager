@@ -21,9 +21,12 @@ if (isset($_POST['get'])) {
 
 require 'functions.php';
 
-$charset = $_GET['charset'];
-if ($charset == 'utf-8' || $charset == 'windows-1251') {
-    $full_charset = 'charset=' . $charset . '&amp;';
+$charset = array();
+$full_charset = '';
+
+if($_GET['charset']){
+list($charset[0], $charset[1],) = encoding('', $_GET['charset']);
+$full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
 $current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
@@ -60,21 +63,19 @@ switch ($_GET['go']) {
             $f = '';
         }
 
-        if ($charset == 'windows-1251') {
-            $content['text'] = iconv('UTF-8', 'windows-1251', $content['text']);
-        } elseif ($charset == 'utf-8') {
-            $content['text'] = iconv('windows-1251', 'UTF-8', $content['text']);
+        if ($charset) {
+            $content['text'] = iconv($charset[0], $charset[1], $content['text']);
         }
 
 
 
 if(get_class($mode) == 'http'){
-	$http = '<div class="rb">
+$http = '<div class="rb">
 <a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', iconv_substr(realpath($current), iconv_strlen($_SERVER['DOCUMENT_ROOT']))).'">'.$lng['look'].'</a><br/>
 </div>';
 }
 else{
-	$http = '';
+$http = '';
 }
 
 
@@ -85,8 +86,16 @@ echo '<div class="input">
 <div>
 <textarea name="text" rows="18" cols="64" wrap="off">' . $content['text'] . '</textarea>
 <br/>
-<input type="submit" value="' . $lng['save'] . '"/> <input type="submit" name="get" value="' . $lng['get'] . '"/><br/>
-' . $lng['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . look_chmod($current) . '" size="4" maxlength="4" style="width:28pt;"/>
+<input type="submit" value="' . $lng['save'] . '"/>
+<select name="charset">
+<option value="utf-8">utf-8</option>
+<option value="windows-1251"'.($charset[1] == 'windows-1251'? ' selected="selected"' : '').'>windows-1251</option>
+<option value="iso-8859-1"'.($charset[1] == 'iso-8859-1'? ' selected="selected"' : '').'>iso-8859-1</option>
+<option value="cp866"'.($charset[1] == 'cp866'? ' selected="selected"' : '').'>cp866</option>
+<option value="koi8-r"'.($charset[1] == 'koi8-r'? ' selected="selected"' : '').'>koi8-r</option>
+</select><br/>
+' . $lng['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . look_chmod($current) . '" size="4" maxlength="4" style="width:28pt;"/><br/>
+<input type="submit" name="get" value="' . $lng['get'] . '"/>
 </div>
 </form>
 </div>
@@ -104,45 +113,72 @@ echo '<div class="input">
 <div class="rb">
 <a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $lng['syntax'] . '</a><br/>
 </div>';
-        if ($type != '.ZIP' && $type != '.JAR' && extension_loaded('xml')) {
+
+if ($type != '.ZIP' && $type != '.JAR' && extension_loaded('xml')) {
 echo '<div class="rb">
 <a href="edit.php?c=' . $r_current . '&amp;' . $full_charset . 'go=validator">' . $lng['validator'] . '</a><br/>
 </div>';
-        }
+}
+
 echo '<div class="rb">
 ' . $lng['charset'] . '
 <form action="edit.php?" method="get" style="padding:0; margin:0;">
 <div>
 <input type="hidden" name="c" value="' . $h_current . '"/>
-<input type="hidden" name="f" value="' . $_GET['f'] . '"/>';
-        if ($charset == 'windows-1251') {
-echo '<input type="radio" name="charset"/>' . $lng['charset_no'] . '
-<input type="radio" name="charset" value="utf-8"/>' . $lng['charset_utf'] . '
-<input type="radio" name="charset" value="windows-1251" checked="checked"/>' . $lng['charset_win'];
-        } elseif ($charset == 'utf-8') {
-echo '<input type="radio" name="charset"/>' . $lng['charset_no'] . '
-<input type="radio" name="charset" value="utf-8" checked="checked"/>' . $lng['charset_utf'] .
-                '
-<input type="radio" name="charset" value="windows-1251"/>' . $lng['charset_win'];
-        } else {
-echo '<input type="radio" name="charset" checked="checked"/>' . $lng['charset_no'] . '
-<input type="radio" name="charset" value="utf-8"/>' . $lng['charset_utf'] . '
-<input type="radio" name="charset" value="windows-1251"/>' . $lng['charset_win'];
-        }
-
-echo '<br/><input type="submit" value="' . $lng['ch'] . '"/>
+<input type="hidden" name="f" value="' . $_GET['f'] . '"/>
+<select name="charset">
+<option value="">'.$lng['charset_no'].'</option>
+<optgroup label="UTF-8">
+<option value="utf-8 -&gt; windows-1251"'.($_GET['charset'] == 'utf-8 -> windows-1251' ? ' selected="selected"' : '').'>utf-8 -&gt; windows-1251</option>
+<option value="utf-8 -&gt; iso-8859-1"'.($_GET['charset'] == 'utf-8 -> iso-8859-1' ? ' selected="selected"' : '').'>utf-8 -&gt; iso-8859-1</option>
+<option value="utf-8 -&gt; cp866"'.($_GET['charset'] == 'utf-8 -> cp866' ? ' selected="selected"' : '').'>utf-8 -&gt; cp866</option>
+<option value="utf-8 -&gt; koi8-r"'.($_GET['charset'] == 'utf-8 -> koi8-r' ? ' selected="selected"' : '').'>utf-8 -&gt; koi8-r</option>
+</optgroup>
+<optgroup label="Windows-1251">
+<option value="windows-1251 -&gt; utf-8"'.($_GET['charset'] == 'windows-1251 -> utf-8' ? ' selected="selected"' : '').'>windows-1251 -&gt; utf-8</option>
+<option value="windows-1251 -&gt; iso-8859-1"'.($_GET['charset'] == 'windows-1251 -> iso-8859-1' ? ' selected="selected"' : '').'>windows-1251 -&gt; iso-8859-1</option>
+<option value="windows-1251 -&gt; cp866"'.($_GET['charset'] == 'windows-1251 -> cp866' ? ' selected="selected"' : '').'>windows-1251 -&gt; cp866</option>
+<option value="windows-1251 -&gt; koi8-r"'.($_GET['charset'] == 'windows-1251 -> koi8-r' ? ' selected="selected"' : '').'>windows-1251 -&gt; koi8-r</option>
+</optgroup>
+<optgroup label="ISO-8859-1">
+<option value="iso-8859-1 -&gt; utf-8"'.($_GET['charset'] == 'iso-8859-1 -> utf-8' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; utf-8</option>
+<option value="iso-8859-1 -&gt; windows-1251"'.($_GET['charset'] == 'iso-8859-1 -> windows-1251' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; windows-1251</option>
+<option value="iso-8859-1 -&gt; cp866"'.($_GET['charset'] == 'iso-8859-1 -> cp866' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; cp866</option>
+<option value="iso-8859-1 -&gt; koi8-r"'.($_GET['charset'] == 'iso-8859-1 -> koi8-r' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; koi8-r</option>
+</optgroup>
+<optgroup label="CP866">
+<option value="cp866 -&gt; utf-8"'.($_GET['charset'] == 'cp866 -> utf-8' ? ' selected="selected"' : '').'>cp866 -&gt; utf-8</option>
+<option value="cp866 -&gt; windows-1251"'.($_GET['charset'] == 'cp866 -> windows-1251' ? ' selected="selected"' : '').'>cp866 -&gt; windows-1251</option>
+<option value="cp866 -&gt; iso-8859-1"'.($_GET['charset'] == 'cp866 -> iso-8859-1' ? ' selected="selected"' : '').'>cp866 -&gt; iso-8859-1</option>
+<option value="cp866 -&gt; koi8-r"'.($_GET['charset'] == 'cp866 -> koi8-r' ? ' selected="selected"' : '').'>cp866 -&gt; koi8-r</option>
+</optgroup>
+<optgroup label="KOI8-R">
+<option value="koi8-r -&gt; utf-8"'.($_GET['charset'] == 'koi8-r -> utf-8' ? ' selected="selected"' : '').'>koi8-r -&gt; utf-8</option>
+<option value="koi8-r -&gt; windows-1251"'.($_GET['charset'] == 'koi8-r -> windows-1251' ? ' selected="selected"' : '').'>koi8-r -&gt; windows-1251</option>
+<option value="koi8-r -&gt; iso-8859-1"'.($_GET['charset'] == 'koi8-r -> iso-8859-1' ? ' selected="selected"' : '').'>koi8-r -&gt; iso-8859-1</option>
+<option value="koi8-r -&gt; cp866"'.($_GET['charset'] == 'koi8-r -> cp866' ? ' selected="selected"' : '').'>koi8-r -&gt; cp866</option>
+</optgroup>
+</select><br/>
+<input type="submit" value="' . $lng['ch'] . '"/>
 </div>
 </form>
 </div>';
-        break;
+
+		break;
+
 
     case 'save':
+    	if($_POST['charset'] != 'utf-8'){
+    		$_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
+   		}
+
         if ($type == '.ZIP' || $type == '.JAR') {
             echo edit_zip_file_ok($current, $_GET['f'], $_POST['text']);
         } else {
             echo create_file($current, $_POST['text'], $_POST['chmod']);
         }
         break;
+
 
     case 'replace':
         if ($type == '.ZIP' || $type == '.JAR') {
@@ -151,6 +187,7 @@ echo '<br/><input type="submit" value="' . $lng['ch'] . '"/>
             echo replace($current, $_POST['from'], $_POST['to'], $_POST['regexp']);
         }
         break;
+
 
     case 'syntax':
         if ($type == '.ZIP' || $type == '.JAR') {
@@ -164,6 +201,7 @@ echo '<br/><input type="submit" value="' . $lng['ch'] . '"/>
         }
         break;
 
+
     case 'validator':
     /*
         echo validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
@@ -171,6 +209,7 @@ echo '<br/><input type="submit" value="' . $lng['ch'] . '"/>
     echo validator($current, $charset);
         break;
 }
+
 
 echo '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>' . $foot;
 ?>

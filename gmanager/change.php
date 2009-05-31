@@ -86,7 +86,7 @@ echo '<div class="input">
 </form>
 </div>
 <div>' . $lng['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>
-<div class="rb"><a href="change.php?go=del&amp;c=' . $r_current . '">' . $lng['dl'] . '</a><br/></div>';
+<div class="rb"><a'.($del_notify ? ' onclick="return confirm(\''.$lng['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_current . '">' . $lng['dl'] . '</a><br/></div>';
         break;
 
     case 1:
@@ -488,12 +488,19 @@ echo '<div class="input">
 <div>
 ' . $lng['url'] . '<br/>
 <input type="text" name="url" value="http://"/><br/>
+' . $lng['headers'] . '<br/>
+<textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
+Referer:
+Accept: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
+Accept-Charset: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
+Accept-Language: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
+Connection: Close</textarea><br/>
 <input type="submit" value="' . $lng['look'] . '"/>
 </div>
 </form>
 </div>';
         } else {
-            if ($url = getData($_POST['url'])) {
+            if ($url = getData($_POST['url'], $_POST['headers'])) {
 				$url = $url['headers']."\r\n\r\n".$url['body'];
                 echo code($url, 0);
             } else {
