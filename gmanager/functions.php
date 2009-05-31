@@ -723,6 +723,9 @@ function syntax($source = '', $charset = array())
 
 function syntax2($current = '', $charset = array())
 {
+	if(!$charset){
+		$charset[0] = 'UTF-8';
+	}
     $fp = fsockopen('wapinet.ru', 80, $er1, $er2, 10);
     if (!$fp) {
     	$error = error();
@@ -736,7 +739,7 @@ function syntax2($current = '', $charset = array())
         'Content-length: ' . (iconv_strlen($f) + 2) . "\r\n" .
 		'Host: wapinet.ru' . "\r\n" .
         'Connection: close' . "\r\n" .
-		'User-Agent: GManager ' . $$GLOBALS['version'] . "\r\n\r\n" .
+		'User-Agent: GManager ' . $GLOBALS['version'] . "\r\n\r\n" .
         'f=' . $f . "\r\n\r\n");
 
     while ($r != "\r\n") {
