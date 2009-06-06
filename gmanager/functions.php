@@ -52,7 +52,7 @@ function send_header($u = '')
     header('Cache-control: no-cache');
     
     // кол-во файлов на странице
-	$GLOBALS['limit'] = abs($_POST['limit'] ? $_POST['limit'] : ($_GET['limit'] ? $_GET['limit'] : ($_COOKIE['limit'] ? $_COOKIE['limit'] : $limit)));
+	$GLOBALS['limit'] = abs($_POST['limit'] ? $_POST['limit'] : ($_GET['limit'] ? $_GET['limit'] : ($_COOKIE['limit'] ? $_COOKIE['limit'] : $GLOBALS['limit'])));
 
 	if($_POST['limit'] || $_GET['limit']){
 		setcookie('limit', $GLOBALS['limit'], 2592000+time());
