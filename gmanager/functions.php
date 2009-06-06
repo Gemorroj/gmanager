@@ -52,10 +52,10 @@ function send_header($u = '')
     header('Cache-control: no-cache');
     
     // кол-во файлов на странице
-	$limit = abs($_POST['limit'] ? $_POST['limit'] : ($_GET['limit'] ? $_GET['limit'] : ($_COOKIE['limit'] ? $_COOKIE['limit'] : $limit)));
+	$GLOBALS['limit'] = abs($_POST['limit'] ? $_POST['limit'] : ($_GET['limit'] ? $_GET['limit'] : ($_COOKIE['limit'] ? $_COOKIE['limit'] : $limit)));
 
 	if($_POST['limit'] || $_GET['limit']){
-		setcookie('limit', $limit, 2592000+time());
+		setcookie('limit', $GLOBALS['limit'], 2592000+time());
 	}
     return;
 }
@@ -968,7 +968,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
         return 1;
     }
 
-    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb', PCLZIP_OPT_TEMP_FILE_THRESHOLD, 67108864);
+    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb'/*, PCLZIP_OPT_TEMP_FILE_THRESHOLD, $GLOBALS['memory_limit']*/);
     unlink($tmp);
 
     if ($fl) {
@@ -1225,7 +1225,7 @@ function add_zip_archive($add_archive = '', $ext = '', $dir = '')
     require_once $GLOBALS['pclzip'];
 
     $zip = new PclZip($add_archive);
-    $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH, PCLZIP_OPT_TEMP_FILE_THRESHOLD, 67108864);
+    $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH/*, PCLZIP_OPT_TEMP_FILE_THRESHOLD, $GLOBALS['memory_limit']*/);
 
     if ($add) {
         return report($GLOBALS['lng']['add_archive_true'], false);
@@ -1254,11 +1254,15 @@ function add_tar_archive($add_archive = '', $ext = '', $dir = '')
 }
 
 
-function create_zip_archive($name = '', $chmod = '0644', $ext = '')
+function create_zip_archive($name = '', $chmod = '0644', $ext = array())
 {
     require_once $GLOBALS['pclzip'];
 
     define('CUR', str_replace('//', '/', '/' . strstr($GLOBALS['current'], '/')));
+	
+	if(!$GLOBALS['mode']->is_file($name)){
+		create_dir(iconv_substr($name, 0, strrpos($name, '/')), '0755');
+	}
 
     $zip = new PclZip($name);
     function cb($p_event, &$p_header)
@@ -1267,9 +1271,10 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = '')
         $p_header['stored_filename'] = $test[1];
         return 1;
     }
-    $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb', PCLZIP_OPT_TEMP_FILE_THRESHOLD, 67108864);
 
-    if ($GLOBALS['mode']->file_exists($name)) {
+    $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb'/*, PCLZIP_OPT_TEMP_FILE_THRESHOLD, $GLOBALS['memory_limit']*/);
+
+    if ($GLOBALS['mode']->is_file($name)) {
         if ($chmod) {
             rechmod($name, $chmod);
         }
@@ -1806,7 +1811,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 {
     
     if (!$connect = mysql_connect($host, $name, $pass)) {
-        return $GLOBALS['lng']['mysq_connect_false'];
+        return report($GLOBALS['lng']['mysq_connect_false'], true);
     }
     if ($charset) {
         mysql_query('SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`', $connect);
@@ -1814,7 +1819,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 
     if ($db) {
         if (!mysql_select_db($db, $connect)) {
-            return $GLOBALS['lng']['mysq_select_db_false'];
+            return report($GLOBALS['lng']['mysq_select_db_false'], true);
         }
     }
 

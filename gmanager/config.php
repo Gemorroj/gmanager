@@ -48,10 +48,11 @@ putenv('TZ=Europe/Moscow');     // Меняем время
 
 // Можете не менять
 //ignore_user_abort(1); // продолжать работу скрипта, даже если закрыли окно браузера
-ini_set('memory_limit','128M'); // лимит оперативной памяти
 set_time_limit(999); // максимальное время работы скрипта
 ini_set('max_execution_time',999); // максимальное время работы скрипта
 iconv_set_encoding('internal_encoding', 'UTF-8'); // кодировка по умолчанию для iconv
+ini_set('memory_limit','128M'); // лимит оперативной памяти
+//$memory_limit = ini_get('memory_limit') ? (intval(ini_get('memory_limit')) * 1048576) : 8388608;
 
 // Верх
 // %dir% - заменяется на имя текущей директории или файла
