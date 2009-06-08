@@ -71,7 +71,7 @@ switch ($_GET['go']) {
             $md5 = '';
         } elseif ($mode->is_file($current) || $mode->is_link($current)) {
             $size = file_size($current, true);
-            $md5 = $lng['md5'] . ': ' . md5($current);
+            $md5 = $lng['md5'] . ': ' . md5_file($current);
         }
 
 echo '<div class="input">
