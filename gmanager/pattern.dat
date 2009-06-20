@@ -53,8 +53,11 @@ $sql_ptn[10][1] = 'CREATE TABLE ``;';
 $sql_ptn[11][0] = 'TRUNCATE TABLE `table`';
 $sql_ptn[11][1] = 'TRUNCATE TABLE ``;';
 
-$sql_ptn[12][0] = 'DESCRIBE `table`';
-$sql_ptn[12][1] = 'DESCRIBE ``;';
+$sql_ptn[12][0] = 'DELETE FROM `table`';
+$sql_ptn[12][1] = 'DELETE FROM ``;';
+
+$sql_ptn[13][0] = 'DESCRIBE `table`';
+$sql_ptn[13][1] = 'DESCRIBE ``;';
 
 
 // Шаблоны для записи в созаваемые файлы

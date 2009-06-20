@@ -110,7 +110,7 @@ echo '<div class="input">
 </select><br/>
 <input name="fname" type="hidden" value="1"/>';
 
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 
@@ -119,13 +119,13 @@ echo '<input type="submit" value="' . $lng['rename'] . '"/>
 </form>
 </div>';
             } else {
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                 	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                     echo fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i);
                 }
             }
         } elseif ($_POST['full_del']) {
-            for ($i = 0; $i < $x; ++$i) {
+            for ($i = 0; $i < $x; $i++) {
             	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                 if ($mode->is_dir($_POST['check'][$i])) {
                     echo del_dir($_POST['check'][$i] . '/');
@@ -146,7 +146,7 @@ echo '<div class="input">
 ' . $lng['change_chmod'] . ' ' . $lng['of folders'] . '<br/>
 <input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/><br/>
 <input name="full_chmod" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['ch'] . '"/>
@@ -154,7 +154,7 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
 </form>
 </div>';
             } else {
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                 	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                 	if($mode->is_dir($_POST['check'][$i])){
                 		echo rechmod($_POST['check'][$i], $_POST['chmod'][1]);
@@ -200,7 +200,7 @@ echo '<div class="input">
 ' . $lng['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="full_extract" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['extract_archive'] . '"/>
@@ -243,7 +243,7 @@ echo '<div class="input">
 ' . $lng['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
 <input name="create_archive" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['create_archive'] . '"/>
@@ -265,7 +265,7 @@ echo '<div class="input">sss
 ' . $lng['add_archive_dir'] . '<br/>
 <input type="text" name="dir" value="./"/><br/>
 <input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
@@ -295,7 +295,7 @@ echo '<div class="input">
 ' . $lng['change_del'] . '<br/>
 <input type="checkbox" name="del" value="1"/><br/>
 <input name="full_rename" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['ch'] . '"/>
@@ -303,7 +303,7 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
 </form>
 </div>';
             } else {
-                for ($i = 0; $i < $x; ++$i) {
+                for ($i = 0; $i < $x; $i++) {
                 	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                     echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' .
                         basename($_POST['check'][$i])), '', $_POST['del'], $_POST['name']);
@@ -364,8 +364,7 @@ echo '<div class="input">
 <input type="text" name="name" value="file.php"/><br/>
 ' . $lng['pattern'] . '<br/>
 <select name="ptn">';
-            $all = sizeof($pattern);
-            for ($i = 0; $i < $all; ++$i) {
+            for ($i = 0, $all = sizeof($pattern); $i < $all; $i++) {
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
 
@@ -636,9 +635,8 @@ echo '>' . $lng['no'] . '</option>
         $_POST['sql'] = trim($_POST['sql']);
         if ($_POST['name'] && $_POST['host']) {
             include 'pattern.dat';
-            $all = sizeof($sql_ptn);
             $tmp = '<select id="ptn" onchange="javascript:paste(this.value);">';
-            for ($i = 0; $i < $all; ++$i) {
+            for ($i = 0, $all = sizeof($sql_ptn); $i < $all; $i++) {
                 $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] .
                     '</option>';
             }

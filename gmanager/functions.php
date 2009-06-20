@@ -629,13 +629,16 @@ function create_dir($dir = '', $chmod = '0755')
 	$err = '';
 	foreach(explode('/', $dir) as $d){
 		$tmp .= $d . '/';
+		if($GLOBALS['mode']->is_dir($tmp)){
+			continue;
+		}
 		if(!$GLOBALS['mode']->mkdir($tmp, $chmod)){
 			$err .= error() . ' ('.htmlspecialchars($tmp, ENT_NOQUOTES).')<br/>';
 		}
 	}
 
     if ($err) {
-    	return report($GLOBALS['lng']['create_dir_false'] . '<br/>' . $error, true);
+    	return report($GLOBALS['lng']['create_dir_false'] . '<br/>' . $err, true);
     } else {
     	return report($GLOBALS['lng']['create_dir_true'], false);
     }
@@ -1176,11 +1179,10 @@ function extract_tar_file($current = '', $name = '', $chmod = '0755', $ext = '')
     $GLOBALS['mode']->mkdir($name, $chmod);
     $GLOBALS['mode']->chmod($name, $chmod);
 
-    for ($i = 0, $a = sizeof($ext); $i <= $a; ++$i) {
+    for ($i = 0, $a = sizeof($ext); $i <= $a; $i++) {
         $folder = explode('/', $name . '/' . $ext[$i]);
-        $s2 = sizeof($folder) - 1;
-        $folder2 = null;
-        for ($i2 = 0; $i2 < $s2; ++$i2) {
+        $folder2 = '';
+        for ($i2 = 0, $s2 = sizeof($folder) - 1; $i2 < $s2; $i2++) {
             $folder2 .= $folder[$i2] . '/';
             $GLOBALS['mode']->mkdir($folder2, $chmod);
             $GLOBALS['mode']->chmod($folder2, $chmod);
@@ -1849,7 +1851,7 @@ function sql_parser($sql = '')
 {
     $arr = explode("\n", $sql);
 
-    for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {
+    for ($i = 0, $size = sizeof($arr); $i <= $size; $i++) {
         if (trim($arr[$i]) && $arr[$i][0] != '#' && $arr[$i][0] . $arr[$i][1] != '--') {
             $str .= $arr[$i];
         }
