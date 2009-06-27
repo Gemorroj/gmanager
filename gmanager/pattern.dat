@@ -44,20 +44,23 @@ $sql_ptn[7][1] = 'ALTER TABLE ``;';
 $sql_ptn[8][0] = 'DROP DATABASE `db`';
 $sql_ptn[8][1] = 'DROP DATABASE ``;';
 
-$sql_ptn[9][0] = 'CREATE DATABASE `db`';
-$sql_ptn[9][1] = 'CREATE DATABASE `` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;';
+$sql_ptn[9][0] = 'DROP TABLE `table`';
+$sql_ptn[9][1] = 'DROP TABLE ``;';
 
-$sql_ptn[10][0] = 'CREATE TABLE `table`';
-$sql_ptn[10][1] = 'CREATE TABLE ``;';
+$sql_ptn[10][0] = 'CREATE DATABASE `db`';
+$sql_ptn[10][1] = 'CREATE DATABASE `` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;';
 
-$sql_ptn[11][0] = 'TRUNCATE TABLE `table`';
-$sql_ptn[11][1] = 'TRUNCATE TABLE ``;';
+$sql_ptn[11][0] = 'CREATE TABLE `table`';
+$sql_ptn[11][1] = 'CREATE TABLE ``;';
 
-$sql_ptn[12][0] = 'DELETE FROM `table`';
-$sql_ptn[12][1] = 'DELETE FROM ``;';
+$sql_ptn[12][0] = 'TRUNCATE TABLE `table`';
+$sql_ptn[12][1] = 'TRUNCATE TABLE ``;';
 
-$sql_ptn[13][0] = 'DESCRIBE `table`';
-$sql_ptn[13][1] = 'DESCRIBE ``;';
+$sql_ptn[13][0] = 'DELETE FROM `table`';
+$sql_ptn[13][1] = 'DELETE FROM ``;';
+
+$sql_ptn[14][0] = 'DESCRIBE `table`';
+$sql_ptn[14][1] = 'DESCRIBE ``;';
 
 
 // Шаблоны для записи в созаваемые файлы

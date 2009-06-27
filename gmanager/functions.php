@@ -196,7 +196,15 @@ function look($current = '')
         }
 
 		$r_file = str_replace('%2F', '/', rawurlencode($file));
-        $type = htmlspecialchars(strtoupper(strrchr($basename, '.')), ENT_NOQUOTES);
+
+		$type = array_reverse(explode('.', strtoupper($file)));
+		if($type[0] == 'GZ' && $type[1] == 'TAR'){
+			$type = '.TAR.GZ';
+		}
+		else{
+			$type = '.'.htmlspecialchars($type[0], ENT_NOQUOTES);;
+		}
+        
         $time = $GLOBALS['mode']->filemtime($file);
         $name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
         $i++;
@@ -224,7 +232,7 @@ function look($current = '')
         } elseif($GLOBALS['mode']->is_file($file)) {
                 
             if ($type == '.ZIP' || $type == '.JAR' || $type == '.GZ' || $type == '.TAR' ||
-            $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
+            $type == '.TGZ' || $type == '.TAR.GZ' || $type == '.BZ' || $type == '.BZ2') {
                 $page2[$key] = '<td><input name="check[]" type="checkbox" value="' . $r_file .
                     '"/></td><td><a href="index.php?' . $r_file . '">' . $name .
                     '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file .
@@ -249,9 +257,10 @@ function look($current = '')
             if ($type == '.SQL') {
                 $page2[$key] = str_replace('</a></td><td>' . $type . '</td><td>',
                     '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' .
-                    $GLOBALS['lng']['tables'] . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' .
-                    $r_file . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></td><td>' . htmlspecialchars($file, ENT_NOQUOTES) .
-                    '</td><td>', $page2[$key]);
+                    $GLOBALS['lng']['tables'] .
+					'</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' .
+					$GLOBALS['lng']['create_sql_installer'] . '</a></td><td>' . $type . '</td><td>',
+					$page2[$key]);
             }
 
         }
@@ -869,7 +878,7 @@ function list_zip_archive($current = '')
                 $name = htmlspecialchars($list[$i]['filename'], ENT_NOQUOTES);
                 $size = ' ';
             } else {
-                $type = strtoupper(strrchr($list[$i]['filename'], '.'));
+                $type = htmlspecialchars(strtoupper(strrchr($list[$i]['filename'], '.')), ENT_NOQUOTES);
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
                 $size = file_size($list[$i]['size'], false);
             }
@@ -910,7 +919,7 @@ function list_tar_archive($current = '')
                 $name = htmlspecialchars($list[$i]['filename'], ENT_NOQUOTES);
                 $size = ' ';
             } else {
-                $type = strtoupper(strrchr($list[$i]['filename'], '.'));
+                $type = htmlspecialchars(strtoupper(strrchr($list[$i]['filename'], '.')), ENT_NOQUOTES);
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' .
                     htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
                 $size = file_size($list[$i]['size'], false);
@@ -1727,7 +1736,14 @@ function search($c = '', $s = '', $w = '', $r = '')
 
 		//$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
 		$r_file = str_replace('%2F', '/', rawurlencode($c . $f));
-        $type = htmlspecialchars(strtoupper(strrchr($f, '.')), ENT_NOQUOTES);
+		$type = array_reverse(explode('.', strtoupper($f)));
+		if($type[0] == 'GZ' && $type[1] == 'TAR'){
+			$type = '.TAR.GZ';
+		}
+		else{
+			$type = '.'.htmlspecialchars($type[0], ENT_NOQUOTES);
+		}
+
         $time = $GLOBALS['mode']->filemtime($c . $f);
         $name = htmlspecialchars(str_link($c . $f), ENT_NOQUOTES);
         
@@ -1772,7 +1788,7 @@ function search($c = '', $s = '', $w = '', $r = '')
 
             
         if ($type == '.ZIP' || $type == '.JAR' || $type == '.GZ' || $type == '.TAR' ||
-        $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
+        $type == '.TGZ' || $type == '.TAR.GZ' || $type == '.BZ' || $type == '.BZ2') {
             $page[$f] .= '<td><input name="check[]" type="checkbox" value="' .
                 $r_file . '"/></td><td><a href="index.php?' . $r_file . '">' . $name . '</a>' .
                 $in . '</td><td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] .
@@ -1976,7 +1992,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 
 		$start = microtime(true);
 			$r = mysql_query($q . ';', $connect);
-		$time = $time + (microtime(true) - $start);
+		$time += microtime(true) - $start;
 
         if (!$r) {
             return report($GLOBALS['lng']['mysq_query_false'], true) . '<div><code>' . mysql_error($connect) . '</code></div>';

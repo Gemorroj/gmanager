@@ -181,10 +181,17 @@ echo '<div class="input">
 </form>
 </div>';
             } else {
-                $type = strtoupper(strrchr($h_current, '.'));
+            	$type = array_reverse(explode('.', strtoupper($h_current)));
+                if($type[0] == 'GZ' && $type[1] == 'TAR'){
+                	$type = '.TAR.GZ';
+               	}
+               	else{
+               		$type = '.'.$type[0];
+           		}
+
                 if ($type == '.ZIP' || $type == '.JAR') {
                     echo extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
+                } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.TAR.GZ' || $type == '.BZ' || $type == '.BZ2') {
                     echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
                 } elseif ($type == '.GZ') {
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
