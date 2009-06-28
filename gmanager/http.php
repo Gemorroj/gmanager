@@ -58,17 +58,21 @@ class http
 	}
 
 	public function file_put_contents($file = '', $data){
-		if($data){
-			return file_put_contents($file, $data);
+		$f = fopen($file, 'a');
+		
+		if(!$f){
+			return 0;
+		}
+		
+		if($data != ''){
+			fputs($f, $data);
 		}
 		else{
-			if(touch($file)){
-				return 1;
-			}
-			else{
-				return 0;
-			}
+			ftruncate($f, 0);
 		}
+		fclose($f);
+		
+		return 1;
 	}
 
 	public function is_dir($str = ''){

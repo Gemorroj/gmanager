@@ -29,8 +29,9 @@ list($charset[0], $charset[1],) = encoding('', $_GET['charset']);
 $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
-$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
-$h_current = htmlspecialchars($current);
+$current = c($_SERVER['QUERY_STRING'], /*rawurlencode(*/$_GET['c']/*)*/);
+//$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
+$h_current = htmlspecialchars($current, ENT_COMPAT);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
 send_header($_SERVER['HTTP_USER_AGENT']);
@@ -41,7 +42,8 @@ echo str_replace('%dir%', $h_current, $top) . '
 </div>
 ' . this($current);
 
-$type = strtoupper(strrchr($h_current, '.'));
+$type = get_type($h_current);
+
 
 switch ($_GET['go']) {
     default:
@@ -52,7 +54,7 @@ switch ($_GET['go']) {
         }
 
 
-        if ($type == '.ZIP' || $type == '.JAR') {
+        if ($type == 'ZIP' || $type == 'JAR') {
             $content = edit_zip_file($current, $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_NOQUOTES);
             $f = '&amp;f=' . $_GET['f'];
@@ -68,10 +70,9 @@ switch ($_GET['go']) {
         }
 
 
-
-if(get_class($mode) == 'http'){
+if(get_class($mode) == 'http' && $path = iconv_substr(realpath($current), iconv_strlen($_SERVER['DOCUMENT_ROOT']))){
 $http = '<div class="rb">
-<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', iconv_substr(realpath($current), iconv_strlen($_SERVER['DOCUMENT_ROOT']))).'">'.$lng['look'].'</a><br/>
+<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', $path).'">'.$lng['look'].'</a><br/>
 </div>';
 }
 else{
@@ -114,7 +115,7 @@ echo '<div class="input">
 <a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $lng['syntax'] . '</a><br/>
 </div>';
 
-if ($type != '.ZIP' && $type != '.JAR' && extension_loaded('xml')) {
+if ($type != 'ZIP' && $type != 'JAR' && extension_loaded('xml')) {
 echo '<div class="rb">
 <a href="edit.php?c=' . $r_current . '&amp;' . $full_charset . 'go=validator">' . $lng['validator'] . '</a><br/>
 </div>';
@@ -124,7 +125,7 @@ echo '<div class="rb">
 ' . $lng['charset'] . '
 <form action="edit.php?" method="get" style="padding:0; margin:0;">
 <div>
-<input type="hidden" name="c" value="' . $h_current . '"/>
+<input type="hidden" name="c" value="' . $r_current . '"/>
 <input type="hidden" name="f" value="' . $_GET['f'] . '"/>
 <select name="charset">
 <option value="">'.$lng['charset_no'].'</option>
@@ -172,7 +173,7 @@ echo '<div class="rb">
     		$_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
    		}
 
-        if ($type == '.ZIP' || $type == '.JAR') {
+        if ($type == 'ZIP' || $type == 'JAR') {
             echo edit_zip_file_ok($current, $_GET['f'], $_POST['text']);
         } else {
             echo create_file($current, $_POST['text'], $_POST['chmod']);
@@ -181,7 +182,7 @@ echo '<div class="rb">
 
 
     case 'replace':
-        if ($type == '.ZIP' || $type == '.JAR') {
+        if ($type == 'ZIP' || $type == 'JAR') {
             echo zip_replace($current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
         } else {
             echo replace($current, $_POST['from'], $_POST['to'], $_POST['regexp']);
@@ -190,7 +191,7 @@ echo '<div class="rb">
 
 
     case 'syntax':
-        if ($type == '.ZIP' || $type == '.JAR') {
+        if ($type == 'ZIP' || $type == 'JAR') {
             echo zip_syntax($current, $_GET['f'], $charset, $syntax);
         } else {
             if (!$syntax) {

@@ -181,19 +181,13 @@ echo '<div class="input">
 </form>
 </div>';
             } else {
-            	$type = array_reverse(explode('.', strtoupper($h_current)));
-                if($type[0] == 'GZ' && $type[1] == 'TAR'){
-                	$type = '.TAR.GZ';
-               	}
-               	else{
-               		$type = '.'.$type[0];
-           		}
+            	$type = get_type($h_current);
 
-                if ($type == '.ZIP' || $type == '.JAR') {
+                if ($type == 'ZIP' || $type == 'JAR') {
                     echo extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.TAR.GZ' || $type == '.BZ' || $type == '.BZ2') {
+                } elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
                     echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($type == '.GZ') {
+                } elseif ($type == 'GZ') {
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
                 }
             }
@@ -216,10 +210,12 @@ echo '<input type="submit" value="' . $lng['extract_archive'] . '"/>
 </div>';
             } else {
             	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
-                $type = strtoupper(strrchr($h_current, '.'));
-                if ($type == '.ZIP' || $type == '.JAR') {
+
+				$type = get_type($h_current);
+
+                if ($type == 'ZIP' || $type == 'JAR') {
                     echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
-                } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
+                } elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'BZ' || $type == 'BZ2') {
                     echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 }
             }
@@ -284,11 +280,11 @@ echo '<input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
             	$_POST['dir'] = rawurldecode($_POST['dir']);
             	$_POST['add_archive'] = rawurldecode($_POST['add_archive']);
 
-                $type = strtoupper(strrchr($_POST['add_archive'], '.'));
+                $type = get_type($_POST['add_archive']);
 
-                if ($type == '.ZIP' || $type == '.JAR') {
+                if ($type == 'ZIP' || $type == 'JAR') {
                     echo add_zip_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
-                } elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
+                } elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
                     echo add_tar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             }

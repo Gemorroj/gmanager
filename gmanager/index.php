@@ -26,7 +26,8 @@ else{
 }
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-$type = strtoupper(strrchr($h_current, '.'));
+$type = get_type($h_current);
+
 $add_archive = $_GET['add_archive'];
 
 send_header($_SERVER['HTTP_USER_AGENT']);
@@ -52,7 +53,7 @@ echo '<input type="text" name="c" value="' . $h_current . '"/><br/>
 }
 
 
-if (!$_GET['f'] && $type != '.GZ') {
+if (!$_GET['f'] && $type != 'GZ') {
     if (isset($_GET['time'])) {
 echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
@@ -90,7 +91,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 }
 
 $archive = 0;
-if ($type == '.ZIP' || $type == '.JAR') {
+if ($type == 'ZIP' || $type == 'JAR') {
     if ($_GET['f']) {
         echo look_zip_file($current, $_GET['f']);
     }
@@ -98,7 +99,7 @@ if ($type == '.ZIP' || $type == '.JAR') {
         echo list_zip_archive($current);
         $archive = 1;
     }
-} elseif ($type == '.TAR' || $type == '.TGZ' || $type == '.BZ' || $type == '.BZ2') {
+} elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
     if ($_GET['f']) {
         echo look_tar_file($current, $_GET['f']);
     }
@@ -106,7 +107,7 @@ if ($type == '.ZIP' || $type == '.JAR') {
         echo list_tar_archive($current);
         $archive = 1;
     }
-} elseif ($type == '.GZ') {
+} elseif ($type == 'GZ') {
    echo gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $lng['extract_archive'] . '"/></div></form></div>';
     $_GET['f'] = 1;
 }
@@ -128,13 +129,14 @@ switch($type){
 <div class="rb"><a href="change.php?go=mod&amp;c=' . $r_current . '">' . $lng['mod'] . '</a><br/></div>';
 	break;	
 	
-	case '.ZIP':
-	case '.JAR':
-	case '.GZ':
-	case '.TAR':
-	case '.TGZ':
-	case '.BZ':
-	case '.BZ2':
+	case 'ZIP':
+	case 'JAR':
+	case 'GZ':
+	case 'TAR':
+	case 'TGZ':
+	case 'TAR.GZ':
+	case 'BZ':
+	case 'BZ2':
 	$current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
 	$found = '<div class="rb">' . $lng['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $lng['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $lng['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $lng['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $lng['mod'] . '</a><br/></div>';
 	break;
