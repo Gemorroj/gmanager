@@ -90,24 +90,27 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
     }
 }
 
-$archive = 0;
-if ($type == 'ZIP' || $type == 'JAR') {
+
+$f = 0;
+$archive = is_archive($type);
+
+if ($archive == 'ZIP') {
     if ($_GET['f']) {
         echo look_zip_file($current, $_GET['f']);
     }
 	else {
         echo list_zip_archive($current);
-        $archive = 1;
+        $f = 1;
     }
-} elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
+} elseif ($archive == 'TAR') {
     if ($_GET['f']) {
         echo look_tar_file($current, $_GET['f']);
     }
 	else {
         echo list_tar_archive($current);
-        $archive = 1;
+        $f = 1;
     }
-} elseif ($type == 'GZ') {
+} elseif ($archive == 'GZ') {
    echo gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $lng['extract_archive'] . '"/></div></form></div>';
     $_GET['f'] = 1;
 }
@@ -121,26 +124,16 @@ if (!$_GET['f']) {
 
 
 if ($mode->file_exists($current) || $mode->is_link($current)) {
-switch($type){
-	default:
-	$found = '<form action="'.$_SERVER['PHP_SELF'].'?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8').'" method="post"><div><input name="limit" value="'.$limit.'" type="text" style="width:2%"/><input type="submit" value="'.$lng['limit'].'"/></div></form>
+	if($archive){
+		$current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
+		$found = '<div class="rb">' . $lng['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $lng['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $lng['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $lng['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $lng['mod'] . '</a><br/></div>';
+}
+	else{
+		$found = '<form action="'.$_SERVER['PHP_SELF'].'?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8').'" method="post"><div><input name="limit" value="'.$limit.'" type="text" style="width:2%"/><input type="submit" value="'.$lng['limit'].'"/></div></form>
 <div class="rb">' . $lng['create'] . ' <a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $lng['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $lng['dir'] . '</a><br/></div>
 <div class="rb"><a href="change.php?go=upload&amp;c=' . $r_current . '">' . $lng['upload'] . '</a><br/></div>
 <div class="rb"><a href="change.php?go=mod&amp;c=' . $r_current . '">' . $lng['mod'] . '</a><br/></div>';
-	break;	
-	
-	case 'ZIP':
-	case 'JAR':
-	case 'GZ':
-	case 'TAR':
-	case 'TGZ':
-	case 'TAR.GZ':
-	case 'BZ':
-	case 'BZ2':
-	$current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
-	$found = '<div class="rb">' . $lng['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $lng['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $lng['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $lng['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $lng['mod'] . '</a><br/></div>';
-	break;
-}
+	}
 }
 else {
     $found = '<div class="red">' . $lng['not_found'] . '(' . $h_current . ')' . '<br/></div>';
@@ -149,7 +142,7 @@ else {
 
 $tm = '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>';
 
-if (!$_GET['f'] && !$archive && !$add_archive) {
+if (!$_GET['f'] && !$f && !$add_archive) {
 echo '</table>
 <div class="ch">
 <input type="submit" name="full_chmod" value="' .$lng['chmod'] . '"/>
@@ -160,7 +153,7 @@ echo '</table>
 </div>
 </div>
 </form>' . $found . $tm . $foot;
-} elseif ($archive) {
+} elseif ($f) {
 echo '</table>
 <div class="ch">
 <input type="submit" name="full_extract" value="' . $lng['extract_file'] . '"/><br/>

@@ -181,13 +181,13 @@ echo '<div class="input">
 </form>
 </div>';
             } else {
-            	$type = get_type($h_current);
+            	$archive = is_archive(get_type($h_current));
 
-                if ($type == 'ZIP' || $type == 'JAR') {
+                if ($archive == 'ZIP') {
                     echo extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
+                } elseif ($archive == 'TAR') {
                     echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($type == 'GZ') {
+                } elseif ($archive == 'GZ') {
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
                 }
             }
@@ -211,11 +211,11 @@ echo '<input type="submit" value="' . $lng['extract_archive'] . '"/>
             } else {
             	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
-				$type = get_type($h_current);
+				$archive = is_archive(get_type($h_current));
 
-                if ($type == 'ZIP' || $type == 'JAR') {
+                if ($archive == 'ZIP') {
                     echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
-                } elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'BZ' || $type == 'BZ2') {
+                } elseif ($archive == 'TAR') {
                     echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 }
             }
@@ -280,11 +280,11 @@ echo '<input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
             	$_POST['dir'] = rawurldecode($_POST['dir']);
             	$_POST['add_archive'] = rawurldecode($_POST['add_archive']);
 
-                $type = get_type($_POST['add_archive']);
+                $archive = is_archive(get_type($_POST['add_archive']));
 
-                if ($type == 'ZIP' || $type == 'JAR') {
+                if ($archive == 'ZIP') {
                     echo add_zip_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
-                } elseif ($type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
+                } elseif ($archive == 'TAR') {
                     echo add_tar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             }
@@ -416,8 +416,7 @@ echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_
         break;
 
     case 'upload':
-        if ((((!$_POST['url'] || $_POST['url'] == 'http://') && ($_FILES['f']['error'] ||
-            !$_FILES)) && !$_POST['f']) || !$_POST['name'] || !$_POST['chmod']) {
+        if ((((!$_POST['url'] || $_POST['url'] == 'http://') && ($_FILES['f']['error'] || !$_FILES)) && !$_POST['f']) || !$_POST['name'] || !$_POST['chmod']) {
 echo '<div class="input">
 <form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
@@ -442,8 +441,7 @@ Connection: Close</textarea><br/>
 </div>';
         } else {
             if (!$_FILES['f']['error']) {
-                echo upload_files($_FILES['f']['tmp_name'], $_FILES['f']['name'], $_POST['name'],
-                    $_POST['chmod']);
+                echo upload_files($_FILES['f']['tmp_name'], $_FILES['f']['name'], $_POST['name'], $_POST['chmod']);
             } else {
                 echo upload_url($_POST['url'], $_POST['name'], $_POST['chmod'], $_POST['headers']);
             }

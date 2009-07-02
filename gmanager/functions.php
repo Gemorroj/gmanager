@@ -102,8 +102,7 @@ function this($current = '')
     $chmod = $chmod ? $chmod : ($_POST['chmod'] ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0);
 
     $d = dirname(str_replace('\\', '/', $realpath));
-
-    $type = get_type($current);
+    $archive = is_archive(get_type($current));
     
     if ($GLOBALS['mode']->is_dir($current) || $GLOBALS['mode']->is_link($current)) {
         if ($current == '.') {
@@ -111,8 +110,7 @@ function this($current = '')
         } else {
             return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($current)) . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
         }
-    } elseif ($GLOBALS['mode']->is_file($current) && ($type == 'ZIP' || $type == 'JAR' || $type ==
-    'GZ' || $type == 'TAR' || $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2')) {
+    } elseif ($GLOBALS['mode']->is_file($current) && $archive) {
         $up = dirname($d);
         return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($up, ENT_NOQUOTES) . '</a> (' . look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a></strong> (' . look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($current)) . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
 	} else {
@@ -198,6 +196,7 @@ function look($current = '')
 		$r_file = str_replace('%2F', '/', rawurlencode($file));
 
 		$type = htmlspecialchars(get_type($file), ENT_NOQUOTES);
+		$archive = is_archive($type);
         
         $time = $GLOBALS['mode']->filemtime($file);
         $name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
@@ -225,8 +224,7 @@ function look($current = '')
                 '</a></td><td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
         } elseif($GLOBALS['mode']->is_file($file)) {
                 
-            if ($type == 'ZIP' || $type == 'JAR' || $type == 'GZ' || $type == 'TAR' ||
-            $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
+            if ($archive) {
                 $page2[$key] = '<td><input name="check[]" type="checkbox" value="' . $r_file .
                     '"/></td><td><a href="index.php?' . $r_file . '">' . $name .
                     '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file .
@@ -1490,9 +1488,8 @@ function archive_fl($fl = '')
 
 function get_archive_file($archive = '', $f = '')
 {
-    switch (get_type($archive)) {
+    switch (is_archive(get_type($archive))) {
         case 'ZIP':
-        case 'JAR':
             $ftp_current = false;
    			if(get_class($GLOBALS['mode']) == 'ftp'){
     			$ftp_archive = $archive;
@@ -1509,17 +1506,14 @@ function get_archive_file($archive = '', $f = '')
            	}
 
             return $ext[0]['content'];
-            break;
+		break;
 
-        case 'TGZ':
-        case 'TAR.GZ':
+
         case 'TAR':
-        case 'BZ':
-        case 'BZ2':
             require_once $GLOBALS['tar'];
             $tar = new Archive_Tar($archive);
             return $tar->extractInString($f);
-            break;
+		break;
     }
     return;
 }
@@ -1734,6 +1728,7 @@ function search($c = '', $s = '', $w = '', $r = '')
 		//$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
 		$r_file = str_replace('%2F', '/', rawurlencode($c . $f));
 		$type = htmlspecialchars(get_type($f), ENT_NOQUOTES);
+		$archive = is_archive($type);
 
         $time = $GLOBALS['mode']->filemtime($c . $f);
         $name = htmlspecialchars(str_link($c . $f), ENT_NOQUOTES);
@@ -1778,8 +1773,7 @@ function search($c = '', $s = '', $w = '', $r = '')
         $i++;
 
             
-        if ($type == 'ZIP' || $type == 'JAR' || $type == 'GZ' || $type == 'TAR' ||
-        $type == 'TGZ' || $type == 'TAR.GZ' || $type == 'BZ' || $type == 'BZ2') {
+        if ($archive) {
             $page[$f] .= '<td><input name="check[]" type="checkbox" value="' .
                 $r_file . '"/></td><td><a href="index.php?' . $r_file . '">' . $name . '</a>' .
                 $in . '</td><td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] .
@@ -2406,15 +2400,54 @@ return;
 
 function get_type($f){
 	$type = array_reverse(explode('.', strtoupper($f)));
-	if($type[0] == 'GZ' && $type[1] == 'TAR'){
-		$type = 'TAR.GZ';
+	switch($type[1].'.'.$type[0]){
+		case 'TAR.GZ':
+		case 'TAR.BZ':
+		case 'TAR.BZ2':
+		case 'TAR.GZ2':
+			return $type[1].'.'.$type[0];
+		break;
+		
+		default:
+			return $type[0];
+		break;
 	}
-	else{
-		$type = $type[0];
-	}
-	return $type;
 }
 
+
+function is_archive($type){
+	switch(strtoupper($type)){
+		case 'TAR':
+		case 'TGZ':
+		case 'TGZ2':
+		case 'TBZ':
+		case 'TBZ2':
+		case 'TAR.GZ':
+		case 'TAR.GZ2':
+		case 'TAR.BZ':
+		case 'TAR.BZ2':
+		case 'BZ':
+		case 'BZ2':
+			return 'TAR';
+		break;
+
+		case 'ZIP':
+		case 'JAR':
+		case 'WAR':
+		case 'AAR':
+			return 'ZIP';
+		break;
+
+		case 'GZ':
+		case 'GZ2':
+			return 'GZ';
+		break;
+
+		default:
+			return '';
+		break;
+	}
+}
 
 /*
 function clean($name = ''){
