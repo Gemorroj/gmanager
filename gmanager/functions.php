@@ -2399,7 +2399,7 @@ return;
 
 
 function get_type($f){
-	$type = array_reverse(explode('.', strtoupper($f)));
+	$type = array_reverse(explode('.', strtoupper(basename($f))));
 	switch($type[1].'.'.$type[0]){
 		case 'TAR.GZ':
 		case 'TAR.BZ':
@@ -2407,7 +2407,7 @@ function get_type($f){
 		case 'TAR.GZ2':
 			return $type[1].'.'.$type[0];
 		break;
-		
+
 		default:
 			return $type[0];
 		break;
