@@ -581,12 +581,12 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th>' . $lng['chmod'] . '</th>' : '') . '
 ' . ($index['date'] ? '<th>' . $lng['date'] . '</th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
 
 echo search($_POST['where'], $_POST['search'], $_POST['in'], $_POST['register']);
 
-echo '<tr><td class="w" colspan="' . (array_sum($index) + 2) . '" style="text-align:left;padding:0 0 0 1%;">
+echo '<tr><td class="w" colspan="' . (array_sum($index) + 1) . '" style="text-align:left;padding:0 0 0 1%;">
 <input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>
 ' . $lng['check'] . '
 </td></tr>

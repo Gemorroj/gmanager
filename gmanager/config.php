@@ -44,14 +44,15 @@ $limit = 50;
 
 // Отображаемые колонки (0 - выкл, 1 - вкл)
 $index = array(
-	'name' => 1,
-	'down' => 1,
-	'type' => 1,
-	'size' => 1,
-	'change' => 1,
-	'del' => 1,
-	'chmod' => 1,
-	'date' => 1,
+	'name'		=>	1,
+	'down'		=>	1,
+	'type'		=>	1,
+	'size'		=>	1,
+	'change'	=>	1,
+	'del'		=>	1,
+	'chmod'		=>	1,
+	'date'		=>	1,
+	'n'			=>	1,
 );
 
 

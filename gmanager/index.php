@@ -83,7 +83,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
 ' . ($index['date'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;time' . $down . '">' . $lng['date'] . '</a></th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
     }
 	else if (isset($_GET['type'])) {
@@ -101,7 +101,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
 ' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
     }
 	else if (isset($_GET['size'])) {
@@ -119,7 +119,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
 ' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
     }
 	else if (isset($_GET['chmod'])) {
@@ -137,7 +137,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;chmod' . $down . '">' . $lng['chmod'] . '</a></th>' : '') . '
 ' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
     }
 	else {
@@ -155,7 +155,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
 ' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
     }
 }
@@ -173,7 +173,7 @@ elseif($archive != 'GZ'){
 ' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
 ' . ($index['chmod'] ? '<th>' . $lng['chmod'] . '</th>' : '') . '
 ' . ($index['date'] ? '<th>' . $lng['date'] . '</th>' : '') . '
-<th>' . $lng['n'] . '</th>
+' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
 </tr>';
 }
 }
@@ -203,7 +203,7 @@ else {
 }
 
 if (!$if) {
-	echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 2) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/> '.$lng['check'].'</td></tr>';
+	echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/> '.$lng['check'].'</td></tr>';
 }
 
 

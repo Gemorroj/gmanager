@@ -177,11 +177,29 @@ function look($current = '', $itype = '', $down = '')
 
 	$out .= $down ? '&amp;up' : '&amp;down';
 
+	$key = $time = $type = $isize = $chmod = $name = '';
+
+		if ($itype == 'time') {
+            $key = & $time;
+        }
+        else if ($itype == 'type') {
+        	$key = & $type;
+       	}
+       	else if ($itype == 'size') {
+       		$key = & $isize;
+		}
+       	else if ($itype == 'chmod') {
+       		$key = & $chmod;
+		}
+		else {
+            $key = & $name;
+        }
+
 
     foreach($GLOBALS['mode']->iterator($current) as $file){
 
     	$i++;
-    	$pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $name = $size = $chmod = '';
+    	$pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $name = $size = $isize = $chmod = '';
 
 /*
 		if(substr($file, -1) == '/'){
@@ -201,10 +219,9 @@ function look($current = '', $itype = '', $down = '')
 		$type = htmlspecialchars(get_type($file), ENT_NOQUOTES);
 		$archive = is_archive($type);
 
-		$fdir = ($GLOBALS['mode']->is_dir($file) || $GLOBALS['mode']->is_link($file));
+		if($fdir = ($GLOBALS['mode']->is_dir($file) || $GLOBALS['mode']->is_link($file))){
 
-
-		if($GLOBALS['index']['name']){
+			if($GLOBALS['index']['name']){
 			//
 			if ($GLOBALS['realname'] == 1) {
         		$realpath = realpath($file);
@@ -216,71 +233,90 @@ function look($current = '', $itype = '', $down = '')
         	}
         	$name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
 			//
-			if($fdir){
-				$pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
+			$pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
+			}
+			if($GLOBALS['index']['down']){
+				$pdown = '<td> </td>';
+			}
+			if($GLOBALS['index']['type']){
+				$ptype = '<td>' . ($GLOBALS['mode']->is_link($file) ? 'LINK': 'DIR') . '</td>';
+			}
+			if($GLOBALS['index']['size']){
+			//
+			if ($GLOBALS['dir_size']) {
+  				$isize = $size = size($file, true);
+     			$size = format_size($size);
+       		} else {
+				$isize = $size = $GLOBALS['lng']['unknown'];
+			}
+            //
+			$psize = '<td>' . $size . '</td>';
+			}
+			if($GLOBALS['index']['change']){
+				$pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
+			}
+			if($GLOBALS['index']['del']){
+				$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+			}
+			if($GLOBALS['index']['chmod']){
+				//
+				$chmod = look_chmod($file);
+				//
+				$pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
+			}
+			if($GLOBALS['index']['date']){
+				//
+				$time = $GLOBALS['mode']->filemtime($file);
+				//
+				$pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
+			}
+
+
+		$page1[$key . '_'][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate;
+		}
+		else{
+			if($GLOBALS['index']['name']){
+			//
+			if ($GLOBALS['realname'] == 1) {
+        		$realpath = realpath($file);
+        		$name = $realpath ? str_replace('\\', '/', $realpath) : $file;
+        	} elseif ($GLOBALS['realname'] == 2) {
+            	$name = $basename;
+        	} else {
+            	$name = $file;
+        	}
+        	$name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
+			//
+			if($archive){
+				$pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . $GLOBALS['lng']['extract_archive'] . '</a></td>';
 			}
 			else{
-				if($archive){
-					$pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . $GLOBALS['lng']['extract_archive'] . '</a></td>';
+				if($type == 'SQL'){
+					$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . $GLOBALS['lng']['tables'] . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></td>';
 				}
 				else{
-					if($type == 'SQL'){
-						$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . $GLOBALS['lng']['tables'] . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></td>';
-					}
-					else{
-						$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a></td>';
-					}
+					$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a></td>';
 				}
 			}
 		}
 		if($GLOBALS['index']['down']){
-			if($fdir){
-				$pdown = '<td></td>';
-			}
-			else{
-				$pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
-			}
+			$pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
 		}
 		if($GLOBALS['index']['type']){
-			if($fdir){
-				$ptype = '<td>' . ($GLOBALS['mode']->is_link($file) ? 'LINK': 'DIR') . '</td>';
-			}
-			else{				
-				$ptype = '<td>' . $type . '</td>';
-			}
+			$ptype = '<td>' . $type . '</td>';
 		}
 		if($GLOBALS['index']['size']){
 			//
-			if($fdir){
-				if ($GLOBALS['dir_size']) {
-                	$isize = $size = size($file, true);
-                	$size = format_size($size);
-            	} else {
-                	$isize = $size = $GLOBALS['lng']['unknown'];
-            	}
-            }
-            else{
-            	$isize = $size = size($file);
-				$size = format_size($size);
-			}
-            //
+			$isize = $size = size($file);
+			$size = format_size($size);
+			//
 			$psize = '<td>' . $size . '</td>';
 		}
 		if($GLOBALS['index']['change']){
-			if($fdir){
-				$pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
-			}
-			else{
-				$pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
-			}
+			$pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
 		}
 		if($GLOBALS['index']['del']){
-			if($fdir){
-				$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
-			}
-			else{
-				$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
-			}
+			$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
 		}
 		if($GLOBALS['index']['chmod']){
 			//
@@ -296,27 +332,7 @@ function look($current = '', $itype = '', $down = '')
 		}
 
 
-		if ($itype == 'time') {
-            $key = $time . '_';
-        }
-        else if ($itype == 'type') {
-        	$key = $type . '_';
-       	}
-       	else if ($itype == 'size') {
-       		$key = $isize . '_';
-		}
-       	else if ($itype == 'chmod') {
-       		$key = $chmod . '_';
-		}
-		else {
-            $key = $name . '_';
-        }
-
-
-        if ($fdir) {
-            $page1[$key][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate;
-        } else {
-			$page2[$key][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate;
+			$page2[$key . '_'][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate;
 		}
 
     }
@@ -354,18 +370,31 @@ function look($current = '', $itype = '', $down = '')
     if ($page) {
         $i = 1;
         $line = false;
-        foreach ($page as $var) {
-  	    	$line = !$line;
-    		if($line){
-    			echo '<tr class="border">' . $var . '<td>' . ($i++) . '</td></tr>';
-   			}
-   			else{
-   				echo '<tr class="border2">' . $var . '<td>' . ($i++) . '</td></tr>';
-			}
+        
+        if($GLOBALS['index']['n']){
+        	foreach ($page as $var) {
+  	    		$line = !$line;
+    			if($line){
+    				echo '<tr class="border">' . $var . '<td>' . ($i++) . '</td></tr>';
+   				}
+   				else{
+   					echo '<tr class="border2">' . $var . '<td>' . ($i++) . '</td></tr>';
+				}
+        	}
         }
-
+        else{
+        	foreach ($page as $var) {
+  	    		$line = !$line;
+    			if($line){
+    				echo '<tr class="border">' . $var . '</tr>';
+   				}
+   				else{
+   					echo '<tr class="border2">' . $var . '</tr>';
+				}
+        	}
+       	}
     } else {
-        echo '<tr class="border"><th colspan="' . (array_sum($GLOBALS['index']) + 2) . '">' . $GLOBALS['lng']['dir_empty'] . '</th></tr>';
+        echo '<tr class="border"><th colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . $GLOBALS['lng']['dir_empty'] . '</th></tr>';
     }
 
     echo go($pg, $all, '&amp;c=' . $current . $out . $add);
@@ -856,7 +885,7 @@ function list_zip_archive($current = '', $down = '')
     	if($GLOBALS['class'] == 'ftp'){
 			ftp_archive_end('');
 		}
-        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 2) . '">' . report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), true) . '</td></tr>';
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), true) . '</td></tr>';
     } else {
 		$link = '';
 
@@ -892,19 +921,22 @@ function list_zip_archive($current = '', $down = '')
 				$link .= '<td>' . $size . '</td>';
 			}
 			if($GLOBALS['index']['change']){
-				$link .= '<td></td>';
+				$link .= '<td> </td>';
 			}
 			if($GLOBALS['index']['del']){
 				$link .= '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
 			}
 			if($GLOBALS['index']['chmod']){
-				$link .= '<td></td>';
+				$link .= '<td> </td>';
 			}
 			if($GLOBALS['index']['date']){
 				$link .= '<td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) . '</td>';
 			}
+			if($GLOBALS['index']['n']){
+				$link .= '<td>' . ($i + 1) . '</td>';
+			}
 
-			$link .= '<td>' . ($i + 1) . '</td></tr>';
+			$link .= '</tr>';
         }
 
 		if($GLOBALS['class'] == 'ftp'){
@@ -916,7 +948,7 @@ function list_zip_archive($current = '', $down = '')
 			if(iconv('UTF-8', 'UTF-8', $prop['comment']) != $prop['comment']){
 				$prop['comment'] = iconv('Windows-1251', 'UTF-8', $prop['comment']);
 			}
-			$link .= '<tr class="border"><td>' . $GLOBALS['lng']['comment_archive'] . '</td><td colspan="' . (array_sum($GLOBALS['index']) + 2) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
+			$link .= '<tr class="border"><td>' . $GLOBALS['lng']['comment_archive'] . '</td><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
 		}
 
         return $link;
@@ -931,7 +963,7 @@ function list_tar_archive($current = '', $down = '')
     $tar = new Archive_Tar($current);
 
     if (!$list = $tar->listContent()) {
-        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 2) . '">' . report($GLOBALS['lng']['archive_error'], true) . '</td></tr>';
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'], true) . '</td></tr>';
     } else {
 		$r_current = str_replace('%2F', '/', rawurlencode($current));
 		$link = '';
@@ -952,7 +984,36 @@ function list_tar_archive($current = '', $down = '')
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
                 $size = format_size($list[$i]['size']);
             }
-            $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' . $r_name . '"/></td><td>' . $name . '</td><td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td><td>' . $type . '</td><td>' . $size . '</td><td> </td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td><td> </td><td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) . '</td><td>' . ($i + 1) . '</td></tr>';
+            $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
+			if($GLOBALS['index']['name']){
+				$link .= '<td>' . $name . '</td>';
+			}
+			if($GLOBALS['index']['down']){
+				$link .= '<td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+			}
+			if($GLOBALS['index']['type']){
+				$link .= '<td>' . $type . '</td>';
+			}
+			if($GLOBALS['index']['size']){
+				$link .= '<td>' . $size . '</td>';
+			}
+			if($GLOBALS['index']['change']){
+				$link .= '<td> </td>';
+			}
+			if($GLOBALS['index']['del']){
+				$link .= '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+			}
+			if($GLOBALS['index']['chmod']){
+				$link .= '<td> </td>';
+			}
+			if($GLOBALS['index']['date']){
+				$link .= '<td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) . '</td>';
+			}
+			if($GLOBALS['index']['n']){
+				$link .= '<td>' . ($i + 1) . '</td>';
+			}
+
+			$link .= '</tr>';
         }
 
         return $link;
@@ -1288,7 +1349,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . '
 ' . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . '
 ' . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '
-<th>' . $GLOBALS['lng']['n'] . '</th>
+' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
 
 echo look($current);
@@ -1797,7 +1858,7 @@ function search($c = '', $s = '', $w = '', $r = '')
 
 
         $i++;
-        $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = '';
+        $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $pn = '';
 
         if($GLOBALS['index']['name']){
         	if($archive){
@@ -1828,8 +1889,11 @@ function search($c = '', $s = '', $w = '', $r = '')
        	if($GLOBALS['index']['date']){
         	$pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
        	}
+       	if($GLOBALS['index']['n']){
+       		$pn = '<td>' . $i . '</td>';
+ 		}
        	
-		$page[$f] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . '<td>' . $i . '</td>';
+		$page[$f] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $pn;
 
     }
 
@@ -2037,26 +2101,20 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
             }
         }
         $i++;
+		
+		if($result){
+			$str .= '<th> '.implode(' </th><th> ', array_map('htmlspecialchars', array_keys($result[0]))).' </th>';
 
-        $str .= '<tr>';
-        foreach ($result[0] as $k => $value) {
-            $str .= '<th> ' . htmlspecialchars($k, ENT_NOQUOTES) . ' </th>';
-        }
-        $str .= '</tr>';
+        	foreach ($result as $v) {
+            	$str .= '<tr class="border">';
+            	foreach ($v as $value) {
+                	$str .= '<td><a href="javascript:paste(\'' . addslashes(htmlspecialchars($value, ENT_QUOTES)) . '\');">' . htmlspecialchars($value, ENT_NOQUOTES) . '</a></td>';
+            	}
+            	$str .= '</tr>';
+        	}
 
-        foreach ($result as $v) {
-            $str .= '<tr class="border">';
-            foreach ($v as $k => $value) {
-                $str .= '<td><a href="javascript:paste(\'' . htmlspecialchars($value, ENT_QUOTES) . '\');">' . htmlspecialchars($value, ENT_NOQUOTES) . '</a></td>';
-            }
-            $str .= '</tr>';
-        }
-
-        if ($str != '<tr></tr>') {
-            $out .= '<br/><table class="telo">' . $str . '</table>';
-        } else {
-            $out .= '';
-        }
+            $out .= '<table class="telo">' . $str . '</table>';
+		}
     }
 
     mysql_close($connect);
@@ -2099,7 +2157,7 @@ function go($pg = 0, $all = 0, $text = '')
     }
 
     if ($go != $pg . ' ') {
-        return '<tr><td class="border" colspan="' . (array_sum($GLOBALS['index']) + 2) . '">&#160;' . $go . '</td></tr>';
+        return '<tr><td class="border" colspan="' . (array_sum($GLOBALS['index']) + 1) . '">&#160;' . $go . '</td></tr>';
     }
 }
 
