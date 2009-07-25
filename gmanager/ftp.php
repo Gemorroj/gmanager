@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 alpha
+ * @version 0.7 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -40,23 +40,24 @@ class ftp
         ftp_pasv($this->res, true);
         
         // формируем строку URL
-        $this->url = 'ftp://'.$this->user.':'.$this->password.'@'.$this->host.':'.$this->port;
+        //$this->url = 'ftp://'.$this->user.':'.$this->password.'@'.$this->host.':'.$this->port;
     }
 
 
 
     public function __destruct()
-    { // закрываем соединение
+    {
+    	// закрываем соединение
         return ftp_close($this->res);
     }
 
 
     //////////////////////////////////////////////////////////////////
-    
+
    	public static function change_symbol($str = ''){
 		return ($str[0] == '/' ? $str : '/'.$str);
 	}
-	
+
     public function mkdir($dir = '', $chmod = '0755')
     {
     	ftp_chdir($this->res, '/');
@@ -132,11 +133,12 @@ class ftp
     	if($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir){
     		return true;
    		}
-    	if(!$this->rawlist[$dir]){
+    	if(!isset($this->rawlist[$dir])){
     		$this->rawlist($dir);
    		}
 
-    	return ($this->rawlist[$dir][basename($str)]['type'] == 'dir');
+		$b = basename($str);
+    	return (isset($this->rawlist[$dir][$b]) && $this->rawlist[$dir][$b]['type'] == 'dir');
    	}
 
     public function is_file($str = ''){
@@ -147,24 +149,26 @@ class ftp
     		return false;
    		}
 
-    	if(!$this->rawlist[$dir]){
+    	if(!isset($this->rawlist[$dir])){
     		$this->rawlist($dir);
    		}
-    	return ($this->rawlist[$dir][basename($str)]['type'] == 'file');
+
+   		$b = basename($str);
+    	return (isset($this->rawlist[$dir][$b]) && $this->rawlist[$dir][$b]['type'] == 'file');
    	}
-   	
+
     public function is_link($str = ''){
     	return false;
     	//$str = self::change_symbol($str);
     	//return is_link($this->url.$str);
    	}
-   	
+
     public function is_readable($str = ''){
     	return true;
     	//$str = self::change_symbol($str);
     	//return is_readable($this->url.$str);
    	}
-   	
+
     public function filesize($str = ''){
     	//$str = self::change_symbol($str);
     	ftp_chdir($this->res, '/');
@@ -176,30 +180,30 @@ class ftp
     	//return file_exists($this->url.$str);
     	return ($this->is_file($str) || $this->is_dir($str) || $this->is_link($str));
    	}
-   	
+
     public function filemtime($str = ''){
     	//$str = self::change_symbol($str);
     	//return filemtime($this->url.$str);
     	$dir = str_replace('\\', '/', dirname($str));
-    	if(!$this->rawlist[$dir]){
+    	if(!isset($this->rawlist[$dir])){
     		$this->rawlist($dir);
    		}
     	return $this->rawlist[$dir][basename($str)]['time'];
    	}
-   	
+
     public function unlink($str = ''){
     	//$str = self::change_symbol($str);
     	ftp_chdir($this->res, '/');
     	return ftp_delete($this->res, $str);
    	}
-   	
+
     public function rename($from = '', $to = ''){
     	//$from = self::change_symbol($from);
     	//$to = self::change_symbol($to);
     	ftp_chdir($this->res, '/');
     	return ftp_rename($this->res, $from, $to);
    	}
-   	
+
     public function copy($from = '', $to = '', $chmod = '0644'){
     	//$from = self::change_symbol($from);
     	//$to = self::change_symbol($to);
@@ -211,32 +215,32 @@ class ftp
 
     	return $result;
    	}
-   	
+
     public function rmdir($str = ''){
     	//$str = self::change_symbol($str);
     	ftp_chdir($this->res, '/');
     	return ftp_rmdir($this->res, $str);
    	}
-   	
+
     public function iterator($str = ''){
     	$tmp = array();
 
-    	if(!$this->rawlist[$str]){
+    	if(!isset($this->rawlist[$str])){
     		$this->rawlist($str);
    		}
 
     	foreach($this->rawlist[$str] as $var){
-    		$tmp[] = $var['file'];
+    		$tmp[] = basename($var['file']);
    		}
 
-   		return array_map('basename', $tmp);;
+   		return $tmp;
    	}
 
     public function fileperms($str = ''){
     	//$str = self::change_symbol($str);
     	//return fileperms($this->url.$str);
     	$dir = str_replace('\\', '/', dirname($str));
-    	if(!$this->rawlist[$dir]){
+    	if(!isset($this->rawlist[$dir])){
     		$this->rawlist($dir);
    		}
     	return $this->rawlist[$dir][basename($str)]['chmod'];
@@ -257,33 +261,35 @@ class ftp
    			$raw_dir = $match[1] ? '/'.$match[1] : '/';
 		}
 
-   		$list = ftp_rawlist($this->res, '/' . $raw_dir);
 		$items = array();
+   		if($list = ftp_rawlist($this->res, '/' . $raw_dir)){
 
-		foreach($list as $var){
-			preg_replace(
-				'`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)'.
-				'\s*(\d+?|\w+?)\s*(\d*)\s'.
-				'([a-zA-Z]{3}+)\s*([0-9]{1,2}+)'.
-				'\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
+			foreach($list as $var){
+				@preg_replace(
+					'`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)'.
+					'\s*(\d+?|\w+?)\s*(\d*)\s'.
+					'([a-zA-Z]{3}+)\s*([0-9]{1,2}+)'.
+					'\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
 
-				'$items[trim("$10")] = array(
-				"chmod" => $this->chmodnum("$1"),
-				"owner" => "$3",
-				"group" => "$4",
-				"filesize" => "$5",
-				"time" => strtotime("$6 $7 $8:$9"),
-				"file" => trim("$10"),
-				"type" => print_r((preg_match("/^d/","$1")) ? "dir" : "file", 1));',
+					'$items[trim("$10")] = array(
+					"chmod" => $this->chmodnum("$1"),
+					"owner" => "$3",
+					"group" => "$4",
+					"filesize" => "$5",
+					"time" => strtotime("$6 $7 $8:$9"),
+					"file" => trim("$10"),
+					"type" => print_r((preg_match("/^d/", "$1") ? "dir" : "file"), true)
+					);',
 
-			$var) ;
+					$var) ;
+			}
+
 		}
-
 		$this->dir = $dir;
 		$this->rawlist[$dir] = & $items;
 		return $items;
 	}
-	
+
 	private function chmodnum($permissions = 'rw-r--r--') {
 		$mode = 0; 
 

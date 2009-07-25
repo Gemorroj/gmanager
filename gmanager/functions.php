@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 alpha
+ * @version 0.7 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -960,9 +960,12 @@ function list_tar_archive($current = '', $down = '')
 {
     require_once $GLOBALS['tar'];
 
-    $tar = new Archive_Tar($current);
+    $tar = new Archive_Tar($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
 
     if (!$list = $tar->listContent()) {
+    	if($GLOBALS['class'] == 'ftp'){
+			ftp_archive_end('');
+		}
         return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'], true) . '</td></tr>';
     } else {
 		$r_current = str_replace('%2F', '/', rawurlencode($current));
@@ -1015,6 +1018,10 @@ function list_tar_archive($current = '', $down = '')
 
 			$link .= '</tr>';
         }
+
+		if($GLOBALS['class'] == 'ftp'){
+			ftp_archive_end();
+		}
 
         return $link;
     }
@@ -1101,7 +1108,7 @@ function look_zip_file($current = '', $f = '')
 	    ftp_archive_end('');
 	}
 
-    if (!$ext)	{
+    if (!$ext) {
         return report($GLOBALS['lng']['archive_error'], true);
     }
     else if($ext[0]['status'] == 'unsupported_encryption') {
@@ -1117,18 +1124,28 @@ function look_tar_file($current = '', $f = '')
 {
     require_once $GLOBALS['tar'];
 
-    $tar = new Archive_Tar($current);
-    $ext = $tar->extractInString($f);
+    $tar = new Archive_Tar($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+	$ext = $tar->extractInString($f);
+
 
     if (!$ext) {
+    	if($GLOBALS['class'] == 'ftp'){
+	    	ftp_archive_end('');
+		}
         return report($GLOBALS['lng']['archive_error'], true);
-    } else {
+    }
+	else {
         $list = $tar->listContent();
+
+        if($GLOBALS['class'] == 'ftp'){
+	    	ftp_archive_end('');
+		}
 
         for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
             if ($list[$i]['filename'] != $f) {
                 continue;
-            } else {
+            }
+			else {
                 return report($GLOBALS['lng']['real_size'] . ': ' . format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), false) . archive_fl(trim($ext));
             }
         }
@@ -1141,6 +1158,7 @@ function extract_zip_archive($current = '', $name = '', $chmod = array())
     require_once $GLOBALS['pclzip'];
 
    	if($GLOBALS['class'] == 'ftp'){
+   		$name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
     	$ftp_current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
     	$ftp_name = dirname(__FILE__).'/data/GmanagerZipFtp'.time().'/';
     	mkdir($ftp_name, 0777);
@@ -1177,7 +1195,7 @@ function extract_zip_archive($current = '', $name = '', $chmod = array())
     	unlink($ftp_current);
    	}
 
-    if ($GLOBALS['mode']->is_dir($name)) {
+    if ($GLOBALS['mode']->is_dir($name) || $GLOBALS['class'] == 'ftp') {
         if ($chmod) {
             rechmod($name, $chmod[1]);
         }
@@ -1192,9 +1210,21 @@ function extract_tar_archive($current = '', $name = '', $chmod = array())
 {
     require_once $GLOBALS['tar'];
 
-    $tar = new Archive_Tar($current);
+    if($GLOBALS['class'] == 'ftp'){
+    	$name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+    	$ftp_current = dirname(__FILE__).'/data/GmanagerFtpTar'.time().'.tmp';
+    	$ftp_name = dirname(__FILE__).'/data/GmanagerZipTar'.time().'/';
+    	mkdir($ftp_name, 0777);
+    	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
+   	}
 
-    if(!$tar->extract($name)){
+    $tar = new Archive_Tar($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
+
+    if(!$tar->extract($GLOBALS['class'] == 'ftp' ? $ftp_name : $name)){
+    	if($GLOBALS['class'] == 'ftp'){
+			unlink($ftp_current);
+			rmdir($ftp_name);
+		}
     	return report($GLOBALS['lng']['extract_false'], true);
    	}
 
@@ -1207,7 +1237,13 @@ function extract_tar_archive($current = '', $name = '', $chmod = array())
 		}
    	}
 
-    if ($GLOBALS['mode']->is_dir($name)) {
+   	if($GLOBALS['class'] == 'ftp'){
+		create_dir($name, $chmod[1]);
+		ftp_move_files($ftp_name, $name, $chmod[0], $chmod[1]);
+    	unlink($ftp_current);
+   	}
+
+    if ($GLOBALS['mode']->is_dir($name) || $GLOBALS['class'] == 'ftp') {
             rechmod($name, $chmod[1]);
         return report($GLOBALS['lng']['extract_true'], false);
     } else {
@@ -1221,13 +1257,14 @@ function extract_zip_file($current = '', $name = '', $chmod = '0755', $ext = '')
     require_once $GLOBALS['pclzip'];
 
    	if($GLOBALS['class'] == 'ftp'){
+   		$name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
     	$ftp_current = dirname(__FILE__).'/data/GmanagerFtpZipArchive'.time().'.tmp';
     	$ftp_name = dirname(__FILE__).'/data/GmanagerFtpZipFile'.time().'.tmp';
     	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
    	}
 
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
-    if(!$zip->extract(PCLZIP_OPT_PATH, $name, PCLZIP_OPT_BY_NAME, $ext)){
+    if(!$zip->extract(PCLZIP_OPT_PATH, $GLOBALS['class'] == 'ftp' ? $ftp_name : $name, PCLZIP_OPT_BY_NAME, $ext)){
     	if($GLOBALS['class'] == 'ftp'){
     		unlink($ftp_current);
    		}
@@ -1240,7 +1277,7 @@ function extract_zip_file($current = '', $name = '', $chmod = '0755', $ext = '')
     	unlink($ftp_current);
    	}
 
-    if ($GLOBALS['mode']->is_dir($name)) {
+    if ($GLOBALS['mode']->is_dir($name) || $GLOBALS['class'] == 'ftp') {
         if ($chmod) {
             rechmod($name, $chmod);
         }
@@ -1255,13 +1292,29 @@ function extract_tar_file($current = '', $name = '', $chmod = '0755', $ext = '')
 {
     require_once $GLOBALS['tar'];
 
-    $tar = new Archive_Tar($current);
+	if($GLOBALS['class'] == 'ftp'){
+   		$name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+    	$ftp_current = dirname(__FILE__).'/data/GmanagerFtpTarArchive'.time().'.tmp';
+    	$ftp_name = dirname(__FILE__).'/data/GmanagerFtpTarFile'.time().'.tmp';
+    	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
+   	}
+
+    $tar = new Archive_Tar($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
     
-    if(!$tar->extractList($ext, $name)){
+    if(!$tar->extractList($ext, $GLOBALS['class'] == 'ftp' ? $ftp_name : $name)){
+    	if($GLOBALS['class'] == 'ftp'){
+    		unlink($ftp_current);
+   		}
     	return report($GLOBALS['lng']['extract_file_false'], true);
    	}
 
-    if ($GLOBALS['mode']->is_dir($name)) {
+	if($GLOBALS['class'] == 'ftp'){
+    	create_dir($name);
+    	ftp_move_files($ftp_name, $name);
+    	unlink($ftp_current);
+   	}
+
+    if ($GLOBALS['mode']->is_dir($name) || $GLOBALS['class'] == 'ftp') {
         if ($chmod) {
             rechmod($name, $chmod);
         }
@@ -1286,7 +1339,7 @@ function del_zip_archive($current = '', $f = '')
     if ($list != 0) {
     	return report($GLOBALS['lng']['del_file_true'], false);
     } else {
-        return report($GLOBALS['lng']['del_file_false'], true);
+        return report($GLOBALS['lng']['del_file_false'] . '<br/>' . $zip->errorInfo(true), true);
     }
 }
 
@@ -1295,7 +1348,7 @@ function del_tar_archive($current = '', $f = '')
 {
     require_once $GLOBALS['tar'];
 
-    $tar = new Archive_Tar($current);
+    $tar = new Archive_Tar($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
 
     $list = $tar->listContent();
 
@@ -1323,8 +1376,13 @@ function del_tar_archive($current = '', $f = '')
     }
 
 	unset($new_tar_string, $new_tar);
+	$list = $tar->listContent();
 
-    if (in_array($f, $tar->listContent())) {
+	if($GLOBALS['class'] == 'ftp'){
+    	ftp_archive_end($current);
+   	}
+
+    if (in_array($f, $list)) {
         return report($GLOBALS['lng']['del_file_false'], true);
     } else {
         return report($GLOBALS['lng']['del_file_true'], false);
@@ -1375,31 +1433,71 @@ echo '</table>
 function add_zip_archive($current = '', $ext = '', $dir = '')
 {
     require_once $GLOBALS['pclzip'];
+    
+    if($GLOBALS['class'] == 'ftp'){
+		$ftp_current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
+    	$ftp_name = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'/';
+    	mkdir($ftp_name, 0777);
 
-    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+    	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
+    	$tmp = array();
+    	foreach($ext as $v){
+    		$b = basename($v);
+    		$tmp[] = $ftp_name . $b;
+    		file_put_contents($ftp_name . $b, $GLOBALS['mode']->file_get_contents($v));
+   		}
+   		$ext = $tmp;
+   		unset($tmp);
+   	}
+
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
     $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH);
 
     if($GLOBALS['class'] == 'ftp'){
-    	ftp_archive_end($current);
+    	$GLOBALS['mode']->file_put_contents($current, file_get_contents($ftp_current));
+    	unlink($ftp_current);
+    	clean($ftp_name);
    	}
 
     if ($add) {
         return report($GLOBALS['lng']['add_archive_true'], false);
     } else {
-    	return report($GLOBALS['lng']['add_archive_false'], true);
+    	return report($GLOBALS['lng']['add_archive_false'] . '<br/>' . $zip->errorInfo(true), true);
     }
 }
 
 
-function add_tar_archive($add_archive = '', $ext = '', $dir = '')
+function add_tar_archive($current = '', $ext = '', $dir = '')
 {
     require_once $GLOBALS['tar'];
 
-    $tar = new Archive_Tar($add_archive);
+    if($GLOBALS['class'] == 'ftp'){
+		$ftp_current = dirname(__FILE__).'/data/GmanagerFtpTar'.time().'.tmp';
+    	$ftp_name = dirname(__FILE__).'/data/GmanagerFtpTar'.time().'/';
+    	mkdir($ftp_name, 0777);
+
+    	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
+    	$tmp = array();
+    	foreach($ext as $v){
+    		$b = basename($v);
+    		$tmp[] = $ftp_name . $b;
+    		file_put_contents($ftp_name . $b, $GLOBALS['mode']->file_get_contents($v));
+   		}
+   		$ext = $tmp;
+   		unset($tmp);
+   	}
+
+    $tar = new Archive_Tar($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
 
     foreach ($ext as $v) {
         $add = $tar->addModify($v, $dir, dirname($v));
     }
+
+    if($GLOBALS['class'] == 'ftp'){
+    	$GLOBALS['mode']->file_put_contents($current, file_get_contents($ftp_current));
+    	unlink($ftp_current);
+    	clean($ftp_name);
+   	}
 
     if ($add) {
         return report($GLOBALS['lng']['add_archive_true'], false);
@@ -2047,7 +2145,7 @@ if($err = mysql_error()){
     }
 
     $php .= 'if($error){
-	echo \'Error:<pre>\'.htmlspecialchars(print_r($error, 1), ENT_NOQUOTES).\'</pre>\';
+	echo \'Error:<pre>\'.htmlspecialchars(print_r($error, true), ENT_NOQUOTES).\'</pre>\';
 }else{
 	echo \'Ok\';
 }
@@ -2474,6 +2572,7 @@ function encoding($text, $charset){
 
 
 function ftp_move_files($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'){
+
 	$h = opendir($from);
 	while(($f = readdir($h)) !== false){
 		if($f == '.' || $f == '..'){
@@ -2556,9 +2655,6 @@ function is_archive($type){
 }
 
 
-
-
-/*
 function clean($name = ''){
 	$h = opendir($name);
 	while(($f = readdir($h)) !== false){
@@ -2577,5 +2673,4 @@ function clean($name = ''){
 closedir($h);
 rmdir($name);
 }
-*/
 ?>

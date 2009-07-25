@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 alpha
+ * @version 0.7 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -160,7 +160,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
     }
 }
 elseif($archive != 'GZ'){
-	echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+	echo '<form action="change.php?c=' . rawurlencode($r_current) . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
