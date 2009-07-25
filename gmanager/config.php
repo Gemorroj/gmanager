@@ -15,13 +15,13 @@
 
 // 6143
 error_reporting(0); // Отключаем сообщения об ошибках
-
+ini_set('html_errors', '1');
 
 // Выбираем протокол, через который будет работать менеджер (ftp или http)
 // настройки соединения FTP в файле ftp.php
 // !!! в текущей версии поддержка FTP реализована еще не полностью !!!
 require 'http.php';
-// require 'ftp.php';
+//require 'ftp.php';
 
 $link = 50;                     // Сокращать имена файлов, если они длиннее чем указанное количество символов
 $auth = 0;                      // Авторизация (0 - выкл, 1 - вкл)
@@ -42,17 +42,30 @@ $tar = 'Tar.php';               // Путь к PEAR классу Achive_TAR (в 
 $limit = 50;
 
 
-setlocale(LC_ALL, 'ru_RU.utf8'); // Локаль
-$date_format = '%d.%m.%Y %H:%M';// Формат даты
-putenv('TZ=Europe/Moscow');     // Меняем время
+// Отображаемые колонки (0 - выкл, 1 - вкл)
+$index = array(
+	'name' => 1,
+	'down' => 1,
+	'type' => 1,
+	'size' => 1,
+	'change' => 1,
+	'del' => 1,
+	'chmod' => 1,
+	'date' => 1,
+);
+
+
+setlocale(LC_ALL, 'ru_RU.utf8');    // Локаль
+$date_format = '%d.%m.%Y %H:%M';    // Формат даты
+date_default_timezone_set('Europe/Moscow');// Меняем время
 
 // Можете не менять
 //ignore_user_abort(1); // продолжать работу скрипта, даже если закрыли окно браузера
 set_time_limit(999); // максимальное время работы скрипта
-ini_set('max_execution_time',999); // максимальное время работы скрипта
+ini_set('max_execution_time', 999); // максимальное время работы скрипта
 iconv_set_encoding('internal_encoding', 'UTF-8'); // кодировка по умолчанию для iconv
-ini_set('memory_limit','128M'); // лимит оперативной памяти
-//$memory_limit = ini_get('memory_limit') ? (intval(ini_get('memory_limit')) * 1048576) : 8388608;
+ini_set('memory_limit', '128M'); // лимит оперативной памяти
+
 
 // Верх
 // %dir% - заменяется на имя текущей директории или файла
@@ -114,8 +127,8 @@ $lng = array(
 'phpinfo'				=>	'PHPINFO',
 'eval'					=>	'EVAL',
 'eval_go'				=>	'Выполнить',
-'php_code'				=>	'PHP Код',
-'result'				=>	'Результат',
+'php_code'				=>	'PHP Код:',
+'result'				=>	'Результат:',
 'get'					=>	'Скачать',
 'new_version'			=>	'Проверка Обновления',
 'version_new'			=>	'Новая Версия',
@@ -164,6 +177,7 @@ $lng = array(
 'syntax_unknown'		=>	'Unknown',
 'validator_true'		=>	'Синтаксических Ошибок не Найдено',
 'validator_not_check'	=>	'Файл не Проверен',
+'comment_archive'		=>	'Комментарий',
 'add_archive'			=>	'Добавить в Архив',
 'add_archive_dir'		=>	'Добавить в Папку',
 'add_archive_true'		=>	'Файлы/Папки Добавлены в Архив',
@@ -178,6 +192,7 @@ $lng = array(
 'extract_true'			=>	'Архив Распакован',
 'extract_false'			=>	'Архив не Распакован',
 'archive_error'			=>	'Невозможно Открыть Архив',
+'archive_error_encrypt'	=>	'На Архив Установлен Пароль',
 'create_archive'		=>	'Создать ZIP Архив',
 'create_archive_true'	=>	'ZIP Архив Создан',
 'create_archive_false'	=>	'ZIP Архив не Создан',
@@ -188,7 +203,7 @@ $lng = array(
 'replace'				=>	'Заменить',
 'replace_from'			=>	'Заменить',
 'replace_to'			=>	'На',
-'replace_true'			=>	'Операция Успешно Выполнена<br/>Число Замен ',
+'replace_true'			=>	'Число Замен: ',
 'replace_false_file'	=>	'Не Удалось Записать Измененные Данные',
 'replace_false_str'		=>	'Не Найдено Ни Одного Соответствия Заданному Шаблону',
 'regexp'				=>	'Регулярное Выражение',
@@ -220,7 +235,7 @@ $lng = array(
 'microtime'				=>	'Операция Заняла: %time% сек.',
 'create_sql_installer'	=>	'Создать Инсталлятор',
 'save_as'				=>	'Сохранить как',
-'sql_parser_error'		=>	'Ошибка SQL парсера',
+'sql_parser_error'		=>	'Ошибка SQL Парсера',
 'install'				=>	'Установить',
 'unknown'				=>	'Неизвестно',
 'disable_function'		=>	'PHP Модуль не Установлен или Функция Заблокирована',
@@ -229,7 +244,16 @@ $lng = array(
 'of folders'			=>	'на папки',
 'md5'					=>	'MD5',
 'look'					=>	'Смотреть',
-'del_notify'			=>	'Действительно удалить?',
+'del_notify'			=>	'Действительно Удалить?',
+'win_chmod'				=>	'ОС Windows не Поддерживает Распределение Прав на Файлы',
+'cmd'					=>	'Коммандная Строка',
+'cmd_code'				=>	'Запрос',
+'cmd_go'				=>	'Выполнить',
+'cmd_error'				=>	'Ошибка в Запросе',
+'disk_free_space'		=>	'Доступно Места:',
+'disk_total_space'		=>	'Общий Объем:',
+'memory_get_usage'		=>	'RAM:',
+'tables_not_found'		=>	'Не Найден Файл с Таблицами',
 );
 
 // Версия Менеджера (Не Менять!)

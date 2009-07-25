@@ -1,5 +1,8 @@
 <?php
 /**
+ * Warning! Modifed for PHP 5 only!
+ */
+/**
  * PEAR, the PHP Extension and Application Repository
  *
  * PEAR class and PEAR_Error class
@@ -33,8 +36,10 @@ define('PEAR_ERROR_CALLBACK',  16);
  */
 define('PEAR_ERROR_EXCEPTION', 32);
 /**#@-*/
+/*
 define('PEAR_ZE2', (function_exists('version_compare') &&
                     version_compare(zend_version(), "2-dev", "ge")));
+*/
 
 if (substr(PHP_OS, 0, 3) == 'WIN') {
     define('OS_WINDOWS', true);
@@ -212,7 +217,7 @@ class PEAR
     * @return mixed   A reference to the variable. If not set it will be
     *                 auto initialised to NULL.
     */
-    function &getStaticProperty($class, $var)
+    static function &getStaticProperty($class, $var)
     {
         static $properties;
         if (!isset($properties[$class])) {
@@ -762,9 +767,11 @@ class PEAR
     // }}}
 }
 
+/*
 if (PEAR_ZE2) {
     include_once 'PEAR5.php';
 }
+*/
 
 // {{{ _PEAR_call_destructors()
 
@@ -775,11 +782,11 @@ function _PEAR_call_destructors()
         sizeof($_PEAR_destructor_object_list))
     {
         reset($_PEAR_destructor_object_list);
-        if (PEAR_ZE2) {
-            $destructLifoExists = PEAR5::getStaticProperty('PEAR', 'destructlifo');
-        } else {
+        //if (PEAR_ZE2) {
+        //    $destructLifoExists = PEAR5::getStaticProperty('PEAR', 'destructlifo');
+        //} else {
             $destructLifoExists = PEAR::getStaticProperty('PEAR', 'destructlifo');
-        }
+        //}
 
         if ($destructLifoExists) {
             $_PEAR_destructor_object_list = array_reverse($_PEAR_destructor_object_list);
@@ -874,11 +881,11 @@ class PEAR_Error
         $this->mode      = $mode;
         $this->userinfo  = $userinfo;
 
-        if (PEAR_ZE2) {
-            $skiptrace = PEAR5::getStaticProperty('PEAR_Error', 'skiptrace');
-        } else {
+        //if (PEAR_ZE2) {
+        //    $skiptrace = PEAR5::getStaticProperty('PEAR_Error', 'skiptrace');
+        //} else {
             $skiptrace = PEAR::getStaticProperty('PEAR_Error', 'skiptrace');
-        }
+        //}
 
         if (!$skiptrace) {
             $this->backtrace = debug_backtrace();

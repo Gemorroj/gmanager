@@ -15,7 +15,7 @@
 
 
 $mode = new http;
-
+$class = 'http';
 
 class http
 {
@@ -40,6 +40,14 @@ class http
 
     public function chmod($file = '', $chmod = '0755')
     {
+    	/*
+		$win = PHP_OS;
+    	if($win[0] . $win[1] . $win[2] == 'WIN'){
+    		trigger_error($GLOBALS['lng']['win_chmod']);
+    		return false;
+   		}
+   		*/
+
     	settype($chmod, 'string');
     	$strlen = strlen($chmod);
     	if(!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)){
@@ -57,21 +65,19 @@ class http
 		return file_get_contents($str);
 	}
 
-	public function file_put_contents($file = '', $data){
-		$f = fopen($file, 'a');
-		
-		if(!$f){
+	public function file_put_contents($file = '', $data = ''){
+		if(!$f = fopen($file, 'a')){
 			return 0;
 		}
-		
+
+		ftruncate($f, 0);
+
 		if($data != ''){
 			fputs($f, $data);
 		}
-		else{
-			ftruncate($f, 0);
-		}
+
 		fclose($f);
-		
+
 		return 1;
 	}
 
@@ -86,51 +92,61 @@ class http
 	public function is_link($str = ''){
 		return is_link($str);
 	}
-	
+
 	public function is_readable($str = ''){
 		return is_readable($str);
 	}
-	
+
 	public function filesize($str = ''){
 		return sprintf('%u', filesize($str));
 	}
-	
+
 	public function file_exists($str = ''){
 		return file_exists($str);
 	}
-	
+
 	public function filemtime($str = ''){
 		return filemtime($str);
 	}
-	
+
 	public function unlink($str = ''){
 		return unlink($str);
 	}
-	
+
 	public function rename($from = '', $to = ''){
 		return rename($from, $to);
 	}
-	
+
 	public function copy($from = '', $to = '', $chmod = '0644'){
-		$result = copy($from, $to);
-		$this->chmod($to, $chmod);
+		if($result = copy($from, $to)){
+			$this->chmod($to, $chmod);
+		}
 		return $result;
 	}
-	
+
 	public function rmdir($str = ''){
 		return rmdir($str);
-	}
-	
-	public function opendir($str = ''){
-		return opendir($str);
 	}
 
 	public function fileperms($str = ''){
 		return fileperms($str);
 	}
-	
+
 	public function getcwd(){
 		return getcwd();
+	}
+
+	public function iterator($str = ''){
+		$tmp = array();
+
+		$dir = new DirectoryIterator($str);
+			foreach ($dir as $fileinfo) {
+    			if (!$fileinfo->isDot()) {
+        			$tmp[] = $fileinfo->getFilename();
+    			}
+			}
+			
+		return $tmp;
 	}
 }
 

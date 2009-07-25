@@ -17,7 +17,7 @@
 require 'functions.php';
 
 
-$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
+$current = c($_SERVER['QUERY_STRING'], isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
 if($current == '.'){
 	$h_current = htmlspecialchars($mode->getcwd(), ENT_COMPAT);
 }
@@ -27,8 +27,10 @@ else{
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
 $type = get_type($h_current);
-
-$add_archive = $_GET['add_archive'];
+$archive = is_archive($type);
+$f = 0;
+$if = isset($_GET['f']);
+$ia = isset($_GET['add_archive']);
 
 send_header($_SERVER['HTTP_USER_AGENT']);
 
@@ -42,8 +44,8 @@ if ($string) {
 echo '<div>
 <form action="index.php?" method="get">
 <div>';
-    if ($add_archive) {
-        echo '<input type="hidden" name="add_archive" value="' . $add_archive . '"/><input type="hidden" name="go" value="1"/>';
+    if ($ia) {
+        echo '<input type="hidden" name="add_archive" value="' . rawurlencode($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
 echo '<input type="text" name="c" value="' . $h_current . '"/><br/>
 <input type="submit" value="' . $lng['go'] . '"/>
@@ -52,74 +54,156 @@ echo '<input type="text" name="c" value="' . $h_current . '"/><br/>
 </div>';
 }
 
+if($idown = isset($_GET['down'])){
+	$down = '&amp;up';
+	$mnem = '&#171;';
+}
+else{
+	$down = '&amp;down';
+	$mnem = '&#187;';
+}
 
-if (!$_GET['f'] && $type != 'GZ') {
+if (!$if){
+	if (!$archive) {
+
+	$itype = '';
+
     if (isset($_GET['time'])) {
+    	$itype = 'time';
 echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
 <th>' . $lng['ch_index'] . '</th>
-<th><a href="?c=' . $r_current . '">' . $lng['name'] . '</a></th>
-<th>' . $lng['get'] . '</th>
-<th>' . $lng['type'] . '</th>
-<th>' . $lng['size'] . '</th>
-<th>' . $lng['change'] . '</th>
-<th>' . $lng['del'] . '</th>
-<th>' . $lng['chmod'] . '</th>
-<th class="red">' . $lng['date'] . '</th>
+' . ($index['name'] ? '<th><a href="?c=' . $r_current . '">' . $lng['name'] . '</a></th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $lng['type'] . '</a></th>' : '') . '
+' . ($index['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $lng['size'] . '</a></th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
+' . ($index['date'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;time' . $down . '">' . $lng['date'] . '</a></th>' : '') . '
+<th>' . $lng['n'] . '</th>
+</tr>';
+    }
+	else if (isset($_GET['type'])) {
+		$itype = 'type';
+echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+<div class="telo">
+<table>
+<tr>
+<th>' . $lng['ch_index'] . '</th>
+' . ($index['name'] ? '<th><a href="?c=' . $r_current . '">' . $lng['name'] . '</a></th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;type' . $down . '">' . $lng['type'] . '</a></th>' : '') . '
+' . ($index['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $lng['size'] . '</a></th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
+' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
+<th>' . $lng['n'] . '</th>
+</tr>';
+    }
+	else if (isset($_GET['size'])) {
+		$itype = 'size';
+echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+<div class="telo">
+<table>
+<tr>
+<th>' . $lng['ch_index'] . '</th>
+' . ($index['name'] ? '<th><a href="?c=' . $r_current . '">' . $lng['name'] . '</a></th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $lng['type'] . '</a></th>' : '') . '
+' . ($index['size'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;size' . $down . '">' . $lng['size'] . '</a></th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
+' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
+<th>' . $lng['n'] . '</th>
+</tr>';
+    }
+	else if (isset($_GET['chmod'])) {
+		$itype = 'chmod';
+echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+<div class="telo">
+<table>
+<tr>
+<th>' . $lng['ch_index'] . '</th>
+' . ($index['name'] ? '<th><a href="?c=' . $r_current . '">' . $lng['name'] . '</a></th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $lng['type'] . '</a></th>' : '') . '
+' . ($index['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $lng['size'] . '</a></th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;chmod' . $down . '">' . $lng['chmod'] . '</a></th>' : '') . '
+' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
 <th>' . $lng['n'] . '</th>
 </tr>';
     }
 	else {
+		$itype = '';
 echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
 <th>' . $lng['ch_index'] . '</th>
-<th class="red">' . $lng['name'] . '</th>
-<th>' . $lng['get'] . '</th>
-<th>' . $lng['type'] . '</th>
-<th>' . $lng['size'] . '</th>
-<th>' . $lng['change'] . '</th>
-<th>' . $lng['del'] . '</th>
-<th>' . $lng['chmod'] . '</th>
-<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>
+' . ($index['name'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . $down . '">' . $lng['name'] . '</a></th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $lng['type'] . '</a></th>' : '') . '
+' . ($index['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $lng['size'] . '</a></th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $lng['chmod'] . '</a></th>' : '') . '
+' . ($index['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $lng['date'] . '</a></th>' : '') . '
 <th>' . $lng['n'] . '</th>
 </tr>';
     }
 }
-
-
-$f = 0;
-$archive = is_archive($type);
+elseif($archive != 'GZ'){
+	echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+<div class="telo">
+<table>
+<tr>
+<th>' . $lng['ch_index'] . '</th>
+' . ($index['name'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . $down . '">' . $lng['name'] . '</a></th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th>' . $lng['type'] . '</th>' : '') . '
+' . ($index['size'] ? '<th>' . $lng['size'] . '</th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th>' . $lng['chmod'] . '</th>' : '') . '
+' . ($index['date'] ? '<th>' . $lng['date'] . '</th>' : '') . '
+<th>' . $lng['n'] . '</th>
+</tr>';
+}
+}
 
 if ($archive == 'ZIP') {
-    if ($_GET['f']) {
+    if ($if) {
         echo look_zip_file($current, $_GET['f']);
     }
 	else {
-        echo list_zip_archive($current);
+        echo list_zip_archive($current, $idown);
         $f = 1;
     }
 } elseif ($archive == 'TAR') {
-    if ($_GET['f']) {
+    if ($if) {
         echo look_tar_file($current, $_GET['f']);
     }
 	else {
-        echo list_tar_archive($current);
+        echo list_tar_archive($current, $idown);
         $f = 1;
     }
 } elseif ($archive == 'GZ') {
    echo gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $lng['extract_archive'] . '"/></div></form></div>';
-    $_GET['f'] = 1;
+    $if = true;
 }
 else {
-    look($current);
+    look($current, $itype, $idown);
 }
 
-if (!$_GET['f']) {
-	echo '<tr><td class="w" colspan="9" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/> '.$lng['check'].'</td></tr>';
+if (!$if) {
+	echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 2) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/> '.$lng['check'].'</td></tr>';
 }
 
 
@@ -142,7 +226,7 @@ else {
 
 $tm = '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>';
 
-if (!$_GET['f'] && !$f && !$add_archive) {
+if (!$if && !$f && !$ia) {
 echo '</table>
 <div class="ch">
 <input type="submit" name="full_chmod" value="' .$lng['chmod'] . '"/>
@@ -166,10 +250,10 @@ echo '</table>
 </div>
 </div>
 </form>' . $found . $tm . $foot;
-} elseif ($add_archive) {
+} elseif ($ia) {
 echo '</table>
 <div class="ch">
-<input type="hidden" name="add_archive" value="' . rawurlencode($add_archive) . '"/>
+<input type="hidden" name="add_archive" value="' . rawurlencode($_GET['add_archive']) . '"/>
 <input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
 </div>
 </div>

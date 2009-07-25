@@ -1,7 +1,7 @@
 # РАЗРЕШАЕМ просматривать ВСE
 Allow from All
 
-# Защищаемся от WAP-мотора...
+# Защищаемся от неграмотных ModRewrite правил
 RewriteEngine Off
 
 # Индексный Файл
@@ -21,8 +21,27 @@ php_flag magic_quotes_sybase Off
 # Глобальные переменные
 php_flag register_globals Off
 
+# Устаревшие суперглобальные масивы
+php_flag register_long_arrays Off
+
+# Отладка
+php_value error_reporting 32767
+php_flag display_errors On
+php_flag html_errors On
+php_flag log_errors Off
+php_flag ignore_repeated_errors Off
+php_flag ignore_repeated_source Off
+
+# Кодировка по умолчанию
+php_value default_charset UTF-8
+AddDefaultCharset UTF-8
+
+# Максимальный размер загружаемого файла
+php_value upload_max_filesize 999M
+php_value post_max_size 999M
+
 # Компрессия
-php_value zlib.output_compression 4096
+php_flag zlib.output_compression On
 php_value zlib.output_compression_level 5
 
 # Подсветка PHP Кода
@@ -32,15 +51,3 @@ php_value zlib.output_compression_level 5
 #php_value highlight.bg #efefff
 #php_value highlight.default #0000ff
 #php_value highlight.html #000090
-
-# Отладка
-php_flag display_errors Off
-php_value error_reporting 0
-
-# Кодировка по умолчанию
-php_value default_charset UTF-8
-AddDefaultCharset UTF-8
-
-# Максимальный размер загружаемого файла
-php_value upload_max_filesize 999M
-php_value post_max_size 99M

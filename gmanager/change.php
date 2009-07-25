@@ -23,8 +23,10 @@ if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
 
 require 'functions.php';
 
-if ($mode->is_file($_GET['get'])) {
-    if ($_GET['f']) {
+$_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
+
+if (isset($_GET['get']) && $mode->is_file($_GET['get'])) {
+    if (isset($_GET['f'])) {
         $f = get_archive_file($_GET['get'], $_GET['f']);
         $name = basename($_GET['f']);
     } else {
@@ -37,7 +39,7 @@ if ($mode->is_file($_GET['get'])) {
 }
 
 
-$current = c($_SERVER['QUERY_STRING'], $_POST['c'] ? $_POST['c'] : rawurlencode($_GET['c']));
+$current = c($_SERVER['QUERY_STRING'], isset($_POST['c']) ? $_POST['c'] : (isset($_GET['c']) ? rawurlencode($_GET['c']) : ''));
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 $realpath = realpath($current);
@@ -49,7 +51,7 @@ $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h
 
 send_header($_SERVER['HTTP_USER_AGENT']);
 
-echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : ($_POST['full_chmod'] ? $lng['chmod'] : ($_POST['full_del'] ? $lng['del'] : ($_POST['full_rename'] ? $lng['change'] : ($_POST['fname'] ? $lng['rename'] : ($_POST['create_archive'] ? $lng['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $top) . '
+echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $lng['chmod'] : (isset($_POST['full_del']) ? $lng['del'] : (isset($_POST['full_rename']) ? $lng['change'] : (isset($_POST['fname']) ? $lng['rename'] : (isset($_POST['create_archive']) ? $lng['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $top) . '
 <div class="w2">
 ' . $lng['title_change'] . '<br/>
 </div>
@@ -67,10 +69,10 @@ switch ($_GET['go']) {
         }
 
         if ($mode->is_dir($current)) {
-            $size = dir_size($current);
+            $size = size($current, true);
             $md5 = '';
         } elseif ($mode->is_file($current) || $mode->is_link($current)) {
-            $size = file_size($current, true);
+            $size = format_size(size($current));
             $md5 = $lng['md5'] . ': ' . md5_file($current);
         }
 
@@ -90,9 +92,9 @@ echo '<div class="input">
         break;
 
     case 1:
-        $x = sizeof($_POST['check']);
-        if ($_POST['fname']) {
-            if (!$_POST['name']) {
+        $x = isset($_POST['check']) ? sizeof($_POST['check']) : 0;
+        if (isset($_POST['fname'])) {
+            if (!isset($_POST['name'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -110,7 +112,7 @@ echo '<div class="input">
 </select><br/>
 <input name="fname" type="hidden" value="1"/>';
 
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 
@@ -119,13 +121,13 @@ echo '<input type="submit" value="' . $lng['rename'] . '"/>
 </form>
 </div>';
             } else {
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                 	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                     echo fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i);
                 }
             }
-        } elseif ($_POST['full_del']) {
-            for ($i = 0; $i < $x; $i++) {
+        } elseif (isset($_POST['full_del'])) {
+            for ($i = 0; $i < $x; ++$i) {
             	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                 if ($mode->is_dir($_POST['check'][$i])) {
                     echo del_dir($_POST['check'][$i] . '/');
@@ -136,8 +138,8 @@ echo '<input type="submit" value="' . $lng['rename'] . '"/>
 
 			// echo report('<br/>' . $lng['full_del_file_dir_true'], false);
 
-        } elseif ($_POST['full_chmod']) {
-            if (!$_POST['chmod']) {
+        } elseif (isset($_POST['full_chmod'])) {
+            if (!isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -146,7 +148,7 @@ echo '<div class="input">
 ' . $lng['change_chmod'] . ' ' . $lng['of folders'] . '<br/>
 <input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/><br/>
 <input name="full_chmod" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['ch'] . '"/>
@@ -154,7 +156,7 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
 </form>
 </div>';
             } else {
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                 	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                 	if($mode->is_dir($_POST['check'][$i])){
                 		echo rechmod($_POST['check'][$i], $_POST['chmod'][1]);
@@ -164,8 +166,8 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
          			}
                 }
             }
-        } elseif ($_REQUEST['mega_full_extract']) {
-            if (!$_POST['name'] || !$_POST['chmod']) {
+        } elseif (isset($_REQUEST['mega_full_extract'])) {
+            if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -191,8 +193,8 @@ echo '<div class="input">
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
                 }
             }
-        } elseif ($_POST['full_extract']) {
-            if (!$_POST['name'] || !$_POST['chmod']) {
+        } elseif (isset($_POST['full_extract'])) {
+            if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -201,7 +203,7 @@ echo '<div class="input">
 ' . $lng['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="full_extract" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['extract_archive'] . '"/>
@@ -219,8 +221,8 @@ echo '<input type="submit" value="' . $lng['extract_archive'] . '"/>
                     echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 }
             }
-        } elseif ($_POST['gz_extract']) {
-            if (!$_POST['name'] || !$_POST['chmod']) {
+        } elseif (isset($_POST['gz_extract'])) {
+            if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -236,8 +238,8 @@ echo '<div class="input">
             } else {
                 echo gz_extract($current, $_POST['name'], $_POST['chmod']);
             }
-        } elseif ($_POST['create_archive']) {
-            if (!$_POST['name'] || !$_POST['chmod']) {
+        } elseif (isset($_POST['create_archive'])) {
+            if (!isset($_POST['name'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -245,8 +247,10 @@ echo '<div class="input">
 <input type="text" name="name" value="' . $h_current . 'archive.zip"/><br/>
 ' . $lng['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+' . $lng['comment_archive'] . '<br/>
+<textarea name="comment" rows="2" cols="24"></textarea><br/>
 <input name="create_archive" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['create_archive'] . '"/>
@@ -255,20 +259,20 @@ echo '<input type="submit" value="' . $lng['create_archive'] . '"/>
 </div>';
             } else {
             	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
-                echo create_zip_archive($_POST['name'], $_POST['chmod'], $_POST['check']);
+                echo create_zip_archive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment']);
             }
-        } elseif ($_POST['add_archive']) {
-            if (!$_POST['name']) {
+        } elseif (isset($_POST['add_archive'])) {
+            if (!isset($_POST['name'])) {
                 header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . dirname($current) . '&add_archive=' . $current, true, 301);
                 exit;
-            } elseif (!$_POST['dir']) {
-echo '<div class="input">sss
+            } elseif (!isset($_POST['dir'])) {
+echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['add_archive_dir'] . '<br/>
 <input type="text" name="dir" value="./"/><br/>
 <input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
@@ -288,8 +292,8 @@ echo '<input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
                     echo add_tar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             }
-        } elseif ($_POST['full_rename']) {
-            if (!$_GET['go2']) {
+        } elseif (isset($_POST['full_rename'])) {
+            if (!isset($_GET['go2'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;go2=1&amp;c=' . $r_current . '" method="post">
 <div>
@@ -298,7 +302,7 @@ echo '<div class="input">
 ' . $lng['change_del'] . '<br/>
 <input type="checkbox" name="del" value="1"/><br/>
 <input name="full_rename" type="hidden" value="1"/>';
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 echo '<input type="submit" value="' . $lng['ch'] . '"/>
@@ -306,10 +310,9 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
 </form>
 </div>';
             } else {
-                for ($i = 0; $i < $x; $i++) {
+                for ($i = 0; $i < $x; ++$i) {
                 	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' .
-                        basename($_POST['check'][$i])), '', $_POST['del'], $_POST['name']);
+                    echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name']);
                 }
             }
         }
@@ -324,7 +327,7 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
         break;
 
     case 'chmod':
-        if (!$_POST['chmod']) {
+        if (!isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=chmod&amp;c=' . $r_current . '" method="post">
 <div>
@@ -340,7 +343,7 @@ echo '<div class="input">
         break;
 
     case 'create_dir':
-        if (!$_POST['name'] || !$_POST['chmod']) {
+        if (!isset($_POST['name'])) {
 echo '<div class="input">
 <form action="change.php?go=create_dir&amp;c=' . $r_current . '" method="post">
 <div>
@@ -359,7 +362,7 @@ echo '<div class="input">
 
     case 'create_file':
         include 'pattern.dat';
-        if (!$_POST['name'] || !$_POST['chmod']) {
+        if (!isset($_POST['name'])) {
 echo '<div class="input">
 <form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post">
 <div>
@@ -367,7 +370,7 @@ echo '<div class="input">
 <input type="text" name="name" value="file.php"/><br/>
 ' . $lng['pattern'] . '<br/>
 <select name="ptn">';
-            for ($i = 0, $all = sizeof($pattern); $i < $all; $i++) {
+            for ($i = 0, $all = sizeof($pattern); $i < $all; ++$i) {
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
 
@@ -379,13 +382,13 @@ echo '</select><br/>
 </form>
 </div>';
         } else {
-            if ($mode->file_exists($current . $_POST['name']) && !$_POST['a']) {
+            if ($mode->file_exists($current . $_POST['name']) && !isset($_POST['a'])) {
 echo '<div class="red">' . $lng['warning'] . '<br/></div>
 <form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post">
 <div>
-<input type="hidden" name="name" value="' . $_POST['name'] . '"/>
-<input type="hidden" name="ptn" value="' . $_POST['ptn'] . '"/>
-<input type="hidden" name="chmod" value="' . $_POST['chmod'] . '"/>
+<input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/>
+<input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/>
+<input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/>
 <input type="hidden" name="a" value="1"/>
 <input type="submit" value="' . $lng['ch'] . '"/>
 </div>
@@ -403,7 +406,7 @@ echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_
         break;
 
     case 'rename':
-        echo frename($current, $_POST['name'], $_POST['chmod'], $_POST['del'], $_POST['name']);
+        echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name']);
         echo rechmod($_POST['name'], $_POST['chmod']);
         break;
 
@@ -416,7 +419,7 @@ echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_
         break;
 
     case 'upload':
-        if ((((!$_POST['url'] || $_POST['url'] == 'http://') && ($_FILES['f']['error'] || !$_FILES)) && !$_POST['f']) || !$_POST['name'] || !$_POST['chmod']) {
+        if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!$_FILES || $_FILES['f']['error'])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
@@ -453,6 +456,7 @@ echo '<div class="red">
 <ul>
 <li><a href="change.php?go=search&amp;c=' . $r_current . '">' . $lng['search'] . '</a></li>
 <li><a href="change.php?go=eval&amp;c=' . $r_current . '">' . $lng['eval'] . '</a></li>
+<li><a href="change.php?go=cmd&amp;c=' . $r_current . '">' . $lng['cmd'] . '</a></li>
 <li><a href="change.php?go=sql&amp;c=' . $r_current . '">' . $lng['sql'] . '</a></li>
 <li><a href="change.php?go=tables&amp;c=' . $r_current . '">' . $lng['tables'] . '</a></li>
 <li><a href="change.php?go=installer&amp;c=' . $r_current . '">' . $lng['create_sql_installer'] . '</a></li>
@@ -463,6 +467,7 @@ echo '<div class="red">
 </ul>
 <span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/>
 <span style="color:#000;">&#187;</span> ' . htmlspecialchars(php_uname(), ENT_NOQUOTES) . '<br/>
+<span style="color:#000;">&#187;</span> ' . $lng['disk_total_space'] . ' ' . format_size(disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . $lng['disk_free_space'] . ' ' . format_size(disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/>
 <span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
 	break;
 
@@ -482,7 +487,7 @@ echo '<div class="red">
         break;
 
     case 'scan':
-        if (!$_POST['url'] || $_POST['url'] == 'http://') {
+        if (!isset($_POST['url']) || $_POST['url'] == 'http://') {
 echo '<div class="input">
 <form action="change.php?go=scan&amp;c=' . $r_current . '" method="post">
 <div>
@@ -510,7 +515,7 @@ Connection: Close</textarea><br/>
         break;
 
     case 'send_mail':
-        if (!$_POST['theme'] || !$_POST['mess'] || !$_POST['to'] || !$_POST['from']) {
+        if (!isset($_POST['theme']) || !isset($_POST['mess']) || !isset($_POST['to']) || !isset($_POST['from'])) {
 echo '<div class="input">
 <form action="change.php?go=send_mail&amp;c=' . $r_current . '" method="post">
 <div>
@@ -532,14 +537,16 @@ echo '<div class="input">
         break;
 
     case 'eval':
-        if ($_POST['eval']) {
+    	$v = '';
+        if (isset($_POST['eval'])) {
             echo show_eval($_POST['eval']);
+            $v = htmlspecialchars($_POST['eval'], ENT_NOQUOTES);
         }
 echo '<div class="input">
 <form action="change.php?go=eval&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $lng['php_code'] . '<br/>
-<textarea name="eval" rows="10" cols="48">' . htmlspecialchars($_POST['eval'], ENT_NOQUOTES) . '</textarea><br/>
+<textarea name="eval" rows="10" cols="48">' . $v . '</textarea><br/>
 <input type="submit" value="' . $lng['eval_go'] . '"/>
 </div>
 </form>
@@ -547,7 +554,9 @@ echo '<div class="input">
         break;
 
     case 'search':
-        if ($_POST['search']) {
+    	$v = '';
+        if (isset($_POST['search']) && $_POST['search'] != '') {
+        	$v = htmlspecialchars($_POST['search'], ENT_NOQUOTES);
             if ($string) {
 echo '<div>
 <form action="change.php?" method="get">
@@ -564,20 +573,20 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <table>
 <tr>
 <th>' . $lng['ch_index'] . '</th>
-<th>' . $lng['name'] . '</th>
-<th>' . $lng['get'] . '</th>
-<th>' . $lng['type'] . '</th>
-<th>' . $lng['size'] . '</th>
-<th>' . $lng['change'] . '</th>
-<th>' . $lng['del'] . '</th>
-<th>' . $lng['chmod'] . '</th>
-<th>' . $lng['date'] . '</th>
+' . ($index['name'] ? '<th>' . $lng['name'] . '</th>' : '') . '
+' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
+' . ($index['type'] ? '<th>' . $lng['type'] . '</th>' : '') . '
+' . ($index['size'] ? '<th>' . $lng['size'] . '</th>' : '') . '
+' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
+' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
+' . ($index['chmod'] ? '<th>' . $lng['chmod'] . '</th>' : '') . '
+' . ($index['date'] ? '<th>' . $lng['date'] . '</th>' : '') . '
 <th>' . $lng['n'] . '</th>
 </tr>';
 
 echo search($_POST['where'], $_POST['search'], $_POST['in'], $_POST['register']);
 
-echo '<tr><td class="w" colspan="9" style="text-align:left;padding:0 0 0 1%;">
+echo '<tr><td class="w" colspan="' . (array_sum($index) + 2) . '" style="text-align:left;padding:0 0 0 1%;">
 <input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>
 ' . $lng['check'] . '
 </td></tr>
@@ -610,18 +619,18 @@ echo '<div class="input">
 <select name="in">
 <option value="0">' . $lng['in_files'] . '</option>
 <option value="1"';
-        if ($_POST['in']) {
+        if (isset($_POST['in'])) {
             echo ' selected="selected"';
         }
 echo '>' . $lng['in_text'] . '</option>
 </select><br/>
 ' . $lng['what_search'] . '<br/>
-<input type="text" name="search" value="' . htmlspecialchars($_POST['search'], ENT_NOQUOTES) . '"/><br/>
+<input type="text" name="search" value="' . $v . '"/><br/>
 ' . $lng['register'] . '<br/>
 <select name="register">
 <option value="0">' . $lng['yes'] . '</option>
 <option value="1"';
-        if ($_POST['register']) {
+        if (isset($_POST['register'])) {
             echo ' selected="selected"';
         }
 echo '>' . $lng['no'] . '</option>
@@ -633,11 +642,11 @@ echo '>' . $lng['no'] . '</option>
         break;
 
     case 'sql':
-        $_POST['sql'] = trim($_POST['sql']);
-        if ($_POST['name'] && $_POST['host']) {
+        $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
+        if (isset($_POST['name']) && isset($_POST['host'])) {
             include 'pattern.dat';
             $tmp = '<select id="ptn" onchange="javascript:paste(this.value);">';
-            for ($i = 0, $all = sizeof($sql_ptn); $i < $all; $i++) {
+            for ($i = 0, $all = sizeof($sql_ptn); $i < $all; ++$i) {
                 $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] .
                     '</option>';
             }
@@ -696,7 +705,7 @@ echo '<div class="input">
         break;
 
     case 'tables':
-        if (!$mode->file_exists($_POST['tables'])) {
+        if (!isset($_POST['tables']) || !$mode->is_file($_POST['tables'])) {
 echo '<div class="input">
 <form action="change.php?go=tables&amp;c=' . $r_current . '" method="post">
 <div>
@@ -723,13 +732,13 @@ echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], $mode->fi
 
     case 'installer':
         if (substr($h_current, -1) != '/') {
-            $d_current = str_replace('\\', '/', htmlspecialchars(dirname($current) . '/'));
+            $d_current = str_replace('\\', '/', htmlspecialchars(dirname($current) . '/', ENT_COMPAT));
         }
         else{
         	$d_current = $h_current;
        	}
 
-        if (!$_POST) {
+        if (!isset($_POST['tables']) || !$mode->is_file($_POST['tables'])) {
 echo '<div class="input">
 <form action="change.php?go=installer" method="post">
 <div>
@@ -752,14 +761,31 @@ echo '<div class="input">
 </form>
 </div>';
         } else {
-            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']),
-                trim($_POST['db']), trim($_POST['charset']), $mode->file_get_contents($_POST['tables']))) {
+            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), $mode->file_get_contents($_POST['tables']))) {
                 echo create_file(trim($_POST['c']), $sql, $_POST['chmod']);
             } else {
                 echo report($lng['sql_parser_error'], true);
             }
         }
         break;
+        
+	case 'cmd':
+		$v = '';
+		if (isset($_POST['cmd'])) {
+			echo show_cmd($_POST['cmd']);
+			$v = htmlspecialchars($_POST['cmd'], ENT_COMPAT);
+        }
+echo '<div class="input">
+<form action="change.php?go=cmd&amp;c=' . $r_current . '" method="post">
+<div>
+' . $lng['cmd_code'] . '<br/>
+<input name="cmd" value="' . $v . '" style="width:99%"/><br/>
+<input type="submit" value="' . $lng['cmd_go'] . '"/>
+</div>
+</form>
+</div>';
+	
+		break;
 }
 
 echo '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>' . $foot;

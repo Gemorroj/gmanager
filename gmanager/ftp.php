@@ -15,6 +15,7 @@
 
 
 $mode = new ftp;
+$class = 'ftp';
 
 class ftp
 {
@@ -59,11 +60,26 @@ class ftp
     public function mkdir($dir = '', $chmod = '0755')
     {
     	ftp_chdir($this->res, '/');
-        return ftp_mkdir($this->res, $dir);
+    	if(!$this->is_dir($dir)){
+        	$tmp = ftp_mkdir($this->res, $dir);
+        }
+        else{
+        	$tmp = true;
+       	}
+        $this->chmod($dir, $chmod);
+        return $tmp;
     }
 
     public function chmod($file = '', $chmod = '0755')
     {
+    	/*
+    	$win = ftp_systype($this->res);
+    	if($win[0] . $win[1] . $win[2] == 'WIN'){
+    		trigger_error($GLOBALS['lng']['win_chmod']);
+    		return false;
+   		}
+   		*/
+
     	ftp_chdir($this->res, '/');
     	settype($chmod, 'string');
   		$strlen = strlen($chmod);
@@ -73,7 +89,9 @@ class ftp
    		if($strlen == 3){
     		$chmod = '0' . $chmod;
    		}
-
+		if($file[0] != '/'){
+			$file = '/' . $file;
+		}
         return ftp_chmod($this->res, octdec(intval($chmod)), $file);
     }
 
@@ -95,7 +113,12 @@ class ftp
 		file_put_contents($php_temp, $data);
 		chmod($php_temp, 0666);
 
-		ftp_chdir($this->res, iconv_substr($file, 0, strrpos($file, '/')));
+		$tmp = iconv_substr($file, 0, strrpos($file, '/'));
+		if($tmp === false){
+			$tmp = substr($file, 0, strrpos($file, '/'));
+		}
+
+		ftp_chdir($this->res, $tmp);
 		$result = ftp_put($this->res, basename($file), $php_temp, FTP_BINARY);
 
 		unlink($php_temp);
@@ -182,8 +205,9 @@ class ftp
     	//$to = self::change_symbol($to);
     	//$result = copy($this->url.$from, $this->url.$to);
     	//$this->chmod($this->url.$to, $chmod);
-    	$result = $this->file_put_contents($to, $this->file_get_contents($from));
-    	$this->chmod($to, $chmod);
+    	if($result = $this->file_put_contents($to, $this->file_get_contents($from))){
+    		$this->chmod($to, $chmod);
+   		}
 
     	return $result;
    	}
@@ -194,11 +218,9 @@ class ftp
     	return ftp_rmdir($this->res, $str);
    	}
    	
-    public function opendir($str = ''){
+    public function iterator($str = ''){
     	$tmp = array();
-    	//$str = self::change_symbol($str);
-    	//return opendir($this->url.$str);
-    	//return ftp_nlist($this->res, $str);
+
     	if(!$this->rawlist[$str]){
     		$this->rawlist($str);
    		}
@@ -207,7 +229,7 @@ class ftp
     		$tmp[] = $var['file'];
    		}
 
-   		return $tmp;
+   		return array_map('basename', $tmp);;
    	}
 
     public function fileperms($str = ''){
@@ -235,7 +257,7 @@ class ftp
    			$raw_dir = $match[1] ? '/'.$match[1] : '/';
 		}
 
-   		$list = ftp_rawlist($this->res, $raw_dir);
+   		$list = ftp_rawlist($this->res, '/' . $raw_dir);
 		$items = array();
 
 		foreach($list as $var){
@@ -265,24 +287,57 @@ class ftp
 	private function chmodnum($permissions = 'rw-r--r--') {
 		$mode = 0; 
 
-		if ($permissions[1] == 'r') $mode += 0400; 
-		if ($permissions[2] == 'w') $mode += 0200; 
-		if ($permissions[3] == 'x') $mode += 0100; 
-		else if ($permissions[3] == 's') $mode += 04100; 
-		else if ($permissions[3] == 'S') $mode += 04000; 
+		if ($permissions[1] == 'r'){
+			$mode += 0400;
+		}
+		if ($permissions[2] == 'w'){
+			$mode += 0200;
+		}
+		if ($permissions[3] == 'x'){
+			$mode += 0100;
+		}
+		else if ($permissions[3] == 's'){
+			$mode += 04100;
+		}
+		else if ($permissions[3] == 'S'){
+			$mode += 04000;
+		}
 
-		if ($permissions[4] == 'r') $mode += 040; 
-		if ($permissions[5] == 'w') $mode += 020; 
-		if ($permissions[6] == 'x') $mode += 010; 
-		else if ($permissions[6] == 's') $mode += 02010; 
-		else if ($permissions[6] == 'S') $mode += 02000; 
 
-		if ($permissions[7] == 'r') $mode += 04; 
-		if ($permissions[8] == 'w') $mode += 02; 
-		if ($permissions[9] == 'x') $mode += 01; 
-		else if ($permissions[9] == 't') $mode += 01001; 
-		else if ($permissions[9] == 'T') $mode += 01000;
-		
+		if ($permissions[4] == 'r'){
+			$mode += 040;
+		}
+		if ($permissions[5] == 'w'){
+			$mode += 020;
+		}
+		if ($permissions[6] == 'x'){
+			$mode += 010;
+		}
+		else if ($permissions[6] == 's'){
+			$mode += 02010;
+		}
+		else if ($permissions[6] == 'S'){
+			$mode += 02000;
+		}
+
+
+		if ($permissions[7] == 'r'){
+			$mode += 04;
+		}
+		if ($permissions[8] == 'w'){
+			$mode += 02;
+		}
+		if ($permissions[9] == 'x'){
+			$mode += 01;
+		}
+		else if ($permissions[9] == 't'){
+			$mode += 01001;
+		}
+		else if ($permissions[9] == 'T'){
+			$mode += 01000;
+		}
+
+
 		return $mode;
 	}
 

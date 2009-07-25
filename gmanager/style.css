@@ -8,6 +8,7 @@ a{color:#000000;text-decoration:none;}
 a:visited{color:#000033;}
 a:hover{text-decoration:underline;color:#aa0000;}
 a:active{color:#ffffff;}
+pre{overflow:auto;}
 .w{background-color:#007090;text-align:center;font-weight:bold;font-size:x-small;color:#000033;border:1px solid #000033;}
 .w a{color:#ffffff;}
 .w a:hover{color:#f0f0f0;}
@@ -20,7 +21,7 @@ a:active{color:#ffffff;}
 .border2{background-color:#dddddd;color:#cc0000;font-weight:bold;border-top:1px solid #ffffff;border-bottom:1px solid #cccccc;padding:1px 4pt 1px 0;}
 .rb{text-align:right;background-color:#ebebeb;color:#cc0000;font-weight:bold;border-top:1px solid #ffffff;border-bottom:1px solid #cccccc;padding:1px 4pt 1px 0;}
 .ch{background-color:#ebebeb;color:#cc0000;font-weight:bold;border-top:1px solid #ffffff;border-bottom:1px solid #cccccc;}
-.code{background-color:#ebebeb;font-weight:bold;padding:2pt 1pt 2pt 3pt;margin:1%;border:1px solid #0077a0;}
+.code{background-color:#ebebeb;font-weight:bold;padding:2pt 1pt 2pt 3pt;margin:1%;border:1px solid #0077a0;overflow:auto;}
 .true_code{background-color:#000000;color:#ffffff;}
 .fail_code{background-color:#000000;color:#ff0000;font-weight:bold;margin:2px;}
 .submit{background-color:#ffffff;color:#000000;font-weight:bold;margin:0;padding:0;border:1px solid #0077a0;}

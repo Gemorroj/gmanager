@@ -14,6 +14,16 @@
  */
 
 
+$_GET['f'] = isset($_GET['f']) ? $_GET['f'] : '';
+$_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
+$_GET['c'] = isset($_GET['c']) ? $_GET['c'] : '';
+if(!isset($_GET['charset'])){
+	$_GET['charset'] = '';
+}
+else{
+	$_GET['c'] = rawurldecode($_GET['c']);
+}
+
 if (isset($_POST['get'])) {
     header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ? '&f=' . $_GET['f'] : ''))));
     exit;
@@ -21,7 +31,7 @@ if (isset($_POST['get'])) {
 
 require 'functions.php';
 
-$charset = array();
+$charset = array('', '');
 $full_charset = '';
 
 if($_GET['charset']){
@@ -29,8 +39,7 @@ list($charset[0], $charset[1],) = encoding('', $_GET['charset']);
 $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
-$current = c($_SERVER['QUERY_STRING'], /*rawurlencode(*/$_GET['c']/*)*/);
-//$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
+$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
 $h_current = htmlspecialchars($current, ENT_COMPAT);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
@@ -46,37 +55,54 @@ $archive = is_archive(get_type($h_current));
 
 switch ($_GET['go']) {
     default:
+    case 'replace':
+		$to = $from = '';
 
         if (!$mode->is_file($current)) {
             echo report($lng['not_found'], true);
             break;
         }
 
+		if($_GET['go'] == 'replace' && isset($_POST['from']) && isset($_POST['to'])) {
+			$from = htmlspecialchars($_POST['from'], ENT_COMPAT);
+			$to = htmlspecialchars($_POST['to'], ENT_COMPAT);
+        	if ($archive == 'ZIP') {
+          	  echo zip_replace($current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
+        	} else {
+          	  echo replace($current, $_POST['from'], $_POST['to'], isset($_POST['regexp']));
+        	}
+		}
 
         if ($archive == 'ZIP') {
             $content = edit_zip_file($current, $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_NOQUOTES);
-            $f = '&amp;f=' . $_GET['f'];
+            $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
             $content['text'] = htmlspecialchars($mode->file_get_contents($current), ENT_NOQUOTES);
-            $content['size'] = file_size($current, true);
+            $content['size'] = format_size(size($current));
             $content['lines'] = sizeof(explode("\n", $content['text']));
             $f = '';
         }
 
-        if ($charset) {
+        if ($charset[0]) {
             $content['text'] = iconv($charset[0], $charset[1], $content['text']);
         }
 
+$r = realpath($current);
+$l = iconv_strlen($_SERVER['DOCUMENT_ROOT']);
+if(!$path = iconv_substr($r, $l)){
+	$path = iconv('Windows-1251', 'UTF-8', substr($r, $l));
+}
 
-if(get_class($mode) == 'http' && $path = iconv_substr(realpath($current), iconv_strlen($_SERVER['DOCUMENT_ROOT']))){
+if($class == 'http' && $path){
 $http = '<div class="rb">
-<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', $path).'">'.$lng['look'].'</a><br/>
+<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('%2F', '/', rawurlencode(str_replace('\\', '/', $path))).'">'.$lng['look'].'</a><br/>
 </div>';
 }
 else{
 $http = '';
 }
+
 
 
 echo '<div class="input">
@@ -103,8 +129,8 @@ echo '<div class="input">
 <form action="edit.php?go=replace&amp;c=' . $r_current . $f . '" method="post">
 <div>
 ' . $lng['replace_from'] . '<br/>
-<input type="text" name="from" style="width:128pt;"/>' . $lng['replace_to'] . '<input type="text" name="to" style="width:128pt;"/><br/>
-<input type="checkbox" name="regexp" value="1"/>' . $lng['regexp'] . '<br/>
+<input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $lng['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/>
+<input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $lng['regexp'] . '<br/>
 <input type="submit" value="' . $lng['replace'] . '"/>
 </div>
 </form>
@@ -177,15 +203,6 @@ echo '<div class="rb">
             echo edit_zip_file_ok($current, $_GET['f'], $_POST['text']);
         } else {
             echo create_file($current, $_POST['text'], $_POST['chmod']);
-        }
-        break;
-
-
-    case 'replace':
-        if ($archive == 'ZIP') {
-            echo zip_replace($current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
-        } else {
-            echo replace($current, $_POST['from'], $_POST['to'], $_POST['regexp']);
         }
         break;
 

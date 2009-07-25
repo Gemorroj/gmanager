@@ -33,8 +33,6 @@ function auth($user, $pass)
             header("Content-type: text/html; charset=utf-8");
             exit('<html><head><title>Error</title></head><body><p style="color:red;font-size:24pt;text-align:center">Unauthorized</p></body></html>');
         }
-
-    return;
 }
 
 
@@ -52,12 +50,13 @@ function send_header($u = '')
     header('Cache-control: no-cache');
     
     // кол-во файлов на странице
-	$GLOBALS['limit'] = abs($_POST['limit'] ? $_POST['limit'] : ($_GET['limit'] ? $_GET['limit'] : ($_COOKIE['limit'] ? $_COOKIE['limit'] : $GLOBALS['limit'])));
+    $ip = isset($_POST['limit']);
+    $ig = isset($_GET['limit']);
+	$GLOBALS['limit'] = abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : (isset($_COOKIE['limit']) ? $_COOKIE['limit'] : $GLOBALS['limit'])));
 
-	if($_POST['limit'] || $_GET['limit']){
-		setcookie('limit', $GLOBALS['limit'], 2592000+time());
+	if($ip || $ig){
+		setcookie('limit', $GLOBALS['limit'], 2592000 + time());
 	}
-    return;
 }
 
 
@@ -71,16 +70,18 @@ function c($query = '', $c = '')
             $current = str_replace('\\', '/', trim(rawurldecode($c)));
 
             if ($GLOBALS['mode']->is_dir($current) || $GLOBALS['mode']->is_link($current)) {
-                if ($current[iconv_strlen($current) - 1] != '/') {
-                    $current = $current . '/';
+            	$l = strrev($current);
+                if ($l[0] != '/') {
+                    $current .= '/';
                 }
             }
             return $current;
         } else {
             $query = str_replace('\\', '/', trim(rawurldecode($query)));
-            if ($GLOBALS['mode']->is_dir($query) || $GLOBALS['mode']->is_link($current)) {
-                if ($query[iconv_strlen($query) - 1] != '/') {
-                    $query = $query . '/';
+            if ($GLOBALS['mode']->is_dir($query) || $GLOBALS['mode']->is_link($query)) {
+            	$l = strrev($query);
+                if ($l[0] != '/') {
+                    $query .= '/';
                 }
             }
             return $query;
@@ -91,7 +92,7 @@ function c($query = '', $c = '')
 
 function this($current = '')
 {	
-	if(get_class($GLOBALS['mode']) != 'ftp'){
+	if($GLOBALS['class'] != 'ftp'){
     $realpath = realpath($current);
     $realpath = $realpath ? $realpath : $current;
 	}
@@ -99,7 +100,7 @@ function this($current = '')
 		$realpath = $current;
 	}
     $chmod = look_chmod($current);
-    $chmod = $chmod ? $chmod : ($_POST['chmod'] ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0);
+    $chmod = $chmod ? $chmod : (isset($_POST['chmod'][0]) ? htmlspecialchars($_POST['chmod'][0], ENT_NOQUOTES) : (isset($_POST['chmod']) ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0));
 
     $d = dirname(str_replace('\\', '/', $realpath));
     $archive = is_archive(get_type($current));
@@ -122,61 +123,72 @@ function this($current = '')
 
 function static_name($current = '', $dest = '')
 {
-    $len = iconv_strlen($current);
-    if (iconv_substr($dest, 0, $len) == $current) {
-        $static = iconv_substr($dest, $len);
+	$substr = 'iconv_substr';
+    if(!$len = iconv_strlen($current)){
+    	$len = strlen($current);
+    	$substr = 'substr';
+   	}
+
+    if ($substr($dest, 0, $len) == $current) {
+        $static = $substr($dest, $len);
 
         if (strpos($static, '/')) {
             $static = strtok($static, '/');
         }
-    } else {
-        return;
+    }
+	else {
+        return '';
     }
     return $static;
 }
 
 
-function look($current = '')
+function look($current = '', $itype = '', $down = '')
 {
-    if ($GLOBALS['target']) {
-        $target = ' target="_blank"';
-    } else {
-        $target = '';
-    }
-
-    if ($GLOBALS['add_archive']) {
-        $add = '&amp;go=1&amp;add_archive=' . $GLOBALS['add_archive'];
-    } else {
-        $add = '';
-    }
-
-    $page1 = $page2 = array();
-
-    $dir = $GLOBALS['mode']->opendir($current);
-    $i = 1;
-    
-    if(is_array($dir)){
-    	$dir = array_map('basename', $dir);
-   	}
-   	else{
-    	$tmp = array();
-		while (($file = readdir($dir)) !== false){
-			$tmp[] = $file;
-		}
-		closedir($dir);
-		$dir = $tmp;
+	if(!$GLOBALS['mode']->is_dir($current)){
+		return;
 	}
 	
+	$out = $target = $add = '';
+    $page = $page1 = $page2 = array();
+    $i = 0;
 
-    foreach($dir as $file){
+    if ($GLOBALS['target']) {
+        $target = ' target="_blank"';
+    }
+
+    if ($GLOBALS['ia']) {
+        $add = '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($_GET['add_archive']));
+    }
+
+
+    if ($itype == 'time') {
+		$out = '&amp;time';
+    }
+    else if ($itype == 'type') {
+		$out = '&amp;type';
+   	}
+   	else if ($itype == 'size') {
+		$out = '&amp;size';
+	}
+	else if ($itype == 'chmod') {
+		$out = '&amp;chmod';
+	}
+
+	$out .= $down ? '&amp;up' : '&amp;down';
+
+
+    foreach($GLOBALS['mode']->iterator($current) as $file){
+
+    	$i++;
+    	$pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $name = $size = $chmod = '';
+
 /*
 		if(substr($file, -1) == '/'){
 			$file = iconv_substr($file, 0, iconv_strlen($file)-1);	
 		}
 */
-        if ($file == '.' || $file == '..') {
-            continue;
-        }
+
 
         if ($current != '.') {
             $file = $current . $file;
@@ -184,93 +196,155 @@ function look($current = '')
 
 		$basename = basename($file);
 
-        if ($GLOBALS['realname'] == 1) {
-        	$realpath = realpath($file);
-        	$name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-        } elseif ($GLOBALS['realname'] == 2) {
-            $name = $basename;
-        } else {
-            $name = $file;
-        }
-
 		$r_file = str_replace('%2F', '/', rawurlencode($file));
 
 		$type = htmlspecialchars(get_type($file), ENT_NOQUOTES);
 		$archive = is_archive($type);
-        
-        $time = $GLOBALS['mode']->filemtime($file);
-        $name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
-        $i++;
 
-        if (isset($_GET['time'])) {
-            $key = $time;
+		$fdir = ($GLOBALS['mode']->is_dir($file) || $GLOBALS['mode']->is_link($file));
+
+
+		if($GLOBALS['index']['name']){
+			//
+			if ($GLOBALS['realname'] == 1) {
+        		$realpath = realpath($file);
+        		$name = $realpath ? str_replace('\\', '/', $realpath) : $file;
+        	} elseif ($GLOBALS['realname'] == 2) {
+            	$name = $basename;
+        	} else {
+            	$name = $file;
+        	}
+        	$name = htmlspecialchars(str_link($name), ENT_NOQUOTES);
+			//
+			if($fdir){
+				$pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
+			}
+			else{
+				if($archive){
+					$pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . $GLOBALS['lng']['extract_archive'] . '</a></td>';
+				}
+				else{
+					if($type == 'SQL'){
+						$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . $GLOBALS['lng']['tables'] . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></td>';
+					}
+					else{
+						$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a></td>';
+					}
+				}
+			}
+		}
+		if($GLOBALS['index']['down']){
+			if($fdir){
+				$pdown = '<td></td>';
+			}
+			else{
+				$pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+			}
+		}
+		if($GLOBALS['index']['type']){
+			if($fdir){
+				$ptype = '<td>' . ($GLOBALS['mode']->is_link($file) ? 'LINK': 'DIR') . '</td>';
+			}
+			else{				
+				$ptype = '<td>' . $type . '</td>';
+			}
+		}
+		if($GLOBALS['index']['size']){
+			//
+			if($fdir){
+				if ($GLOBALS['dir_size']) {
+                	$isize = $size = size($file, true);
+                	$size = format_size($size);
+            	} else {
+                	$isize = $size = $GLOBALS['lng']['unknown'];
+            	}
+            }
+            else{
+            	$isize = $size = size($file);
+				$size = format_size($size);
+			}
+            //
+			$psize = '<td>' . $size . '</td>';
+		}
+		if($GLOBALS['index']['change']){
+			if($fdir){
+				$pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
+			}
+			else{
+				$pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
+			}
+		}
+		if($GLOBALS['index']['del']){
+			if($fdir){
+				$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+			}
+			else{
+				$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+			}
+		}
+		if($GLOBALS['index']['chmod']){
+			//
+			$chmod = look_chmod($file);
+			//
+			$pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
+		}
+		if($GLOBALS['index']['date']){
+			//
+			$time = $GLOBALS['mode']->filemtime($file);
+			//
+			$pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
+		}
+
+
+		if ($itype == 'time') {
+            $key = $time . '_';
+        }
+        else if ($itype == 'type') {
+        	$key = $type . '_';
+       	}
+       	else if ($itype == 'size') {
+       		$key = $isize . '_';
+		}
+       	else if ($itype == 'chmod') {
+       		$key = $chmod . '_';
+		}
+		else {
+            $key = $name . '_';
+        }
+
+
+        if ($fdir) {
+            $page1[$key][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate;
         } else {
-            $key = $name;
-        }
-
-
-        if ($GLOBALS['mode']->is_dir($file) || $GLOBALS['mode']->is_link($file)) {
-            $page1[$key] = '<td><input name="check[]" type="checkbox" value="' . $r_file .
-                '"/></td><td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name .
-                '/</a></td><td></td><td>' . ($GLOBALS['mode']->is_link($file) ? 'LINK': 'DIR') . '</td><td>';
-            if ($GLOBALS['dir_size']) {
-                $page1[$key] .= dir_size($file);
-            } else {
-                $page1[$key] .= $GLOBALS['lng']['unknown'];
-            }
-            $page1[$key] .= '</td><td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] .
-                '</a></td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] .
-                '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($file) .
-                '</a></td><td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
-        } elseif($GLOBALS['mode']->is_file($file)) {
-                
-            if ($archive) {
-                $page2[$key] = '<td><input name="check[]" type="checkbox" value="' . $r_file .
-                    '"/></td><td><a href="index.php?' . $r_file . '">' . $name .
-                    '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file .
-                    '&amp;mega_full_extract=1">' . $GLOBALS['lng']['extract_archive'] .
-                    '</a></td><td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] .
-                    '</a></td><td>' . $type . '</td><td>' . file_size($file, true) .
-                    '</td><td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] .
-                    '</a></td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] .
-                    '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($file) .
-                    '</a></td><td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
-            } else {
-                $page2[$key] = '<td><input name="check[]" type="checkbox" value="' . $r_file .
-                    '"/></td><td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name .
-                    '</a></td><td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] .
-                    '</a></td><td>' . $type . '</td><td>' . file_size($file, true) .
-                    '</td><td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] .
-                    '</a></td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] .
-                    '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($file) .
-                    '</a></td><td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
-            }
-
-            if ($type == 'SQL') {
-                $page2[$key] = str_replace('</a></td><td>' . $type . '</td><td>',
-                    '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' .
-                    $GLOBALS['lng']['tables'] .
-					'</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' .
-					$GLOBALS['lng']['create_sql_installer'] . '</a></td><td>' . $type . '</td><td>',
-					$page2[$key]);
-            }
-
-        }
+			$page2[$key][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate;
+		}
 
     }
 
 
-    if (isset($_GET['time'])) {
-        krsort($page1, SORT_NUMERIC);
-        krsort($page2, SORT_NUMERIC);
-    } else {
-        ksort($page1, SORT_REGULAR);
-        ksort($page2, SORT_REGULAR);
+	$p = array_merge($page1, $page2);
+
+	$a = array_keys($page1);
+	$b = array_keys($page2);
+
+	natcasesort($a);
+	natcasesort($b);
+	if ($down) {
+		$a = array_reverse($a, false);
+		$b = array_reverse($b, false);
     }
 
-    $page = array_merge($page1, $page2);
+	foreach(array_merge($a, $b) as $var){
+		foreach($p[$var] as $f){
+			$page[] = $f;
+		}
+	}
+
+    unset($p, $page1, $page2, $a, $b);
+
+
     $all = ceil(sizeof($page) / $GLOBALS['limit']);
-    $pg = intval($_GET['pg']);
+    $pg = isset($_GET['pg']) ? intval($_GET['pg']) : 1;
     if ($pg < 1) {
         $pg = 1;
     }
@@ -290,75 +364,36 @@ function look($current = '')
 			}
         }
 
-        if (isset($_GET['time'])) {
-            $time = '&amp;time';
-        } else {
-            $time = '';
-        }
-
     } else {
-        echo '<tr class="border"><th colspan="9">' . $GLOBALS['lng']['dir_empty'] . '</th></tr>';
+        echo '<tr class="border"><th colspan="' . (array_sum($GLOBALS['index']) + 2) . '">' . $GLOBALS['lng']['dir_empty'] . '</th></tr>';
     }
 
-    echo go($pg, $all, '&amp;c=' . $current . $time . $add);
-    return;
+    echo go($pg, $all, '&amp;c=' . $current . $out . $add);
 }
 
 
 function copy_d($dest = '', $source = '', $to = '')
 {
-    $tmp = '';
+	$ex = explode('/', $source);
+	$tmp1 = $tmp2 = '';
 
-	$source = iconv_substr($source, iconv_strlen($GLOBALS['current']), iconv_strlen($source));
-	/*
-	if($source == ''){
-		return;
-	}
-	*/
+	foreach(explode('/', $to) as $var){
+		$ch = each($ex);
+		$tmp1 .= $var . '/';
+		$tmp2 .= $ch[1] . '/';
 
-	$dest = iconv_substr($dest, iconv_strlen($to), iconv_strlen($dest));
-
-
-	$ex = explode('/', $to);
-	foreach($ex as $var){
-		$tmp .= $var . '/';
-
-		if(!$GLOBALS['mode']->is_dir($tmp)){
-			$GLOBALS['mode']->mkdir($tmp);
+		if(!$GLOBALS['mode']->is_dir($tmp1)){
+			$GLOBALS['mode']->mkdir($tmp1, look_chmod($tmp2));
 		}
 	}
-
-	$tmp = '';
-	$ex = explode('/', $source);
-	foreach($ex as $var){
-		$tmp .= $var . '/';
-		
-		$ch = look_chmod($GLOBALS['current'].$tmp);
-		$GLOBALS['mode']->mkdir($to.'/'.$dest, ($ch ? $ch : $chmod));
-	}
-
-    return;
 }
 
 
 function copy_files($d = '', $dest = '', $static = '')
 {
-    $dir = $GLOBALS['mode']->opendir($d);
 
-    if(is_array($dir)){
-    	$dir = array_map('basename', $dir);
-   	}
-   	else{
-    	$tmp = array();
-		while (($file = readdir($dir)) !== false){
-			$tmp[] = $file;
-		}
-		closedir($dir);
-		$dir = $tmp;
-	}
-
-    foreach($dir as $file) {
-        if ($file == '.' || $file == '..' || $file == $static) {
+    foreach($GLOBALS['mode']->iterator($d) as $file) {
+        if ($file == $static) {
             continue;
         }
         if ($d == $dest) {
@@ -383,22 +418,9 @@ function copy_files($d = '', $dest = '', $static = '')
 
 function move_files($d = '', $dest = '', $static = '')
 {
-    $dir = $GLOBALS['mode']->opendir($d);
 
-    if(is_array($dir)){
-    	$dir = array_map('basename', $dir);
-   	}
-   	else{
-    	$tmp = array();
-		while (($file = readdir($dir)) !== false){
-			$tmp[] = $file;
-		}
-		closedir($dir);
-		$dir = $tmp;
-	}
-
-    foreach($dir as $file) {
-        if ($file == '.' || $file == '..' || $file == $static) {
+    foreach($GLOBALS['mode']->iterator($d) as $file) {
+        if ($file == $static) {
             continue;
         }
         if ($d == $dest) {
@@ -428,13 +450,20 @@ function move_files($d = '', $dest = '', $static = '')
 
 function copy_file($source = '', $dest = '', $chmod = '' /* 0644 */)
 {
-    copy_d(dirname($dest), dirname($source), dirname($dest));
+	if($source == $dest){
+		if($chmod){
+			rechmod($dest, $chmod);
+		}
+		return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), false);
+	}
+
+	$d = dirname($dest);
+    copy_d($d, dirname($source), $d);
 
     if ($GLOBALS['mode']->copy($source, $dest)) {
         if (!$chmod) {
         	$chmod = look_chmod($source);
        	}
-       	
 			rechmod($dest, $chmod);
 
         return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_true'])), false);
@@ -447,7 +476,16 @@ function copy_file($source = '', $dest = '', $chmod = '' /* 0644 */)
 
 function move_file($source = '', $dest = '', $chmod = '' /* 0644 */)
 {
-    copy_d(dirname($dest), dirname($source), dirname($dest));
+	if($source == $dest){
+		if($chmod){
+			rechmod($dest, $chmod);
+		}
+		return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), false);
+	}
+
+	$d = dirname($dest);
+    copy_d($d, dirname($source), $d);
+
     if ($GLOBALS['mode']->copy($source, $dest)) {
         if (!$chmod) {
 			$chmod = look_chmod($source);
@@ -483,33 +521,18 @@ function del_dir($d = '')
     //$d = rawurldecode($d);
 
     $GLOBALS['mode']->chmod($d, '0777');
-    $dir = $GLOBALS['mode']->opendir($d);
-    if(is_array($dir)){
-    	$dir = array_map('basename', $dir);
-   	}
-   	else{
-    	$tmp = array();
-		while (($file = readdir($dir)) !== false){
-			$tmp[] = $file;
-		}
-		closedir($dir);
-		$dir = $tmp;
-	}
 
-    foreach($dir as $f) {
-        if ($f == '.' || $f == '..') {
-            continue;
-        }
+    foreach($GLOBALS['mode']->iterator($d) as $f) {
 
 		$realpath = realpath($d . '/' . $f);
-		$f = $realpath ? str_replace('\\', '/', $realpath) : $d . '/' . $f;
+		$f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
         $GLOBALS['mode']->chmod($f, '0777');
         if ($GLOBALS['mode']->is_file($f) || $GLOBALS['mode']->is_link($f)) {
             if (!$GLOBALS['mode']->unlink($f)) {
                 $err .= $f . '<br/>';
             }
         } elseif ($GLOBALS['mode']->is_dir($f)) {
-            $GLOBALS['mode']->rmdir($f);
+            //$GLOBALS['mode']->rmdir($f);
             del_dir($f . '/');
         }
     }
@@ -524,61 +547,46 @@ function del_dir($d = '')
 }
 
 
-function dir_size($file = '')
+function size($source = '', $is_dir = false)
 {
-    if ((!$GLOBALS['mode']->is_dir($file) || !$GLOBALS['mode']->is_link($file)) && !$GLOBALS['mode']->is_readable($file)) {
-        return $GLOBALS['lng']['unknown'];
-    }
-    $ds = array($file);
+    if ($is_dir) {
+	$ds = array($source);
     $sz = 0;
     do {
         $d = array_shift($ds);
-        $dir = $GLOBALS['mode']->opendir($d);
-        
-    if(is_array($dir)){
-    	$dir = array_map('basename', $dir);
-   	}
-   	else{
-    	$tmp = array();
-		while (($file = readdir($dir)) !== false){
-			$tmp[] = $file;
-		}
-		closedir($dir);
-		$dir = $tmp;
-	}
-        
-        foreach($dir as $file) {
-            if ($file != '.' && $file != '..'/* && $GLOBALS['mode']->is_readable($d . '/' . $file)*/) {
+
+        foreach($GLOBALS['mode']->iterator($d) as $file) {
                 if ($GLOBALS['mode']->is_dir($d . '/' . $file)) {
                     $ds[] = $d . '/' . $file;
                 }
                 else{
                 	$sz += $GLOBALS['mode']->filesize($d . '/' . $file);
             	}
-            }
         }
     } while (sizeof($ds) > 0);
 
-    return file_size($sz, false);
+    return $sz;
+    }
+	else {
+        return $GLOBALS['mode']->filesize($source);
+    }
 }
 
 
-function file_size($file = '', $is_file = false)
-{
-    if ($is_file) {
-        $size = $GLOBALS['mode']->filesize($file);
-    } else {
-        $size = $file;
-    }
-
-    if ($size < 1024) {
+function format_size($size = '', $int = 2){
+	if ($size < 1024) {
         return $size . ' Byte';
-    } elseif ($size < 1048576) {
-        return round($size / 1024, 2) . ' Kb';
+    } else if ($size < 1048576) {
+        return round($size / 1024, $int) . ' Kb';
     }
-
-    return round($size / 1024 / 1024, 2) . ' Mb';
+    else if ($size < 1073741824) {
+    	return round($size / 1024 / 1024, $int) . ' Mb';
+   	}
+   	else {
+		return round($size / 1024 / 1024 / 1024, $int) . ' Gb';
+	}
 }
+
 
 function look_chmod($file = '')
 {
@@ -589,15 +597,12 @@ function look_chmod($file = '')
 function create_file($file = '', $text = '', $chmod = '0644')
 {
     if ($GLOBALS['mode']->file_put_contents($file, $text)) {
-        $page .= report($GLOBALS['lng']['fputs_file_true'], false);
-        $page .= rechmod($file, $chmod);
+        return report($GLOBALS['lng']['fputs_file_true'], false) . rechmod($file, $chmod);
     }
     else{
    		$error = error();
-		$page .= report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $error, true);
+		return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $error, true);
    	}
-
-	return $page;
 }
 
 function rechmod($current = '', $chmod = '0755')
@@ -665,7 +670,6 @@ function frename($current = '', $name = '', $chmod = '' /* 0644 */, $del = '', $
             return copy_file($current, $name, $chmod);
         }
     }
-    return;
 }
 
 
@@ -695,7 +699,7 @@ function syntax($source = '', $charset = array())
     }
 
     $fl = trim($GLOBALS['mode']->file_get_contents($source));
-    if ($charset) {
+    if ($charset[0]) {
         $fl = iconv($charset[0], $charset[1], $fl);
     }
 
@@ -705,7 +709,7 @@ function syntax($source = '', $charset = array())
         $arr = explode('<br />', xhtml_highlight($fl));
     }
 
-    for ($i = 0, $end = sizeof($arr); $i < $end; $i++) {
+    for ($i = 0, $end = sizeof($arr); $i < $end; ++$i) {
         if ($i == ($erl - 1)) {
             $page .= '<span class="fail_code">&#160;' . ($i + 1) . '&#160;</span> ' . $arr[$i] .
                 '<br/>';
@@ -720,7 +724,7 @@ function syntax($source = '', $charset = array())
 
 function syntax2($current = '', $charset = array())
 {
-	if(!$charset){
+	if(!$charset[0]){
 		$charset[0] = 'UTF-8';
 	}
     $fp = fsockopen('wapinet.ru', 80, $er1, $er2, 10);
@@ -785,17 +789,16 @@ function validator($current = '', $charset = array())
 	}
 
     $fl = $GLOBALS['mode']->file_get_contents($current);
-    if ($charset) {
+    if ($charset[0]) {
         $fl = iconv($charset[0], $charset[1], $fl);
     } 
 
     $xml_parser = xml_parser_create();
-    if (!xml_parse($xml_parser, $fl, feof($data))) {
+    if (!xml_parse($xml_parser, $fl)) {
         $err = xml_error_string(xml_get_error_code($xml_parser));
         $line = xml_get_current_line_number($xml_parser);
         $column = xml_get_current_column_number($xml_parser);
         xml_parser_free($xml_parser);
-        fclose($data);
         return report('Error [Line ' . $line . ', Column ' . $column . ']: ' . $err, true) . code($fl, $line);
     } else {
         xml_parser_free($xml_parser);
@@ -823,13 +826,15 @@ function url_highlight($fl = '')
 
 function code($fl = '', $line = 0)
 {
+	$page = '';
+
     if (substr_count($fl, "\r") > 2) {
         $arr = explode("\r", url_highlight(str_replace("\n", '', $fl)));
     } else {
         $arr = explode("\n", url_highlight($fl));
     }
 
-    for ($i = 0, $end = sizeof($arr); $i < $end; $i++) {
+    for ($i = 0, $end = sizeof($arr); $i < $end; ++$i) {
         if ($i == ($line - 1)) {
             $page .= '<span class="fail_code">&#160;' . ($i + 1) . '&#160;</span> ' . $arr[$i];
         } else {
@@ -840,70 +845,102 @@ function code($fl = '', $line = 0)
 }
 
 
-function list_zip_archive($current = '')
+function list_zip_archive($current = '', $down = '')
 {
     require_once $GLOBALS['pclzip'];
-    
-    
-    if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
-    	$r_current = str_replace('%2F', '/', rawurlencode($ftp_current));
-   	}
-   	else{
-   		$ftp_current = false;
-   		$r_current = str_replace('%2F', '/', rawurlencode($current));
-	}
+    $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-    $zip = new PclZip($current);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
 
     if (!$list = $zip->listContent()) {
-        return report($GLOBALS['lng']['archive_error'], true);
+    	if($GLOBALS['class'] == 'ftp'){
+			ftp_archive_end('');
+		}
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 2) . '">' . report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), true) . '</td></tr>';
     } else {
+		$link = '';
 
-        for ($i = 0, $s = sizeof($list); $i < $s; $i++) {
+		if($down){
+			$list = array_reverse($list);
+		}
+
+        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
+
         	$r_name = str_replace('%2F', '/', rawurlencode($list[$i]['filename']));
 
             if ($list[$i]['folder']) {
                 $type = 'DIR';
                 $name = htmlspecialchars($list[$i]['filename'], ENT_NOQUOTES);
-                $size = ' ';
+                $size = '';
             } else {
                 $type = htmlspecialchars(get_type($list[$i]['filename']), ENT_NOQUOTES);
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
-                $size = file_size($list[$i]['size'], false);
+                $size = format_size($list[$i]['size']);
             }
-            $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' .
-                $r_name . '"/></td><td>' . $name .
-                '</td><td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name .
-                '">' . $GLOBALS['lng']['get'] . '</a></td><td>' . $type . '</td><td>' . $size .
-                '</td><td> </td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_zip_archive&amp;c=' . $r_current .
-                '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] .
-                '</a></td><td> </td><td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) .
-                '</td><td>' . ($i + 1) . '</td></tr>';
+
+            $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
+            if($GLOBALS['index']['name']){
+				$link .= '<td>' . $name . '</td>';
+			}
+			if($GLOBALS['index']['down']){
+				$link .= '<td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+			}
+			if($GLOBALS['index']['type']){
+				$link .= '<td>' . $type . '</td>';
+			}
+			if($GLOBALS['index']['size']){
+				$link .= '<td>' . $size . '</td>';
+			}
+			if($GLOBALS['index']['change']){
+				$link .= '<td></td>';
+			}
+			if($GLOBALS['index']['del']){
+				$link .= '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+			}
+			if($GLOBALS['index']['chmod']){
+				$link .= '<td></td>';
+			}
+			if($GLOBALS['index']['date']){
+				$link .= '<td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) . '</td>';
+			}
+
+			$link .= '<td>' . ($i + 1) . '</td></tr>';
         }
-		
-		if($ftp_current){
-			unlink($current);
+
+		if($GLOBALS['class'] == 'ftp'){
+			ftp_archive_end();
 		}
+
+		$prop = $zip->properties();
+		if($prop['comment']){
+			if(iconv('UTF-8', 'UTF-8', $prop['comment']) != $prop['comment']){
+				$prop['comment'] = iconv('Windows-1251', 'UTF-8', $prop['comment']);
+			}
+			$link .= '<tr class="border"><td>' . $GLOBALS['lng']['comment_archive'] . '</td><td colspan="' . (array_sum($GLOBALS['index']) + 2) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
+		}
+
         return $link;
     }
 }
 
 
-function list_tar_archive($current = '')
+function list_tar_archive($current = '', $down = '')
 {
     require_once $GLOBALS['tar'];
 
     $tar = new Archive_Tar($current);
 
     if (!$list = $tar->listContent()) {
-        return report($GLOBALS['lng']['archive_error'], true);
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 2) . '">' . report($GLOBALS['lng']['archive_error'], true) . '</td></tr>';
     } else {
 		$r_current = str_replace('%2F', '/', rawurlencode($current));
+		$link = '';
 
-        for ($i = 0, $s = sizeof($list); $i < $s; $i++) {
+		if($down){
+			$list = array_reverse($list);
+		}
+
+        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
         	$r_name = rawurlencode($list[$i]['filename']);
 
             if ($list[$i]['typeflag']) {
@@ -912,18 +949,10 @@ function list_tar_archive($current = '')
                 $size = ' ';
             } else {
                 $type = htmlspecialchars(get_type($list[$i]['filename']), ENT_NOQUOTES);
-                $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' .
-                    htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
-                $size = file_size($list[$i]['size'], false);
+                $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
+                $size = format_size($list[$i]['size']);
             }
-            $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' .
-                $r_name . '"/></td><td>' . $name .
-                '</td><td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name .
-                '">' . $GLOBALS['lng']['get'] . '</a></td><td>' . $type . '</td><td>' . $size .
-                '</td><td> </td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_tar_archive&amp;c=' . $r_current .
-                '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] .
-                '</a></td><td> </td><td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) .
-                '</td><td>' . ($i + 1) . '</td></tr>';
+            $link .= '<tr class="border"><td><input name="check[]" type="checkbox" value="' . $r_name . '"/></td><td>' . $name . '</td><td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td><td>' . $type . '</td><td>' . $size . '</td><td> </td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td><td> </td><td>' . strftime($GLOBALS['date_format'], $list[$i]['mtime']) . '</td><td>' . ($i + 1) . '</td></tr>';
         }
 
         return $link;
@@ -934,27 +963,18 @@ function list_tar_archive($current = '')
 function edit_zip_file($current = '', $f = '')
 {
     require_once $GLOBALS['pclzip'];
-	
-	$ftp_current = false;
-    if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
-   	}
 
-
-    $zip = new PclZip($current);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
     $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
-	
-	if($ftp_current){
-		unlink($current);
+
+	if($GLOBALS['class'] == 'ftp'){
+		ftp_archive_end('');
 	}
 
     if (!$ext) {
         return array('text' => $GLOBALS['lng']['archive_error'], 'size' => 0, 'lines' => 0);
     } else {
-        return array('text' => trim($ext[0]['content']), 'size' => file_size($ext[0]['size'], false),
-            'lines' => sizeof(explode("\n", $ext[0]['content'])));
+        return array('text' => trim($ext[0]['content']), 'size' => format_size($ext[0]['size']), 'lines' => sizeof(explode("\n", $ext[0]['content'])));
     }
 }
 
@@ -965,6 +985,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
 
     define('PCLZIP_TMP_NAME', $f);
     $tmp = dirname(__FILE__).'/data/GmanagerArchivers'.time().'.tmp';
+
     $fp = fopen($tmp, 'w');
     
     if(!$fp){
@@ -975,16 +996,15 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
     fputs($fp, $text);
     fclose($fp);
 
-	$ftp_current = false;
-	if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+
+    if($zip->delete(PCLZIP_OPT_BY_NAME, $f) == 0){
+    	if($GLOBALS['class'] == 'ftp'){
+    		ftp_archive_end('');
+   		}
+    	unlink($tmp);
+    	return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $zip->errorInfo(true), true);
    	}
-
-    $zip = new PclZip($current);
-
-    $zip->delete(PCLZIP_OPT_BY_NAME, $f);
 
     function cb($p_event, &$p_header)
     {
@@ -992,12 +1012,12 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
         return 1;
     }
 
-    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb'/*, PCLZIP_OPT_TEMP_FILE_THRESHOLD, $GLOBALS['memory_limit']*/);
+    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb');
+
     unlink($tmp);
-    if($ftp_current){
-    	$GLOBALS['mode']->file_put_contents($ftp_current, file_get_contents($current));
-    	unlink($current);
-   	}
+    if($GLOBALS['class'] == 'ftp'){
+		ftp_archive_end($current);
+	}
 
     if ($fl) {
         return report($GLOBALS['lng']['fputs_file_true'], false);
@@ -1010,32 +1030,24 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
 function look_zip_file($current = '', $f = '')
 {
 	require_once $GLOBALS['pclzip'];
-
-	if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
-    	$r_current = str_replace('%2F', '/', rawurlencode($ftp_current));
-   	}
-   	else{
-   		$ftp_current = false;
-   		$r_current = str_replace('%2F', '/', rawurlencode($current));
-	}
-
+	$r_current = str_replace('%2F', '/', rawurlencode($current));
 	$r_f = str_replace('%2F', '/', rawurlencode($f));
 
-
-    $zip = new PclZip($current);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
     $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
-    if($ftp_current){
-    	unlink($current);
-   	}
+	if($GLOBALS['class'] == 'ftp'){
+	    ftp_archive_end('');
+	}
 
-    if (!$ext) {
+    if (!$ext)	{
         return report($GLOBALS['lng']['archive_error'], true);
-    } else {
-        return report($GLOBALS['lng']['archive_size'] . ': ' . file_size($ext[0]['compressed_size'], false) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . file_size($ext[0]['size'], false) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', false) . archive_fl(trim($ext[0]['content']));
+    }
+    else if($ext[0]['status'] == 'unsupported_encryption') {
+    	return report($GLOBALS['lng']['archive_error_encrypt'], true);
+   	}
+	else {
+        return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', false) . archive_fl(trim($ext[0]['content']));
     }
 }
 
@@ -1052,11 +1064,11 @@ function look_tar_file($current = '', $f = '')
     } else {
         $list = $tar->listContent();
 
-        for ($i = 0, $s = sizeof($list); $i < $s; $i++) {
+        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
             if ($list[$i]['filename'] != $f) {
                 continue;
             } else {
-                return report($GLOBALS['lng']['real_size'] . ': ' . file_size($list[$i]['size'], false) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), false) . archive_fl(trim($ext));
+                return report($GLOBALS['lng']['real_size'] . ': ' . format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), false) . archive_fl(trim($ext));
             }
         }
     }
@@ -1067,14 +1079,11 @@ function extract_zip_archive($current = '', $name = '', $chmod = array())
 {
     require_once $GLOBALS['pclzip'];
 
-    $ftp_current = false;
-   	if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$ftp_name = $name;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	$name = dirname(__FILE__).'/data/GmanagerZipFtp'.time().'/';
-    	mkdir($name, 0777);
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
+   	if($GLOBALS['class'] == 'ftp'){
+    	$ftp_current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
+    	$ftp_name = dirname(__FILE__).'/data/GmanagerZipFtp'.time().'/';
+    	mkdir($ftp_name, 0777);
+    	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
    	}
 
 
@@ -1090,16 +1099,21 @@ function extract_zip_archive($current = '', $name = '', $chmod = array())
 		}
 		return 1;
 	}
-	
-	
-	$zip = new PclZip($current);
-	$zip->extract(PCLZIP_OPT_PATH, $name, PCLZIP_CB_POST_EXTRACT, 'callback_post_extract');
 
-	if($ftp_current){
-		create_dir($ftp_name, CHMODD);
-		move_files_ftp($name, $ftp_name, CHMODF, CHMODD);
-    	unlink($current);
-    	$name = '/'.$ftp_name;
+
+	$zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
+	if(!$zip->extract(PCLZIP_OPT_PATH, $GLOBALS['class'] == 'ftp' ? $ftp_name : $name, PCLZIP_CB_POST_EXTRACT, 'callback_post_extract')){
+		if($GLOBALS['class'] == 'ftp'){
+			unlink($ftp_current);
+			rmdir($ftp_name);
+		}
+		return report($GLOBALS['lng']['extract_false'] . '<br/>' . $zip->errorInfo(true), true);
+	}
+
+	if($GLOBALS['class'] == 'ftp'){
+		create_dir($name, CHMODD);
+		ftp_move_files($ftp_name, $name, CHMODF, CHMODD);
+    	unlink($ftp_current);
    	}
 
     if ($GLOBALS['mode']->is_dir($name)) {
@@ -1118,7 +1132,10 @@ function extract_tar_archive($current = '', $name = '', $chmod = array())
     require_once $GLOBALS['tar'];
 
     $tar = new Archive_Tar($current);
-    $tar->extract($name);
+
+    if(!$tar->extract($name)){
+    	return report($GLOBALS['lng']['extract_false'], true);
+   	}
 
     foreach($tar->listContent() as $var){
     	if($GLOBALS['mode']->is_dir($name.'/'.$var['filename'])){
@@ -1142,23 +1159,24 @@ function extract_zip_file($current = '', $name = '', $chmod = '0755', $ext = '')
 {
     require_once $GLOBALS['pclzip'];
 
-    $ftp_current = false;
-   	if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZipArchive'.time().'.tmp';
-    	$ftp_name = $name;
-    	$name = dirname(__FILE__).'/data/GmanagerFtpZipFile'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
+   	if($GLOBALS['class'] == 'ftp'){
+    	$ftp_current = dirname(__FILE__).'/data/GmanagerFtpZipArchive'.time().'.tmp';
+    	$ftp_name = dirname(__FILE__).'/data/GmanagerFtpZipFile'.time().'.tmp';
+    	file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
    	}
 
-    $zip = new PclZip($current);
-    $zip->extract(PCLZIP_OPT_PATH, $name, PCLZIP_OPT_BY_NAME, $ext);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
+    if(!$zip->extract(PCLZIP_OPT_PATH, $name, PCLZIP_OPT_BY_NAME, $ext)){
+    	if($GLOBALS['class'] == 'ftp'){
+    		unlink($ftp_current);
+   		}
+    	return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $zip->errorInfo(true), true);
+   	}
 
-    if($ftp_current){
-    	create_dir($ftp_name);
-    	move_files_ftp($name, $ftp_name);
-    	unlink($current);
-    	$name = '/' . $ftp_name;
+    if($GLOBALS['class'] == 'ftp'){
+    	create_dir($name);
+    	ftp_move_files($ftp_name, $name);
+    	unlink($ftp_current);
    	}
 
     if ($GLOBALS['mode']->is_dir($name)) {
@@ -1177,20 +1195,10 @@ function extract_tar_file($current = '', $name = '', $chmod = '0755', $ext = '')
     require_once $GLOBALS['tar'];
 
     $tar = new Archive_Tar($current);
-    $GLOBALS['mode']->mkdir($name, $chmod);
-    $GLOBALS['mode']->chmod($name, $chmod);
-
-    for ($i = 0, $a = sizeof($ext); $i <= $a; $i++) {
-        $folder = explode('/', $name . '/' . $ext[$i]);
-        $folder2 = '';
-        for ($i2 = 0, $s2 = sizeof($folder) - 1; $i2 < $s2; $i2++) {
-            $folder2 .= $folder[$i2] . '/';
-            $GLOBALS['mode']->mkdir($folder2, $chmod);
-            $GLOBALS['mode']->chmod($folder2, $chmod);
-        }
-
-		$GLOBALS['mode']->file_put_contents($name . '/' . $ext[$i], $tar->extractInString($ext[$i]));
-    }
+    
+    if(!$tar->extractList($ext, $name)){
+    	return report($GLOBALS['lng']['extract_file_false'], true);
+   	}
 
     if ($GLOBALS['mode']->is_dir($name)) {
         if ($chmod) {
@@ -1207,23 +1215,14 @@ function del_zip_archive($current = '', $f = '')
 {
     require_once $GLOBALS['pclzip'];
 
-    $ftp_current = false;
-	if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
-   	}
-
-
-    $zip = new PclZip($current);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
     $list = $zip->delete(PCLZIP_OPT_BY_NAME, $f);
-    
-    if($ftp_current){
-    	$GLOBALS['mode']->file_put_contents($ftp_current, file_get_contents($current));
-    	unlink($current);
+
+    if($GLOBALS['class'] == 'ftp'){
+    	ftp_archive_end($current);
    	}
 
-    if ($list) {
+    if ($list != 0) {
     	return report($GLOBALS['lng']['del_file_true'], false);
     } else {
         return report($GLOBALS['lng']['del_file_false'], true);
@@ -1241,7 +1240,7 @@ function del_tar_archive($current = '', $f = '')
 
     $new_tar = $new_tar_string = array();
 
-    for ($i = 0, $s = sizeof($list); $i < $s; $i++) {
+    for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
         if ($list[$i]['filename'] == $f) {
             continue;
         } else {
@@ -1252,9 +1251,11 @@ function del_tar_archive($current = '', $f = '')
 
 	$GLOBALS['mode']->file_put_contents($current, '');
 
-    for ($i = 0, $s = sizeof($new_tar); $i < $s; $i++) {
-        if ($new_tar[$i][iconv_strlen($new_tar[$i]) - 1] == '/') {
-            $tar->addModify('.', iconv_substr($new_tar[$i], 0, -1));
+    for ($i = 0, $s = sizeof($new_tar); $i < $s; ++$i) {
+    	$l = strrev($new_tar[$i]);
+        if ($l[0] == '/') {
+        	$l[0] = '';
+            $tar->addModify('.', strrev($l));
         } else {
             $tar->addString($new_tar[$i], $new_tar_string[$i]);
         }
@@ -1280,13 +1281,13 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <table>
 <tr>
 <th>' . $GLOBALS['lng']['ch_index'] . '</th>
-<th>' . $GLOBALS['lng']['name'] . '</th>
-<th>' . $GLOBALS['lng']['type'] . '</th>
-<th>' . $GLOBALS['lng']['size'] . '</th>
-<th>' . $GLOBALS['lng']['change'] . '</th>
-<th>' . $GLOBALS['lng']['del'] . '</th>
-<th>' . $GLOBALS['lng']['chmod'] . '</th>
-<th>' . $GLOBALS['lng']['date'] . '</th>
+' . ($GLOBALS['index']['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . '
+' . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . '
+' . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . '
+' . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . '
+' . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . '
+' . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . '
+' . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '
 <th>' . $GLOBALS['lng']['n'] . '</th>
 </tr>';
 
@@ -1307,28 +1308,18 @@ echo '</table>
 <div class="rb">
 <a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/>
 </div>';
-
-return;
 }
 
 
-function add_zip_archive($add_archive = '', $ext = '', $dir = '')
+function add_zip_archive($current = '', $ext = '', $dir = '')
 {
     require_once $GLOBALS['pclzip'];
-    
-    $ftp_current = false;
-   	if(get_class($GLOBALS['mode']) == 'ftp'){
-    	$ftp_current = $current;
-    	$current = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    	file_put_contents($current, $GLOBALS['mode']->file_get_contents($ftp_current));
-   	}
 
-    $zip = new PclZip($add_archive);
-    $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH/*, PCLZIP_OPT_TEMP_FILE_THRESHOLD, $GLOBALS['memory_limit']*/);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+    $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH);
 
-    if($ftp_current){
-    	$GLOBALS['mode']->file_put_contents($ftp_current, file_get_contents($current));
-    	unlink($current);
+    if($GLOBALS['class'] == 'ftp'){
+    	ftp_archive_end($current);
    	}
 
     if ($add) {
@@ -1346,8 +1337,7 @@ function add_tar_archive($add_archive = '', $ext = '', $dir = '')
     $tar = new Archive_Tar($add_archive);
 
     foreach ($ext as $v) {
-        $path = pathinfo($v);
-        $add = $tar->addModify($v, $dir, $path['dirname']);
+        $add = $tar->addModify($v, $dir, dirname($v));
     }
 
     if ($add) {
@@ -1358,30 +1348,26 @@ function add_tar_archive($add_archive = '', $ext = '', $dir = '')
 }
 
 
-function create_zip_archive($name = '', $chmod = '0644', $ext = array())
+function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $comment = '')
 {
-	$ftp = false;
     require_once $GLOBALS['pclzip'];
 
     define('CUR', str_replace('//', '/', '/' . strstr($GLOBALS['current'], '/')));
-	
-	if(!$GLOBALS['mode']->is_file($name)){
-		$GLOBALS['mode']->mkdir(iconv_substr($name, 0, strrpos($name, '/')), '0755');
-	}
-	
-	if(get_class($GLOBALS['mode']) == 'ftp'){
-		$ftp_name = $name;
- 		$name = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
+
+	create_dir(iconv_substr($name, 0, strrpos($name, '/')));
+
+	if($GLOBALS['class'] == 'ftp'){
+ 		$ftp_name = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
  		$ftp = array();
  		foreach($ext as $f){
  			$ftp[] = $tmp = dirname(__FILE__).'/data/'.basename($f);
  			file_put_contents($tmp, $GLOBALS['mode']->file_get_contents($f));
 		}
 		$ext = $ftp;
-		$ftp = true;
+		unset($ftp);
 	}
 
-    $zip = new PclZip($name);
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_name : $name);
     function cb($p_event, &$p_header)
     {
         $test = explode(CUR, $p_header['filename']);
@@ -1389,18 +1375,22 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array())
         return 1;
     }
 
-    $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb'/*, PCLZIP_OPT_TEMP_FILE_THRESHOLD, $GLOBALS['memory_limit']*/);
-	
+	if($comment != ''){
+		$zip->create($ext, PCLZIP_OPT_COMMENT, $comment, PCLZIP_CB_PRE_ADD, 'cb');
+	}
+	else{
+		$zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb');
+	}
+
 	$err = false;
-	if($ftp){
-		if(!$GLOBALS['mode']->file_put_contents($ftp_name, file_get_contents($name))){
+	if($GLOBALS['class'] == 'ftp'){
+		if(!$GLOBALS['mode']->file_put_contents($name, file_get_contents($ftp_name))){
 			$err = error();
 		}
-		unlink($name);
+		unlink($ftp_name);
 		foreach($ext as $f){
 			unlink($f);
 		}
-		$name = '/'.$ftp_name;
 	}
 	
 	
@@ -1417,50 +1407,63 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array())
 
 function gz($c = '')
 {
-    $ext = implode('', gzfile($c));
+    $ext = implode('', gzfile($GLOBALS['class'] == 'ftp' ? ftp_archive_start($c) : $c));
     $gz = explode(chr(0), $GLOBALS['mode']->file_get_contents($c));
-	
-	if($gz[1] == ''){
-		$gz[1] = basename($c);
+
+	if(!isset($gz[1]) || $gz[1] == ''){
+		$gz[1] = basename($c, '.gz');
+	}
+
+	if($GLOBALS['class'] == 'ftp'){
+		ftp_archive_end();
 	}
 
     if ($ext) {
-    	return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[1], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . file_size($c, true) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . file_size(strlen($ext), false) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), false) . archive_fl(trim($ext));
+    	if(!$len = iconv_strlen($ext)){
+    		$len = strlen($ext);
+   		}
+    	return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[1], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), false) . archive_fl(trim($ext));
     } else {
         return report($GLOBALS['lng']['archive_error'], true);
     }
 }
 
 
-function gz_extract($c = '', $name = '', $chmod = '0644')
+function gz_extract($c = '', $name = '', $chmod = array())
 {
-    $GLOBALS['mode']->mkdir($name, $chmod[1]);
-    $GLOBALS['mode']->chmod($name, $chmod[1]);
+	create_dir($name, $chmod[1]);
+
+	$tmp = ($GLOBALS['class'] == 'ftp' ? ftp_archive_start($c) : $c);
 
 	if(ob_start()){
-		readgzfile($c);
+		readgzfile($tmp);
 		$get = ob_get_contents();
 		ob_end_clean();
 	}
 	else{
-		$gz = gzopen($c, 'r');
-		$get = gzread($gz, $GLOBALS['mode']->filesize($c) * 10);
+		$gz = gzopen($tmp, 'r');
+		$get = gzread($gz, 2147483647);
 		gzclose($gz);
 	}
 
+    if($GLOBALS['class'] == 'ftp'){
+    	ftp_archive_end();
+   	}
+
 
     $gz = explode(chr(0), $GLOBALS['mode']->file_get_contents($c));
-    if ($gz[1] == '') {
+    if (!isset($gz[1]) || $gz[1] == '') {
         $gz[1] = basename($c, '.gz');
     }
-    
+
+
     if(!$GLOBALS['mode']->file_put_contents($name . '/' . $gz[1], $get)){
     	$error = error();
     	return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $error, true);
    	}
 
     if ($GLOBALS['mode']->is_file($name . '/' . $gz[1])) {
-        if ($chmod) {
+        if ($chmod[0]) {
             rechmod($name, $chmod[0]);
         }
         return report($GLOBALS['lng']['extract_file_true'], false);
@@ -1478,6 +1481,7 @@ function archive_fl($fl = '')
         $arr = explode('<br />', xhtml_highlight($fl));
     }
 
+	$page = '';
     foreach ($arr as $i => $val) {
         $page .= '<span class="true_code">' . ($i + 1) . '</span> ' . $val . '<br/>';
     }
@@ -1490,19 +1494,12 @@ function get_archive_file($archive = '', $f = '')
 {
     switch (is_archive(get_type($archive))) {
         case 'ZIP':
-            $ftp_current = false;
-   			if(get_class($GLOBALS['mode']) == 'ftp'){
-    			$ftp_archive = $archive;
-    			$archive = dirname(__FILE__).'/data/GmanagerFtpZip'.time().'.tmp';
-    			file_put_contents($archive, $GLOBALS['mode']->file_get_contents($ftp_archive));
-   			}
-
             require_once $GLOBALS['pclzip'];
-            $zip = new PclZip($archive);
+            $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($archive) : $archive);
             $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
-            if($ftp_archive){
-            	unlink($archive);
+            if($GLOBALS['class'] == 'ftp'){
+            	ftp_archive_end('');
            	}
 
             return $ext[0]['content'];
@@ -1515,7 +1512,6 @@ function get_archive_file($archive = '', $f = '')
             return $tar->extractInString($f);
 		break;
     }
-    return;
 }
 
 
@@ -1545,9 +1541,8 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
     $tmp = array();
     $url = trim($url);
 
-    if (substr_count($url, "\n")) {
-        $explode = explode("\n", $url);
-        foreach ($explode as $v) {
+    if (strpos($url, "\n") !== false) {
+        foreach (explode("\n", $url) as $v) {
             $v = trim($v);
             $tmp[] = array($v, $name . basename($v));
         }
@@ -1558,7 +1553,6 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
             $name = $name . basename($url);
         }
         $tmp[] = array($url, $name);
-
     }
 
     ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
@@ -1592,21 +1586,71 @@ function show_eval($eval = '')
 {
 
     if (ob_start()) {
+    	$info['time'] = microtime(true);
+    	$info['ram'] = memory_get_usage(false);
         eval($eval);
-        $ret = ob_get_contents();
+        $info['time'] = round(microtime(true) - $info['time'], 6);
+        $info['ram'] = format_size(memory_get_usage(false) - $info['ram'], 6);
+        $buf = ob_get_contents();
         ob_end_clean();
 
-        $rows = sizeof(explode("\n", $ret)) + 1;
+        $rows = sizeof(explode("\n", $buf)) + 1;
         if ($rows < 3) {
             $rows = 3;
         }
-        return $tmp . '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($ret, ENT_NOQUOTES) . '</textarea></div>';
+        return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' '.$info['ram'].'<br/></div>';
     } else {
-        echo '<pre class="code"><code>';
+        echo '<div class="input">' . $GLOBALS['lng']['result'] . '<pre class="code"><code>';
+
+       	$info['time'] = microtime(true);
+    	$info['ram'] = memory_get_usage(false);
+
         eval($eval);
+
+        $info['time'] = round(microtime(true) - $info['time'], 6);
+        $info['ram'] = format_size(memory_get_usage(false) - $info['ram'], 6);
+
         echo '</code></pre>';
-        return;
+        echo str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' '.$info['ram'].'<br/></div>';
     }
+}
+
+
+function show_cmd($cmd = '')
+{
+$buf = '';
+
+/*
+	$h = popen($cmd, 'r');
+	while (!feof($h)) {
+   		$buf .= fgets($h, 4096);
+	}
+	pclose($h);
+*/
+
+if($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)){
+
+	//fwrite($pipes[0], '');
+    fclose($pipes[0]);
+
+    $buf = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+
+    proc_close($h);
+
+	$rows = sizeof(explode("\n", $buf)) + 1;
+	if ($rows < 3) {
+		$rows = 3;
+	}
+
+	if(iconv('UTF-8', 'UTF-8', $buf) != $buf){
+		$buf = iconv('CP866', 'UTF-8', $buf);
+	}
+}
+else{
+	return '<div class="red">' . $GLOBALS['lng']['cmd_error'] . '<br/></div>';
+}
+	return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
 }
 
 
@@ -1638,7 +1682,7 @@ function replace($current = '', $from = '', $to = '', $regexp = '')
             return report($GLOBALS['lng']['replace_false_str'], true);
         }
 
-		
+
         if(!$GLOBALS['mode']->file_put_contents($current, str_replace($from, $to, $c))){
        		$error = error();
             return report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $error, true);
@@ -1700,26 +1744,8 @@ function search($c = '', $s = '', $w = '', $r = '')
     $i = 0;
     $in = '';
     $page = array();
-    $dir = $GLOBALS['mode']->opendir($c);
 
-	if(is_array($dir)){
-    	$dir = array_map('basename', $dir);
-   	}
-   	else{
-    	$tmp = array();
-		while (($file = readdir($dir)) !== false){
-			$tmp[] = $file;
-		}
-		closedir($dir);
-		$dir = $tmp;
-	}
-
-
-
-    foreach($dir as $f) {
-        if ($f == '.' || $f == '..') {
-            continue;
-        }
+    foreach($GLOBALS['mode']->iterator($c) as $f) {
         if ($GLOBALS['mode']->is_dir($c . $f)) {
             search($c . $f . '/', $s, $w, $r);
             continue;
@@ -1752,7 +1778,7 @@ function search($c = '', $s = '', $w = '', $r = '')
 				}
 				else{
 					$gz = gzopen($c . $f, 'r');
-					$fl = gzread($gz, $GLOBALS['mode']->filesize($c . $f) * 8);
+					$fl = gzread($gz, 2147483647);
 					gzclose($gz);
 				}
             } else {
@@ -1771,33 +1797,44 @@ function search($c = '', $s = '', $w = '', $r = '')
 
 
         $i++;
+        $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = '';
 
-            
-        if ($archive) {
-            $page[$f] .= '<td><input name="check[]" type="checkbox" value="' .
-                $r_file . '"/></td><td><a href="index.php?' . $r_file . '">' . $name . '</a>' .
-                $in . '</td><td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] .
-                '</a></td><td>' . $type . '</td><td>' . file_size($c . $f, true) .
-                '</td><td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] .
-                '</a></td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] .
-                '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($c .
-                $f) . '</a></td><td>' . strftime($GLOBALS['date_format'], $time) . '</td><td>' . $i .
-                '</td>';
-        } else {
-            $page[$f] .= '<td><input name="check[]" type="checkbox" value="' .
-                $r_file . '"/></td><td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name .
-                '</a>' . $in . '</td><td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] .
-                '</a></td><td>' . $type . '</td><td>' . file_size($c . $f, true) .
-                '</td><td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] .
-                '</a></td><td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] .
-                '</a></td><td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($c .
-                $f) . '</a></td><td>' . strftime($GLOBALS['date_format'], $time) . '</td><td>' . $i .
-                '</td>';
-        }
+        if($GLOBALS['index']['name']){
+        	if($archive){
+        		$pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
+       		}
+       		else{
+       			$pname = '<td><a href="edit.php?' . $r_file . '"' . $target . '>' . $name . '</a>' . $in . '</td>';
+			}
+       	}
+       	if($GLOBALS['index']['down']){
+        	$pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+       	}
+       	if($GLOBALS['index']['type']){
+        	$ptype = '<td>' . $type . '</td>';
+       	}
+       	if($GLOBALS['index']['size']){
+        	$psize = '<td>' . format_size(size($c . $f)) . '</td>';
+       	}
+       	if($GLOBALS['index']['change']){
+        	$pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
+       	}
+       	if($GLOBALS['index']['del']){
+        	$pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+       	}
+       	if($GLOBALS['index']['chmod']){
+        	$pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($c . $f) . '</a></td>';
+       	}
+       	if($GLOBALS['index']['date']){
+        	$pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
+       	}
+       	
+		$page[$f] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . '<td>' . $i . '</td>';
+
     }
 
-    ksort($page, $sort);
-    
+    natcasesort($page);
+
     $line = false;
     foreach ($page as $var) {
    		$line = !$line;
@@ -1809,7 +1846,6 @@ function search($c = '', $s = '', $w = '', $r = '')
 		}
 	}
 
-    return;
 }
 
 
@@ -1831,19 +1867,29 @@ function fname($f = '', $name = '', $register = '', $i = '')
     //$name = str_replace('[n]', $i, $name);
     $name = str_replace('[f]', $info['extension'], $name);
     $name = str_replace('[name]', $info['filename'], $name);
-    $name = str_replace('[date]', strftime('%d_%m_%Y', time()), $name);
+    $name = str_replace('[date]', strftime('%d_%m_%Y'/*, time()*/), $name);
+
 
     if ($register == 1) {
-        $name = strtolower($name);
+        $tmp = strtolower($name);
+        if(!iconv_strlen($tmp)){
+        	$tmp = iconv('Windows-1251', 'UTF-8', strtolower(iconv('UTF-8', 'Windows-1251', $name)));
+        }
     } elseif ($register == 2) {
-        $name = strtoupper($name);
+        $tmp = strtoupper($name);
+        if(!iconv_strlen($tmp)){
+        	$tmp = iconv('Windows-1251', 'UTF-8', strtoupper(iconv('UTF-8', 'Windows-1251', $name)));
+        }
     }
+    else{
+    	$tmp = $name;
+   	}
 
-    if ($GLOBALS['mode']->rename($f, $info['dirname'] . '/' . $name)) {
-        return report($info['basename'] . ' - ' . $name, false);
+    if ($GLOBALS['mode']->rename($f, $info['dirname'] . '/' . $tmp)) {
+        return report($info['basename'] . ' - ' . $tmp, false);
     } else {
     	$error = error();
-        return report($info['basename'] . ' - ' . $name . ' (' . $error . ')', true);
+        return report($info['basename'] . ' - ' . $tmp . ' (' . $error . ')', true);
     }
 }
 
@@ -1852,7 +1898,7 @@ function sql_parser($sql = '')
 {
     $arr = explode("\n", $sql);
 
-    for ($i = 0, $size = sizeof($arr); $i <= $size; $i++) {
+    for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {
         if (trim($arr[$i]) && $arr[$i][0] != '#' && $arr[$i][0] . $arr[$i][1] != '--') {
             $str .= $arr[$i];
         }
@@ -1878,7 +1924,7 @@ function sql_installer($host = '', $name = '', $pass = '', $db = '', $charset = 
 
     $php = '<?php
 // SQL Installer
-// Created in Gmanager 0.6.1
+// Created in Gmanager ' . $GLOBALS['version'] . '
 // http://wapinet.ru/gmanager/
 
 error_reporting(0);
@@ -1896,7 +1942,10 @@ echo \'<?xml version="1.0" encoding="UTF-8"?>
 <head>
 <title>SQL Installer</title>
 <style type="text/css">
-body{background-color:#ccc;color:#000;}
+body {
+	background-color: #cccccc;
+	color: #000000;
+}
 </style>
 </head>
 <body>
@@ -1962,15 +2011,14 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         }
     }
 
-    $query = sql_parser($data);
 
-    $i = 0;
+    $i = $time = 0;
     $out = '';
-    $time = 0;
-    foreach ($query as $q) {
+    foreach (sql_parser($data) as $q) {
         $result = array();
         $str = '';
-		
+
+
 		while(iconv_substr($q, iconv_strlen($q)-1, 1) == ';'){
 			$q = iconv_substr($q, 0, -1);
 		}
@@ -2012,7 +2060,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
     }
 
     mysql_close($connect);
-    return report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . str_replace('%time%', round($time, 4), $GLOBALS['lng']['microtime']), false) . $out;
+    return report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), false) . $out;
 }
 
 
@@ -2050,10 +2098,8 @@ function go($pg = 0, $all = 0, $text = '')
         $go = '<a href="' . $_SERVER['PHP_SELF'] . '?pg=1' . $text . '">1</a> ... ' . $go;
     }
 
-    if ($go == $pg . ' ') {
-        return;
-    } else {
-        return '<tr><td class="border" colspan="9">&#160;' . $go . '</td></tr>';
+    if ($go != $pg . ' ') {
+        return '<tr><td class="border" colspan="' . (array_sum($GLOBALS['index']) + 2) . '">&#160;' . $go . '</td></tr>';
     }
 }
 
@@ -2096,7 +2142,7 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
 	);
 
     // Если докачка
-    if ($_SERVER['HTTP_RANGE']) {
+    if ($range = isset($_SERVER['HTTP_RANGE'])) {
         if (preg_match('/bytes=(\d+)-(\d*)/i', $_SERVER['HTTP_RANGE'], $matches)) {
             // "От", "До" если "До" нету, "До" равняется размеру файла
             $file_range = array('from' => $matches[1], 'to' => (!$matches[2]) ? $len : $matches[2]);
@@ -2248,8 +2294,7 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
 
     // Хэш
     $etag = md5($f);
-    $etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10,
-        8);
+    $etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
     header('ETag: "' . $etag . '"');
 
 
@@ -2262,9 +2307,8 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
 
 
     // Если докачка
-    if ($_SERVER['HTTP_RANGE']) {
-        header('Content-Range: bytes ' . $file_range['from'] . '-' . $file_range['to'] .
-            '/' . $len);
+    if ($range) {
+        header('Content-Range: bytes ' . $file_range['from'] . '-' . $file_range['to'] . '/' . $len);
     }
 
 
@@ -2281,7 +2325,6 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
     //ob_end_flush();
 	
 	exit($out);
-    return;
 }
 
 
@@ -2292,49 +2335,47 @@ function getData($url = '', $headers = '')
 $u = parse_url($url);
 
 $host = $u['host'];
-$path = $u['path'] ? $u['path'] : '/';
-$port = $u['port'] ? $u['port'] : 80;
+$path = isset($u['path']) ? $u['path'] : '/';
+$port = isset($u['port']) ? $u['port'] : 80;
 
-if($u['query']){
-	$path.= '?'.$u['query'];
+if(isset($u['query'])){
+	$path .= '?'.$u['query'];
 }
-if($u['fragment']){
-	$path.= '#'.$u['fragment'];
+if(isset($u['fragment'])){
+	$path .= '#'.$u['fragment'];
 }
 
-	$fp	=	fsockopen($host, $port, $errno, $errstr, 10); 
-	if ( !$fp ) 
-	{
+	$fp	= fsockopen($host, $port, $errno, $errstr, 10);
+	if(!$fp){
 		return false;
 	}
-	else
-	{
-		$out	=	'GET ' . $path . ' HTTP/1.0' . "\r\n";
-		$out	.=	'Host: ' . $host . "\r\n";
+	else {
+		$out = 'GET ' . $path . ' HTTP/1.0' . "\r\n";
+		$out .= 'Host: ' . $host . "\r\n";
 		
 		if($headers){
-			$out	.=	trim($headers) . "\r\n";
+			$out .=	trim($headers) . "\r\n";
 		}
 		else{
-			$out	.=	'User-Agent: ' . $_SERVER['HTTP_USER_AGENT'] . "\r\n";
-			$out	.=	'Accept: ' . $_SERVER['HTTP_ACCEPT'] . "\r\n";
-			$out	.=	'Accept-Language: ' . $_SERVER['HTTP_ACCEPT_LANGUAGE'] . "\r\n";
-    		$out	.=	'Accept-Charset: ' . $_SERVER['HTTP_ACCEPT_CHARSET'] . "\r\n";
-			//$out	.=	'TE: deflate, gzip, chunked, identity, trailers' . "\r\n";
-			$out	.=	'Connection: Close' . "\r\n";
+			$out .=	'User-Agent: ' . $_SERVER['HTTP_USER_AGENT'] . "\r\n";
+			$out .=	'Accept: ' . $_SERVER['HTTP_ACCEPT'] . "\r\n";
+			$out .=	'Accept-Language: ' . $_SERVER['HTTP_ACCEPT_LANGUAGE'] . "\r\n";
+    		$out .=	'Accept-Charset: ' . $_SERVER['HTTP_ACCEPT_CHARSET'] . "\r\n";
+			//$out .= 'TE: deflate, gzip, chunked, identity, trailers' . "\r\n";
+			$out .= 'Connection: Close' . "\r\n";
 		}
-		$out.= "\r\n";
+		$out .= "\r\n";
 		
-		fwrite ( $fp, $out );
-		$headers = ''; 
-		while ( $str = trim ( fgets ( $fp, 512 ) ) ){
+		fwrite($fp, $out);
+		$headers = '';
+		while($str = trim(fgets($fp, 512))) {
 			$headers .= $str . "\r\n";
 		}
 		$body = '';
-		while ( !feof ( $fp ) ){
-			$body .= fgets ( $fp, 4096 );
+		while(!feof($fp)) {
+			$body .= fgets($fp, 4096);
 		}
-		fclose ( $fp );
+		fclose($fp);
 	}
 
 	return array (
@@ -2352,7 +2393,7 @@ function error(){
 	$error = error_get_last();
 	//$message = explode(':', $error['message']);
  	//return 'Error: ' . end($message);
- 	return preg_replace('/\[<a href=\'function\.(.+?)\'>function\.(.+)<\/a>\]/isU', '[<a href="http://php.net/function.$1">function.$2</a>]', $error['message']);
+ 	return $error['message'];
 }
 
 
@@ -2374,7 +2415,7 @@ function encoding($text, $charset){
 }
 
 
-function move_files_ftp($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'){
+function ftp_move_files($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'){
 	$h = opendir($from);
 	while(($f = readdir($h)) !== false){
 		if($f == '.' || $f == '..'){
@@ -2383,7 +2424,7 @@ function move_files_ftp($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'
 
 		if(is_dir($from . '/' . $f)) {
 			$GLOBALS['mode']->mkdir($to . '/' . $f, $chmodd);
-			move_files_ftp($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd);
+			ftp_move_files($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd);
 			rmdir($from . '/' . $f);
 		}
 		else {
@@ -2394,24 +2435,31 @@ function move_files_ftp($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'
 	}
 closedir($h);
 rmdir($from);
-return;
+}
+
+
+function ftp_archive_start($current = ''){
+    	$GLOBALS['ftp_archive_start'] = dirname(__FILE__).'/data/GmanagerFtpArchive'.time().'.tmp';
+    	file_put_contents($GLOBALS['ftp_archive_start'], $GLOBALS['mode']->file_get_contents($current));
+    	return $GLOBALS['ftp_archive_start'];
+}
+
+
+function ftp_archive_end($current = ''){
+		if($current != ''){
+			$GLOBALS['mode']->file_put_contents($current, file_get_contents($GLOBALS['ftp_archive_start']));
+		}
+		unlink($GLOBALS['ftp_archive_start']);
 }
 
 
 function get_type($f){
 	$type = array_reverse(explode('.', strtoupper(basename($f))));
-	switch($type[1].'.'.$type[0]){
-		case 'TAR.GZ':
-		case 'TAR.BZ':
-		case 'TAR.BZ2':
-		case 'TAR.GZ2':
-			return $type[1].'.'.$type[0];
-		break;
-
-		default:
-			return $type[0];
-		break;
+	if((isset($type[1]) && $type[1] != '') && ($type[1] . '.' . $type[0] == 'TAR.GZ' || $type[1] . '.' . $type[0] == 'TAR.BZ' || $type[1] . '.' . $type[0] == 'TAR.GZ2' || $type[1] . '.' . $type[0] == 'TAR.BZ2')){
+		return $type[1].'.'.$type[0];
 	}
+
+	return $type[0];
 }
 
 
@@ -2449,6 +2497,9 @@ function is_archive($type){
 	}
 }
 
+
+
+
 /*
 function clean($name = ''){
 	$h = opendir($name);
@@ -2467,7 +2518,6 @@ function clean($name = ''){
 	}
 closedir($h);
 rmdir($name);
-return;
 }
 */
 ?>
