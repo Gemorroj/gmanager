@@ -139,13 +139,17 @@ class http
 	public function iterator($str = ''){
 		$tmp = array();
 
-		$dir = new DirectoryIterator($str);
-			foreach ($dir as $fileinfo) {
-    			if (!$fileinfo->isDot()) {
-        			$tmp[] = $fileinfo->getFilename();
-    			}
-			}
-			
+		if(is_readable($str)){
+
+			$dir = new DirectoryIterator($str);
+
+				foreach ($dir as $fileinfo) {
+    				if (!$fileinfo->isDot()) {
+        				$tmp[] = $fileinfo->getFilename();
+    				}
+				}
+
+		}	
 		return $tmp;
 	}
 }

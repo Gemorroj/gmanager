@@ -2201,7 +2201,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         $i++;
 		
 		if($result){
-			$str .= '<th> '.implode(' </th><th> ', array_map('htmlspecialchars', array_keys($result[0]))).' </th>';
+			$str .= '<tr><th> '.implode(' </th><th> ', array_map('htmlspecialchars', array_keys($result[0]))).' </th></tr>';
 
         	foreach ($result as $v) {
             	$str .= '<tr class="border">';
