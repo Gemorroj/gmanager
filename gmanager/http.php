@@ -96,6 +96,10 @@ class http
 	public function is_readable($str = ''){
 		return is_readable($str);
 	}
+	
+	public function is_writable($str = ''){
+		return is_writable($str);
+	}
 
 	public function filesize($str = ''){
 		return sprintf('%u', filesize($str));

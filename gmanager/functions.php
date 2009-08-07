@@ -175,7 +175,7 @@ function look($current = '', $itype = '', $down = '')
 		$out = '&amp;chmod';
 	}
 
-	$out .= $down ? '&amp;up' : '&amp;down';
+	$out .= $down ? '&amp;down' : '&amp;up';
 
 	$key = $time = $type = $isize = $chmod = $name = '';
 
@@ -625,6 +625,8 @@ function look_chmod($file = '')
 
 function create_file($file = '', $text = '', $chmod = '0644')
 {
+	create_dir(dirname($file));
+
     if ($GLOBALS['mode']->file_put_contents($file, $text)) {
         return report($GLOBALS['lng']['fputs_file_true'], false) . rechmod($file, $chmod);
     }
@@ -660,16 +662,22 @@ function rechmod($current = '', $chmod = '0755')
 
 function create_dir($dir = '', $chmod = '0755')
 {
-	$tmp = '';
-	$err = '';
+	$tmp = $tmp2 = $err = '';
+	$i = 0;
+	$g = explode(DIRECTORY_SEPARATOR, getcwd());
+
 	foreach(explode('/', $dir) as $d){
 		$tmp .= $d . '/';
-		if($GLOBALS['mode']->is_dir($tmp)){
+		$tmp2 .= $g[$i] . '/';
+
+		if($tmp == $tmp2 || $GLOBALS['mode']->is_dir($tmp)){
+			$i++;
 			continue;
 		}
 		if(!$GLOBALS['mode']->mkdir($tmp, $chmod)){
 			$err .= error() . ' ('.htmlspecialchars($tmp, ENT_NOQUOTES).')<br/>';
 		}
+		$i++;
 	}
 
     if ($err) {

@@ -169,6 +169,12 @@ class ftp
     	//return is_readable($this->url.$str);
    	}
 
+    public function is_writable($str = ''){
+    	return true;
+    	//$str = self::change_symbol($str);
+    	//return is_writable($this->url.$str);
+   	}
+
     public function filesize($str = ''){
     	//$str = self::change_symbol($str);
     	ftp_chdir($this->res, '/');
