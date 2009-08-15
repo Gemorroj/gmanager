@@ -63,7 +63,7 @@ date_default_timezone_set('Europe/Moscow');// Меняем время
 // Можете не менять
 //ignore_user_abort(1); // продолжать работу скрипта, даже если закрыли окно браузера
 set_time_limit(999); // максимальное время работы скрипта
-ini_set('max_execution_time', 999); // максимальное время работы скрипта
+ini_set('max_execution_time', '999'); // максимальное время работы скрипта
 iconv_set_encoding('internal_encoding', 'UTF-8'); // кодировка по умолчанию для iconv
 ini_set('memory_limit', '128M'); // лимит оперативной памяти
 

@@ -2167,7 +2167,7 @@ echo \'</div></body></html>\'
 
 function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset = '')
 {
-    
+
     if (!$connect = mysql_connect($host, $name, $pass)) {
         return report($GLOBALS['lng']['mysq_connect_false'], true);
     }

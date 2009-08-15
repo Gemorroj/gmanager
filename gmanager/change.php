@@ -419,7 +419,7 @@ echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_
         break;
 
     case 'upload':
-        if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!$_FILES || $_FILES['f']['error'])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
+        if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!isset($_FILES['f']) || $_FILES['f']['error'])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
@@ -705,9 +705,9 @@ echo '<div class="input">
         break;
 
     case 'tables':
-        if (!isset($_POST['tables']) || !$mode->is_file($_POST['tables'])) {
+        if (!(isset($_POST['tables']) && $mode->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
 echo '<div class="input">
-<form action="change.php?go=tables&amp;c=' . $r_current . '" method="post">
+<form action="change.php?go=tables&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
 ' . $lng['mysql_user'] . '<br/>
 <input type="text" name="name"/><br/>
@@ -720,13 +720,13 @@ echo '<div class="input">
 ' . $lng['charset'] . '<br/>
 <input type="text" name="charset" value="utf8"/><br/>
 ' . $lng['tables_file'] . '<br/>
-<input type="text" name="tables" value="' . $h_current . '"/><br/>
+<input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/>
 <input type="submit" value="' . $lng['tables'] . '"/>
 </div>
 </form>
 </div>';
         } else {
-echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], $mode->file_get_contents($_POST['tables']), $_POST['charset']);
+echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $mode->file_get_contents($_POST['tables']), $_POST['charset']);
         }
         break;
 
