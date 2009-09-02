@@ -474,12 +474,11 @@ echo '<div class="red">
     case 'new_version':
     
         $new = getData('http://wapinet.ru/gmanager/gmanager.txt');
-        $new_version = $new['body'];
-        if ($new_version) {
-            if ($new_version < $version) {
-                echo report($lng['version_new'] . ': ' . $new_version . '<br/>' . $lng['version_old'] . ': ' . $version . '<br/>' . $lng['new_version_false'], true);
+        if ($new['body']) {
+            if (version_compare($new['body'], $version, '<=')) {
+                echo report($lng['version_new'] . ': ' . $new['body'] . '<br/>' . $lng['version_old'] . ': ' . $version . '<br/>' . $lng['new_version_false'], true);
             } else {
-                echo report($lng['version_new'] . ': ' . $new_version . '<br/>' . $lng['version_old'] . ': ' . $version . '<br/>' . $lng['new_version_true'] . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . $lng['get'] . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', false);
+                echo report($lng['version_new'] . ': ' . $new['body'] . '<br/>' . $lng['version_old'] . ': ' . $version . '<br/>' . $lng['new_version_true'] . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . $lng['get'] . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', false);
             }
         } else {
             echo report($lng['not_connect'], true);
