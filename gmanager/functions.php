@@ -2332,137 +2332,137 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
 
     // Ставим MIME в зависимости от расширения
     if (!$mime) {
-        $info = pathinfo($name);
+		$info = pathinfo($name);
 
-        switch (strtolower($info['extension'])) {
-            default:
-                $mime = 'application/octet-stream';
-                break;
+		switch (strtolower($info['extension'])) {
+			default:
+				$mime = 'application/octet-stream';
+				break;
 
-            case 'jar':
-                $mime = 'application/java-archive';
-                break;
+			case 'jar':
+				$mime = 'application/java-archive';
+				break;
 
-            case 'jad':
-                $mime = 'text/vnd.sun.j2me.app-descriptor';
-                break;
+			case 'jad':
+				$mime = 'text/vnd.sun.j2me.app-descriptor';
+				break;
 
-            case 'cab':
-                $mime = 'application/vnd.ms-cab-compressed';
-                break;
+			case 'cab':
+				$mime = 'application/vnd.ms-cab-compressed';
+				break;
 
-            case 'sis':
-                $mime = 'application/vnd.symbian.install';
-                break;
+			case 'sis':
+				$mime = 'application/vnd.symbian.install';
+				break;
 
-            case 'zip':
-                $mime = 'application/x-zip';
-                break;
+			case 'zip':
+				$mime = 'application/x-zip';
+				break;
 
-            case 'rar':
-                $mime = 'application/x-rar-compressed';
-                break;
+			case 'rar':
+				$mime = 'application/x-rar-compressed';
+				break;
 
-            case '7z':
-                $mime = 'application/x-7z-compressed';
-                break;
+			case '7z':
+				$mime = 'application/x-7z-compressed';
+				break;
 
-            case 'gz':
-            case 'tgz':
-                $mime = 'application/x-gzip';
-                break;
+			case 'gz':
+			case 'tgz':
+				$mime = 'application/x-gzip';
+				break;
 
-            case 'bz':
-            case 'bz2':
-                $mime = 'application/x-bzip';
-                break;
+			case 'bz':
+			case 'bz2':
+				$mime = 'application/x-bzip';
+				break;
 
-            case 'jpg':
-            case 'jpe':
-            case 'jpeg':
-                $mime = 'image/jpeg';
-                break;
+			case 'jpg':
+			case 'jpe':
+			case 'jpeg':
+				$mime = 'image/jpeg';
+				break;
 
-            case 'gif':
-                $mime = 'image/gif';
-                break;
+			case 'gif':
+				$mime = 'image/gif';
+				break;
 
-            case 'png':
-                $mime = 'image/png';
-                break;
+			case 'png':
+				$mime = 'image/png';
+				break;
 
-            case 'txt':
-            case 'dat':
-            case 'php':
-            case 'php4':
-            case 'php5':
-            case 'phtml':
-            case 'htm':
-            case 'html':
-            case 'shtm':
-            case 'shtml':
-            case 'wml':
-            case 'css':
-            case 'js':
-            case 'xml':
-            case 'sql':
-                $mime = 'text/plain';
-                break;
+			case 'txt':
+			case 'dat':
+			case 'php':
+			case 'php4':
+			case 'php5':
+			case 'phtml':
+			case 'htm':
+			case 'html':
+			case 'shtm':
+			case 'shtml':
+			case 'wml':
+			case 'css':
+			case 'js':
+			case 'xml':
+			case 'sql':
+				$mime = 'text/plain';
+				break;
 
-            case 'mmf':
-                $mime = 'application/x-smaf';
-                break;
+			case 'mmf':
+				$mime = 'application/x-smaf';
+				break;
 
-            case 'mid':
-                $mime = 'audio/mid';
-                break;
+			case 'mid':
+				$mime = 'audio/mid';
+				break;
 
-            case 'mp3':
-                $mime = 'audio/mpeg';
-                break;
+			case 'mp3':
+				$mime = 'audio/mpeg';
+				break;
 
-            case 'amr':
-                $mime = 'audio/amr';
-                break;
+			case 'amr':
+				$mime = 'audio/amr';
+				break;
 
-            case 'wav':
-                $mime = 'audio/x-wav';
-                break;
+			case 'wav':
+				$mime = 'audio/x-wav';
+				break;
 
-            case 'mp4':
-                $mime = 'video/mp4';
-                break;
+			case 'mp4':
+				$mime = 'video/mp4';
+				break;
 
-            case 'wmv':
-                $mime = 'video/x-ms-wmv';
-                break;
+			case 'wmv':
+				$mime = 'video/x-ms-wmv';
+				break;
 
-            case '3gp':
-                $mime = 'video/3gpp';
-                break;
+			case '3gp':
+				$mime = 'video/3gpp';
+				break;
 
-            case 'avi':
-                $mime = 'video/x-msvideo';
-                break;
+			case 'avi':
+				$mime = 'video/x-msvideo';
+				break;
 
-            case 'mpg':
-            case 'mpe':
-            case 'mpeg':
-                $mime = 'video/mpeg';
-                break;
+			case 'mpg':
+			case 'mpe':
+			case 'mpeg':
+				$mime = 'video/mpeg';
+				break;
 
-            case 'pdf':
-                $mime = 'application/pdf';
-                break;
+			case 'pdf':
+				$mime = 'application/pdf';
+				break;
 
-            case 'doc':
-            case 'docx':
-            	$mime = 'application/msword';
-            	break;
+			case 'doc':
+			case 'docx':
+				$mime = 'application/msword';
+				break;
 
-           	case 'swf':
-           		$mime = 'application/x-shockwave-flash';
-           		break;
+			case 'swf':
+				$mime = 'application/x-shockwave-flash';
+				break;
         }
     }
 
