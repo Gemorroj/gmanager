@@ -1795,6 +1795,10 @@ $buf = '';
 	pclose($h);
 */
 
+if((substr(PHP_OS, 0, 3) == 'WIN')){
+	$cmd = iconv('UTF-8', 'Windows-1251', $cmd);
+}
+
 if($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)){
 
 	//fwrite($pipes[0], '');
