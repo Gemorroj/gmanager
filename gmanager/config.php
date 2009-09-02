@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 beta
+ * @version 0.7
  * 
  * PHP version >= 5.2.1
  * 
@@ -15,11 +15,9 @@
 
 // 6143
 error_reporting(0); // Отключаем сообщения об ошибках
-//ini_set('html_errors', 'On');
 
 // Выбираем протокол, через который будет работать менеджер (ftp или http)
 // настройки соединения FTP в файле ftp.php
-// !!! в текущей версии поддержка FTP реализована еще не полностью !!!
 require 'http.php';
 //require 'ftp.php';
 
@@ -74,7 +72,7 @@ $top = '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
 <head>
-<title>%dir% - Gmanager 0.7 beta</title>
+<title>%dir% - Gmanager 0.7</title>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <script type="text/javascript" src="js.js"></script>
 </head>

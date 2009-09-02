@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 beta
+ * @version 0.7
  * 
  * PHP version >= 5.2.1
  * 
@@ -645,10 +645,9 @@ echo '>' . $lng['no'] . '</option>
         $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
         if (isset($_POST['name']) && isset($_POST['host'])) {
             include 'pattern.dat';
-            $tmp = '<select id="ptn" onchange="javascript:paste(this.value);">';
+            $tmp = '<select id="ptn" onchange="paste(this.value);">';
             for ($i = 0, $all = sizeof($sql_ptn); $i < $all; ++$i) {
-                $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] .
-                    '</option>';
+                $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
             }
             $tmp .= '</select>';
 
@@ -671,7 +670,7 @@ echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] :
 <form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post">
 <div>
 ' . $lng['sql_query'] . ' ' . $tmp . '<br/>
-<textarea id="sql" name="sql" rows="4" cols="48"></textarea><br/>
+<textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/>
 <input type="hidden" name="name" value="' . $_POST['name'] . '"/>
 <input type="hidden" name="pass" value="' . $_POST['pass'] . '"/>
 <input type="hidden" name="host" value="' . $_POST['host'] . '"/>
@@ -738,9 +737,9 @@ echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES[
         	$d_current = $h_current;
        	}
 
-        if (!isset($_POST['tables']) || !$mode->is_file($_POST['tables'])) {
+		if(!(isset($_POST['tables']) && $mode->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {	
 echo '<div class="input">
-<form action="change.php?go=installer" method="post">
+<form action="change.php?go=installer" method="post" enctype="multipart/form-data">
 <div>
 ' . $lng['mysql_user'] . '<br/>
 <input type="text" name="name"/><br/>
@@ -753,7 +752,7 @@ echo '<div class="input">
 ' . $lng['charset'] . '<br/>
 <input type="text" name="charset" value="utf8"/><br/>
 ' . $lng['tables_file'] . '<br/>
-<input type="text" name="tables" value="' . $h_current . '"/><br/>
+<input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/>
 ' . $lng['chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
 <input name="save_as" type="submit" value="' . $lng['save_as'] . '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/>
@@ -761,7 +760,7 @@ echo '<div class="input">
 </form>
 </div>';
         } else {
-            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), $mode->file_get_contents($_POST['tables']))) {
+            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $mode->file_get_contents($_POST['tables']))) {
                 echo create_file(trim($_POST['c']), $sql, $_POST['chmod']);
             } else {
                 echo report($lng['sql_parser_error'], true);

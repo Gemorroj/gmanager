@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 beta
+ * @version 0.7
  * 
  * PHP version >= 5.2.1
  * 
@@ -2099,7 +2099,7 @@ function sql_installer($host = '', $name = '', $pass = '', $db = '', $charset = 
 
 error_reporting(0);
 
-if(substr_count($_SERVER[\'HTTP_USER_AGENT\'], \'MSIE\')){
+if(strpos($_SERVER[\'HTTP_USER_AGENT\'], \'MSIE\') !== false){
 	header(\'Content-type: text/html; charset=UTF-8\');
 }
 else{
@@ -2140,14 +2140,14 @@ echo \'<form action="\'.$_SERVER[\'PHP_SELF\'].\'" method="post">
 exit;
 }
 
-mysql_connect($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\']) or die (\'Can not connect to MySQL</div></body></html>\');
-mysql_select_db($_POST[\'db\']) or die (\'Error select the database</div></body></html>\');
-mysql_query(\'SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`\');' . "\n\n";
+$connect = mysql_connect($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\']) or die (\'Can not connect to MySQL</div></body></html>\');
+mysql_select_db($_POST[\'db\'], $connect) or die (\'Error select the database</div></body></html>\');
+mysql_query(\'SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`\', $connect);' . "\n\n";
 
     foreach ($query as $q) {
         $php .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";
-mysql_query($sql);
-if($err = mysql_error()){
+mysql_query($sql, $connect);
+if($err = mysql_error($connect)){
 	$error[] = $err."\n SQL:\n".$sql;
 }' . "\n\n";
     }
@@ -2214,7 +2214,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         	foreach ($result as $v) {
             	$str .= '<tr class="border">';
             	foreach ($v as $value) {
-                	$str .= '<td><a href="javascript:paste(\'' . addslashes(htmlspecialchars($value, ENT_QUOTES)) . '\');">' . htmlspecialchars($value, ENT_NOQUOTES) . '</a></td>';
+                	$str .= '<td><pre style="margin:0;"><a href="#sql" onclick="paste(\'' . rawurlencode($value) . '\');">' . htmlspecialchars($value, ENT_NOQUOTES) . '</a></pre></td>';
             	}
             	$str .= '</tr>';
         	}
@@ -2390,12 +2390,18 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
             case 'txt':
             case 'dat':
             case 'php':
+            case 'php4':
             case 'php5':
+            case 'phtml':
             case 'htm':
             case 'html':
+            case 'shtm':
+            case 'shtml':
             case 'wml':
             case 'css':
             case 'js':
+            case 'xml':
+            case 'sql':
                 $mime = 'text/plain';
                 break;
 
@@ -2444,6 +2450,15 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
             case 'pdf':
                 $mime = 'application/pdf';
                 break;
+
+            case 'doc':
+            case 'docx':
+            	$mime = 'application/msword';
+            	break;
+
+           	case 'swf':
+           		$mime = 'application/x-shockwave-flash';
+           		break;
         }
     }
 
@@ -2462,7 +2477,7 @@ function getf($f = '', $name = '', $attach = '', $mime = '')
     header('ETag: "' . $etag . '"');
 
 
-    //header('Connection: close');
+    //header('Connection: Close');
     header('Keep-Alive: timeout=15, max=50');
     header('Connection: Keep-Alive');
 

@@ -42,7 +42,10 @@ php_value post_max_size 999M
 
 # Компрессия
 php_flag zlib.output_compression On
-php_value zlib.output_compression_level 5
+php_value zlib.output_compression_level 6
+
+# Mbstring
+php_value mbstring.func_overload 0
 
 # Подсветка PHP Кода
 #php_value highlight.string #ff0000

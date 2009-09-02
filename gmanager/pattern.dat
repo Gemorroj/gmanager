@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7 beta
+ * @version 0.7
  * 
  * PHP version >= 5.2.1
  * 
@@ -61,6 +61,9 @@ $sql_ptn[13][1] = 'DELETE FROM ``;';
 
 $sql_ptn[14][0] = 'DESCRIBE `table`';
 $sql_ptn[14][1] = 'DESCRIBE ``;';
+
+$sql_ptn[15][0] = 'SHOW CREATE TABLE `table`';
+$sql_ptn[15][1] = 'SHOW CREATE TABLE ``;';
 
 
 // Шаблоны для записи в созаваемые файлы
