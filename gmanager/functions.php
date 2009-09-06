@@ -720,7 +720,7 @@ function syntax($source = '', $charset = array())
         return report($GLOBALS['lng']['not_found'], true);
     }
 
-    exec(escapeshellcmd($GLOBALS['php']) . ' -c -f -l "' . escapeshellarg($source) . '"', $rt, $v);
+    exec(escapeshellcmd($GLOBALS['php']) . ' -c -f -l ' . escapeshellarg($source), $rt, $v);
     $error = error();
 	$size = sizeof($rt);
 
