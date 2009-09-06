@@ -1700,7 +1700,7 @@ function upload_files($tmp = '', $name = '', $dir = '', $chmod = '0644')
     } else {
         $error = error();
         unlink($tmp);
-        return report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($fname . ' x ' .$dir . $name, ENT_NOQUOTES) . $error, true);
+        return report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($fname . ' x ' .$dir . $name, ENT_NOQUOTES) . '<br/>' . $error, true);
     }
 }
 
@@ -1944,7 +1944,7 @@ function search($c = '', $s = '', $w = '', $r = '')
         }
 
         if (!$w) {
-            if (iconv_strpos($f, $s) === false) {
+            if (@iconv_strpos($f, $s) === false) {
                 continue;
             }
         } else {
