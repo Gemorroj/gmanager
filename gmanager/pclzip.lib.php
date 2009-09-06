@@ -64,11 +64,11 @@
   // define( 'PCLZIP_TEMPORARY_DIR', 'C:/Temp/' );
   
 // укажите путь к временной папке
-define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__) . '/data/') . '/');
+define('PCLZIP_TEMPORARY_DIR', $GLOBALS['temp']);
 
-  if (!defined('PCLZIP_TEMPORARY_DIR')) {
-    define( 'PCLZIP_TEMPORARY_DIR', '' );
-  }
+//  if (!defined('PCLZIP_TEMPORARY_DIR')) {
+//    define( 'PCLZIP_TEMPORARY_DIR', '' );
+//  }
 
   // ----- Optional threshold ratio for use of temporary files
   //       Pclzip sense the size of the file to add/extract and decide to
@@ -6281,6 +6281,3 @@ define('PCLZIP_TEMPORARY_DIR', realpath(dirname(__FILE__) . '/data/') . '/');
     return $p_path;
   }
   // --------------------------------------------------------------------------------
-
-
-?>

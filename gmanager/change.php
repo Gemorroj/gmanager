@@ -1,5 +1,5 @@
 <?php
-// кодировка UTF-8
+// encoding = 'utf-8'
 /**
  * 
  * This software is distributed under the GNU LGPL v3.0 license.
@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7
+ * @version 0.7.1 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -25,12 +25,12 @@ require 'functions.php';
 
 $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 
-if (isset($_GET['get']) && $mode->is_file($_GET['get'])) {
+if (isset($_GET['get']) && $GLOBALS['mode']->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
         $f = get_archive_file($_GET['get'], $_GET['f']);
         $name = basename($_GET['f']);
     } else {
-        $f = $mode->file_get_contents($_GET['get']);
+        $f = $GLOBALS['mode']->file_get_contents($_GET['get']);
         $name = basename($_GET['get']);
     }
 
@@ -43,17 +43,17 @@ $current = c($_SERVER['QUERY_STRING'], isset($_POST['c']) ? $_POST['c'] : (isset
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 $realpath = realpath($current);
-if($realpath && $mode->is_dir($current)){
-	$realpath .= '/';
+if ($realpath && $GLOBALS['mode']->is_dir($current)) {
+    $realpath .= '/';
 }
 $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h_current;
 
 
 send_header($_SERVER['HTTP_USER_AGENT']);
 
-echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $lng['chmod'] : (isset($_POST['full_del']) ? $lng['del'] : (isset($_POST['full_rename']) ? $lng['change'] : (isset($_POST['fname']) ? $lng['rename'] : (isset($_POST['create_archive']) ? $lng['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $top) . '
+echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $GLOBALS['top']) . '
 <div class="w2">
-' . $lng['title_change'] . '<br/>
+' . $GLOBALS['lng']['title_change'] . '<br/>
 </div>
 ' . this($current);
 
@@ -61,34 +61,38 @@ switch ($_GET['go']) {
     default:
 
         if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
-            echo report($lng['disable_function'], true);
+            echo report($GLOBALS['lng']['disable_function'], true);
             break;
-        } elseif (!$mode->file_exists($current)) {
-            echo report($lng['not_found'], true);
+        } else if (!$GLOBALS['mode']->file_exists($current)) {
+            echo report($GLOBALS['lng']['not_found'], true);
             break;
         }
 
-        if ($mode->is_dir($current)) {
+        if ($GLOBALS['mode']->is_dir($current)) {
             $size = size($current, true);
             $md5 = '';
-        } elseif ($mode->is_file($current) || $mode->is_link($current)) {
+        } else if ($GLOBALS['mode']->is_file($current) || $GLOBALS['mode']->is_link($current)) {
             $size = format_size(size($current));
-            $md5 = $lng['md5'] . ': ' . md5_file($current);
+            if ($GLOBALS['class'] == 'ftp') {
+            	$md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['mode']->file_get_contents($current));
+           	} else {
+                $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
+            }
         }
 
 echo '<div class="input">
 <form action="change.php?go=rename&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_func'] . '<br/>
+' . $GLOBALS['lng']['change_func'] . '<br/>
 <input type="text" name="name" value="' . $realpath . '"/><br/>
-' . $lng['change_del'] . '<input type="checkbox" name="del" value="1"/><br/>
-' . $lng['change_chmod'] . '<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
-<input type="submit" value="' . $lng['ch'] . '"/>
+' . $GLOBALS['lng']['change_del'] . '<input type="checkbox" name="del" value="1"/><br/>
+' . $GLOBALS['lng']['change_chmod'] . '<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
+<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>
 </div>
-<div>' . $lng['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>
-<div class="rb"><a'.($del_notify ? ' onclick="return confirm(\''.$lng['del_notify'].'\')"' : '').' href="change.php?go=del&amp;c=' . $r_current . '">' . $lng['dl'] . '</a><br/></div>';
+<div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>
+<div class="rb"><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dl'] . '</a><br/></div>';
         break;
 
     case 1:
@@ -98,17 +102,17 @@ echo '<div class="input">
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['rename'] . '<br/>
-[name] - ' . $lng['name'] . '<br/>
-[f] - ' . $lng['type'] . '<br/>
-[n=0] - ' . $lng['meter'] . '<br/>
-[date] - ' . $lng['date'] . '<br/>
+' . $GLOBALS['lng']['rename'] . '<br/>
+[name] - ' . $GLOBALS['lng']['name'] . '<br/>
+[f] - ' . $GLOBALS['lng']['type'] . '<br/>
+[n=0] - ' . $GLOBALS['lng']['meter'] . '<br/>
+[date] - ' . $GLOBALS['lng']['date'] . '<br/>
 <input type="text" name="name" value="[name].[f]"/><br/>
-' . $lng['str_register'] . '<br/>
+' . $GLOBALS['lng']['str_register'] . '<br/>
 <select name="register">
-<option value="">' . $lng['str_register_no'] . '</option>
-<option value="1">' . $lng['str_register_low'] . '</option>
-<option value="2">' . $lng['str_register_up'] . '</option>
+<option value="">' . $GLOBALS['lng']['str_register_no'] . '</option>
+<option value="1">' . $GLOBALS['lng']['str_register_low'] . '</option>
+<option value="2">' . $GLOBALS['lng']['str_register_up'] . '</option>
 </select><br/>
 <input name="fname" type="hidden" value="1"/>';
 
@@ -116,202 +120,201 @@ echo '<div class="input">
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
 
-echo '<input type="submit" value="' . $lng['rename'] . '"/>
+echo '<input type="submit" value="' . $GLOBALS['lng']['rename'] . '"/>
 </div>
 </form>
 </div>';
             } else {
                 for ($i = 0; $i < $x; ++$i) {
-                	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
+                    $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                     echo fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i);
                 }
             }
-        } elseif (isset($_POST['full_del'])) {
+        } else if (isset($_POST['full_del'])) {
             for ($i = 0; $i < $x; ++$i) {
-            	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                if ($mode->is_dir($_POST['check'][$i])) {
+                $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
+                if ($GLOBALS['mode']->is_dir($_POST['check'][$i])) {
                     echo del_dir($_POST['check'][$i] . '/');
                 } else {
                     echo del_file($_POST['check'][$i]);
                 }
             }
 
-			// echo report('<br/>' . $lng['full_del_file_dir_true'], false);
+            // echo report('<br/>' . $GLOBALS['lng']['full_del_file_dir_true'], false);
 
-        } elseif (isset($_POST['full_chmod'])) {
+        } else if (isset($_POST['full_chmod'])) {
             if (!isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_chmod'] . ' ' . $lng['of files'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/>
 <input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0644"/><br/>
-' . $lng['change_chmod'] . ' ' . $lng['of folders'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/>
 <input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/><br/>
 <input name="full_chmod" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
-echo '<input type="submit" value="' . $lng['ch'] . '"/>
+echo '<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>
 </div>';
             } else {
                 for ($i = 0; $i < $x; ++$i) {
-                	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                	if($mode->is_dir($_POST['check'][$i])){
-                		echo rechmod($_POST['check'][$i], $_POST['chmod'][1]);
-               		}
-               		else{
-               			echo rechmod($_POST['check'][$i], $_POST['chmod'][0]);
-         			}
+                    $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
+                    if ($GLOBALS['mode']->is_dir($_POST['check'][$i])) {
+                        echo rechmod($_POST['check'][$i], $_POST['chmod'][1]);
+                    } else {
+                        echo rechmod($_POST['check'][$i], $_POST['chmod'][0]);
+                    }
                 }
             }
-        } elseif (isset($_REQUEST['mega_full_extract'])) {
+        } else if (isset($_REQUEST['mega_full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_name'] . '<br/>
+' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $lng['change_chmod'] . ' '.$lng['of files'].'<br/>
+' . $GLOBALS['lng']['change_chmod'] . ' '.$GLOBALS['lng']['of files'].'<br/>
 <input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-' . $lng['change_chmod'] . ' '.$lng['of folders'].'<br/>
+' . $GLOBALS['lng']['change_chmod'] . ' '.$GLOBALS['lng']['of folders'].'<br/>
 <input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="mega_full_extract" type="hidden" value="1"/>
-<input type="submit" value="' . $lng['extract_archive'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
-            	$archive = is_archive(get_type($h_current));
+                $archive = is_archive(get_type(basename($h_current)));
 
                 if ($archive == 'ZIP') {
                     echo extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($archive == 'TAR') {
+                } else if ($archive == 'TAR') {
                     echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
-                } elseif ($archive == 'GZ') {
+                } else if ($archive == 'GZ') {
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
                 }
             }
-        } elseif (isset($_POST['full_extract'])) {
+        } else if (isset($_POST['full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_name'] . '<br/>
+' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="full_extract" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
-echo '<input type="submit" value="' . $lng['extract_archive'] . '"/>
+echo '<input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
-            	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
+                $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
-				$archive = is_archive(get_type($h_current));
+                $archive = is_archive(get_type(basename($h_current)));
 
                 if ($archive == 'ZIP') {
                     echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
-                } elseif ($archive == 'TAR') {
+                } else if ($archive == 'TAR') {
                     echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 }
             }
-        } elseif (isset($_POST['gz_extract'])) {
+        } else if (isset($_POST['gz_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_name'] . '<br/>
+' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="gz_extract" type="hidden" value="1"/>
-<input type="submit" value="' . $lng['extract_archive'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
                 echo gz_extract($current, $_POST['name'], $_POST['chmod']);
             }
-        } elseif (isset($_POST['create_archive'])) {
+        } else if (isset($_POST['create_archive'])) {
             if (!isset($_POST['name'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_name'] . '<br/>
+' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . 'archive.zip"/><br/>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-' . $lng['comment_archive'] . '<br/>
+' . $GLOBALS['lng']['comment_archive'] . '<br/>
 <textarea name="comment" rows="2" cols="24"></textarea><br/>
 <input name="create_archive" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
-echo '<input type="submit" value="' . $lng['create_archive'] . '"/>
+echo '<input type="submit" value="' . $GLOBALS['lng']['create_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
-            	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
+                $_POST['check'] = array_map('rawurldecode', $_POST['check']);
                 echo create_zip_archive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment']);
             }
-        } elseif (isset($_POST['add_archive'])) {
+        } else if (isset($_POST['add_archive'])) {
             if (!isset($_POST['name'])) {
                 header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . dirname($current) . '&add_archive=' . $current, true, 301);
                 exit;
-            } elseif (!isset($_POST['dir'])) {
+            } else if (!isset($_POST['dir'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['add_archive_dir'] . '<br/>
+' . $GLOBALS['lng']['add_archive_dir'] . '<br/>
 <input type="text" name="dir" value="./"/><br/>
 <input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
-echo '<input type="submit" name="name" value="' . $lng['add_archive'] . '"/>
+echo '<input type="submit" name="name" value="' . $GLOBALS['lng']['add_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
-            	$_POST['check'] = array_map('rawurldecode', $_POST['check']);
-            	$_POST['dir'] = rawurldecode($_POST['dir']);
-            	$_POST['add_archive'] = rawurldecode($_POST['add_archive']);
+                $_POST['check'] = array_map('rawurldecode', $_POST['check']);
+                $_POST['dir'] = rawurldecode($_POST['dir']);
+                $_POST['add_archive'] = rawurldecode($_POST['add_archive']);
 
-                $archive = is_archive(get_type($_POST['add_archive']));
+                $archive = is_archive(get_type(basename($_POST['add_archive'])));
 
                 if ($archive == 'ZIP') {
                     echo add_zip_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
-                } elseif ($archive == 'TAR') {
+                } else if ($archive == 'TAR') {
                     echo add_tar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             }
-        } elseif (isset($_POST['full_rename'])) {
+        } else if (isset($_POST['full_rename'])) {
             if (!isset($_GET['go2'])) {
 echo '<div class="input">
 <form action="change.php?go=1&amp;go2=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_func2'] . '<br/>
+' . $GLOBALS['lng']['change_func2'] . '<br/>
 <input type="text" name="name" value="' . $realpath . '"/><br/>
-' . $lng['change_del'] . '<br/>
+' . $GLOBALS['lng']['change_del'] . '<br/>
 <input type="checkbox" name="del" value="1"/><br/>
 <input name="full_rename" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
-echo '<input type="submit" value="' . $lng['ch'] . '"/>
+echo '<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>
 </div>';
             } else {
                 for ($i = 0; $i < $x; ++$i) {
-                	$_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
+                    $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                     echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name']);
                 }
             }
@@ -319,7 +322,7 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
         break;
 
     case 'del':
-        if ($mode->is_dir($current)) {
+        if ($GLOBALS['mode']->is_dir($current)) {
             echo del_dir($current);
         } else {
             echo del_file($current);
@@ -331,9 +334,9 @@ echo '<input type="submit" value="' . $lng['ch'] . '"/>
 echo '<div class="input">
 <form action="change.php?go=chmod&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
-<input type="submit" value="' . $lng['ch'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>
 </div>';
@@ -347,11 +350,11 @@ echo '<div class="input">
 echo '<div class="input">
 <form action="change.php?go=create_dir&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_name'] . '<br/>
+' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="dir"/><br/>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
-<input type="submit" value="' . $lng['cr'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/>
 </div>
 </form>
 </div>';
@@ -366,41 +369,41 @@ echo '<div class="input">
 echo '<div class="input">
 <form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['change_name'] . '<br/>
+' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="file.php"/><br/>
-' . $lng['pattern'] . '<br/>
+' . $GLOBALS['lng']['pattern'] . '<br/>
 <select name="ptn">';
             for ($i = 0, $all = sizeof($pattern); $i < $all; ++$i) {
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
 
 echo '</select><br/>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-<input type="submit" value="' . $lng['cr'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/>
 </div>
 </form>
 </div>';
         } else {
-            if ($mode->file_exists($current . $_POST['name']) && !isset($_POST['a'])) {
-echo '<div class="red">' . $lng['warning'] . '<br/></div>
+            if ($GLOBALS['mode']->file_exists($current . $_POST['name']) && !isset($_POST['a'])) {
+echo '<div class="red">' . $GLOBALS['lng']['warning'] . '<br/></div>
 <form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post">
 <div>
 <input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/>
 <input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/>
 <input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/>
 <input type="hidden" name="a" value="1"/>
-<input type="submit" value="' . $lng['ch'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>';
             } else {
-                if ($realname) {
+                if ($GLOBALS['realname']) {
                     $realpath = $realpath . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 } else {
                     $realpath = $h_current . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 }
 
-echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_current . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . create_file($current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
+echo '<div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . $r_current . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . create_file($current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
             }
         }
         break;
@@ -423,22 +426,22 @@ echo '<div class="border">' . $lng['file'] . ' <strong><a href="edit.php?' . $r_
 echo '<div class="input">
 <form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
-' . $lng['url'] . '<br/>
+' . $GLOBALS['lng']['url'] . '<br/>
 <textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>
-' . $lng['headers'] .'<br/>
+' . $GLOBALS['lng']['headers'] .'<br/>
 <textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
 Referer:
 Accept: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
 Accept-Charset: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
 Accept-Language: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
 Connection: Close</textarea><br/>
-' . $lng['file'] . ' (' . ini_get('upload_max_filesize') . ')<br/>
+' . $GLOBALS['lng']['file'] . ' (' . ini_get('upload_max_filesize') . ')<br/>
 <input type="file" name="f"/><br/>
-' . $lng['name'] . '<br/>
+' . $GLOBALS['lng']['name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . '"/><br/>
-' . $lng['change_chmod'] . '<br/>
+' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="width:28pt;"/><br/>
-<input type="submit" value="' . $lng['upload'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['upload'] . '"/>
 </div>
 </form>
 </div>';
@@ -454,34 +457,34 @@ Connection: Close</textarea><br/>
     case 'mod':
 echo '<div class="red">
 <ul>
-<li><a href="change.php?go=search&amp;c=' . $r_current . '">' . $lng['search'] . '</a></li>
-<li><a href="change.php?go=eval&amp;c=' . $r_current . '">' . $lng['eval'] . '</a></li>
-<li><a href="change.php?go=cmd&amp;c=' . $r_current . '">' . $lng['cmd'] . '</a></li>
-<li><a href="change.php?go=sql&amp;c=' . $r_current . '">' . $lng['sql'] . '</a></li>
-<li><a href="change.php?go=tables&amp;c=' . $r_current . '">' . $lng['tables'] . '</a></li>
-<li><a href="change.php?go=installer&amp;c=' . $r_current . '">' . $lng['create_sql_installer'] . '</a></li>
-<li><a href="change.php?go=scan&amp;c=' . $r_current . '">' . $lng['scan'] . '</a></li>
-<li><a href="change.php?go=send_mail&amp;c=' . $r_current . '">' . $lng['send_mail'] . '</a></li>
-<li><a href="change.php?phpinfo">' . $lng['phpinfo'] . '</a> (' . PHP_VERSION . ')</li>
-<li><a href="change.php?go=new_version&amp;c=' . $r_current . '">' . $lng['new_version'] . '</a></li>
+<li><a href="change.php?go=search&amp;c=' . $r_current . '">' . $GLOBALS['lng']['search'] . '</a></li>
+<li><a href="change.php?go=eval&amp;c=' . $r_current . '">' . $GLOBALS['lng']['eval'] . '</a></li>
+<li><a href="change.php?go=cmd&amp;c=' . $r_current . '">' . $GLOBALS['lng']['cmd'] . '</a></li>
+<li><a href="change.php?go=sql&amp;c=' . $r_current . '">' . $GLOBALS['lng']['sql'] . '</a></li>
+<li><a href="change.php?go=tables&amp;c=' . $r_current . '">' . $GLOBALS['lng']['tables'] . '</a></li>
+<li><a href="change.php?go=installer&amp;c=' . $r_current . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></li>
+<li><a href="change.php?go=scan&amp;c=' . $r_current . '">' . $GLOBALS['lng']['scan'] . '</a></li>
+<li><a href="change.php?go=send_mail&amp;c=' . $r_current . '">' . $GLOBALS['lng']['send_mail'] . '</a></li>
+<li><a href="change.php?phpinfo">' . $GLOBALS['lng']['phpinfo'] . '</a> (' . PHP_VERSION . ')</li>
+<li><a href="change.php?go=new_version&amp;c=' . $r_current . '">' . $GLOBALS['lng']['new_version'] . '</a></li>
 </ul>
 <span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/>
 <span style="color:#000;">&#187;</span> ' . htmlspecialchars(php_uname(), ENT_NOQUOTES) . '<br/>
-<span style="color:#000;">&#187;</span> ' . $lng['disk_total_space'] . ' ' . format_size(disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . $lng['disk_free_space'] . ' ' . format_size(disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/>
+<span style="color:#000;">&#187;</span> ' . $GLOBALS['lng']['disk_total_space'] . ' ' . format_size(disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . $GLOBALS['lng']['disk_free_space'] . ' ' . format_size(disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/>
 <span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
-	break;
+    break;
 
     case 'new_version':
     
         $new = getData('http://wapinet.ru/gmanager/gmanager.txt');
         if ($new['body']) {
-            if (version_compare($new['body'], $version, '<=')) {
-                echo report($lng['version_new'] . ': ' . $new['body'] . '<br/>' . $lng['version_old'] . ': ' . $version . '<br/>' . $lng['new_version_false'], true);
+            if (version_compare($new['body'], $GLOBALS['version'], '<=')) {
+                echo report($GLOBALS['lng']['version_new'] . ': ' . $new['body'] . '<br/>' . $GLOBALS['lng']['version_old'] . ': ' . $GLOBALS['version'] . '<br/>' . $GLOBALS['lng']['new_version_false'], false);
             } else {
-                echo report($lng['version_new'] . ': ' . $new['body'] . '<br/>' . $lng['version_old'] . ': ' . $version . '<br/>' . $lng['new_version_true'] . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . $lng['get'] . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', false);
+                echo report($GLOBALS['lng']['version_new'] . ': ' . $new['body'] . '<br/>' . $GLOBALS['lng']['version_old'] . ': ' . $GLOBALS['version'] . '<br/>' . $GLOBALS['lng']['new_version_true'] . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . $GLOBALS['lng']['get'] . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', false);
             }
         } else {
-            echo report($lng['not_connect'], true);
+            echo report($GLOBALS['lng']['not_connect'], true);
         }
         break;
 
@@ -490,43 +493,43 @@ echo '<div class="red">
 echo '<div class="input">
 <form action="change.php?go=scan&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['url'] . '<br/>
+' . $GLOBALS['lng']['url'] . '<br/>
 <input type="text" name="url" value="http://"/><br/>
-' . $lng['headers'] . '<br/>
+' . $GLOBALS['lng']['headers'] . '<br/>
 <textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
 Referer:
 Accept: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
 Accept-Charset: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
 Accept-Language: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
 Connection: Close</textarea><br/>
-<input type="submit" value="' . $lng['look'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['look'] . '"/>
 </div>
 </form>
 </div>';
         } else {
             if ($url = getData($_POST['url'], $_POST['headers'])) {
-				$url = $url['headers']."\r\n\r\n".$url['body'];
+                $url = $url['headers']."\r\n\r\n".$url['body'];
                 echo code($url, 0);
             } else {
-                echo report($lng['not_connect'], true);
+                echo report($GLOBALS['lng']['not_connect'], true);
             }
         }
         break;
 
     case 'send_mail':
-        if (!isset($_POST['theme']) || !isset($_POST['mess']) || !isset($_POST['to']) || !isset($_POST['from'])) {
+        if (!isset($_POST['from']) || !isset($_POST['theme']) || !isset($_POST['mess']) || !isset($_POST['to'])) {
 echo '<div class="input">
 <form action="change.php?go=send_mail&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['mail_to'] . '<br/>
-<input type="text" name="to" value="@"/><br/>
-' . $lng['mail_from'] . '<br/>
+' . $GLOBALS['lng']['mail_to'] . '<br/>
+<input type="text" name="to" value="' . (isset($_POST['to']) ? htmlspecialchars($_POST['to'], ENT_COMPAT) : '@') . '"/><br/>
+' . $GLOBALS['lng']['mail_from'] . '<br/>
 <input type="text" name="from" value="admin@' . $_SERVER['HTTP_HOST'] . '"/><br/>
-' . $lng['mail_theme'] . '<br/>
-<input type="text" name="theme" value="Hello"/><br/>
-' . $lng['mail_mess'] . '<br/>
-<textarea name="mess" rows="8" cols="48"></textarea><br/>
-<input type="submit" value="' . $lng['send_mail'] . '"/>
+' . $GLOBALS['lng']['mail_theme'] . '<br/>
+<input type="text" name="theme" value="' . (isset($_POST['theme']) ? htmlspecialchars($_POST['theme'], ENT_COMPAT) : 'Hello') . '"/><br/>
+' . $GLOBALS['lng']['mail_mess'] . '<br/>
+<textarea name="mess" rows="8" cols="48">' . (isset($_POST['mess']) ? htmlspecialchars($_POST['mess'], ENT_NOQUOTES) : '') . '</textarea><br/>
+<input type="submit" value="' . $GLOBALS['lng']['send_mail'] . '"/>
 </div>
 </form>
 </div>';
@@ -536,7 +539,7 @@ echo '<div class="input">
         break;
 
     case 'eval':
-    	$v = '';
+        $v = '';
         if (isset($_POST['eval'])) {
             echo show_eval($_POST['eval']);
             $v = htmlspecialchars($_POST['eval'], ENT_NOQUOTES);
@@ -544,25 +547,25 @@ echo '<div class="input">
 echo '<div class="input">
 <form action="change.php?go=eval&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['php_code'] . '<br/>
+' . $GLOBALS['lng']['php_code'] . '<br/>
 <textarea name="eval" rows="10" cols="48">' . $v . '</textarea><br/>
-<input type="submit" value="' . $lng['eval_go'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/>
 </div>
 </form>
 </div>';
         break;
 
     case 'search':
-    	$v = '';
+        $v = '';
         if (isset($_POST['search']) && $_POST['search'] != '') {
-        	$v = htmlspecialchars($_POST['search'], ENT_NOQUOTES);
-            if ($string) {
+            $v = htmlspecialchars($_POST['search'], ENT_NOQUOTES);
+            if ($GLOBALS['string']) {
 echo '<div>
 <form action="change.php?" method="get">
 <div>
 <input type="text" name="c" value="' . $realpath . '"/><br/>
 <input type="hidden" name="go" value="search"/>
-<input type="submit" value="' . $lng['go'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['go'] . '"/>
 </div>
 </form>
 </div>';
@@ -571,70 +574,62 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
-<th>' . $lng['ch_index'] . '</th>
-' . ($index['name'] ? '<th>' . $lng['name'] . '</th>' : '') . '
-' . ($index['down'] ? '<th>' . $lng['get'] . '</th>' : '') . '
-' . ($index['type'] ? '<th>' . $lng['type'] . '</th>' : '') . '
-' . ($index['size'] ? '<th>' . $lng['size'] . '</th>' : '') . '
-' . ($index['change'] ? '<th>' . $lng['change'] . '</th>' : '') . '
-' . ($index['del'] ? '<th>' . $lng['del'] . '</th>' : '') . '
-' . ($index['chmod'] ? '<th>' . $lng['chmod'] . '</th>' : '') . '
-' . ($index['date'] ? '<th>' . $lng['date'] . '</th>' : '') . '
-' . ($index['n'] ? '<th>' . $lng['n'] . '</th>' : '') . '
+<th>' . $GLOBALS['lng']['ch_index'] . '</th>
+' . ($GLOBALS['index']['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . '
+' . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . '
+' . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . '
+' . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . '
+' . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . '
+' . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . '
+' . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . '
+' . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '
+' . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . '
+' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
 
 echo search($_POST['where'], $_POST['search'], $_POST['in'], $_POST['register']);
 
-echo '<tr><td class="w" colspan="' . (array_sum($index) + 1) . '" style="text-align:left;padding:0 0 0 1%;">
+echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;">
 <input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>
-' . $lng['check'] . '
+' . $GLOBALS['lng']['check'] . '
 </td></tr>
 </table>
 <div class="ch">
-<input type="submit" name="full_chmod" value="' . $lng['chmod'] . '"/>
-<input type="submit" name="full_del" value="' . $lng['del'] . '"/>
-<input type="submit" name="full_rename" value="' . $lng['change'] . '"/>
-<input type="submit" name="create_archive" value="' . $lng['create_archive'] . '"/>
+<input type="submit" name="full_chmod" value="' . $GLOBALS['lng']['chmod'] . '"/>
+<input type="submit" name="full_del" value="' . $GLOBALS['lng']['del'] . '"/>
+<input type="submit" name="full_rename" value="' . $GLOBALS['lng']['change'] . '"/>
+<input type="submit" name="create_archive" value="' . $GLOBALS['lng']['create_archive'] . '"/>
 </div>
 </div>
 </form>
 <div class="rb">
-' . $lng['create'] . '
-<a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $lng['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $lng['dir'] . '</a><br/>
+' . $GLOBALS['lng']['create'] . '
+<a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/>
 </div>
 <div class="rb">
-<a href="change.php?go=upload&amp;c=' . $r_current . '">' . $lng['upload'] . '</a><br/>
+<a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/>
 </div>
 <div class="rb">
-<a href="change.php?go=mod&amp;c=' . $r_current . '">' . $lng['mod'] . '</a><br/>
+<a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/>
 </div>';
         }
-
 echo '<div class="input">
 <form action="change.php?go=search&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['where_search'] . '<br/>
-<input type="text" name="where" value="' . $realpath . '"/><br/>
+' . $GLOBALS['lng']['where_search'] . '<br/>
+<input type="text" name="where" value="' . (isset($_POST['where']) ? htmlspecialchars($_POST['where'], ENT_COMPAT) : $realpath) . '"/><br/>
 <select name="in">
-<option value="0">' . $lng['in_files'] . '</option>
-<option value="1"';
-        if (isset($_POST['in'])) {
-            echo ' selected="selected"';
-        }
-echo '>' . $lng['in_text'] . '</option>
+<option value="0">' . $GLOBALS['lng']['in_files'] . '</option>
+<option value="1"' . (isset($_POST['in']) && $_POST['in'] == 1 ? ' selected="selected"' : '') .'>' . $GLOBALS['lng']['in_text'] . '</option>
 </select><br/>
-' . $lng['what_search'] . '<br/>
+' . $GLOBALS['lng']['what_search'] . '<br/>
 <input type="text" name="search" value="' . $v . '"/><br/>
-' . $lng['register'] . '<br/>
+' . $GLOBALS['lng']['register'] . '<br/>
 <select name="register">
-<option value="0">' . $lng['yes'] . '</option>
-<option value="1"';
-        if (isset($_POST['register'])) {
-            echo ' selected="selected"';
-        }
-echo '>' . $lng['no'] . '</option>
+<option value="0">' . $GLOBALS['lng']['yes'] . '</option>
+<option value="1"' . (isset($_POST['register']) && $_POST['register'] == 1 ? ' selected="selected"' : '') . '>' . $GLOBALS['lng']['no'] . '</option>
 </select><br/>
-<input type="submit" value="' . $lng['eval_go'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/>
 </div>
 </form>
 </div>';
@@ -652,7 +647,7 @@ echo '>' . $lng['no'] . '</option>
 
             if (!$_POST['sql'] && !$_POST['db']) {
                 $_POST['sql'] = 'SHOW DATABASES';
-            } elseif (!$_POST['sql']) {
+            } else if (!$_POST['sql']) {
                 $_POST['sql'] = 'SHOW TABLES';
             }
 
@@ -668,14 +663,14 @@ echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] :
 <div class="input">
 <form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post">
 <div>
-' . $lng['sql_query'] . ' ' . $tmp . '<br/>
+' . $GLOBALS['lng']['sql_query'] . ' ' . $tmp . '<br/>
 <textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/>
 <input type="hidden" name="name" value="' . $_POST['name'] . '"/>
 <input type="hidden" name="pass" value="' . $_POST['pass'] . '"/>
 <input type="hidden" name="host" value="' . $_POST['host'] . '"/>
 <input type="hidden" name="db" value="' . $_POST['db'] . '"/>
 <input type="hidden" name="charset" value="' . $_POST['charset'] . '"/>
-<input type="submit" value="' . $lng['sql'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/>
 </div>
 </form>
 </div>';
@@ -683,19 +678,19 @@ echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] :
 echo '<div class="input">
 <form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post">
 <div>
-' . $lng['mysql_user'] . '<br/>
+' . $GLOBALS['lng']['mysql_user'] . '<br/>
 <input type="text" name="name" value=""/><br/>
-' . $lng['mysql_pass'] . '<br/>
+' . $GLOBALS['lng']['mysql_pass'] . '<br/>
 <input type="text" name="pass"/><br/>
-' . $lng['mysql_host'] . '<br/>
+' . $GLOBALS['lng']['mysql_host'] . '<br/>
 <input type="text" name="host" value="localhost"/><br/>
-' . $lng['mysql_db'] . '<br/>
+' . $GLOBALS['lng']['mysql_db'] . '<br/>
 <input type="text" name="db"/><br/>
-' . $lng['charset'] . '<br/>
+' . $GLOBALS['lng']['charset'] . '<br/>
 <input type="text" name="charset" value="utf8"/><br/>
-' . $lng['sql_query'] . '<br/>
+' . $GLOBALS['lng']['sql_query'] . '<br/>
 <textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/>
-<input type="submit" value="' . $lng['sql'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/>
 </div>
 </form>
 </div>';
@@ -703,88 +698,86 @@ echo '<div class="input">
         break;
 
     case 'tables':
-        if (!(isset($_POST['tables']) && $mode->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && $GLOBALS['mode']->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
 echo '<div class="input">
 <form action="change.php?go=tables&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
-' . $lng['mysql_user'] . '<br/>
+' . $GLOBALS['lng']['mysql_user'] . '<br/>
 <input type="text" name="name"/><br/>
-' . $lng['mysql_pass'] . '<br/>
+' . $GLOBALS['lng']['mysql_pass'] . '<br/>
 <input type="text" name="pass"/><br/>
-' . $lng['mysql_host'] . '<br/>
+' . $GLOBALS['lng']['mysql_host'] . '<br/>
 <input type="text" name="host" value="localhost"/><br/>
-' . $lng['mysql_db'] . '<br/>
+' . $GLOBALS['lng']['mysql_db'] . '<br/>
 <input type="text" name="db"/><br/>
-' . $lng['charset'] . '<br/>
+' . $GLOBALS['lng']['charset'] . '<br/>
 <input type="text" name="charset" value="utf8"/><br/>
-' . $lng['tables_file'] . '<br/>
+' . $GLOBALS['lng']['tables_file'] . '<br/>
 <input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/>
-<input type="submit" value="' . $lng['tables'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['tables'] . '"/>
 </div>
 </form>
 </div>';
         } else {
-echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $mode->file_get_contents($_POST['tables']), $_POST['charset']);
+echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']), $_POST['charset']);
         }
         break;
 
     case 'installer':
         if (substr($h_current, -1) != '/') {
             $d_current = str_replace('\\', '/', htmlspecialchars(dirname($current) . '/', ENT_COMPAT));
+        } else {
+            $d_current = $h_current;
         }
-        else{
-        	$d_current = $h_current;
-       	}
 
-		if(!(isset($_POST['tables']) && $mode->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {	
+        if (!(isset($_POST['tables']) && $GLOBALS['mode']->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {    
 echo '<div class="input">
 <form action="change.php?go=installer" method="post" enctype="multipart/form-data">
 <div>
-' . $lng['mysql_user'] . '<br/>
+' . $GLOBALS['lng']['mysql_user'] . '<br/>
 <input type="text" name="name"/><br/>
-' . $lng['mysql_pass'] . '<br/>
+' . $GLOBALS['lng']['mysql_pass'] . '<br/>
 <input type="text" name="pass"/><br/>
-' . $lng['mysql_host'] . '<br/>
+' . $GLOBALS['lng']['mysql_host'] . '<br/>
 <input type="text" name="host" value="localhost"/><br/>
-' . $lng['mysql_db'] . '<br/>
+' . $GLOBALS['lng']['mysql_db'] . '<br/>
 <input type="text" name="db"/><br/>
-' . $lng['charset'] . '<br/>
+' . $GLOBALS['lng']['charset'] . '<br/>
 <input type="text" name="charset" value="utf8"/><br/>
-' . $lng['tables_file'] . '<br/>
+' . $GLOBALS['lng']['tables_file'] . '<br/>
 <input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/>
-' . $lng['chmod'] . '<br/>
+' . $GLOBALS['lng']['chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-<input name="save_as" type="submit" value="' . $lng['save_as'] . '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/>
+<input name="save_as" type="submit" value="' . $GLOBALS['lng']['save_as'] . '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/>
 </div>
 </form>
 </div>';
         } else {
-            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $mode->file_get_contents($_POST['tables']))) {
+            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']))) {
                 echo create_file(trim($_POST['c']), $sql, $_POST['chmod']);
             } else {
-                echo report($lng['sql_parser_error'], true);
+                echo report($GLOBALS['lng']['sql_parser_error'], true);
             }
         }
         break;
         
-	case 'cmd':
-		$v = '';
-		if (isset($_POST['cmd'])) {
-			echo show_cmd($_POST['cmd']);
-			$v = htmlspecialchars($_POST['cmd'], ENT_COMPAT);
+    case 'cmd':
+        $v = '';
+        if (isset($_POST['cmd'])) {
+            echo show_cmd($_POST['cmd']);
+            $v = htmlspecialchars($_POST['cmd'], ENT_COMPAT);
         }
 echo '<div class="input">
 <form action="change.php?go=cmd&amp;c=' . $r_current . '" method="post">
 <div>
-' . $lng['cmd_code'] . '<br/>
+' . $GLOBALS['lng']['cmd_code'] . '<br/>
 <input name="cmd" value="' . $v . '" style="width:99%"/><br/>
-<input type="submit" value="' . $lng['cmd_go'] . '"/>
+<input type="submit" value="' . $GLOBALS['lng']['cmd_go'] . '"/>
 </div>
 </form>
 </div>';
-	
-		break;
+    
+        break;
 }
 
-echo '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>' . $foot;
-?>
+echo '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>' . $GLOBALS['foot'];
