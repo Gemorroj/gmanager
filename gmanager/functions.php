@@ -728,15 +728,17 @@ function syntax($source = '', $charset = array())
         return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, true);
     }
 
+    $erl = 0;
+    $page = '';
     if ($v == 255 || $size > 2) {
         if ($st = trim(strip_tags($rt[1]))) {
             $erl = preg_replace('/.*\s(\d*)$/', '$1', $st, 1);
             $pg = $st;
         } else {
-            $pg = $GLOBALS['lng']['syntax_unknown'] . '<br/>';
+            $pg = $GLOBALS['lng']['syntax_unknown'];
         }
-    } else if ($v == 0 || $size > 0) {
-        $pg = $GLOBALS['lng']['syntax_true'] . '<br/>';
+    } else {
+        $pg = $GLOBALS['lng']['syntax_true'];
     }
 
     $fl = trim($GLOBALS['mode']->file_get_contents($source));
