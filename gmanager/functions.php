@@ -203,7 +203,6 @@ function look($current = '', $itype = '', $down = '')
         if ($GLOBALS['mode']->is_link($file)) {
             $type = 'LINK';
             $tmp = $GLOBALS['mode']->readlink($file);
-            print_r($tmp);
             $r_file = str_replace('%2F', '/', rawurlencode($tmp[1]));
 
             if ($GLOBALS['index']['name']) {
