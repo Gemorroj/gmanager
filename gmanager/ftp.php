@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.1 beta
+ * @version 0.7.1
  * 
  * PHP version >= 5.2.1
  * 
@@ -19,10 +19,10 @@ $GLOBALS['class'] = 'ftp';
 
 final class ftp
 {
-	private $user = 'root'; // логин
-	private $password = ''; // пароль
+	private $user = 'root';      // логин
+	private $password = '';      // пароль
 	private $host = 'localhost'; // хост
-	private $port = 21; // порт
+	private $port = 21;          // порт
     private $res;
     private $url;
     private $dir;
@@ -278,7 +278,7 @@ final class ftp
 
     public function fileperms($str = '')
 	{
-		if($str == '.' || $str == '/'){
+		if($str == '.' || $str == '/' || $str == ''){
 		    return 0;
 		}
     	//$str = self::change_symbol($str);
@@ -314,7 +314,7 @@ final class ftp
 	        } else if ($t2 == '..') {
 	        	$t2 = substr(strrev(strstr(strrev($GLOBALS['current']), '/')), 0, -1);
         	} else {
-        		$t2 = $GLOBALS['current'] . $t2;
+        		$t2 = ($GLOBALS['current'] != '.' ? $GLOBALS['current'] : '') . $t2;
        		}
 	    }
 

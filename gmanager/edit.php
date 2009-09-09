@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.1 beta
+ * @version 0.7.1
  * 
  * PHP version >= 5.2.1
  * 
@@ -108,7 +108,7 @@ echo '<div class="input">
 Строк: ' . $content['lines'] . '
 <form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post">
 <div>
-<textarea name="text" rows="18" cols="64" wrap="off">' . $content['text'] . '</textarea>
+<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea>
 <br/>
 <input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
 <select name="charset">

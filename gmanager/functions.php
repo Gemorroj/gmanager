@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.1 beta
+ * @version 0.7.1
  * 
  * PHP version >= 5.2.1
  * 
@@ -203,6 +203,7 @@ function look($current = '', $itype = '', $down = '')
         if ($GLOBALS['mode']->is_link($file)) {
             $type = 'LINK';
             $tmp = $GLOBALS['mode']->readlink($file);
+            print_r($tmp);
             $r_file = str_replace('%2F', '/', rawurlencode($tmp[1]));
 
             if ($GLOBALS['index']['name']) {
@@ -2077,6 +2078,7 @@ function fname($f = '', $name = '', $register = '', $i = '')
 
 function sql_parser($sql = '')
 {
+	$str = '';
     $arr = explode("\n", $sql);
 
     for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {

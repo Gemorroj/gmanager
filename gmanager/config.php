@@ -7,14 +7,14 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.1 beta
+ * @version 0.7.1
  * 
  * PHP version >= 5.2.1
  * 
  */
 
 // E_ALL | E_STRICT
-error_reporting(E_ALL | E_STRICT); // Отключаем сообщения об ошибках
+error_reporting(0); // Отключаем сообщения об ошибках
 
 // Выбираем протокол, через который будет работать менеджер (ftp или http)
 // настройки соединения FTP в файле ftp.php
@@ -27,14 +27,15 @@ $GLOBALS['user_pass'] = '1234';            // Пароль
 $GLOBALS['user_name'] = 'Gemorroj';        // Логин
 $GLOBALS['string'] = 1;                    // Поле ввода где можно в ручную набирать путь к папке/файлу (0 - выкл, 1 - вкл)
 $GLOBALS['realname'] = 2;                  // 0 - Относительные пути к файлам/директориям, 1 - Полные пути к файлам/директориям, 2 - Скрывать относительные пути к файлам/директориям
-$GLOBALS['syntax'] = 1;                    // 0 - проверка синтаксиса PHP кода у себя на сервере (если работает exec), 1 - проверка синтаксиса через специальный сервис на wapinet.ru
+$GLOBALS['syntax'] = 0;                    // 0 - проверка синтаксиса PHP кода у себя на сервере (если работает exec), 1 - проверка синтаксиса через специальный сервис на wapinet.ru
 $GLOBALS['target'] = 0;                    // Открывать редактор в отдельном окне  (0 - выкл, 1 - вкл)
 $GLOBALS['dir_size'] = 0;                  // Подсчет размеров директорий.  (0 - выкл, 1 - вкл)
 $GLOBALS['del_notify'] = 1;                // Подтверждения при удалении файлов/директорий
 
 $GLOBALS['php'] = '/usr/local/bin/php';    // Путь к PHP
-$GLOBALS['pclzip'] = 'pclzip.lib.php';        // Путь к PEAR классу PclZip
+$GLOBALS['pclzip'] = 'pclzip.lib.php';     // Путь к PEAR классу PclZip
 $GLOBALS['tar'] = 'Tar.php';               // Путь к PEAR классу Achive_TAR (в той же папке должен находиться PEAR.php)
+$GLOBALS['wrap'] = 0;                      // Переносы строк в текстовом редакторе (0 - выкл, 1 - вкл)
 
 // Максимальное количество файлов на странице по умолчанию
 $GLOBALS['limit'] = 50;
@@ -83,7 +84,7 @@ $GLOBALS['top'] = '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
 <head>
-<title>%dir% - Gmanager 0.7.1 beta</title>
+<title>%dir% - Gmanager 0.7.1</title>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <script type="text/javascript" src="js.js"></script>
 </head>
@@ -269,4 +270,4 @@ $GLOBALS['lng'] = array(
 );
 
 // Версия Менеджера (Не Менять!)
-$GLOBALS['version'] = '0.7.1b';
+$GLOBALS['version'] = '0.7.1';
