@@ -7,7 +7,7 @@
  * @copyright 2008-2009 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.1
+ * @version 0.7.2 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -743,7 +743,7 @@ function syntax($source = '', $charset = array())
 
     $fl = trim($GLOBALS['mode']->file_get_contents($source));
     if ($charset[0]) {
-        $fl = iconv($charset[0], $charset[1], $fl);
+        $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
     }
 
     if (substr_count($fl, "\r") > 2) {
@@ -833,7 +833,7 @@ function validator($current = '', $charset = array())
 
     $fl = $GLOBALS['mode']->file_get_contents($current);
     if ($charset[0]) {
-        $fl = iconv($charset[0], $charset[1], $fl);
+        $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
     } 
 
     $xml_parser = xml_parser_create();
@@ -963,7 +963,7 @@ function list_zip_archive($current = '', $down = '')
         $prop = $zip->properties();
         if (isset($prop['comment']) && $prop['comment'] != '') {
             if (iconv('UTF-8', 'UTF-8', $prop['comment']) != $prop['comment']) {
-                $prop['comment'] = iconv($GLOBALS['altencoding'], 'UTF-8', $prop['comment']);
+                $prop['comment'] = iconv($GLOBALS['altencoding'], 'UTF-8//TRANSLIT', $prop['comment']);
             }
             $l .= '<tr class="border"><td>' . $GLOBALS['lng']['comment_archive'] . '</td><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
         }
@@ -1085,6 +1085,8 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
     fclose($fp);
 
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+    $comment = $zip->properties();
+    $comment = $comment['comment'];
 
     if ($zip->delete(PCLZIP_OPT_BY_NAME, $f) == 0) {
         if ($GLOBALS['class'] == 'ftp') {
@@ -1100,7 +1102,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
         return 1;
     }
 
-    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb1');
+    $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'cb1', PCLZIP_OPT_COMMENT, $comment);
 
     unlink($tmp);
     if ($GLOBALS['class'] == 'ftp') {
@@ -1344,7 +1346,12 @@ function del_zip_archive($current = '', $f = '')
     require_once $GLOBALS['pclzip'];
 
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+//    $comment = $zip->properties();
+//    $comment = $comment['comment'];
+// TODO: сохранение комментариев
+
     $list = $zip->delete(PCLZIP_OPT_BY_NAME, $f);
+
     if ($GLOBALS['class'] == 'ftp') {
         ftp_archive_end($current);
     }
@@ -1808,7 +1815,7 @@ $buf = '';
 $win = false;
 if ((substr(PHP_OS, 0, 3) == 'WIN')) {
 	$win = true;
-    $cmd = iconv('UTF-8', $GLOBALS['altencoding'], $cmd);
+    $cmd = iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $cmd);
 }
 
 if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
@@ -1827,7 +1834,7 @@ if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes))
     }
 
     if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
-        $buf = iconv($GLOBALS['consencoding'], 'UTF-8', $buf);
+        $buf = iconv($GLOBALS['consencoding'], 'UTF-8//TRANSLIT', $buf);
     }
 } else {
     return '<div class="red">' . $GLOBALS['lng']['cmd_error'] . '<br/></div>';
@@ -2055,12 +2062,12 @@ function fname($f = '', $name = '', $register = '', $i = '')
     if ($register == 1) {
         $tmp = strtolower($name);
         if (!iconv_strlen($tmp)) {
-            $tmp = iconv($GLOBALS['altencoding'], 'UTF-8', strtolower(iconv('UTF-8', $GLOBALS['altencoding'], $name)));
+            $tmp = iconv($GLOBALS['altencoding'], 'UTF-8//TRANSLIT', strtolower(iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $name)));
         }
     } else if ($register == 2) {
         $tmp = strtoupper($name);
         if (!iconv_strlen($tmp)) {
-            $tmp = iconv($GLOBALS['altencoding'], 'UTF-8', strtoupper(iconv('UTF-8', $GLOBALS['altencoding'], $name)));
+            $tmp = iconv($GLOBALS['altencoding'], 'UTF-8//TRANSLIT', strtoupper(iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $name)));
         }
     } else {
         $tmp = $name;
@@ -2596,7 +2603,7 @@ function encoding($text, $charset)
 {
     $ch = explode(' -> ', $charset);
     if ($text) {
-        $text = iconv($ch[0], $ch[1], $text);
+        $text = iconv($ch[0], $ch[1] . '//TRANSLIT', $text);
     }
     return array(0 => $ch[0], 1 => $ch[1], 'text' => $text);
 }

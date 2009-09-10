@@ -1,7 +1,7 @@
 Файловый Менеджер + Текстовый Редактор
 Gmanager
 
-Версия: 0.7.1
+Версия: 0.7.2 beta
 Автор: Gemorroj
 http://wapinet.ru/gmanager/
 

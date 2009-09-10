@@ -1,8 +1,5 @@
 <?php
 /**
- * Warning! Modifed for PHP 5 only!
- */
-/**
  * PEAR, the PHP Extension and Application Repository
  *
  * PEAR class and PEAR_Error class
@@ -17,7 +14,7 @@
  * @author     Greg Beaver <cellog@php.net>
  * @copyright  1997-2009 The Authors
  * @license    http://opensource.org/licenses/bsd-license.php New BSD License
- * @version    CVS: $Id: PEAR.php,v 1.112 2009/04/15 04:05:13 dufuz Exp $
+ * @version    CVS: $Id: PEAR.php 286670 2009-08-02 14:16:06Z dufuz $
  * @link       http://pear.php.net/package/PEAR
  * @since      File available since Release 0.1
  */
@@ -36,10 +33,8 @@ define('PEAR_ERROR_CALLBACK',  16);
  */
 define('PEAR_ERROR_EXCEPTION', 32);
 /**#@-*/
-/*
 define('PEAR_ZE2', (function_exists('version_compare') &&
                     version_compare(zend_version(), "2-dev", "ge")));
-*/
 
 if (substr(PHP_OS, 0, 3) == 'WIN') {
     define('OS_WINDOWS', true);
@@ -83,7 +78,7 @@ $GLOBALS['_PEAR_error_handler_stack']    = array();
  * @author     Greg Beaver <cellog@php.net>
  * @copyright  1997-2006 The PHP Group
  * @license    http://opensource.org/licenses/bsd-license.php New BSD License
- * @version    Release: 1.8.1
+ * @version    Release: 1.9.0
  * @link       http://pear.php.net/package/PEAR
  * @see        PEAR_Error
  * @since      Class available since PHP 4.0.2
@@ -767,11 +762,6 @@ class PEAR
     // }}}
 }
 
-/*
-if (PEAR_ZE2) {
-    include_once 'PEAR5.php';
-}
-*/
 
 // {{{ _PEAR_call_destructors()
 
@@ -782,11 +772,8 @@ function _PEAR_call_destructors()
         sizeof($_PEAR_destructor_object_list))
     {
         reset($_PEAR_destructor_object_list);
-        //if (PEAR_ZE2) {
-        //    $destructLifoExists = PEAR5::getStaticProperty('PEAR', 'destructlifo');
-        //} else {
-            $destructLifoExists = PEAR::getStaticProperty('PEAR', 'destructlifo');
-        //}
+        $destructLifoExists = PEAR::getStaticProperty('PEAR', 'destructlifo');
+
 
         if ($destructLifoExists) {
             $_PEAR_destructor_object_list = array_reverse($_PEAR_destructor_object_list);
@@ -810,7 +797,7 @@ function _PEAR_call_destructors()
     }
 
     // Now call the shutdown functions
-    if (is_array($GLOBALS['_PEAR_shutdown_funcs']) AND !empty($GLOBALS['_PEAR_shutdown_funcs'])) {
+    if (isset($GLOBALS['_PEAR_shutdown_funcs']) AND is_array($GLOBALS['_PEAR_shutdown_funcs']) AND !empty($GLOBALS['_PEAR_shutdown_funcs'])) {
         foreach ($GLOBALS['_PEAR_shutdown_funcs'] as $value) {
             call_user_func_array($value[0], $value[1]);
         }
@@ -830,7 +817,7 @@ function _PEAR_call_destructors()
  * @author     Gregory Beaver <cellog@php.net>
  * @copyright  1997-2006 The PHP Group
  * @license    http://opensource.org/licenses/bsd-license.php New BSD License
- * @version    Release: 1.8.1
+ * @version    Release: 1.9.0
  * @link       http://pear.php.net/manual/en/core.pear.pear-error.php
  * @see        PEAR::raiseError(), PEAR::throwError()
  * @since      Class available since PHP 4.0.2
@@ -881,11 +868,7 @@ class PEAR_Error
         $this->mode      = $mode;
         $this->userinfo  = $userinfo;
 
-        //if (PEAR_ZE2) {
-        //    $skiptrace = PEAR5::getStaticProperty('PEAR_Error', 'skiptrace');
-        //} else {
-            $skiptrace = PEAR::getStaticProperty('PEAR_Error', 'skiptrace');
-        //}
+		$skiptrace = PEAR::getStaticProperty('PEAR_Error', 'skiptrace');
 
         if (!$skiptrace) {
             $this->backtrace = debug_backtrace();
@@ -893,6 +876,7 @@ class PEAR_Error
                 unset($this->backtrace[0]['object']);
             }
         }
+
         if ($mode & PEAR_ERROR_CALLBACK) {
             $this->level = E_USER_NOTICE;
             $this->callback = $options;
@@ -900,20 +884,25 @@ class PEAR_Error
             if ($options === null) {
                 $options = E_USER_NOTICE;
             }
+
             $this->level = $options;
             $this->callback = null;
         }
+
         if ($this->mode & PEAR_ERROR_PRINT) {
             if (is_null($options) || is_int($options)) {
                 $format = "%s";
             } else {
                 $format = $options;
             }
+
             printf($format, $this->getMessage());
         }
+
         if ($this->mode & PEAR_ERROR_TRIGGER) {
             trigger_error($this->getMessage(), $this->level);
         }
+
         if ($this->mode & PEAR_ERROR_DIE) {
             $msg = $this->getMessage();
             if (is_null($options) || is_int($options)) {
@@ -926,11 +915,13 @@ class PEAR_Error
             }
             die(sprintf($format, $msg));
         }
+
         if ($this->mode & PEAR_ERROR_CALLBACK) {
             if (is_callable($this->callback)) {
                 call_user_func($this->callback, $this);
             }
         }
+
         if ($this->mode & PEAR_ERROR_EXCEPTION) {
             trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING);
             eval('$e = new Exception($this->message, $this->code);throw($e);');
