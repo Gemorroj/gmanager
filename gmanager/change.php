@@ -61,10 +61,10 @@ switch ($_GET['go']) {
     default:
 
         if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
-            echo report($GLOBALS['lng']['disable_function'], true);
+            echo report($GLOBALS['lng']['disable_function'], 1);
             break;
         } else if (!$GLOBALS['mode']->file_exists($current)) {
-            echo report($GLOBALS['lng']['not_found'], true);
+            echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
 
@@ -140,7 +140,7 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['rename'] . '"/>
                 }
             }
 
-            // echo report('<br/>' . $GLOBALS['lng']['full_del_file_dir_true'], false);
+            // echo report('<br/>' . $GLOBALS['lng']['full_del_file_dir_true'], 0);
 
         } else if (isset($_POST['full_chmod'])) {
             if (!isset($_POST['chmod'])) {
@@ -479,12 +479,12 @@ echo '<div class="red">
         $new = getData('http://wapinet.ru/gmanager/gmanager.txt');
         if ($new['body']) {
             if (version_compare($new['body'], $GLOBALS['version'], '<=')) {
-                echo report($GLOBALS['lng']['version_new'] . ': ' . $new['body'] . '<br/>' . $GLOBALS['lng']['version_old'] . ': ' . $GLOBALS['version'] . '<br/>' . $GLOBALS['lng']['new_version_false'], false);
+                echo report($GLOBALS['lng']['version_new'] . ': ' . $new['body'] . '<br/>' . $GLOBALS['lng']['version_old'] . ': ' . $GLOBALS['version'] . '<br/>' . $GLOBALS['lng']['new_version_false'], 0);
             } else {
-                echo report($GLOBALS['lng']['version_new'] . ': ' . $new['body'] . '<br/>' . $GLOBALS['lng']['version_old'] . ': ' . $GLOBALS['version'] . '<br/>' . $GLOBALS['lng']['new_version_true'] . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . $GLOBALS['lng']['get'] . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', false);
+                echo report($GLOBALS['lng']['version_new'] . ': ' . $new['body'] . '<br/>' . $GLOBALS['lng']['version_old'] . ': ' . $GLOBALS['version'] . '<br/>' . $GLOBALS['lng']['new_version_true'] . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . $GLOBALS['lng']['get'] . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', 1);
             }
         } else {
-            echo report($GLOBALS['lng']['not_connect'], true);
+            echo report($GLOBALS['lng']['not_connect'], 2);
         }
         break;
 
@@ -511,7 +511,7 @@ Connection: Close</textarea><br/>
                 $url = $url['headers']."\r\n\r\n".$url['body'];
                 echo code($url, 0);
             } else {
-                echo report($GLOBALS['lng']['not_connect'], true);
+                echo report($GLOBALS['lng']['not_connect'], 2);
             }
         }
         break;
@@ -756,7 +756,7 @@ echo '<div class="input">
             if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']))) {
                 echo create_file(trim($_POST['c']), $sql, $_POST['chmod']);
             } else {
-                echo report($GLOBALS['lng']['sql_parser_error'], true);
+                echo report($GLOBALS['lng']['sql_parser_error'], 2);
             }
         }
         break;

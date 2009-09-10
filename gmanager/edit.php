@@ -58,7 +58,7 @@ switch ($_GET['go']) {
 		$to = $from = '';
 
         if (!$GLOBALS['mode']->is_file($current)) {
-            echo report($GLOBALS['lng']['not_found'], true);
+            echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
 

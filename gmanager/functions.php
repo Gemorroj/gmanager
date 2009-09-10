@@ -448,7 +448,7 @@ function copy_files($d = '', $dest = '', $static = '')
         }
     }
 
-    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), false);
+    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
 }
 
 
@@ -480,7 +480,7 @@ function move_files($d = '', $dest = '', $static = '')
 
     $GLOBALS['mode']->rmdir($d);
 
-    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), false);
+    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
 }
 
 
@@ -490,7 +490,7 @@ function copy_file($source = '', $dest = '', $chmod = '' /* 0644 */)
         if ($chmod) {
             rechmod($dest, $chmod);
         }
-        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), false);
+        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), 0);
     }
 
     $d = dirname($dest);
@@ -502,10 +502,10 @@ function copy_file($source = '', $dest = '', $chmod = '' /* 0644 */)
            }
             rechmod($dest, $chmod);
 
-        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_true'])), false);
+        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_true'])), 0);
     } else {
         $error = error();
-        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_false'])) . '<br/>' . $error, true);
+        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_false'])) . '<br/>' . $error, 2);
     }
 }
 
@@ -516,7 +516,7 @@ function move_file($source = '', $dest = '', $chmod = '' /* 0644 */)
         if ($chmod) {
             rechmod($dest, $chmod);
         }
-        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), false);
+        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), 0);
     }
 
     $d = dirname($dest);
@@ -530,10 +530,10 @@ function move_file($source = '', $dest = '', $chmod = '' /* 0644 */)
         rechmod($dest, $chmod);
         del_file($source);
 
-        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), false);
+        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), 0);
     } else {
         $error = error();
-        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_false'])) . '<br/>' . $error, true);
+        return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_false'])) . '<br/>' . $error, 2);
     }
 }
 
@@ -543,10 +543,10 @@ function del_file($f = '')
     //$f = rawurldecode($f);
 
     if ($GLOBALS['mode']->unlink($f)) {
-        return report($GLOBALS['lng']['del_file_true'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), false);
+        return report($GLOBALS['lng']['del_file_true'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), 0);
     } else {
         $error = error();
-        return report($GLOBALS['lng']['del_file_false'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES) . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['del_file_false'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES) . '<br/>' . $error, 2);
     }
 }
 
@@ -577,9 +577,9 @@ function del_dir($d = '')
         $err .= error() . '<br/>';
     }
     if ($err) {
-        return report($GLOBALS['lng']['del_dir_false'] . '<br/>' . $err, true);
+        return report($GLOBALS['lng']['del_dir_false'] . '<br/>' . $err, 0);
     }
-    return report($GLOBALS['lng']['del_dir_true'] . ' -&gt; ' . htmlspecialchars($d, ENT_NOQUOTES), false);
+    return report($GLOBALS['lng']['del_dir_true'] . ' -&gt; ' . htmlspecialchars($d, ENT_NOQUOTES), 2);
 }
 
 
@@ -631,10 +631,10 @@ function create_file($file = '', $text = '', $chmod = '0644')
     create_dir(dirname($file));
 
     if ($GLOBALS['mode']->file_put_contents($file, $text)) {
-        return report($GLOBALS['lng']['fputs_file_true'], false) . rechmod($file, $chmod);
+        return report($GLOBALS['lng']['fputs_file_true'], 0) . rechmod($file, $chmod);
     } else {
         $error = error();
-        return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $error, 2);
     }
 }
 
@@ -646,7 +646,7 @@ function rechmod($current = '', $chmod = '0755')
     $strlen = strlen($chmod);
 
     if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
-        return report($GLOBALS['lng']['chmod_mode_false'], true);
+        return report($GLOBALS['lng']['chmod_mode_false'], 2);
     }
 
     if ($strlen == 3) {
@@ -654,10 +654,10 @@ function rechmod($current = '', $chmod = '0755')
     }
 
     if ($GLOBALS['mode']->chmod($current, $chmod)) {
-        return report($GLOBALS['lng']['chmod_true'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . $chmod, false);
+        return report($GLOBALS['lng']['chmod_true'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . $chmod, 0);
     } else {
         $error = error();
-        return report($GLOBALS['lng']['chmod_false'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['chmod_false'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . $error, 2);
     }
 }
 
@@ -685,9 +685,9 @@ function create_dir($dir = '', $chmod = '0755')
     }
 
     if ($err) {
-        return report($GLOBALS['lng']['create_dir_false'] . '<br/>' . $err, true);
+        return report($GLOBALS['lng']['create_dir_false'] . '<br/>' . $err, 2);
     } else {
-        return report($GLOBALS['lng']['create_dir_true'], false);
+        return report($GLOBALS['lng']['create_dir_true'], 0);
     }
 }
 
@@ -717,7 +717,7 @@ function frename($current = '', $name = '', $chmod = '' /* 0644 */, $del = '', $
 function syntax($source = '', $charset = array())
 {
     if (!$GLOBALS['mode']->is_file($source)) {
-        return report($GLOBALS['lng']['not_found'], true);
+        return report($GLOBALS['lng']['not_found'], 2);
     }
 
     exec(escapeshellcmd($GLOBALS['php']) . ' -c -f -l ' . escapeshellarg($source), $rt, $v);
@@ -725,7 +725,7 @@ function syntax($source = '', $charset = array())
 	$size = sizeof($rt);
 
     if (!$size) {
-        return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, 2);
     }
 
     $erl = 0;
@@ -760,7 +760,7 @@ function syntax($source = '', $charset = array())
         }
     }
 
-    return report($pg, false).'<div class="code">' . $page . '</div>';
+    return report($pg, 0).'<div class="code">' . $page . '</div>';
 }
 
 
@@ -772,7 +772,7 @@ function syntax2($current = '', $charset = array())
     $fp = fsockopen('wapinet.ru', 80, $er1, $er2, 10);
     if (!$fp) {
         $error = error();
-        return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, 1);
     }
 
     $f = rawurlencode(trim($GLOBALS['mode']->file_get_contents($current)));
@@ -808,7 +808,7 @@ function zip_syntax($current = '', $f = '', $charset = array())
 
     if (!$fp) {
         $error = error();
-        return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, 1);
     }
 
     fputs($fp, $content['text']);
@@ -828,7 +828,7 @@ function zip_syntax($current = '', $f = '', $charset = array())
 function validator($current = '', $charset = array())
 {
     if (!extension_loaded('xml')) {
-        return report($GLOBALS['lng']['disable_function'] . ' (xml)', true);
+        return report($GLOBALS['lng']['disable_function'] . ' (xml)', 1);
     }
 
     $fl = $GLOBALS['mode']->file_get_contents($current);
@@ -842,10 +842,10 @@ function validator($current = '', $charset = array())
         $line = xml_get_current_line_number($xml_parser);
         $column = xml_get_current_column_number($xml_parser);
         xml_parser_free($xml_parser);
-        return report('Error [Line ' . $line . ', Column ' . $column . ']: ' . $err, true) . code($fl, $line);
+        return report('Error [Line ' . $line . ', Column ' . $column . ']: ' . $err, 1) . code($fl, $line);
     } else {
         xml_parser_free($xml_parser);
-        return report($GLOBALS['lng']['validator_true'], false) . code($fl, 0);
+        return report($GLOBALS['lng']['validator_true'], 0) . code($fl, 0);
     }
 }
 
@@ -899,7 +899,7 @@ function list_zip_archive($current = '', $down = '')
         if ($GLOBALS['class'] == 'ftp') {
             ftp_archive_end('');
         }
-        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), true) . '</td></tr>';
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), 2) . '</td></tr>';
     } else {
         $l = '';
 
@@ -983,7 +983,7 @@ function list_tar_archive($current = '', $down = '')
         if ($GLOBALS['class'] == 'ftp') {
             ftp_archive_end('');
         }
-        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'], true) . '</td></tr>';
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'], 2) . '</td></tr>';
     } else {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $l = '';
@@ -1078,7 +1078,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
 
     if (!$fp) {
         $error = error();
-        return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $error, 2);
     }
 
     fputs($fp, $text);
@@ -1093,7 +1093,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
             ftp_archive_end('');
         }
         unlink($tmp);
-        return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $zip->errorInfo(true), true);
+        return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
     }
 
     function cb1($p_event, &$p_header)
@@ -1110,9 +1110,9 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
     }
 
     if ($fl) {
-        return report($GLOBALS['lng']['fputs_file_true'], false);
+        return report($GLOBALS['lng']['fputs_file_true'], 0);
     } else {
-        return report($GLOBALS['lng']['fputs_file_false'], true);
+        return report($GLOBALS['lng']['fputs_file_false'], 2);
     }
 }
 
@@ -1131,11 +1131,11 @@ function look_zip_file($current = '', $f = '')
     }
 
     if (!$ext) {
-        return report($GLOBALS['lng']['archive_error'], true);
+        return report($GLOBALS['lng']['archive_error'], 2);
     } else if ($ext[0]['status'] == 'unsupported_encryption') {
-        return report($GLOBALS['lng']['archive_error_encrypt'], true);
+        return report($GLOBALS['lng']['archive_error_encrypt'], 2);
     } else {
-        return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', false) . archive_fl(trim($ext[0]['content']));
+        return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', 0) . archive_fl(trim($ext[0]['content']));
     }
 }
 
@@ -1152,7 +1152,7 @@ function look_tar_file($current = '', $f = '')
         if ($GLOBALS['class'] == 'ftp') {
             ftp_archive_end('');
         }
-        return report($GLOBALS['lng']['archive_error'], true);
+        return report($GLOBALS['lng']['archive_error'], 2);
     } else {
         $list = $tgz->listContent();
 
@@ -1164,7 +1164,7 @@ function look_tar_file($current = '', $f = '')
             if ($list[$i]['filename'] != $f) {
                 continue;
             } else {
-                return report($GLOBALS['lng']['real_size'] . ': ' . format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), false) . archive_fl(trim($ext));
+                return report($GLOBALS['lng']['real_size'] . ': ' . format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), 0) . archive_fl(trim($ext));
             }
         }
     }
@@ -1203,7 +1203,7 @@ function extract_zip_archive($current = '', $name = '', $chmod = array())
             unlink($ftp_current);
             rmdir($ftp_name);
         }
-        return report($GLOBALS['lng']['extract_false'] . '<br/>' . $zip->errorInfo(true), true);
+        return report($GLOBALS['lng']['extract_false'] . '<br/>' . $zip->errorInfo(true), 2);
     }
 
     if ($GLOBALS['class'] == 'ftp') {
@@ -1216,9 +1216,9 @@ function extract_zip_archive($current = '', $name = '', $chmod = array())
         if ($chmod) {
             rechmod($name, $chmod[1]);
         }
-        return report($GLOBALS['lng']['extract_true'], false);
+        return report($GLOBALS['lng']['extract_true'], 0);
     } else {
-        return report($GLOBALS['lng']['extract_false'], true);
+        return report($GLOBALS['lng']['extract_false'], 2);
     }
 }
 
@@ -1242,7 +1242,7 @@ function extract_tar_archive($current = '', $name = '', $chmod = array())
             unlink($ftp_current);
             rmdir($ftp_name);
         }
-        return report($GLOBALS['lng']['extract_false'], true);
+        return report($GLOBALS['lng']['extract_false'], 2);
     }
 
     foreach ($tgz->listContent() as $var) {
@@ -1261,9 +1261,9 @@ function extract_tar_archive($current = '', $name = '', $chmod = array())
 
     if ($GLOBALS['mode']->is_dir($name) || $GLOBALS['class'] == 'ftp') {
         rechmod($name, $chmod[1]);
-        return report($GLOBALS['lng']['extract_true'], false);
+        return report($GLOBALS['lng']['extract_true'], 0);
     } else {
-        return report($GLOBALS['lng']['extract_false'], true);
+        return report($GLOBALS['lng']['extract_false'], 2);
     }
 }
 
@@ -1284,7 +1284,7 @@ function extract_zip_file($current = '', $name = '', $chmod = '0755', $ext = '')
         if ($GLOBALS['class'] == 'ftp') {
             unlink($ftp_current);
         }
-        return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $zip->errorInfo(true), true);
+        return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
     }
 
     if ($GLOBALS['class'] == 'ftp') {
@@ -1297,9 +1297,9 @@ function extract_zip_file($current = '', $name = '', $chmod = '0755', $ext = '')
         if ($chmod) {
             rechmod($name, $chmod);
         }
-        return report($GLOBALS['lng']['extract_file_true'], false);
+        return report($GLOBALS['lng']['extract_file_true'], 0);
     } else {
-        return report($GLOBALS['lng']['extract_file_false'], true);
+        return report($GLOBALS['lng']['extract_file_false'], 2);
     }
 }
 
@@ -1321,7 +1321,7 @@ function extract_tar_file($current = '', $name = '', $chmod = '0755', $ext = '')
         if ($GLOBALS['class'] == 'ftp') {
             unlink($ftp_current);
         }
-        return report($GLOBALS['lng']['extract_file_false'], true);
+        return report($GLOBALS['lng']['extract_file_false'], 2);
     }
 
     if ($GLOBALS['class'] == 'ftp') {
@@ -1334,9 +1334,9 @@ function extract_tar_file($current = '', $name = '', $chmod = '0755', $ext = '')
         if ($chmod) {
             rechmod($name, $chmod);
         }
-        return report($GLOBALS['lng']['extract_file_true'], false);
+        return report($GLOBALS['lng']['extract_file_true'], 0);
     } else {
-        return report($GLOBALS['lng']['extract_file_false'], true);
+        return report($GLOBALS['lng']['extract_file_false'], 2);
     }
 }
 
@@ -1357,9 +1357,9 @@ function del_zip_archive($current = '', $f = '')
     }
 
     if ($list != 0) {
-        return report($GLOBALS['lng']['del_file_true'], false);
+        return report($GLOBALS['lng']['del_file_true'], 0);
     } else {
-        return report($GLOBALS['lng']['del_file_false'] . '<br/>' . $zip->errorInfo(true), true);
+        return report($GLOBALS['lng']['del_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
     }
 }
 
@@ -1403,9 +1403,9 @@ function del_tar_archive($current = '', $f = '')
     }
 
     if (in_array($f, $list)) {
-        return report($GLOBALS['lng']['del_file_false'], true);
+        return report($GLOBALS['lng']['del_file_false'], 2);
     } else {
-        return report($GLOBALS['lng']['del_file_true'], false);
+        return report($GLOBALS['lng']['del_file_true'], 0);
     }
 }
 
@@ -1481,9 +1481,9 @@ function add_zip_archive($current = '', $ext = '', $dir = '')
     }
 
     if ($add) {
-        return report($GLOBALS['lng']['add_archive_true'], false);
+        return report($GLOBALS['lng']['add_archive_true'], 0);
     } else {
-        return report($GLOBALS['lng']['add_archive_false'] . '<br/>' . $zip->errorInfo(true), true);
+        return report($GLOBALS['lng']['add_archive_false'] . '<br/>' . $zip->errorInfo(true), 2);
     }
 }
 
@@ -1521,9 +1521,9 @@ function add_tar_archive($current = '', $ext = '', $dir = '')
     }
 
     if ($add) {
-        return report($GLOBALS['lng']['add_archive_true'], false);
+        return report($GLOBALS['lng']['add_archive_true'], 0);
     } else {
-        return report($GLOBALS['lng']['add_archive_false'], true);
+        return report($GLOBALS['lng']['add_archive_false'], 2);
     }
 }
 
@@ -1577,9 +1577,9 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
         if ($chmod) {
             rechmod($name, $chmod);
         }
-        return report($GLOBALS['lng']['create_archive_true'], false);
+        return report($GLOBALS['lng']['create_archive_true'], 0);
     } else {
-        return report($GLOBALS['lng']['create_archive_false'] . ($err ? '<br/>'.$err : ''), true);
+        return report($GLOBALS['lng']['create_archive_false'] . ($err ? '<br/>' . $err : ''), 2);
     }
 }
 
@@ -1601,9 +1601,9 @@ function gz($c = '')
         if (!$len = iconv_strlen($ext)) {
             $len = strlen($ext);
         }
-        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[1], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), false) . archive_fl(trim($ext));
+        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[1], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), 0) . archive_fl(trim($ext));
     } else {
-        return report($GLOBALS['lng']['archive_error'], true);
+        return report($GLOBALS['lng']['archive_error'], 2);
     }
 }
 
@@ -1637,16 +1637,16 @@ function gz_extract($c = '', $name = '', $chmod = array())
 
     if (!$GLOBALS['mode']->file_put_contents($name . '/' . $gz[1], $get)) {
         $error = error();
-        return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $error, 2);
     }
 
     if ($GLOBALS['mode']->is_file($name . '/' . $gz[1])) {
         if ($chmod[0]) {
             rechmod($name, $chmod[0]);
         }
-        return report($GLOBALS['lng']['extract_file_true'], false);
+        return report($GLOBALS['lng']['extract_file_true'], 0);
     } else {
-        return report($GLOBALS['lng']['extract_file_false'], true);
+        return report($GLOBALS['lng']['extract_file_false'], 2);
     }
 }
 
@@ -1703,11 +1703,11 @@ function upload_files($tmp = '', $name = '', $dir = '', $chmod = '0644')
             rechmod($dir . $name, $chmod);
         }
         unlink($tmp);
-        return report($GLOBALS['lng']['upload_true'] . ' -&gt; ' . htmlspecialchars($fname . ' -> ' .$dir . $name, ENT_NOQUOTES), false);
+        return report($GLOBALS['lng']['upload_true'] . ' -&gt; ' . htmlspecialchars($fname . ' -> ' .$dir . $name, ENT_NOQUOTES), 0);
     } else {
         $error = error();
         unlink($tmp);
-        return report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($fname . ' x ' .$dir . $name, ENT_NOQUOTES) . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($fname . ' x ' .$dir . $name, ENT_NOQUOTES) . '<br/>' . $error, 2);
     }
 }
 
@@ -1744,10 +1744,10 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
         }
 
         if ($r) {
-            $out .= report($GLOBALS['lng']['upload_true'] . ' -&gt; ' . htmlspecialchars($v[0] . ' -> ' . $v[1], ENT_NOQUOTES), false);
+            $out .= report($GLOBALS['lng']['upload_true'] . ' -&gt; ' . htmlspecialchars($v[0] . ' -> ' . $v[1], ENT_NOQUOTES), 0);
         } else {
             $error = error();
-            $out .= report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($v[0] . ' x ' . $v[1], ENT_NOQUOTES) . '<br/>' . $error, true);
+            $out .= report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($v[0] . ' x ' . $v[1], ENT_NOQUOTES) . '<br/>' . $error, 2);
         }
     }
 
@@ -1758,10 +1758,10 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 function send_mail($theme = '', $mess = '', $to = '', $from = '')
 {
     if (mail($to, '=?utf-8?B?' . base64_encode($theme) . '?=', $mess, 'From: '.$from."\r\nContent-type: text/plain; charset=utf-8;\r\nX-Mailer: Gmanager ".$GLOBALS['version']."\r\nX-Priority: 3")) {
-        return report($GLOBALS['lng']['send_mail_true'], false);
+        return report($GLOBALS['lng']['send_mail_true'], 0);
     } else {
         $error = error();
-        return report($GLOBALS['lng']['send_mail_false'] . '<br/>' . $error, true);
+        return report($GLOBALS['lng']['send_mail_false'] . '<br/>' . $error, 2);
     }
 }
 
@@ -1846,7 +1846,7 @@ if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes))
 function replace($current = '', $from = '', $to = '', $regexp = '')
 {
     if (!$from) {
-        return report($GLOBALS['lng']['replace_false_str'], true);
+        return report($GLOBALS['lng']['replace_false_str'], 1);
     }
     $c = $GLOBALS['mode']->file_get_contents($current);
 
@@ -1854,36 +1854,36 @@ function replace($current = '', $from = '', $to = '', $regexp = '')
         preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
         $all = sizeof($all[0]);
         if (!$all) {
-            return report($GLOBALS['lng']['replace_false_str'], true);
+            return report($GLOBALS['lng']['replace_false_str'], 1);
         }
         $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
         if ($str) {
             if (!$GLOBALS['mode']->file_put_contents($current, $str)) {
                 $error = error();
-                return report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $error, true);
+                return report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $error, 2);
             }
         } else {
-            return report($GLOBALS['lng']['regexp_error'], true);
+            return report($GLOBALS['lng']['regexp_error'], 1);
         }
     } else {
         $all = substr_count($c, $from);
         if (!$all) {
-            return report($GLOBALS['lng']['replace_false_str'], true);
+            return report($GLOBALS['lng']['replace_false_str'], 1);
         }
 
 
         if (!$GLOBALS['mode']->file_put_contents($current, str_replace($from, $to, $c))) {
             $error = error();
-            return report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $error, true);
+            return report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $error, 2);
         }
            
            $str = true;
     }
 
     if ($str) {
-        return report($GLOBALS['lng']['replace_true'] . $all, false);
+        return report($GLOBALS['lng']['replace_true'] . $all, 0);
     } else {
-        return report($GLOBALS['lng']['replace_false_file'], true);
+        return report($GLOBALS['lng']['replace_false_file'], 1);
     }
 }
 
@@ -1891,7 +1891,7 @@ function replace($current = '', $from = '', $to = '', $regexp = '')
 function zip_replace($current = '', $f = '', $from = '', $to = '', $regexp = '')
 {
     if (!$from) {
-        return report($GLOBALS['lng']['replace_false_str'], true);
+        return report($GLOBALS['lng']['replace_false_str'], 1);
     }
 
     $c = edit_zip_file($current, $f);
@@ -1900,17 +1900,17 @@ function zip_replace($current = '', $f = '', $from = '', $to = '', $regexp = '')
     if ($regexp) {
         preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
         if (!sizeof($all[0])) {
-            return report($GLOBALS['lng']['replace_false_str'], true);
+            return report($GLOBALS['lng']['replace_false_str'], 1);
         }
         $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
         if ($str) {
             return edit_zip_file_ok($current, $f, $str);
         } else {
-            return report($GLOBALS['lng']['regexp_error'], true);
+            return report($GLOBALS['lng']['regexp_error'], 1);
         }
     } else {
         if (!substr_count($c, $from)) {
-            return report($GLOBALS['lng']['replace_false_str'], true);
+            return report($GLOBALS['lng']['replace_false_str'], 1);
         }
 
         return edit_zip_file_ok($current, $f, str_replace($from, $to, $c));
@@ -2074,10 +2074,10 @@ function fname($f = '', $name = '', $register = '', $i = '')
     }
 
     if ($GLOBALS['mode']->rename($f, $info['dirname'] . '/' . $tmp)) {
-        return report($info['basename'] . ' - ' . $tmp, false);
+        return report($info['basename'] . ' - ' . $tmp, 0);
     } else {
         $error = error();
-        return report($error . ' ' . $info['basename'] . ' -&gt; ' . $tmp, true);
+        return report($error . ' ' . $info['basename'] . ' -&gt; ' . $tmp, 2);
     }
 }
 
@@ -2187,7 +2187,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 {
 
     if (!$connect = mysql_connect($host, $name, $pass)) {
-        return report($GLOBALS['lng']['mysq_connect_false'], true);
+        return report($GLOBALS['lng']['mysq_connect_false'], 1);
     }
     if ($charset) {
         mysql_query('SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`', $connect);
@@ -2195,7 +2195,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
 
     if ($db) {
         if (!mysql_select_db($db, $connect)) {
-            return report($GLOBALS['lng']['mysq_select_db_false'], true);
+            return report($GLOBALS['lng']['mysq_select_db_false'], 1);
         }
     }
 
@@ -2216,7 +2216,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         $time += microtime(true) - $start;
 
         if (!$r) {
-            return report($GLOBALS['lng']['mysq_query_false'], true) . '<div><code>' . mysql_error($connect) . '</code></div>';
+            return report($GLOBALS['lng']['mysq_query_false'], 2) . '<div><code>' . mysql_error($connect) . '</code></div>';
         } else {
             while ($arr = mysql_fetch_assoc($r)) {
                 //if ($arr && $arr !== true) {
@@ -2242,7 +2242,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
     }
 
     mysql_close($connect);
-    return report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), false) . $out;
+    return report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), 0) . $out;
 }
 
 
@@ -2589,11 +2589,13 @@ function error()
 }
 
 
-function report($text = '', $error = false)
+function report($text = '', $error = 0)
 {
-    if ($error) {
+    if ($error == 2) {
         return '<div class="red">'.$text.'<br/></div><div><form action="change.php?go=send_mail&amp;c=' . rawurlencode($GLOBALS['current']) . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . $GLOBALS['version'] . ' Error"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . $GLOBALS['lng']['send_report'] . '"/></div></form></div>';
-    }
+    } else if ($error == 1) {
+    	return '<div class="red">'.$text.'<br/></div>';
+   	}
 
     return '<div class="green">'.$text.'<br/></div>';
 }
