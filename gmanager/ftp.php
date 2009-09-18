@@ -19,10 +19,10 @@ $GLOBALS['class'] = 'ftp';
 
 final class ftp
 {
-	private $user = 'root';      // логин
-	private $password = '';      // пароль
-	private $host = 'localhost'; // хост
-	private $port = 21;          // порт
+    private $user = 'root';      // логин
+    private $password = '';      // пароль
+    private $host = 'localhost'; // хост
+    private $port = 21;          // порт
     private $res;
     private $url;
     private $dir;
@@ -56,16 +56,16 @@ final class ftp
 
    	public static function change_symbol($str = '')
     {
-		return ($str[0] == '/' ? $str : '/'.$str);
-	}
+        return ($str[0] == '/' ? $str : '/'.$str);
+    }
 
     public function mkdir($dir = '', $chmod = '0755')
     {
-    	ftp_chdir($this->res, '/');
-    	if (!$this->is_dir($dir)) {
-        	$tmp = @ftp_mkdir($this->res, $dir);
+        ftp_chdir($this->res, '/');
+        if (!$this->is_dir($dir)) {
+            $tmp = @ftp_mkdir($this->res, $dir);
         } else {
-        	$tmp = true;
+            $tmp = true;
        	}
         $this->chmod($dir, $chmod);
         return $tmp;
@@ -73,255 +73,255 @@ final class ftp
 
     public function chmod($file = '', $chmod = '0755')
     {
-    	/*
-    	$win = ftp_systype($this->res);
-    	if ($win[0] . $win[1] . $win[2] == 'WIN') {
-    		trigger_error($GLOBALS['lng']['win_chmod']);
-    		return false;
-   		}
-   		*/
+        /*
+        $win = ftp_systype($this->res);
+        if ($win[0] . $win[1] . $win[2] == 'WIN') {
+            trigger_error($GLOBALS['lng']['win_chmod']);
+            return false;
+   	    }
+   	    */
 
-    	ftp_chdir($this->res, '/');
-    	settype($chmod, 'string');
-  		$strlen = strlen($chmod);
-		if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
-    		return false;
-   		}
-   		if ($strlen == 3) {
-    		$chmod = '0' . $chmod;
-   		}
-		if ($file[0] != '/') {
-			$file = '/' . $file;
-		}
+        ftp_chdir($this->res, '/');
+        settype($chmod, 'string');
+  	    $strlen = strlen($chmod);
+        if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+            return false;
+   	    }
+   	    if ($strlen == 3) {
+            $chmod = '0' . $chmod;
+   	    }
+        if ($file[0] != '/') {
+            $file = '/' . $file;
+        }
         return ftp_chmod($this->res, octdec(intval($chmod)), $file);
     }
 
-	public function file_get_contents($str = '')
-	{
-		ftp_chdir($this->res, '/');
-    	$tmp = fopen('php://temp', 'r+');
+    public function file_get_contents($str = '')
+    {
+        ftp_chdir($this->res, '/');
+        $tmp = fopen('php://temp', 'r+');
 
- 		if (ftp_fget($this->res, $tmp, $str, FTP_BINARY, 0)) {
-			rewind($tmp);
-        	return stream_get_contents($tmp);
-    	} else {
-        	return false;
-		}
-	}
+        if (ftp_fget($this->res, $tmp, $str, FTP_BINARY, 0)) {
+            rewind($tmp);
+            return stream_get_contents($tmp);
+        } else {
+            return false;
+        }
+    }
 
 	public function file_put_contents($file = '', $data = '')
-	{
-		$php_temp = $GLOBALS['temp'] . '/GmanagerEditor' . time() . '.tmp';
-		file_put_contents($php_temp, $data);
-		chmod($php_temp, 0666);
+    {
+        $php_temp = $GLOBALS['temp'] . '/GmanagerEditor' . time() . '.tmp';
+        file_put_contents($php_temp, $data);
+        chmod($php_temp, 0666);
 
-		$tmp = iconv_substr($file, 0, strrpos($file, '/'));
-		if ($tmp === false) {
-			$tmp = substr($file, 0, strrpos($file, '/'));
-		}
+        $tmp = iconv_substr($file, 0, strrpos($file, '/'));
+        if ($tmp === false) {
+            $tmp = substr($file, 0, strrpos($file, '/'));
+        }
 
-		ftp_chdir($this->res, $tmp);
-		$result = ftp_put($this->res, basename($file), $php_temp, FTP_BINARY);
+        ftp_chdir($this->res, $tmp);
+        $result = ftp_put($this->res, basename($file), $php_temp, FTP_BINARY);
 
-		unlink($php_temp);
-		return $result;
-	}
+        unlink($php_temp);
+        return $result;
+    }
 
     public function is_dir($str = '')
-	{
-    	//$str = self::change_symbol($str);
-    	//return is_dir($this->url.$str);
-    	$dir = str_replace('\\', '/', dirname($str));
-    	if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
-    		return true;
-   		}
+    {
+        //$str = self::change_symbol($str);
+        //return is_dir($this->url.$str);
+        $dir = str_replace('\\', '/', dirname($str));
+        if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
+            return true;
+        }
     	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
+            $this->rawlist($dir);
+   	    }
 
-		$b = basename($str);
-    	return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'dir');
+        $b = basename($str);
+        return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'dir');
    	}
 
     public function is_file($str = '')
-	{
-   		//$str = self::change_symbol($str);
-    	//return is_file($this->url.$str);
-    	$dir = str_replace('\\', '/', dirname($str));
-   		if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
-    		return false;
-   		}
+    {
+   	    //$str = self::change_symbol($str);
+        //return is_file($this->url.$str);
+        $dir = str_replace('\\', '/', dirname($str));
+   	    if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
+            return false;
+   	    }
 
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+   	    }
 
-   		$b = basename($str);
-    	return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'file');
+   	    $b = basename($str);
+        return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'file');
    	}
 
     public function is_link($str = '')
-	{
-   		//$str = self::change_symbol($str);
-    	//return is_link($this->url.$str);
-    	$dir = str_replace('\\', '/', dirname($str));
-   		if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
-    		return false;
-   		}
+    {
+   	    //$str = self::change_symbol($str);
+        //return is_link($this->url.$str);
+        $dir = str_replace('\\', '/', dirname($str));
+   	    if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
+            return false;
+   	    }
 
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+   	    }
 
-   		$b = basename($str);
-    	return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'link');
+   	    $b = basename($str);
+        return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'link');
    	}
 
     public function is_readable($str = '')
-	{
-    	return true;
-    	//$str = self::change_symbol($str);
-    	//return is_readable($this->url.$str);
+    {
+        return true;
+        //$str = self::change_symbol($str);
+        //return is_readable($this->url.$str);
    	}
 
     public function is_writable($str = '')
-	{
-    	return true;
-    	//$str = self::change_symbol($str);
-    	//return is_writable($this->url.$str);
+    {
+        return true;
+        //$str = self::change_symbol($str);
+        //return is_writable($this->url.$str);
    	}
 
     public function filesize($str = '')
-	{
-    	//$str = self::change_symbol($str);
+    {
+        //$str = self::change_symbol($str);
 
-    	//ftp_chdir($this->res, '/');
-    	//return sprintf('%u', ftp_size($this->res, $str));
-    	
-    	$dir = str_replace('\\', '/', dirname($str));
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
-    	return self::$rawlist[$dir][basename($str)]['size'];
+        //ftp_chdir($this->res, '/');
+        //return sprintf('%u', ftp_size($this->res, $str));
+        
+        $dir = str_replace('\\', '/', dirname($str));
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+   	    }
+        return self::$rawlist[$dir][basename($str)]['size'];
    	}
 
     public function file_exists($str = '')
-	{
-    	//$str = self::change_symbol($str);
-    	//return file_exists($this->url.$str);
-    	return ($this->is_file($str) || $this->is_dir($str) || $this->is_link($str));
+    {
+        //$str = self::change_symbol($str);
+        //return file_exists($this->url.$str);
+        return ($this->is_file($str) || $this->is_dir($str) || $this->is_link($str));
    	}
 
     public function filemtime($str = '')
-	{
-    	//$str = self::change_symbol($str);
-    	//return filemtime($this->url.$str);
-    	$dir = str_replace('\\', '/', dirname($str));
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
-    	return self::$rawlist[$dir][basename($str)]['mtime'];
+    {
+        //$str = self::change_symbol($str);
+        //return filemtime($this->url.$str);
+        $dir = str_replace('\\', '/', dirname($str));
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+   	    }
+        return self::$rawlist[$dir][basename($str)]['mtime'];
    	}
 
     public function unlink($str = '')
-	{
-    	//$str = self::change_symbol($str);
-    	ftp_chdir($this->res, '/');
-    	return ftp_delete($this->res, $str);
+    {
+        //$str = self::change_symbol($str);
+        ftp_chdir($this->res, '/');
+        return ftp_delete($this->res, $str);
    	}
 
     public function rename($from = '', $to = '')
-	{
-    	//$from = self::change_symbol($from);
-    	//$to = self::change_symbol($to);
-    	ftp_chdir($this->res, '/');
-    	return ftp_rename($this->res, $from, $to);
+    {
+        //$from = self::change_symbol($from);
+        //$to = self::change_symbol($to);
+        ftp_chdir($this->res, '/');
+        return ftp_rename($this->res, $from, $to);
    	}
 
     public function copy($from = '', $to = '', $chmod = '0644')
-	{
-    	//$from = self::change_symbol($from);
-    	//$to = self::change_symbol($to);
-    	//$result = copy($this->url.$from, $this->url.$to);
-    	//$this->chmod($this->url.$to, $chmod);
+    {
+        //$from = self::change_symbol($from);
+        //$to = self::change_symbol($to);
+        //$result = copy($this->url.$from, $this->url.$to);
+        //$this->chmod($this->url.$to, $chmod);
 
-    	$result = false;
-    	if (($r = $this->file_get_contents($from)) !== false) {
-    	    if ($result = $this->file_put_contents($to, $r)) {
-    		    $this->chmod($to, $chmod);
-   		    }
+        $result = false;
+        if (($r = $this->file_get_contents($from)) !== false) {
+            if ($result = $this->file_put_contents($to, $r)) {
+                $this->chmod($to, $chmod);
+            }
         }
-    	return $result;
+        return $result;
    	}
 
     public function rmdir($str = '')
 	{
-    	//$str = self::change_symbol($str);
-    	ftp_chdir($this->res, '/');
-    	return ftp_rmdir($this->res, $str);
+        //$str = self::change_symbol($str);
+        ftp_chdir($this->res, '/');
+        return ftp_rmdir($this->res, $str);
    	}
 
     public function iterator($str = '')
-	{
-    	$tmp = array();
+    {
+        $tmp = array();
 
-    	if (!isset(self::$rawlist[$str])) {
-    		$this->rawlist($str);
-   		}
+        if (!isset(self::$rawlist[$str])) {
+            $this->rawlist($str);
+       	}
 
-    	foreach (self::$rawlist[$str] as $var) {
-    		$tmp[] = basename($var['file']);
-   		}
+        foreach (self::$rawlist[$str] as $var) {
+            $tmp[] = basename($var['file']);
+   	    }
 
-   		return $tmp;
+   	    return $tmp;
    	}
 
     public function fileperms($str = '')
-	{
-		if($str == '.' || $str == '/' || $str == ''){
-		    return 0;
-		}
-    	//$str = self::change_symbol($str);
-    	//return fileperms($this->url.$str);
-    	$dir = str_replace('\\', '/', dirname($str));
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
-    	return self::$rawlist[$dir][basename($str)]['chmod'];
+    {
+        if($str == '.' || $str == '/' || $str == ''){
+            return 0;
+        }
+        //$str = self::change_symbol($str);
+        //return fileperms($this->url.$str);
+        $dir = str_replace('\\', '/', dirname($str));
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+       	}
+        return self::$rawlist[$dir][basename($str)]['chmod'];
    	}
 
     public function stat($str = '')
-	{
-    	$dir = str_replace('\\', '/', dirname($str));
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
-    	return self::$rawlist[$dir][basename($str)];
+    {
+        $dir = str_replace('\\', '/', dirname($str));
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+   	    }
+        return self::$rawlist[$dir][basename($str)];
    	}
 
     public function readlink($str = '')
-	{
-    	$dir = str_replace('\\', '/', dirname($str));
-    	if (!isset(self::$rawlist[$dir])) {
-    		$this->rawlist($dir);
-   		}
-   		$t1 = self::$rawlist[$dir][basename($str)]['file'];
-   		$t2 = explode(' -> ', $t1);
-   		$t2 = end($t2);
-   		if ($t2[0] != PATH_SEPARATOR) {
-   			if($t2 == '.'){
-   				$t2 = substr($GLOBALS['current'], 0, -1);
-	        } else if ($t2 == '..') {
-	        	$t2 = substr(strrev(strstr(strrev($GLOBALS['current']), '/')), 0, -1);
-        	} else {
-        		$t2 = ($GLOBALS['current'] != '.' ? $GLOBALS['current'] : '') . $t2;
-       		}
-	    }
+    {
+        $dir = str_replace('\\', '/', dirname($str));
+        if (!isset(self::$rawlist[$dir])) {
+            $this->rawlist($dir);
+   	    }
+   	    $t1 = self::$rawlist[$dir][basename($str)]['file'];
+       	$t2 = explode(' -> ', $t1);
+   	    $t2 = end($t2);
+   	    if ($t2[0] != PATH_SEPARATOR) {
+   	        if($t2 == '.'){
+   	            $t2 = substr($GLOBALS['current'], 0, -1);
+            } else if ($t2 == '..') {
+                $t2 = substr(strrev(strstr(strrev($GLOBALS['current']), '/')), 0, -1);
+            } else {
+                $t2 = ($GLOBALS['current'] != '.' ? $GLOBALS['current'] : '') . $t2;
+       	    }
+        }
 
-    	return array(
-    	    $t1,
+        return array(
+            $t1,
             $t2
-        );		            
+        );
    	}
 
     public function getcwd()

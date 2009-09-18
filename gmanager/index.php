@@ -211,6 +211,13 @@ if ($archive == 'ZIP') {
 } else if ($archive == 'GZ') {
     echo gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
     $if = true;
+} else if ($archive == 'RAR' && extension_loaded('rar')) {
+	if ($if) {
+        echo look_rar_file($current, $_GET['f']);
+    } else {
+        echo list_rar_archive($current, $idown);
+        $f = 1;
+    }
 } else {
     look($current, $itype, $idown);
 }
@@ -255,11 +262,11 @@ echo '</table>
 </div>
 <div class="ch">
 <input type="submit" name="mega_full_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/><br/>
-</div>
-<div class="ch">
-<input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/>
-</div>
-</div>
+</div>';
+if ($type != 'RAR') {
+    echo '<div class="ch"><input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/></div>';
+}
+echo '</div>
 </form>' . $found . $tm . $GLOBALS['foot'];
 } else if ($ia) {
 echo '</table>

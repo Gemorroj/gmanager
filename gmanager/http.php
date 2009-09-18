@@ -26,11 +26,11 @@ final class http
     	settype($chmod, 'string');
     	$strlen = strlen($chmod);
 		if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
-    		// return false;
-    		$chmod = '0755';
+            // return false;
+            $chmod = '0755';
    		}
    		if ($strlen == 3) {
-    		$chmod = '0' . $chmod;
+            $chmod = '0' . $chmod;
    		}
 
    		$chmod = decoct(octdec(intval($chmod)));
@@ -41,29 +41,29 @@ final class http
 
     public function chmod($file = '', $chmod = '0755')
     {
-    	/*
-		$win = PHP_OS;
-    	if ($win[0] . $win[1] . $win[2] == 'WIN') {
-    		trigger_error($GLOBALS['lng']['win_chmod']);
-    		return false;
+        /*
+        $win = PHP_OS;
+        if ($win[0] . $win[1] . $win[2] == 'WIN') {
+            trigger_error($GLOBALS['lng']['win_chmod']);
+            return false;
    		}
-   		*/
+        */
 
     	settype($chmod, 'string');
     	$strlen = strlen($chmod);
-    	if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
-    		return false;
-   		}
+        if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+            return false;
+        }
 
-    	if ($strlen == 3) {
-    		$chmod = '0' . $chmod;
-   		}
+        if ($strlen == 3) {
+            $chmod = '0' . $chmod;
+        }
   		 
         return @chmod($file, octdec(intval($chmod)));
     }
 
-	public function file_get_contents($str = '')
-	{
+    public function file_get_contents($str = '')
+    {
         return file_get_contents($str);
     }
 
@@ -112,48 +112,48 @@ final class http
     public function stat($str = '')
     {
    	    if (!isset(self::$stat[$str])) {
-    		self::$stat[$str] = @stat($str);
-   		}
+    	    self::$stat[$str] = @stat($str);
+        }
         if (function_exists('posix_getpwuid') && $uid = @posix_getpwuid(self::$stat[$str][4])) {
-        	self::$stat[$str][4] = self::$stat[$str]['uid'] = $uid['name'];
-   		}
-   		return self::$stat[$str];
+            self::$stat[$str][4] = self::$stat[$str]['uid'] = $uid['name'];
+        }
+        return self::$stat[$str];
     }
 
     public function fileperms($str = '')
     {
    	    if (!isset(self::$stat[$str][2])) {
-    		self::$stat[$str] = @stat($str);
-   		}
-   		return self::$stat[$str][2];
+    	    self::$stat[$str] = @stat($str);
+   	    }
+   	    return self::$stat[$str][2];
         //return fileperms($str);
     }
 
     public function filesize($str = '')
     {
-    	if (!isset(self::$stat[$str][7])) {
-    		self::$stat[$str] = stat($str);
-   		}
-   		return self::$stat[$str][7];
+        if (!isset(self::$stat[$str][7])) {
+    	    self::$stat[$str] = stat($str);
+   	    }
+   	    return self::$stat[$str][7];
         //return sprintf('%u', filesize($str));
     }
 
     public function filemtime($str = '')
     {
    	    if (!isset(self::$stat[$str][9])) {
-    		self::$stat[$str] = stat($str);
-   		}
-   		return self::$stat[$str][9];
+    	    self::$stat[$str] = stat($str);
+   	    }
+   	    return self::$stat[$str][9];
         //return filemtime($str);
     }
 
     public function readlink($str = '')
     {
-    	chdir($GLOBALS['current']);
-    	return array(
-		    basename($str),
-		    realpath(readlink($str))
-		);
+        chdir($GLOBALS['current']);
+        return array(
+	       basename($str),
+	       realpath(readlink($str))
+	    );
    	}
 
     public function file_exists($str = '')

@@ -194,7 +194,9 @@ echo '<div class="input">
                     echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
                 } else if ($archive == 'GZ') {
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
-                }
+                } else if ($archive == 'RAR' && extension_loaded('rar')) {
+                	echo extract_rar_archive($current, $_POST['name'], $_POST['chmod']);
+               	}
             }
         } else if (isset($_POST['full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
@@ -222,7 +224,9 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
                     echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 } else if ($archive == 'TAR') {
                     echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
-                }
+                } else if ($archive == 'RAR' && extension_loaded('rar')) {
+                	echo extract_rar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+               	}
             }
         } else if (isset($_POST['gz_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
@@ -293,6 +297,8 @@ echo '<input type="submit" name="name" value="' . $GLOBALS['lng']['add_archive']
                     echo add_zip_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 } else if ($archive == 'TAR') {
                     echo add_tar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                } else if ($archive == 'RAR') {
+                    echo add_rar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             }
         } else if (isset($_POST['full_rename'])) {
