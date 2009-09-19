@@ -447,6 +447,9 @@ Connection: Close</textarea><br/>
 <input type="text" name="name" value="' . $h_current . '"/><br/>
 ' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="width:28pt;"/><br/>
+' . $GLOBALS['lng']['set_time_limit'] . '<br/>
+<input type="text" name="set_time_limit" value="3600" size="5" style="width:28pt;"/><br/>
+' . $GLOBALS['lng']['ignore_user_abort'] . ' <input type="checkbox" name="ignore_user_abort" checked="checked" /><br/><br/>
 <input type="submit" value="' . $GLOBALS['lng']['upload'] . '"/>
 </div>
 </form>

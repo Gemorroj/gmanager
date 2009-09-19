@@ -613,9 +613,9 @@ function format_size($size = '', $int = 2) {
     } else if ($size < 1048576) {
         return round($size / 1024, $int) . ' Kb';
     } else if ($size < 1073741824) {
-        return round($size / 1024 / 1024, $int) . ' Mb';
+        return round($size / 1048576, $int) . ' Mb';
     } else {
-        return round($size / 1024 / 1024 / 1024, $int) . ' Gb';
+        return round($size / 1073741824, $int) . ' Gb';
     }
 }
 
@@ -1912,6 +1912,13 @@ function upload_files($tmp = '', $name = '', $dir = '', $chmod = '0644')
 
 function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 {
+	if (isset($_POST['set_time_limit'])) {
+		set_time_limit($_POST['set_time_limit']);
+	}
+	if (isset($_POST['ignore_user_abort'])) {
+		ignore_user_abort(true);
+	}
+
     $tmp = array();
     $url = trim($url);
 
