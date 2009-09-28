@@ -983,7 +983,7 @@ function list_rar_archive($current = '', $down = '')
         if ($GLOBALS['class'] == 'ftp') {
             ftp_archive_end('');
         }
-        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error']) . '</td></tr>';
+        return '<tr class="border"><td colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . report($GLOBALS['lng']['archive_error'], 2) . '</td></tr>';
     } else {
         $l = '';
 
