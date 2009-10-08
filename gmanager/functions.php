@@ -1743,9 +1743,9 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
     }
 
     if ($comment != '') {
-        $zip->create($ext, PCLZIP_OPT_COMMENT, $comment, PCLZIP_CB_PRE_ADD, 'cb2');
+        $r = $zip->create($ext, PCLZIP_OPT_COMMENT, $comment, PCLZIP_CB_PRE_ADD, 'cb2');
     } else {
-        $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb');
+        $r  = $zip->create($ext, PCLZIP_CB_PRE_ADD, 'cb2');
     }
 
     $err = false;
@@ -1758,15 +1758,15 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
             unlink($f);
         }
     }
-    
-    
+
+
     if ($GLOBALS['mode']->is_file($name)) {
         if ($chmod) {
             rechmod($name, $chmod);
         }
         return report($GLOBALS['lng']['create_archive_true'], 0);
     } else {
-        return report($GLOBALS['lng']['create_archive_false'] . ($err ? '<br/>' . $err : ''), 2);
+        return report($GLOBALS['lng']['create_archive_false'] . ($err ? '<br/>' . $err . '<br/>' . $zip->errorInfo(true): ''), 2);
     }
 }
 
@@ -2293,7 +2293,7 @@ function sql_parser($sql = '')
     $arr = explode("\n", $sql);
 
     for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {
-        if (trim($arr[$i]) && $arr[$i][0] != '#' && $arr[$i][0] . $arr[$i][1] != '--') {
+        if (isset($arr[$i]) && $arr[$i][0] != '#' && $arr[$i][0] . $arr[$i][1] != '--') {
             $str .= $arr[$i];
         }
     }
