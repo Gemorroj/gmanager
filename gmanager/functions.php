@@ -2249,20 +2249,25 @@ function fname($f = '', $name = '', $register = '', $i = '')
     // [f] - type
     // [name] - name
     // [date] - date
-    
+    // [rand=8,16] - random
+
     // $f = rawurldecode($f);
 
     $info = pathinfo($f);
     if (preg_match_all('/\[n=*(\d*)\]/U', $name, $arr, PREG_SET_ORDER)) {
         foreach ($arr as $var) {
             $name = str_replace($var[0], $var[1] + $i, $name);
-           }
-       }
-    //$name = str_replace('[n]', $i, $name);
+        }
+    }
+    if (preg_match_all('/\[rand=*(\d*),*(\d*)\]/U', $name, $arr, PREG_SET_ORDER)) {
+        foreach ($arr as $var) {
+            print_r($var);
+            $name = str_replace($var[0], iconv_substr(str_shuffle($GLOBALS['rand']), 0, mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
+        }
+    }
     $name = str_replace('[f]', $info['extension'], $name);
     $name = str_replace('[name]', $info['filename'], $name);
     $name = str_replace('[date]', strftime('%d_%m_%Y'), $name);
-
 
     if ($register == 1) {
         $tmp = strtolower($name);

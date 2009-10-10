@@ -22,7 +22,7 @@ require 'http.php';
 //require 'ftp.php';
 
 $GLOBALS['link'] = 50;                     // Сокращать имена файлов, если они длиннее чем указанное количество символов
-$GLOBALS['auth'] = 0;                    // Авторизация (0 - выкл, 1 - вкл)
+$GLOBALS['auth'] = 0;                      // Авторизация (0 - выкл, 1 - вкл)
 $GLOBALS['user_pass'] = '1234';            // Пароль
 $GLOBALS['user_name'] = 'Gemorroj';        // Логин
 $GLOBALS['string'] = 1;                    // Поле ввода где можно в ручную набирать путь к папке/файлу (0 - выкл, 1 - вкл)
@@ -36,6 +36,7 @@ $GLOBALS['php'] = '/usr/local/bin/php';    // Путь к PHP
 $GLOBALS['pclzip'] = 'pclzip.lib.php';     // Путь к PEAR классу PclZip
 $GLOBALS['tar'] = 'Tar.php';               // Путь к PEAR классу Achive_TAR (в той же папке должен находиться PEAR.php)
 $GLOBALS['wrap'] = 0;                      // Переносы строк в текстовом редакторе (0 - выкл, 1 - вкл)
+$GLOBALS['rand'] = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; // Набор символов для рандомного переименования файлов
 
 // Максимальное количество файлов на странице по умолчанию
 $GLOBALS['limit'] = 50;
@@ -109,6 +110,7 @@ $GLOBALS['lng'] = array(
 'change'                     =>    'Изменение',
 'rename'                     =>    'Переименование',
 'meter'                      =>    'Счетчик',
+'rand'                       =>    'Случайное значение',
 'edit'                       =>    'Редактировать',
 'del'                        =>    'Удаление',
 'chmod'                      =>    'CHMOD',

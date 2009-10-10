@@ -107,6 +107,7 @@ echo '<div class="input">
 [f] - ' . $GLOBALS['lng']['type'] . '<br/>
 [n=0] - ' . $GLOBALS['lng']['meter'] . '<br/>
 [date] - ' . $GLOBALS['lng']['date'] . '<br/>
+[rand=8,16] - ' . $GLOBALS['lng']['rand'] . '<br/>
 <input type="text" name="name" value="[name].[f]"/><br/>
 ' . $GLOBALS['lng']['str_register'] . '<br/>
 <select name="register">
