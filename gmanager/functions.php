@@ -2261,7 +2261,6 @@ function fname($f = '', $name = '', $register = '', $i = '')
     }
     if (preg_match_all('/\[rand=*(\d*),*(\d*)\]/U', $name, $arr, PREG_SET_ORDER)) {
         foreach ($arr as $var) {
-            print_r($var);
             $name = str_replace($var[0], iconv_substr(str_shuffle($GLOBALS['rand']), 0, mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
         }
     }
