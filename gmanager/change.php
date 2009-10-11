@@ -69,7 +69,7 @@ switch ($_GET['go']) {
         }
 
         if ($GLOBALS['mode']->is_dir($current)) {
-            $size = size($current, true);
+            $size = format_size(size($current, true));
             $md5 = '';
         } else if ($GLOBALS['mode']->is_file($current) || $GLOBALS['mode']->is_link($current)) {
             $size = format_size(size($current));
