@@ -21,25 +21,25 @@ error_reporting(E_ALL | E_STRICT); // Отключаем сообщения об
 require 'http.php';
 //require 'ftp.php';
 
-$GLOBALS['link'] = 50;                     // Сокращать имена файлов, если они длиннее чем указанное количество символов
-$GLOBALS['auth'] = 0;                      // Авторизация (0 - выкл, 1 - вкл)
-$GLOBALS['user_pass'] = '1234';            // Пароль
-$GLOBALS['user_name'] = 'Gemorroj';        // Логин
-$GLOBALS['string'] = 1;                    // Поле ввода где можно в ручную набирать путь к папке/файлу (0 - выкл, 1 - вкл)
-$GLOBALS['realname'] = 2;                  // 0 - Относительные пути к файлам/директориям, 1 - Полные пути к файлам/директориям, 2 - Скрывать относительные пути к файлам/директориям
-$GLOBALS['syntax'] = 1;                    // 0 - проверка синтаксиса PHP кода у себя на сервере (если работает exec), 1 - проверка синтаксиса через специальный сервис на wapinet.ru
-$GLOBALS['target'] = 0;                    // Открывать редактор в отдельном окне  (0 - выкл, 1 - вкл)
-$GLOBALS['dir_size'] = 0;                  // Подсчет размеров директорий.  (0 - выкл, 1 - вкл)
-$GLOBALS['del_notify'] = 1;                // Подтверждения при удалении файлов/директорий
+$GLOBALS['link']        = 50;                       // Сокращать имена файлов, если они длиннее чем указанное количество символов
+$GLOBALS['auth']        = 0;                        // Авторизация (0 - выкл, 1 - вкл)
+$GLOBALS['user_pass']   = '1234';                   // Пароль
+$GLOBALS['user_name']   = 'Gemorroj';               // Логин
+$GLOBALS['string']      = 1;                        // Поле ввода где можно в ручную набирать путь к папке/файлу (0 - выкл, 1 - вкл)
+$GLOBALS['realname']    = 2;                        // 0 - Относительные пути к файлам/директориям, 1 - Полные пути к файлам/директориям, 2 - Скрывать относительные пути к файлам/директориям
+$GLOBALS['syntax']      = 1;                        // 0 - проверка синтаксиса PHP кода у себя на сервере (если работает exec), 1 - проверка синтаксиса через специальный сервис на wapinet.ru
+$GLOBALS['target']      = 0;                        // Открывать редактор в отдельном окне  (0 - выкл, 1 - вкл)
+$GLOBALS['dir_size']    = 0;                        // Подсчет размеров директорий.  (0 - выкл, 1 - вкл)
+$GLOBALS['del_notify']  = 1;                        // Подтверждения при удалении файлов/директорий
 
-$GLOBALS['php'] = '/usr/local/bin/php';    // Путь к PHP
-$GLOBALS['pclzip'] = 'pclzip.lib.php';     // Путь к PEAR классу PclZip
-$GLOBALS['tar'] = 'Tar.php';               // Путь к PEAR классу Achive_TAR (в той же папке должен находиться PEAR.php)
-$GLOBALS['wrap'] = 0;                      // Переносы строк в текстовом редакторе (0 - выкл, 1 - вкл)
-$GLOBALS['rand'] = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; // Набор символов для рандомного переименования файлов
+$GLOBALS['php']         = '/usr/local/bin/php';     // Путь к PHP
+$GLOBALS['pclzip']      = 'pclzip.lib.php';         // Путь к PEAR классу PclZip
+$GLOBALS['tar']         = 'Tar.php';                // Путь к PEAR классу Achive_TAR (в той же папке должен находиться PEAR.php)
+$GLOBALS['wrap']        = 0;                        // Переносы строк в текстовом редакторе (0 - выкл, 1 - вкл)
+$GLOBALS['rand']        = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; // Набор символов для рандомного переименования файлов
 
 // Максимальное количество файлов на странице по умолчанию
-$GLOBALS['limit'] = 50;
+$GLOBALS['limit']       = 50;
 
 // Отображаемые колонки (0 - выкл, 1 - вкл)
 $GLOBALS['index'] = array(
@@ -68,11 +68,11 @@ $GLOBALS['altencoding'] = 'Windows-1251';
 // Кодировка в консоли
 $GLOBALS['consencoding'] = 'CP866';
 
-//ignore_user_abort(1); // продолжать работу скрипта, даже если закрыли окно браузера
-set_time_limit(999); // максимальное время работы скрипта
-ini_set('max_execution_time', '999'); // максимальное время работы скрипта
-iconv_set_encoding('internal_encoding', 'UTF-8'); // кодировка по умолчанию для iconv
-ini_set('memory_limit', '128M'); // лимит оперативной памяти
+//ignore_user_abort(1);                             // продолжать работу скрипта, даже если закрыли окно браузера
+set_time_limit(999);                                // максимальное время работы скрипта
+ini_set('max_execution_time', '999');               // максимальное время работы скрипта
+iconv_set_encoding('internal_encoding', 'UTF-8');   // кодировка по умолчанию для iconv
+ini_set('memory_limit', '128M');                    // лимит оперативной памяти
 
 // Временная папка
 //$GLOBALS['temp'] = ini_get('upload_tmp_dir');
@@ -183,7 +183,9 @@ $GLOBALS['lng'] = array(
 'chmod_mode_false'           =>    'Права Заданы не Верно',
 'full_rename'                =>    'Операция Выполнена',
 'copy_files_true'            =>    'Директория %dir% Скопирована',
+'copy_files_false'           =>    'Директория %dir% Не Скопирована',
 'move_files_true'            =>    'Директория %dir% Перемещена',
+'move_files_false'           =>    'Директория %dir% Не Перемещена',
 'del_dir_true'               =>    'Каталог Удален',
 'del_dir_false'              =>    'Следующие Файлы/Папки не Удалось Удалить',
 'syntax_true'                =>    'Синтаксических Ошибок не Найдено',
@@ -275,3 +277,5 @@ $GLOBALS['lng'] = array(
 
 // Версия Менеджера (Не Менять!)
 $GLOBALS['version'] = '0.7.2b';
+
+?>

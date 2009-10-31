@@ -63,12 +63,13 @@ final class ftp
     {
         ftp_chdir($this->res, '/');
         if (!$this->is_dir($dir)) {
-            $tmp = @ftp_mkdir($this->res, $dir);
-        } else {
-            $tmp = true;
+            if (!@ftp_mkdir($this->res, $dir)) {
+                return false;
+            }
        	}
+
         $this->chmod($dir, $chmod);
-        return $tmp;
+        return true;
     }
 
     public function chmod($file = '', $chmod = '0755')
@@ -416,3 +417,5 @@ final class ftp
     }
 
 }
+
+?>

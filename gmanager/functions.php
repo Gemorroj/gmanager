@@ -427,6 +427,7 @@ function copy_d($dest = '', $source = '', $to = '')
 
 function copy_files($d = '', $dest = '', $static = '')
 {
+    $error = array();
 
     foreach ($GLOBALS['mode']->iterator($d) as $file) {
         if ($file == $static) {
@@ -440,20 +441,31 @@ function copy_files($d = '', $dest = '', $static = '')
 
         if ($GLOBALS['mode']->is_dir($d . '/' . $file)) {
 
-            $GLOBALS['mode']->mkdir($dest . '/' . $file, $ch);
-            $GLOBALS['mode']->chmod($dest, $ch);
-            copy_files($d . '/' . $file, $dest . '/' . $file, $static);
+            if ($GLOBALS['mode']->mkdir($dest . '/' . $file, $ch)) {
+                $GLOBALS['mode']->chmod($dest, $ch);
+                copy_files($d . '/' . $file, $dest . '/' . $file, $static);
+            } else {
+                $error[] = str_replace('%dir%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']) . ' (' . error() . ')';
+            }
+
         } else {
-            $GLOBALS['mode']->copy($d . '/' . $file, $dest . '/' . $file, $ch);
+            if (!$GLOBALS['mode']->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
+                $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']) . ' (' . error() . ')';
+            }
         }
     }
-
-    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+    
+    if ($error) {
+        return report(implode('<br/>', $error), 2);
+    } else {
+        return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+    }
 }
 
 
 function move_files($d = '', $dest = '', $static = '')
 {
+    $error = array();
 
     foreach ($GLOBALS['mode']->iterator($d) as $file) {
         if ($file == $static) {
@@ -467,20 +479,29 @@ function move_files($d = '', $dest = '', $static = '')
 
         if ($GLOBALS['mode']->is_dir($d . '/' . $file)) {
 
-            $GLOBALS['mode']->mkdir($dest . '/' . $file, $ch);
-            $GLOBALS['mode']->chmod($dest . '/' . $file, $ch);
-            move_files($d . '/' . $file, $dest . '/' . $file, $static);
-            $GLOBALS['mode']->rmdir($d . '/' . $file);
+            if ($GLOBALS['mode']->mkdir($dest . '/' . $file, $ch)) {
+                $GLOBALS['mode']->chmod($dest . '/' . $file, $ch);
+                move_files($d . '/' . $file, $dest . '/' . $file, $static);
+                $GLOBALS['mode']->rmdir($d . '/' . $file);
+            } else {
+                $error[] = str_replace('%dir%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']) . ' (' . error() . ')';
+            }
+
         } else {
             if ($GLOBALS['mode']->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
                 $GLOBALS['mode']->unlink($d . '/' . $file);
+            } else {
+                $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']) . ' (' . error() . ')';
             }
         }
     }
 
-    $GLOBALS['mode']->rmdir($d);
-
-    return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+    if ($error) {
+        return report(implode('<br/>', $error), 2);
+    } else {
+        $GLOBALS['mode']->rmdir($d);
+        return report(str_replace('%dir%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+    }
 }
 
 
@@ -2798,6 +2819,10 @@ function error()
 }
 
 
+/**
+ * @param string
+ * @param int 0 - ok, 1 - error, 2 - error + email
+ */
 function report($text = '', $error = 0)
 {
     if ($error == 2) {
@@ -2907,3 +2932,5 @@ function clean($name = '')
 closedir($h);
 rmdir($name);
 }
+
+?>

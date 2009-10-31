@@ -279,3 +279,5 @@ echo '</table>
 } else {
     echo $found . $tm . $GLOBALS['foot'];
 }
+
+?>

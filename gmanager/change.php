@@ -791,3 +791,5 @@ echo '<div class="input">
 }
 
 echo '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>' . $GLOBALS['foot'];
+
+?>

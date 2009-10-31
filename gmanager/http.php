@@ -35,7 +35,9 @@ final class http
 
    		$chmod = decoct(octdec(intval($chmod)));
         $result = @mkdir($dir, $chmod);
-        $this->chmod($dir, $chmod);
+        if ($result) {
+            $this->chmod($dir, $chmod);
+        }
         return $result;
     }
 
@@ -173,7 +175,7 @@ final class http
 
     public function copy($from = '', $to = '', $chmod = '0644')
     {
-        if ($result = copy($from, $to)) {
+        if ($result = @copy($from, $to)) {
             $this->chmod($to, $chmod);
         }
         return $result;
@@ -194,3 +196,5 @@ final class http
         return array_diff(scandir($str, 0), array('.', '..'));
     }
 }
+
+?>
