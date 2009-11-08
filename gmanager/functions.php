@@ -584,13 +584,13 @@ function del_dir($d = '')
         $realpath = realpath($d . '/' . $f);
         $f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
         $GLOBALS['mode']->chmod($f, '0777');
-        if ($GLOBALS['mode']->is_file($f) || $GLOBALS['mode']->is_link($f)) {
+        if ($GLOBALS['mode']->is_dir($f)) {
+            //$GLOBALS['mode']->rmdir($f);
+            del_dir($f . '/');
+        } else {
             if (!$GLOBALS['mode']->unlink($f)) {
                 $err .= $f . '<br/>';
             }
-        } else if ($GLOBALS['mode']->is_dir($f)) {
-            //$GLOBALS['mode']->rmdir($f);
-            del_dir($f . '/');
         }
     }
 
