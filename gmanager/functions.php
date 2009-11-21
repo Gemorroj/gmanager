@@ -2535,31 +2535,28 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
     ob_implicit_flush(1);
     set_time_limit(9999);
 
-    ini_set('zlib.output_compression', 0);
+    ini_set('zlib.output_compression', 'Off');
     ini_set('output_handler', '');
-
-    //iconv_set_encoding('internal_encoding', 'windows-1251');
 
     // Длина файла
     $sz = $len = strlen($f);
 
 
-    $out = $f;
-
     // "От" и  "До" по умолчанию
     $file_range = array(
         'from' => 0,
-        'to' => $len
+        'to'   => $len
     );
 
     // Если докачка
-    if ($range = isset($_SERVER['HTTP_RANGE'])) {
-        if (preg_match('/bytes=(\d+)-(\d*)/i', $_SERVER['HTTP_RANGE'], $matches)) {
+    $range = isset($_SERVER['HTTP_RANGE']);
+    if ($range) {
+        if (preg_match('/bytes=(\d+)\-(\d*)/i', $_SERVER['HTTP_RANGE'], $matches)) {
             // "От", "До" если "До" нету, "До" равняется размеру файла
             $file_range = array('from' => $matches[1], 'to' => (!$matches[2]) ? $len : $matches[2]);
             // Режем переменную в соответствии с данными
             if ($file_range) {
-                $out = substr($out, $file_range['from'], $file_range['to']);
+                $f = substr($f, $file_range['from'], $file_range['to']);
                 $sz = $file_range['to'] - $file_range['from'];
             }
         }
@@ -2575,9 +2572,7 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
 
     // Ставим MIME в зависимости от расширения
     if (!$mime) {
-        $info = pathinfo($name);
-
-        switch (strtolower($info['extension'])) {
+        switch (strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
             default:
                 $mime = 'application/octet-stream';
                 break;
@@ -2719,9 +2714,9 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
     header('Pragma: cache');
 
     // Хэш
-    $etag = md5($f);
-    $etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
-    header('ETag: "' . $etag . '"');
+    //$etag = md5($f);
+    //$etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
+    //header('ETag: "' . $etag . '"');
 
 
     //header('Connection: Close');
@@ -2750,7 +2745,7 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
     }
     //ob_end_flush();
     
-    exit($out);
+    exit($f);
 }
 
 
@@ -2847,7 +2842,6 @@ function encoding($text, $charset)
 
 function ftp_move_files($from = '', $to = '', $chmodf = '0644', $chmodd = '0755')
 {
-
     $h = opendir($from);
     while (($f = readdir($h)) !== false) {
         if ($f == '.' || $f == '..') {

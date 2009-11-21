@@ -23,18 +23,18 @@ final class http
 
     public function mkdir($dir = '', $chmod = '0755')
     {
-    	settype($chmod, 'string');
-    	$strlen = strlen($chmod);
-		if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+        settype($chmod, 'string');
+        $strlen = strlen($chmod);
+        if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
             // return false;
             $chmod = '0755';
-   		}
-   		if ($strlen == 3) {
+        }
+        if ($strlen == 3) {
             $chmod = '0' . $chmod;
-   		}
+        }
 
-   		$chmod = decoct(octdec(intval($chmod)));
-        $result = @mkdir($dir, $chmod);
+        $chmod = decoct(octdec(intval($chmod)));
+        $result = @mkdir($dir, $chmod, true);
         if ($result) {
             $this->chmod($dir, $chmod);
         }

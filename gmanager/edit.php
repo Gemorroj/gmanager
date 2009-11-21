@@ -26,6 +26,8 @@ if (!isset($_GET['charset'])) {
 if (isset($_POST['get'])) {
     header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ? '&f=' . $_GET['f'] : ''))));
     exit;
+} elseif (isset($_POST['line_editor'])) {
+    $_GET['go'] = '';
 }
 
 require 'functions.php';
@@ -74,10 +76,10 @@ switch ($_GET['go']) {
 
         if ($archive == 'ZIP') {
             $content = edit_zip_file($current, $_GET['f']);
-            $content['text'] = htmlspecialchars($content['text'], ENT_NOQUOTES);
+            $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
-            $content['text'] = htmlspecialchars($GLOBALS['mode']->file_get_contents($current), ENT_NOQUOTES);
+            $content['text'] = htmlspecialchars($GLOBALS['mode']->file_get_contents($current), ENT_COMPAT);
             $content['size'] = format_size(size($current));
             $content['lines'] = sizeof(explode("\n", $content['text']));
             $f = '';
@@ -101,16 +103,29 @@ if ($GLOBALS['class'] == 'http' && $path) {
     $http = '';
 }
 
-
+if ($GLOBALS['line_editor']['on']) {
+    $i = $start = isset($_POST['start']) ? intval($_POST['start']) - 1 : 0;
+    $end = isset($_POST['end']) ? intval($_POST['end']) : $GLOBALS['line_editor']['lines'];
+    
+    $edit = '';
+    foreach(array_slice(explode("\n", $content['text']), $start, $end) as $var) {
+        $i++;
+        $edit .= $i . '<input name="line[' . ($i - 1) . ']" type="text" value="' . $var . '"/><br/>';
+    }
+    
+    $edit .= '<input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . ($start + 1) . '" name="start" />
+    -
+    <input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . $end . '" name="end"/>
+    <input name="line_editor" type="submit" value="' . $GLOBALS['lng']['look'] . '"/><br/>';
+} else {
+    $edit = '<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
+}
 
 echo '<div class="input">
 ' . $GLOBALS['lng']['sz'] . ': ' . $content['size'] . '<br/>
 Строк: ' . $content['lines'] . '
 <form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post">
-<div>
-<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea>
-<br/>
-<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
+<div>' . $edit .'<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
 <select name="charset">
 <option value="utf-8">utf-8</option>
 <option value="windows-1251"'.($charset[1] == 'windows-1251'? ' selected="selected"' : '').'>windows-1251</option>
@@ -140,7 +155,7 @@ echo '<div class="input">
 
 
 if ($archive == '' && extension_loaded('xml')) {
-echo '<div class="rb">
+    echo '<div class="rb">
 <a href="edit.php?c=' . $r_current . '&amp;' . $full_charset . 'go=validator">' . $GLOBALS['lng']['validator'] . '</a><br/>
 </div>';
 }
@@ -193,6 +208,10 @@ echo '<div class="rb">
 
 
     case 'save':
+        if ($GLOBALS['line_editor']['on']) {
+            $_POST['text'] = implode("\n", $_POST['line'] + explode("\n", $GLOBALS['mode']->file_get_contents($current)));
+        }
+    
         if ($_POST['charset'] != 'utf-8') {
             $_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
         }
