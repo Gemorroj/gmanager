@@ -209,9 +209,11 @@ echo '<div class="rb">
 
     case 'save':
         if ($GLOBALS['line_editor']['on']) {
-            $_POST['text'] = implode("\n", $_POST['line'] + explode("\n", $GLOBALS['mode']->file_get_contents($current)));
+            $_POST['text'] = $_POST['line'] + explode("\n", $GLOBALS['mode']->file_get_contents($current));
+            ksort($_POST['text'], SORT_NUMERIC);
+            $_POST['text'] = implode("\n", $_POST['text']);
         }
-    
+
         if ($_POST['charset'] != 'utf-8') {
             $_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
         }
