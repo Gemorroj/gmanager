@@ -21,6 +21,10 @@ if (!isset($_GET['charset'])) {
 	$_GET['charset'] = '';
 } else {
 	$_GET['c'] = rawurldecode($_GET['c']);
+    
+    if ($_GET['f'] != '') {
+        $_GET['f'] = rawurldecode($_GET['f']);
+    }
 }
 
 if (isset($_POST['get'])) {
@@ -85,7 +89,7 @@ switch ($_GET['go']) {
             $f = '';
         }
 
-        if ($charset[0]) {
+        if ($charset[0] && $content['size'] > 0) {
             $content['text'] = iconv($charset[0], $charset[1], $content['text']);
         }
 
@@ -165,7 +169,7 @@ echo '<div class="rb">
 <form action="edit.php?" method="get" style="padding:0; margin:0;">
 <div>
 <input type="hidden" name="c" value="' . $r_current . '"/>
-<input type="hidden" name="f" value="' . $_GET['f'] . '"/>
+<input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>
 <select name="charset">
 <option value="">'.$GLOBALS['lng']['charset_no'].'</option>
 <optgroup label="UTF-8">

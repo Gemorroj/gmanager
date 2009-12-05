@@ -135,7 +135,8 @@ function static_name($current = '', $dest = '')
 
 function look($current = '', $itype = '', $down = '')
 {
-    if (!$GLOBALS['mode']->is_dir($current)) {
+    if (!$GLOBALS['mode']->is_dir($current) || !$GLOBALS['mode']->is_readable($current)) {
+        echo '<tr><td class="red" colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . $GLOBALS['lng']['permission_denided'] . '</td></tr>';
         return;
     }
     

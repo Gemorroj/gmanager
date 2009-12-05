@@ -24,6 +24,7 @@ if ($current == '.') {
 }
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
+
 $type = get_type(basename($h_current));
 $archive = is_archive($type);
 $f = 0;
@@ -175,7 +176,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 </tr>';
     }
 } else if ($archive != 'GZ') {
-    echo '<form action="change.php?c=' . rawurlencode($r_current) . '&amp;go=1" method="post">
+    echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
