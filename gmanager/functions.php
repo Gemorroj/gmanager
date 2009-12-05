@@ -2449,10 +2449,12 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         if (!$r) {
             return report($GLOBALS['lng']['mysq_query_false'], 2) . '<div><code>' . mysql_error($connect) . '</code></div>';
         } else {
-            while ($arr = mysql_fetch_assoc($r)) {
-                //if ($arr && $arr !== true) {
-                    $result[] = $arr;
-                //}
+            if (mysql_affected_rows($connect)) {
+                while ($arr = mysql_fetch_assoc($r)) {
+                    //if ($arr && $arr !== true) {
+                        $result[] = $arr;
+                    //}
+                }
             }
         }
         $i++;
