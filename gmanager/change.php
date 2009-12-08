@@ -325,6 +325,19 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
                     echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name']);
                 }
             }
+        } else if (isset($_POST['del_archive'])) {
+                $archive = is_archive(get_type(basename($current)));
+                $_POST['check'] = array_map('rawurldecode', $_POST['check']);
+
+                if ($archive == 'ZIP') {
+                    foreach ($_POST['check'] AS $ch) {
+                        echo del_zip_archive($current, $ch);
+                    }
+                } else if ($archive == 'TAR') {
+                    foreach ($_POST['check'] AS $ch) {
+                        echo del_tar_archive($current, $ch);
+                    }
+                }
         }
         break;
 

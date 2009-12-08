@@ -259,13 +259,10 @@ echo '</table>
 } else if ($f) {
 echo '</table>
 <div class="ch">
-<input type="submit" name="full_extract" value="' . $GLOBALS['lng']['extract_file'] . '"/><br/>
-</div>
-<div class="ch">
-<input type="submit" name="mega_full_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/><br/>
-</div>';
+<input type="submit" name="full_extract" value="' . $GLOBALS['lng']['extract_file'] . '"/>
+<input type="submit" name="mega_full_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/>';
 if ($type != 'RAR') {
-    echo '<div class="ch"><input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/></div>';
+    echo ' <input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/> <input type="submit" name="del_archive" value="' . $GLOBALS['lng']['del'] . '"/>';
 }
 echo '</div>
 </form>' . $found . $tm . $GLOBALS['foot'];

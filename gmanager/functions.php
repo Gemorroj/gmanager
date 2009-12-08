@@ -581,13 +581,13 @@ function del_dir($d = '')
     $GLOBALS['mode']->chmod($d, '0777');
 
     foreach ($GLOBALS['mode']->iterator($d) as $f) {
-
         $realpath = realpath($d . '/' . $f);
         $f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
         $GLOBALS['mode']->chmod($f, '0777');
-        if ($GLOBALS['mode']->is_dir($f)) {
-            //$GLOBALS['mode']->rmdir($f);
+
+        if ($GLOBALS['mode']->is_dir($f) && !@$GLOBALS['mode']->rmdir($f)) {
             del_dir($f . '/');
+            $GLOBALS['mode']->rmdir($f);
         } else {
             if (!$GLOBALS['mode']->unlink($f)) {
                 $err .= $f . '<br/>';
@@ -1557,16 +1557,24 @@ function del_zip_archive($current = '', $f = '')
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
 //    $comment = $zip->properties();
 //    $comment = $comment['comment'];
-// TODO: сохранение комментариев
+// :TODO: сохранение комментариев
 
-    $list = $zip->delete(PCLZIP_OPT_BY_NAME, $f);
+    // fix del directory
+    foreach ($zip->listContent() as $index) {
+        if ($index['filename'] == $f) {
+            break;
+        }
+    }
+    $list = $zip->delete(PCLZIP_OPT_BY_INDEX, $index['index']);
+    
+    //$list = $zip->delete(PCLZIP_OPT_BY_NAME, $f);
 
     if ($GLOBALS['class'] == 'ftp') {
         ftp_archive_end($current);
     }
 
     if ($list != 0) {
-        return report($GLOBALS['lng']['del_file_true'], 0);
+        return report($GLOBALS['lng']['del_file_true'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 0);
     } else {
         return report($GLOBALS['lng']['del_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
     }
@@ -1581,40 +1589,31 @@ function del_tar_archive($current = '', $f = '')
 
     $list = $tgz->listContent();
 
-    $new_tar = $new_tar_string = array();
+    $new_tar = array();
 
     for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
         if ($list[$i]['filename'] == $f) {
             continue;
         } else {
-            $new_tar_string[] = $tgz->extractInString($list[$i]['filename']);
             $new_tar[] = $list[$i]['filename'];
         }
     }
 
-    $GLOBALS['mode']->file_put_contents($current, '');
+    $tmp_name = $GLOBALS['temp'] . '/GmanagerTar' . time() . '/';
+    $tgz->extractList($new_tar, $tmp_name);
 
-    for ($i = 0, $s = sizeof($new_tar); $i < $s; ++$i) {
-        $l = strrev($new_tar[$i]);
-        if ($l[0] == '/') {
-            $l[0] = '';
-            $tgz->addModify('.', strrev($l));
-        } else {
-            $tgz->addString($new_tar[$i], $new_tar_string[$i]);
-        }
-    }
-
-    unset($new_tar_string, $new_tar);
-    $list = $tgz->listContent();
+    $GLOBALS['mode']->unlink($current);
+    $list = $tgz->createModify($tmp_name, '.', $tmp_name);
+    clean($tmp_name);
 
     if ($GLOBALS['class'] == 'ftp') {
         ftp_archive_end($current);
     }
 
-    if (in_array($f, $list)) {
-        return report($GLOBALS['lng']['del_file_false'], 2);
+    if ($list) {
+        return report($GLOBALS['lng']['del_file_true'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 0);
     } else {
-        return report($GLOBALS['lng']['del_file_true'], 0);
+        return report($GLOBALS['lng']['del_file_false'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 2);
     }
 }
 
@@ -1796,10 +1795,10 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
 function gz($c = '')
 {
     $ext = implode('', gzfile($GLOBALS['class'] == 'ftp' ? ftp_archive_start($c) : $c));
-    $gz = explode(chr(0), $GLOBALS['mode']->file_get_contents($c));
+    $gz = explode(chr(0), substr($GLOBALS['mode']->file_get_contents($c), 10));
 
-    if (!isset($gz[1]) || $gz[1] == '') {
-        $gz[1] = basename($c, '.gz');
+    if (!isset($gz[0]) || $gz[0] == '') {
+        $gz[0] = basename($c, '.gz');
     }
 
     if ($GLOBALS['class'] == 'ftp') {
@@ -1807,10 +1806,10 @@ function gz($c = '')
     }
 
     if ($ext) {
-        if (!$len = iconv_strlen($ext)) {
+        if (!$len = @iconv_strlen($ext)) {
             $len = strlen($ext);
         }
-        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[1], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), 0) . archive_fl(trim($ext));
+        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[0], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), 0) . archive_fl(trim($ext));
     } else {
         return report($GLOBALS['lng']['archive_error'], 2);
     }
@@ -1838,18 +1837,18 @@ function gz_extract($c = '', $name = '', $chmod = array())
     }
 
 
-    $gz = explode(chr(0), $GLOBALS['mode']->file_get_contents($c));
-    if (!isset($gz[1]) || $gz[1] == '') {
-        $gz[1] = basename($c, '.gz');
+    $gz = explode(chr(0), substr($GLOBALS['mode']->file_get_contents($c), 10));
+    if (!isset($gz[0]) || $gz[0] == '') {
+        $gz[0] = basename($c, '.gz');
     }
 
 
-    if (!$GLOBALS['mode']->file_put_contents($name . '/' . $gz[1], $get)) {
+    if (!$GLOBALS['mode']->file_put_contents($name . '/' . $gz[0], $get)) {
         $error = error();
         return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $error, 2);
     }
 
-    if ($GLOBALS['mode']->is_file($name . '/' . $gz[1])) {
+    if ($GLOBALS['mode']->is_file($name . '/' . $gz[0])) {
         if ($chmod[0]) {
             rechmod($name, $chmod[0]);
         }
