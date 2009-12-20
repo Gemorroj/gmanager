@@ -19,7 +19,7 @@ $GLOBALS['class'] = 'http';
 
 final class http
 {
-	static private $stat = array();
+    static private $stat = array();
 
     public function mkdir($dir = '', $chmod = '0755')
     {
@@ -48,11 +48,11 @@ final class http
         if ($win[0] . $win[1] . $win[2] == 'WIN') {
             trigger_error($GLOBALS['lng']['win_chmod']);
             return false;
-   		}
+        }
         */
 
-    	settype($chmod, 'string');
-    	$strlen = strlen($chmod);
+        settype($chmod, 'string');
+        $strlen = strlen($chmod);
         if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
             return false;
         }
@@ -60,7 +60,7 @@ final class http
         if ($strlen == 3) {
             $chmod = '0' . $chmod;
         }
-  		 
+
         return @chmod($file, octdec(intval($chmod)));
     }
 
@@ -113,8 +113,8 @@ final class http
 
     public function stat($str = '')
     {
-   	    if (!isset(self::$stat[$str])) {
-    	    self::$stat[$str] = @stat($str);
+        if (!isset(self::$stat[$str])) {
+            self::$stat[$str] = @stat($str);
         }
         if (function_exists('posix_getpwuid') && $uid = @posix_getpwuid(self::$stat[$str][4])) {
             self::$stat[$str][4] = self::$stat[$str]['uid'] = $uid['name'];
@@ -124,28 +124,28 @@ final class http
 
     public function fileperms($str = '')
     {
-   	    if (!isset(self::$stat[$str][2])) {
-    	    self::$stat[$str] = @stat($str);
-   	    }
-   	    return self::$stat[$str][2];
+        if (!isset(self::$stat[$str][2])) {
+            self::$stat[$str] = @stat($str);
+        }
+        return self::$stat[$str][2];
         //return fileperms($str);
     }
 
     public function filesize($str = '')
     {
         if (!isset(self::$stat[$str][7])) {
-    	    self::$stat[$str] = stat($str);
-   	    }
-   	    return self::$stat[$str][7];
+            self::$stat[$str] = stat($str);
+        }
+        return self::$stat[$str][7];
         //return sprintf('%u', filesize($str));
     }
 
     public function filemtime($str = '')
     {
-   	    if (!isset(self::$stat[$str][9])) {
-    	    self::$stat[$str] = stat($str);
-   	    }
-   	    return self::$stat[$str][9];
+        if (!isset(self::$stat[$str][9])) {
+            self::$stat[$str] = stat($str);
+        }
+        return self::$stat[$str][9];
         //return filemtime($str);
     }
 
@@ -153,10 +153,10 @@ final class http
     {
         chdir($GLOBALS['current']);
         return array(
-	       basename($str),
-	       realpath(readlink($str))
-	    );
-   	}
+            basename($str),
+            realpath(readlink($str))
+        );
+    }
 
     public function file_exists($str = '')
     {

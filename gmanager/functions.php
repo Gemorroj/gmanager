@@ -176,7 +176,7 @@ function look($current = '', $itype = '', $down = '')
         } else if ($itype == 'chmod') {
             $key = & $chmod;
         } else if ($itype == 'uid') {
-        	$key = & $uid;
+            $key = & $uid;
         } else {
             $key = & $name;
         }
@@ -239,7 +239,7 @@ function look($current = '', $itype = '', $down = '')
             }
         $page0[$key . '_'][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
         } else if ($GLOBALS['mode']->is_dir($file)) {
-        	$type = 'DIR';
+            $type = 'DIR';
             if ($GLOBALS['index']['name']) {
                 if ($GLOBALS['realname'] == 1) {
                     $realpath = realpath($file);
@@ -286,7 +286,7 @@ function look($current = '', $itype = '', $down = '')
 
         $page1[$key . '_'][$i] = '<td><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
         } else {
-      	    $type = htmlspecialchars(get_type($basename), ENT_NOQUOTES);
+            $type = htmlspecialchars(get_type($basename), ENT_NOQUOTES);
             $archive = is_archive($type);
 
             if ($GLOBALS['index']['name']) {
@@ -350,6 +350,7 @@ function look($current = '', $itype = '', $down = '')
     $a = array_keys($page0);
     $b = array_keys($page1);
     $c = array_keys($page2);
+    unset($page0, $page1, $page2);
 
     natcasesort($a);
     natcasesort($b);
@@ -360,14 +361,12 @@ function look($current = '', $itype = '', $down = '')
         $c = array_reverse($c, false);
     }
 
-
     foreach (array_merge($a, $b, $c) as $var) {
         foreach ($p[$var] as $f) {
-        	$page[] = $f;
+            $page[] = $f;
         }
     }
-
-    unset($p, $page0, $page1, $page2, $a, $b, $c);
+    unset($p, $a, $b, $c);
 
 
     $all = ceil(sizeof($page) / $GLOBALS['limit']);
@@ -391,12 +390,12 @@ function look($current = '', $itype = '', $down = '')
                     $html .= '<tr class="border2">' . $var . '<td>' . ($i++) . '</td></tr>';
                 }
             }
-        } else{
+        } else {
             foreach ($page as $var) {
                 $line = !$line;
                 if ($line) {
                     $html .= '<tr class="border">' . $var . '</tr>';
-                } else{
+                } else {
                     $html .= '<tr class="border2">' . $var . '</tr>';
                 }
             }
@@ -701,7 +700,7 @@ function create_dir($dir = '', $chmod = '0755')
             continue;
         }
         if (!$GLOBALS['mode']->mkdir($tmp, $chmod)) {
-            $err .= error() . ' -&gt; '.htmlspecialchars($tmp, ENT_NOQUOTES).'<br/>';
+            $err .= error() . ' -&gt; ' . htmlspecialchars($tmp, ENT_NOQUOTES) . '<br/>';
         }
         $i++;
     }
@@ -744,7 +743,7 @@ function syntax($source = '', $charset = array())
 
     exec(escapeshellcmd($GLOBALS['php']) . ' -c -f -l ' . escapeshellarg($source), $rt, $v);
     $error = error();
-	$size = sizeof($rt);
+    $size = sizeof($rt);
 
     if (!$size) {
         return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, 2);
@@ -1362,21 +1361,21 @@ function extract_rar_archive($current = '', $name = '', $chmod = array())
     $rar = rar_open($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
 
     foreach(rar_list($rar) as $f) {
-    	$entry = rar_entry_get($rar, $f->getName());
-    	if (!$entry->extract($GLOBALS['class'] == 'ftp' ? $ftp_name : $name)) {
+        $entry = rar_entry_get($rar, $f->getName());
+        if (!$entry->extract($GLOBALS['class'] == 'ftp' ? $ftp_name : $name)) {
             if ($GLOBALS['class'] == 'ftp') {
                 unlink($ftp_current);
                 rmdir($ftp_name);
             }
             return report($GLOBALS['lng']['extract_false'], 2);
-   		}
+        }
 
-   		if ($GLOBALS['mode']->is_dir($name.'/'.$f->getName())) {
+        if ($GLOBALS['mode']->is_dir($name.'/'.$f->getName())) {
             rechmod($name.'/'.$f->getName(), $chmod[1]);
         } else {
             rechmod($name.'/'.$f->getName(), $chmod[0]);
         }
-	}
+    }
 
     if ($GLOBALS['class'] == 'ftp') {
         create_dir($name, $chmod[1]);
@@ -1486,15 +1485,15 @@ function extract_rar_file($current = '', $name = '', $chmod = '0755', $ext = '')
 
     $rar = rar_open($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
 
-	foreach ((array)$ext as $var) {
-		$entry = rar_entry_get($rar, $var);
-		if (!$entry->extract($GLOBALS['class'] == 'ftp' ? $ftp_name : $name)) {
-			if ($GLOBALS['class'] == 'ftp') {
-            	unlink($ftp_current);
-        	}
-        	return report($GLOBALS['lng']['extract_file_false'], 2);
-		}
-	}
+    foreach ((array)$ext as $var) {
+        $entry = rar_entry_get($rar, $var);
+        if (!$entry->extract($GLOBALS['class'] == 'ftp' ? $ftp_name : $name)) {
+            if ($GLOBALS['class'] == 'ftp') {
+                unlink($ftp_current);
+            }
+            return report($GLOBALS['lng']['extract_file_false'], 2);
+        }
+    }
 
     if ($GLOBALS['class'] == 'ftp') {
         create_dir($name);
@@ -1894,8 +1893,8 @@ function get_archive_file($archive = '', $f = '')
         $tgz = new Archive_Tar($archive);
         return $tgz->extractInString($f);
     } else if ($tmp == 'RAR' && extension_loaded('rar')) {
-    	$rar = rar_open($archive);
-    	$entry = rar_entry_get($rar, $f);
+        $rar = rar_open($archive);
+        $entry = rar_entry_get($rar, $f);
     
         // создаем временный файл
         $tmp = $GLOBALS['temp'].'/GmanagerRAR' . time() . '.tmp';
@@ -1904,13 +1903,13 @@ function get_archive_file($archive = '', $f = '')
         $ext = file_get_contents($tmp);
         unlink($tmp);
         return $ext;
-   	}
+    }
 }
 
 
 function upload_files($tmp = '', $name = '', $dir = '', $chmod = '0644')
 {
-	$fname = $name;
+    $fname = $name;
 
     if (substr($dir, -1) != '/') {
         $name = basename($dir);
@@ -1933,12 +1932,12 @@ function upload_files($tmp = '', $name = '', $dir = '', $chmod = '0644')
 
 function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 {
-	if (isset($_POST['set_time_limit'])) {
-		set_time_limit($_POST['set_time_limit']);
-	}
-	if (isset($_POST['ignore_user_abort'])) {
-		ignore_user_abort(true);
-	}
+    if (isset($_POST['set_time_limit'])) {
+        set_time_limit($_POST['set_time_limit']);
+    }
+    if (isset($_POST['ignore_user_abort'])) {
+        ignore_user_abort(true);
+    }
 
     $tmp = array();
     $url = trim($url);
@@ -1961,12 +1960,12 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 
     $out = '';
     foreach ($tmp as $v) {
-    	if ($GLOBALS['class'] == 'ftp') {
-    		$tmp = getData($v[0], '');
-    		$r = $GLOBALS['mode']->file_put_contents($v[1], $tmp['body']);
-    		$GLOBALS['mode']->chmod($v[1], $chmod);
-   		} else {
-   			$r = $GLOBALS['mode']->copy($v[0], $v[1], $chmod);
+        if ($GLOBALS['class'] == 'ftp') {
+            $tmp = getData($v[0], '');
+            $r = $GLOBALS['mode']->file_put_contents($v[1], $tmp['body']);
+            $GLOBALS['mode']->chmod($v[1], $chmod);
+        } else {
+            $r = $GLOBALS['mode']->copy($v[0], $v[1], $chmod);
         }
 
         if ($r) {
@@ -2040,7 +2039,7 @@ $buf = '';
 
 $win = false;
 if ((substr(PHP_OS, 0, 3) == 'WIN')) {
-	$win = true;
+    $win = true;
     $cmd = iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $cmd);
 }
 
@@ -2314,7 +2313,7 @@ function fname($f = '', $name = '', $register = '', $i = '')
 
 function sql_parser($sql = '')
 {
-	$str = '';
+    $str = '';
     $arr = explode("\n", $sql);
 
     for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {
@@ -2825,8 +2824,8 @@ function report($text = '', $error = 0)
     if ($error == 2) {
         return '<div class="red">'.$text.'<br/></div><div><form action="change.php?go=send_mail&amp;c=' . rawurlencode($GLOBALS['current']) . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . $GLOBALS['version'] . ' Error"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . $GLOBALS['lng']['send_report'] . '"/></div></form></div>';
     } else if ($error == 1) {
-    	return '<div class="red">'.$text.'<br/></div>';
-   	}
+        return '<div class="red">'.$text.'<br/></div>';
+    }
 
     return '<div class="green">'.$text.'<br/></div>';
 }
@@ -2901,10 +2900,9 @@ function is_archive($type)
         return 'TAR';
     } else if ($type == 'GZ' || $type == 'GZ2') {
         return 'GZ';
+    } else if ($type == 'RAR' && extension_loaded('rar')) {
+        return 'RAR';
     }
-    else if ($type == 'RAR' && extension_loaded('rar')) {
-    	return 'RAR';
-   	}
 
     return '';
 }

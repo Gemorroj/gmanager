@@ -74,8 +74,8 @@ switch ($_GET['go']) {
         } else if ($GLOBALS['mode']->is_file($current) || $GLOBALS['mode']->is_link($current)) {
             $size = format_size(size($current));
             if ($GLOBALS['class'] == 'ftp') {
-            	$md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['mode']->file_get_contents($current));
-           	} else {
+                $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['mode']->file_get_contents($current));
+            } else {
                 $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
             }
         }
@@ -196,8 +196,8 @@ echo '<div class="input">
                 } else if ($archive == 'GZ') {
                     echo gz_extract($current, $_POST['name'], $_POST['chmod']);
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                	echo extract_rar_archive($current, $_POST['name'], $_POST['chmod']);
-               	}
+                    echo extract_rar_archive($current, $_POST['name'], $_POST['chmod']);
+                }
             }
         } else if (isset($_POST['full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
@@ -226,8 +226,8 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
                 } else if ($archive == 'TAR') {
                     echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                	echo extract_rar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
-               	}
+                    echo extract_rar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+                }
             }
         } else if (isset($_POST['gz_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {

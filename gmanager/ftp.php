@@ -47,14 +47,14 @@ final class ftp
 
     public function __destruct()
     {
-    	// закрываем соединение
+        // закрываем соединение
         return ftp_close($this->res);
     }
 
 
     //////////////////////////////////////////////////////////////////
 
-   	public static function change_symbol($str = '')
+    public static function change_symbol($str = '')
     {
         return ($str[0] == '/' ? $str : '/'.$str);
     }
@@ -66,7 +66,7 @@ final class ftp
             if (!@ftp_mkdir($this->res, $dir)) {
                 return false;
             }
-       	}
+        }
 
         $this->chmod($dir, $chmod);
         return true;
@@ -79,18 +79,18 @@ final class ftp
         if ($win[0] . $win[1] . $win[2] == 'WIN') {
             trigger_error($GLOBALS['lng']['win_chmod']);
             return false;
-   	    }
-   	    */
+        }
+        */
 
         ftp_chdir($this->res, '/');
         settype($chmod, 'string');
-  	    $strlen = strlen($chmod);
+        $strlen = strlen($chmod);
         if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
             return false;
-   	    }
-   	    if ($strlen == 3) {
+        }
+        if ($strlen == 3) {
             $chmod = '0' . $chmod;
-   	    }
+        }
         if ($file[0] != '/') {
             $file = '/' . $file;
         }
@@ -110,7 +110,7 @@ final class ftp
         }
     }
 
-	public function file_put_contents($file = '', $data = '')
+    public function file_put_contents($file = '', $data = '')
     {
         $php_temp = $GLOBALS['temp'] . '/GmanagerEditor' . time() . '.tmp';
         file_put_contents($php_temp, $data);
@@ -136,61 +136,61 @@ final class ftp
         if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
             return true;
         }
-    	if (!isset(self::$rawlist[$dir])) {
+        if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
+        }
 
         $b = basename($str);
         return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'dir');
-   	}
+    }
 
     public function is_file($str = '')
     {
-   	    //$str = self::change_symbol($str);
+        //$str = self::change_symbol($str);
         //return is_file($this->url.$str);
         $dir = str_replace('\\', '/', dirname($str));
-   	    if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
+        if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
             return false;
-   	    }
+        }
 
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
+        }
 
-   	    $b = basename($str);
+        $b = basename($str);
         return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'file');
-   	}
+    }
 
     public function is_link($str = '')
     {
-   	    //$str = self::change_symbol($str);
+        //$str = self::change_symbol($str);
         //return is_link($this->url.$str);
         $dir = str_replace('\\', '/', dirname($str));
-   	    if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
+        if ($str == '.' || $str == '..' || $str == '/' || $str == './' || $str == $dir) {
             return false;
-   	    }
+        }
 
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
+        }
 
-   	    $b = basename($str);
+        $b = basename($str);
         return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'link');
-   	}
+    }
 
     public function is_readable($str = '')
     {
         return true;
         //$str = self::change_symbol($str);
         //return is_readable($this->url.$str);
-   	}
+    }
 
     public function is_writable($str = '')
     {
         return true;
         //$str = self::change_symbol($str);
         //return is_writable($this->url.$str);
-   	}
+    }
 
     public function filesize($str = '')
     {
@@ -202,16 +202,16 @@ final class ftp
         $dir = str_replace('\\', '/', dirname($str));
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
+        }
         return self::$rawlist[$dir][basename($str)]['size'];
-   	}
+    }
 
     public function file_exists($str = '')
     {
         //$str = self::change_symbol($str);
         //return file_exists($this->url.$str);
         return ($this->is_file($str) || $this->is_dir($str) || $this->is_link($str));
-   	}
+    }
 
     public function filemtime($str = '')
     {
@@ -220,16 +220,16 @@ final class ftp
         $dir = str_replace('\\', '/', dirname($str));
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
+        }
         return self::$rawlist[$dir][basename($str)]['mtime'];
-   	}
+    }
 
     public function unlink($str = '')
     {
         //$str = self::change_symbol($str);
         ftp_chdir($this->res, '/');
         return ftp_delete($this->res, $str);
-   	}
+    }
 
     public function rename($from = '', $to = '')
     {
@@ -237,7 +237,7 @@ final class ftp
         //$to = self::change_symbol($to);
         ftp_chdir($this->res, '/');
         return ftp_rename($this->res, $from, $to);
-   	}
+    }
 
     public function copy($from = '', $to = '', $chmod = '0644')
     {
@@ -253,14 +253,14 @@ final class ftp
             }
         }
         return $result;
-   	}
+    }
 
     public function rmdir($str = '')
-	{
+    {
         //$str = self::change_symbol($str);
         ftp_chdir($this->res, '/');
         return ftp_rmdir($this->res, $str);
-   	}
+    }
 
     public function iterator($str = '')
     {
@@ -268,14 +268,14 @@ final class ftp
 
         if (!isset(self::$rawlist[$str])) {
             $this->rawlist($str);
-       	}
+        }
 
         foreach (self::$rawlist[$str] as $var) {
             $tmp[] = basename($var['file']);
-   	    }
+        }
 
-   	    return $tmp;
-   	}
+        return $tmp;
+    }
 
     public function fileperms($str = '')
     {
@@ -287,85 +287,84 @@ final class ftp
         $dir = str_replace('\\', '/', dirname($str));
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-       	}
+        }
         return self::$rawlist[$dir][basename($str)]['chmod'];
-   	}
+    }
 
     public function stat($str = '')
     {
         $dir = str_replace('\\', '/', dirname($str));
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
+        }
         return self::$rawlist[$dir][basename($str)];
-   	}
+    }
 
     public function readlink($str = '')
     {
         $dir = str_replace('\\', '/', dirname($str));
         if (!isset(self::$rawlist[$dir])) {
             $this->rawlist($dir);
-   	    }
-   	    $t1 = self::$rawlist[$dir][basename($str)]['file'];
-       	$t2 = explode(' -> ', $t1);
-   	    $t2 = end($t2);
-   	    if ($t2[0] != PATH_SEPARATOR) {
-   	        if($t2 == '.'){
-   	            $t2 = substr($GLOBALS['current'], 0, -1);
+        }
+        $t1 = self::$rawlist[$dir][basename($str)]['file'];
+        $t2 = explode(' -> ', $t1);
+        $t2 = end($t2);
+        if ($t2[0] != PATH_SEPARATOR) {
+            if($t2 == '.'){
+                $t2 = substr($GLOBALS['current'], 0, -1);
             } else if ($t2 == '..') {
                 $t2 = substr(strrev(strstr(strrev($GLOBALS['current']), '/')), 0, -1);
             } else {
                 $t2 = ($GLOBALS['current'] != '.' ? $GLOBALS['current'] : '') . $t2;
-       	    }
+            }
         }
 
         return array(
             $t1,
             $t2
         );
-   	}
+    }
 
     public function getcwd()
-	{
-    	$str = ftp_pwd($this->res);
-    	if ($str == '.') {
-    		$str = '/';
-   		}
-    	return $str;
-   	}
+    {
+        $str = ftp_pwd($this->res);
+        if ($str == '.') {
+            $str = '/';
+        }
+        return $str;
+    }
 
-	private function rawlist($dir = '/')
-	{
-   		ftp_chdir($this->res, '/');
-   		$raw_dir = $dir = str_replace('\\', '/', $dir);
-   		if (preg_match('/^[A-Z]+?:[\\*|\/*]+(.*)/', $dir, $match)) {
-   			$raw_dir = $match[1] ? '/'.$match[1] : '/';
-		}
+    private function rawlist($dir = '/')
+    {
+        ftp_chdir($this->res, '/');
+        $raw_dir = $dir = str_replace('\\', '/', $dir);
+        if (preg_match('/^[A-Z]+?:[\\*|\/*]+(.*)/', $dir, $match)) {
+            $raw_dir = $match[1] ? '/'.$match[1] : '/';
+        }
 
-		$items = array();
-			foreach (array_slice((array)ftp_rawlist($this->res, '/' . $raw_dir), 2) as $var) {
-				@preg_replace(
-				    '`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
+        $items = array();
+        foreach (array_slice((array)ftp_rawlist($this->res, '/' . $raw_dir), 2) as $var) {
+            @preg_replace(
+                '`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
+                '$items[basename(trim("$10"))] = array(
+                "chmod" => $this->chmodnum("$1"),
+                "uid" => "$3",
+                "gid" => "$4",
+                "size" => "$5",
+                "mtime" => strtotime("$6 $7 $8:$9"),
+                "file" => trim("$10"),
+                "type" => substr("$1", 0, 1) == "d" ? "dir" : (substr("$1", 0, 1) == "l" ? "link" : "file")
+                );',
+                $var
+            );
+        }
+        $this->dir = $dir;
+        self::$rawlist[$dir] = & $items;
+        return $items;
+    }
 
-					'$items[basename(trim("$10"))] = array(
-					"chmod" => $this->chmodnum("$1"),
-					"uid" => "$3",
-					"gid" => "$4",
-					"size" => "$5",
-					"mtime" => strtotime("$6 $7 $8:$9"),
-					"file" => trim("$10"),
-					"type" => substr("$1", 0, 1) == "d" ? "dir" : (substr("$1", 0, 1) == "l" ? "link" : "file")
-					);',
-
-					$var) ;
-			}
-		$this->dir = $dir;
-		self::$rawlist[$dir] = & $items;
-		return $items;
-	}
-
-	private function chmodnum($perm = 'rw-r--r--')
-	{
+    private function chmodnum($perm = 'rw-r--r--')
+    {
         $m = 0; 
 
         if ($perm[1] == 'r') {

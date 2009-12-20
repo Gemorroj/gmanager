@@ -18,9 +18,9 @@ $_GET['f'] = isset($_GET['f']) ? $_GET['f'] : '';
 $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 $_GET['c'] = isset($_GET['c']) ? $_GET['c'] : '';
 if (!isset($_GET['charset'])) {
-	$_GET['charset'] = '';
+    $_GET['charset'] = '';
 } else {
-	$_GET['c'] = rawurldecode($_GET['c']);
+    $_GET['c'] = rawurldecode($_GET['c']);
     
     if ($_GET['f'] != '') {
         $_GET['f'] = rawurldecode($_GET['f']);
@@ -61,14 +61,14 @@ $archive = is_archive(get_type(basename($h_current)));
 switch ($_GET['go']) {
     default:
     case 'replace':
-		$to = $from = '';
+        $to = $from = '';
 
         if (!$GLOBALS['mode']->is_file($current)) {
             echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
 
-	    if ($_GET['go'] == 'replace' && isset($_POST['from']) && isset($_POST['to'])) {
+        if ($_GET['go'] == 'replace' && isset($_POST['from']) && isset($_POST['to'])) {
             $from = htmlspecialchars($_POST['from'], ENT_COMPAT);
             $to = htmlspecialchars($_POST['to'], ENT_COMPAT);
             if ($archive == 'ZIP') {
@@ -116,7 +116,10 @@ if ($GLOBALS['line_editor']['on']) {
         $i++;
         $edit .= $i . '<input name="line[' . ($i - 1) . ']" type="text" value="' . $var . '"/><br/>';
     }
-    
+    if ($end > $i) {
+        $edit .= '<strong class="red">' . ($i + 1) . '</strong><input name="line[' . $i . ']" type="text"/><br/>';
+    }
+
     $edit .= '<input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . ($start + 1) . '" name="start" />
     -
     <input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . $end . '" name="end"/>
@@ -129,7 +132,7 @@ echo '<div class="input">
 ' . $GLOBALS['lng']['sz'] . ': ' . $content['size'] . '<br/>
 Строк: ' . $content['lines'] . '
 <form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post">
-<div>' . $edit .'<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
+<div class="edit">' . $edit .'<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
 <select name="charset">
 <option value="utf-8">utf-8</option>
 <option value="windows-1251"'.($charset[1] == 'windows-1251'? ' selected="selected"' : '').'>windows-1251</option>

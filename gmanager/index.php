@@ -213,7 +213,7 @@ if ($archive == 'ZIP') {
     echo gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
     $if = true;
 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-	if ($if) {
+    if ($if) {
         echo look_rar_file($current, $_GET['f']);
     } else {
         echo list_rar_archive($current, $idown);
