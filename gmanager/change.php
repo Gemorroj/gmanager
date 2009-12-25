@@ -177,9 +177,9 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . ' '.$GLOBALS['lng']['of files'].'<br/>
+' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . ' '.$GLOBALS['lng']['of folders'].'<br/>
+' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/>
 <input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
 <input name="mega_full_extract" type="hidden" value="1"/>
 <input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
@@ -442,21 +442,21 @@ echo '<div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.
         break;
 
     case 'upload':
-        if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!isset($_FILES['f']) || $_FILES['f']['error'])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
+        if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!isset($_FILES['f']) || $_FILES['f']['error'][0])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
 echo '<div class="input">
 <form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data">
 <div>
 ' . $GLOBALS['lng']['url'] . '<br/>
 <textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>
-' . $GLOBALS['lng']['headers'] .'<br/>
-<textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
+' . $GLOBALS['lng']['headers'] . '<br/>
+<textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
 Referer:
-Accept: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
-Accept-Charset: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
-Accept-Language: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
+Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
+Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
+Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
 Connection: Close</textarea><br/>
-' . $GLOBALS['lng']['file'] . ' (' . ini_get('upload_max_filesize') . ')<br/>
-<input type="file" name="f"/><br/>
+' . $GLOBALS['lng']['file'] . ' (' . ini_get('upload_max_filesize') . ') <a href="#" onclick="files(1);">[+]</a> / <a href="#" onclick="files(0);">[-]</a><br/>
+<div id="fl"><input type="file" name="f[]"/><br/></div>
 ' . $GLOBALS['lng']['name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . '"/><br/>
 ' . $GLOBALS['lng']['change_chmod'] . '<br/>
@@ -469,8 +469,17 @@ Connection: Close</textarea><br/>
 </form>
 </div>';
         } else {
-            if (!$_FILES['f']['error']) {
-                echo upload_files($_FILES['f']['tmp_name'], $_FILES['f']['name'], $_POST['name'], $_POST['chmod']);
+            if (!$_FILES['f']['error'][0]) {
+                $all = sizeof($_FILES['f']['tmp_name']);
+                if ($all > 1) {
+                    if (substr($_POST['name'], -1) != '/') {
+                        $_POST['name'] .= '/';
+                    }
+                }
+
+                for ($i = 0; $i < $all; ++ $i ) {
+                    echo upload_files($_FILES['f']['tmp_name'][$i], $_FILES['f']['name'][$i], $_POST['name'], $_POST['chmod']);
+                }
             } else {
                 echo upload_url($_POST['url'], $_POST['name'], $_POST['chmod'], $_POST['headers']);
             }
@@ -519,11 +528,11 @@ echo '<div class="input">
 ' . $GLOBALS['lng']['url'] . '<br/>
 <input type="text" name="url" value="http://"/><br/>
 ' . $GLOBALS['lng']['headers'] . '<br/>
-<textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
+<textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
 Referer:
-Accept: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
-Accept-Charset: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
-Accept-Language: ' . htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
+Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
+Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
+Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
 Connection: Close</textarea><br/>
 <input type="submit" value="' . $GLOBALS['lng']['look'] . '"/>
 </div>
@@ -531,7 +540,7 @@ Connection: Close</textarea><br/>
 </div>';
         } else {
             if ($url = getData($_POST['url'], $_POST['headers'])) {
-                $url = $url['headers']."\r\n\r\n".$url['body'];
+                $url = $url['headers'] . "\r\n\r\n" . $url['body'];
                 echo code($url, 0);
             } else {
                 echo report($GLOBALS['lng']['not_connect'], 2);
@@ -643,7 +652,7 @@ echo '<div class="input">
 <input type="text" name="where" value="' . (isset($_POST['where']) ? htmlspecialchars($_POST['where'], ENT_COMPAT) : $realpath) . '"/><br/>
 <select name="in">
 <option value="0">' . $GLOBALS['lng']['in_files'] . '</option>
-<option value="1"' . (isset($_POST['in']) && $_POST['in'] == 1 ? ' selected="selected"' : '') .'>' . $GLOBALS['lng']['in_text'] . '</option>
+<option value="1"' . (isset($_POST['in']) && $_POST['in'] == 1 ? ' selected="selected"' : '') . '>' . $GLOBALS['lng']['in_text'] . '</option>
 </select><br/>
 ' . $GLOBALS['lng']['what_search'] . '<br/>
 <input type="text" name="search" value="' . $v . '"/><br/>

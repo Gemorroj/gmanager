@@ -224,7 +224,7 @@ if ($archive == 'ZIP') {
 }
 
 if (!$if) {
-    echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/> '.$GLOBALS['lng']['check'].'</td></tr>';
+    echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/> ' . $GLOBALS['lng']['check'] . '</td></tr>';
 }
 
 

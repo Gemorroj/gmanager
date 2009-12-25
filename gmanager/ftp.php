@@ -40,7 +40,7 @@ final class ftp
         ftp_pasv($this->res, true);
         
         // формируем строку URL
-        //$this->url = 'ftp://'.$this->user.':'.$this->password.'@'.$this->host.':'.$this->port;
+        //$this->url = 'ftp://' . $this->user . ':' . $this->password . '@' . $this->host . ':' . $this->port;
     }
 
 
@@ -56,7 +56,7 @@ final class ftp
 
     public static function change_symbol($str = '')
     {
-        return ($str[0] == '/' ? $str : '/'.$str);
+        return ($str[0] == '/' ? $str : '/' . $str);
     }
 
     public function mkdir($dir = '', $chmod = '0755')
@@ -339,7 +339,7 @@ final class ftp
         ftp_chdir($this->res, '/');
         $raw_dir = $dir = str_replace('\\', '/', $dir);
         if (preg_match('/^[A-Z]+?:[\\*|\/*]+(.*)/', $dir, $match)) {
-            $raw_dir = $match[1] ? '/'.$match[1] : '/';
+            $raw_dir = $match[1] ? '/' . $match[1] : '/';
         }
 
         $items = array();

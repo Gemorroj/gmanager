@@ -225,7 +225,7 @@ function look($current = '', $itype = '', $down = '')
                 $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
             }
             if ($GLOBALS['index']['del']) {
-                $pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'].'\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $pdel = '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if ($GLOBALS['index']['chmod']) {
                 $chmod = look_chmod($file);
@@ -271,7 +271,7 @@ function look($current = '', $itype = '', $down = '')
                 $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
             }
             if ($GLOBALS['index']['del']) {
-                $pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'].'\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $pdel = '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if ($GLOBALS['index']['chmod']) {
                 $chmod = look_chmod($file);
@@ -326,7 +326,7 @@ function look($current = '', $itype = '', $down = '')
                 $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
             }
             if ($GLOBALS['index']['del']) {
-                $pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $pdel = '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if ($GLOBALS['index']['chmod']) {
                 $chmod = look_chmod($file);
@@ -781,7 +781,7 @@ function syntax($source = '', $charset = array())
         }
     }
 
-    return report($pg, 0).'<div class="code">' . $page . '</div>';
+    return report($pg, 0) . '<div class="code">' . $page . '</div>';
 }
 
 
@@ -959,7 +959,7 @@ function list_zip_archive($current = '', $down = '')
                 $l .= '<td> </td>';
             }
             if ($GLOBALS['index']['del']) {
-                $l .= '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\''.$GLOBALS['lng']['del_notify'].'\')"' : '').' href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $l .= '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if ($GLOBALS['index']['chmod']) {
                 $l .= '<td> </td>';
@@ -1118,7 +1118,7 @@ function list_tar_archive($current = '', $down = '')
                 $l .= '<td> </td>';
             }
             if ($GLOBALS['index']['del']) {
-                $l .= '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'].'\')"' : '') . ' href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $l .= '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if ($GLOBALS['index']['chmod']) {
                 $l .= '<td> </td>';
@@ -1246,7 +1246,7 @@ function look_rar_file($current = '', $f = '')
     $entry = rar_entry_get($rar, $f);
 
     // создаем временный файл
-    $tmp = $GLOBALS['temp'].'/GmanagerRAR' . time() . '.tmp';
+    $tmp = $GLOBALS['temp'] . '/GmanagerRAR' . time() . '.tmp';
     $entry->extract(true, $tmp); // запишет сюда данные
 
     $ext = file_get_contents($tmp);
@@ -1370,10 +1370,10 @@ function extract_rar_archive($current = '', $name = '', $chmod = array())
             return report($GLOBALS['lng']['extract_false'], 2);
         }
 
-        if ($GLOBALS['mode']->is_dir($name.'/'.$f->getName())) {
-            rechmod($name.'/'.$f->getName(), $chmod[1]);
+        if ($GLOBALS['mode']->is_dir($name . '/' . $f->getName())) {
+            rechmod($name . '/' . $f->getName(), $chmod[1]);
         } else {
-            rechmod($name.'/'.$f->getName(), $chmod[0]);
+            rechmod($name . '/' . $f->getName(), $chmod[0]);
         }
     }
 
@@ -1415,10 +1415,10 @@ function extract_tar_archive($current = '', $name = '', $chmod = array())
     }
 
     foreach ($tgz->listContent() as $var) {
-        if ($GLOBALS['mode']->is_dir($name.'/'.$var['filename'])) {
-            rechmod($name.'/'.$var['filename'], $chmod[1]);
+        if ($GLOBALS['mode']->is_dir($name . '/' . $var['filename'])) {
+            rechmod($name . '/' . $var['filename'], $chmod[1]);
         } else {
-            rechmod($name.'/'.$var['filename'], $chmod[0]);
+            rechmod($name . '/' . $var['filename'], $chmod[0]);
         }
     }
 
@@ -1897,7 +1897,7 @@ function get_archive_file($archive = '', $f = '')
         $entry = rar_entry_get($rar, $f);
     
         // создаем временный файл
-        $tmp = $GLOBALS['temp'].'/GmanagerRAR' . time() . '.tmp';
+        $tmp = $GLOBALS['temp'] . '/GmanagerRAR' . time() . '.tmp';
         $entry->extract(true, $tmp); // запишет сюда данные
 
         $ext = file_get_contents($tmp);
@@ -1982,7 +1982,7 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 
 function send_mail($theme = '', $mess = '', $to = '', $from = '')
 {
-    if (mail($to, '=?utf-8?B?' . base64_encode($theme) . '?=', $mess, 'From: '.$from."\r\nContent-type: text/plain; charset=utf-8;\r\nX-Mailer: Gmanager ".$GLOBALS['version']."\r\nX-Priority: 3")) {
+    if (mail($to, '=?utf-8?B?' . base64_encode($theme) . '?=', $mess, 'From: ' . $from . "\r\nContent-type: text/plain; charset=utf-8;\r\nX-Mailer: Gmanager " . $GLOBALS['version'] . "\r\nX-Priority: 3")) {
         return report($GLOBALS['lng']['send_mail_true'], 0);
     } else {
         $error = error();
@@ -2007,7 +2007,7 @@ function show_eval($eval = '')
         if ($rows < 3) {
             $rows = 3;
         }
-        return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' '.$info['ram'].'<br/></div>';
+        return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' ' . $info['ram'] . '<br/></div>';
     } else {
         echo '<div class="input">' . $GLOBALS['lng']['result'] . '<pre class="code"><code>';
 
@@ -2020,7 +2020,7 @@ function show_eval($eval = '')
         $info['ram'] = format_size(memory_get_usage(false) - $info['ram'], 6);
 
         echo '</code></pre>';
-        echo str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' '.$info['ram'].'<br/></div>';
+        echo str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' ' . $info['ram'] . '<br/></div>';
     }
 }
 
@@ -2229,7 +2229,7 @@ function search($c = '', $s = '', $w = '', $r = '')
             $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
         }
         if ($GLOBALS['index']['del']) {
-            $pdel = '<td><a'.($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '').' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+            $pdel = '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
         }
         if ($GLOBALS['index']['chmod']) {
             $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . look_chmod($c . $f) . '</a></td>';
@@ -2370,7 +2370,7 @@ body {
 
 
 if (!$_POST) {
-echo \'<form action="\'.$_SERVER[\'PHP_SELF\'].\'" method="post">
+echo \'<form action="\' . $_SERVER[\'PHP_SELF\'] . \'" method="post">
 <div>
 ' . $GLOBALS['lng']['mysql_user'] . '<br/>
 <input type="text" name="name" value="' . $name . '"/><br/>
@@ -2400,7 +2400,7 @@ if ($err = mysql_error($connect)) {
     }
 
     $out .= 'if ($error) {
-    echo \'Error:<pre>\'.htmlspecialchars(print_r($error, true), ENT_NOQUOTES).\'</pre>\';
+    echo \'Error:<pre>\' . htmlspecialchars(print_r($error, true), ENT_NOQUOTES) . \'</pre>\';
 } else {
     echo \'Ok\';
 }
@@ -2706,9 +2706,9 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
     }
 
 
-    //header('Date: '.gmdate('r', time()));
+    //header('Date: ' . gmdate('r', time()));
     //header('Content-Transfer-Encoding: binary');
-    //header('Last-Modified: '.gmdate('r', 1234));
+    //header('Last-Modified: ' . gmdate('r', 1234));
 
     // Кэш
     header('Cache-Control: public, must-revalidate, max-age=0');
@@ -2822,12 +2822,12 @@ function error()
 function report($text = '', $error = 0)
 {
     if ($error == 2) {
-        return '<div class="red">'.$text.'<br/></div><div><form action="change.php?go=send_mail&amp;c=' . rawurlencode($GLOBALS['current']) . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . $GLOBALS['version'] . ' Error"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . $GLOBALS['lng']['send_report'] . '"/></div></form></div>';
+        return '<div class="red">' . $text . '<br/></div><div><form action="change.php?go=send_mail&amp;c=' . rawurlencode($GLOBALS['current']) . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . $GLOBALS['version'] . ' Error"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . $GLOBALS['lng']['send_report'] . '"/></div></form></div>';
     } else if ($error == 1) {
-        return '<div class="red">'.$text.'<br/></div>';
+        return '<div class="red">' . $text . '<br/></div>';
     }
 
-    return '<div class="green">'.$text.'<br/></div>';
+    return '<div class="green">' . $text . '<br/></div>';
 }
 
 

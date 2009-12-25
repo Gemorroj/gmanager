@@ -101,7 +101,7 @@ if (!$path = @iconv_substr($r, $l)) {
 
 if ($GLOBALS['class'] == 'http' && $path) {
     $http = '<div class="rb">
-<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . str_replace('%2F', '/', rawurlencode(str_replace('\\', '/', $path)))).'">'.$GLOBALS['lng']['look'].'</a><br/>
+<a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . str_replace('%2F', '/', rawurlencode(str_replace('\\', '/', $path)))) . '">' . $GLOBALS['lng']['look'] . '</a><br/>
 </div>';
 } else {
     $http = '';
@@ -132,13 +132,13 @@ echo '<div class="input">
 ' . $GLOBALS['lng']['sz'] . ': ' . $content['size'] . '<br/>
 Строк: ' . $content['lines'] . '
 <form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post">
-<div class="edit">' . $edit .'<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
+<div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
 <select name="charset">
 <option value="utf-8">utf-8</option>
-<option value="windows-1251"'.($charset[1] == 'windows-1251'? ' selected="selected"' : '').'>windows-1251</option>
-<option value="iso-8859-1"'.($charset[1] == 'iso-8859-1'? ' selected="selected"' : '').'>iso-8859-1</option>
-<option value="cp866"'.($charset[1] == 'cp866'? ' selected="selected"' : '').'>cp866</option>
-<option value="koi8-r"'.($charset[1] == 'koi8-r'? ' selected="selected"' : '').'>koi8-r</option>
+<option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option>
+<option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option>
+<option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option>
+<option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option>
 </select><br/>
 ' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . look_chmod($current) . '" size="4" maxlength="4" style="width:28pt;"/><br/>
 <input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/>
@@ -155,7 +155,7 @@ echo '<div class="input">
 </div>
 </form>
 </div>
-'.$http.'
+' . $http . '
 <div class="rb">
 <a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/>
 </div>';
@@ -174,36 +174,36 @@ echo '<div class="rb">
 <input type="hidden" name="c" value="' . $r_current . '"/>
 <input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>
 <select name="charset">
-<option value="">'.$GLOBALS['lng']['charset_no'].'</option>
+<option value="">' . $GLOBALS['lng']['charset_no'] . '</option>
 <optgroup label="UTF-8">
-<option value="utf-8 -&gt; windows-1251"'.($_GET['charset'] == 'utf-8 -> windows-1251' ? ' selected="selected"' : '').'>utf-8 -&gt; windows-1251</option>
-<option value="utf-8 -&gt; iso-8859-1"'.($_GET['charset'] == 'utf-8 -> iso-8859-1' ? ' selected="selected"' : '').'>utf-8 -&gt; iso-8859-1</option>
-<option value="utf-8 -&gt; cp866"'.($_GET['charset'] == 'utf-8 -> cp866' ? ' selected="selected"' : '').'>utf-8 -&gt; cp866</option>
-<option value="utf-8 -&gt; koi8-r"'.($_GET['charset'] == 'utf-8 -> koi8-r' ? ' selected="selected"' : '').'>utf-8 -&gt; koi8-r</option>
+<option value="utf-8 -&gt; windows-1251"' . ($_GET['charset'] == 'utf-8 -> windows-1251' ? ' selected="selected"' : '') . '>utf-8 -&gt; windows-1251</option>
+<option value="utf-8 -&gt; iso-8859-1"' . ($_GET['charset'] == 'utf-8 -> iso-8859-1' ? ' selected="selected"' : '') . '>utf-8 -&gt; iso-8859-1</option>
+<option value="utf-8 -&gt; cp866"' . ($_GET['charset'] == 'utf-8 -> cp866' ? ' selected="selected"' : '') . '>utf-8 -&gt; cp866</option>
+<option value="utf-8 -&gt; koi8-r"' . ($_GET['charset'] == 'utf-8 -> koi8-r' ? ' selected="selected"' : '') . '>utf-8 -&gt; koi8-r</option>
 </optgroup>
 <optgroup label="Windows-1251">
-<option value="windows-1251 -&gt; utf-8"'.($_GET['charset'] == 'windows-1251 -> utf-8' ? ' selected="selected"' : '').'>windows-1251 -&gt; utf-8</option>
-<option value="windows-1251 -&gt; iso-8859-1"'.($_GET['charset'] == 'windows-1251 -> iso-8859-1' ? ' selected="selected"' : '').'>windows-1251 -&gt; iso-8859-1</option>
-<option value="windows-1251 -&gt; cp866"'.($_GET['charset'] == 'windows-1251 -> cp866' ? ' selected="selected"' : '').'>windows-1251 -&gt; cp866</option>
-<option value="windows-1251 -&gt; koi8-r"'.($_GET['charset'] == 'windows-1251 -> koi8-r' ? ' selected="selected"' : '').'>windows-1251 -&gt; koi8-r</option>
+<option value="windows-1251 -&gt; utf-8"' . ($_GET['charset'] == 'windows-1251 -> utf-8' ? ' selected="selected"' : '') . '>windows-1251 -&gt; utf-8</option>
+<option value="windows-1251 -&gt; iso-8859-1"' . ($_GET['charset'] == 'windows-1251 -> iso-8859-1' ? ' selected="selected"' : '') . '>windows-1251 -&gt; iso-8859-1</option>
+<option value="windows-1251 -&gt; cp866"' . ($_GET['charset'] == 'windows-1251 -> cp866' ? ' selected="selected"' : '') . '>windows-1251 -&gt; cp866</option>
+<option value="windows-1251 -&gt; koi8-r"' . ($_GET['charset'] == 'windows-1251 -> koi8-r' ? ' selected="selected"' : '') . '>windows-1251 -&gt; koi8-r</option>
 </optgroup>
 <optgroup label="ISO-8859-1">
-<option value="iso-8859-1 -&gt; utf-8"'.($_GET['charset'] == 'iso-8859-1 -> utf-8' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; utf-8</option>
-<option value="iso-8859-1 -&gt; windows-1251"'.($_GET['charset'] == 'iso-8859-1 -> windows-1251' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; windows-1251</option>
-<option value="iso-8859-1 -&gt; cp866"'.($_GET['charset'] == 'iso-8859-1 -> cp866' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; cp866</option>
-<option value="iso-8859-1 -&gt; koi8-r"'.($_GET['charset'] == 'iso-8859-1 -> koi8-r' ? ' selected="selected"' : '').'>iso-8859-1 -&gt; koi8-r</option>
+<option value="iso-8859-1 -&gt; utf-8"' . ($_GET['charset'] == 'iso-8859-1 -> utf-8' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; utf-8</option>
+<option value="iso-8859-1 -&gt; windows-1251"' . ($_GET['charset'] == 'iso-8859-1 -> windows-1251' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; windows-1251</option>
+<option value="iso-8859-1 -&gt; cp866"' . ($_GET['charset'] == 'iso-8859-1 -> cp866' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; cp866</option>
+<option value="iso-8859-1 -&gt; koi8-r"' . ($_GET['charset'] == 'iso-8859-1 -> koi8-r' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; koi8-r</option>
 </optgroup>
 <optgroup label="CP866">
-<option value="cp866 -&gt; utf-8"'.($_GET['charset'] == 'cp866 -> utf-8' ? ' selected="selected"' : '').'>cp866 -&gt; utf-8</option>
-<option value="cp866 -&gt; windows-1251"'.($_GET['charset'] == 'cp866 -> windows-1251' ? ' selected="selected"' : '').'>cp866 -&gt; windows-1251</option>
-<option value="cp866 -&gt; iso-8859-1"'.($_GET['charset'] == 'cp866 -> iso-8859-1' ? ' selected="selected"' : '').'>cp866 -&gt; iso-8859-1</option>
-<option value="cp866 -&gt; koi8-r"'.($_GET['charset'] == 'cp866 -> koi8-r' ? ' selected="selected"' : '').'>cp866 -&gt; koi8-r</option>
+<option value="cp866 -&gt; utf-8"' . ($_GET['charset'] == 'cp866 -> utf-8' ? ' selected="selected"' : '') . '>cp866 -&gt; utf-8</option>
+<option value="cp866 -&gt; windows-1251"' . ($_GET['charset'] == 'cp866 -> windows-1251' ? ' selected="selected"' : '') . '>cp866 -&gt; windows-1251</option>
+<option value="cp866 -&gt; iso-8859-1"' . ($_GET['charset'] == 'cp866 -> iso-8859-1' ? ' selected="selected"' : '') . '>cp866 -&gt; iso-8859-1</option>
+<option value="cp866 -&gt; koi8-r"' . ($_GET['charset'] == 'cp866 -> koi8-r' ? ' selected="selected"' : '') . '>cp866 -&gt; koi8-r</option>
 </optgroup>
 <optgroup label="KOI8-R">
-<option value="koi8-r -&gt; utf-8"'.($_GET['charset'] == 'koi8-r -> utf-8' ? ' selected="selected"' : '').'>koi8-r -&gt; utf-8</option>
-<option value="koi8-r -&gt; windows-1251"'.($_GET['charset'] == 'koi8-r -> windows-1251' ? ' selected="selected"' : '').'>koi8-r -&gt; windows-1251</option>
-<option value="koi8-r -&gt; iso-8859-1"'.($_GET['charset'] == 'koi8-r -> iso-8859-1' ? ' selected="selected"' : '').'>koi8-r -&gt; iso-8859-1</option>
-<option value="koi8-r -&gt; cp866"'.($_GET['charset'] == 'koi8-r -> cp866' ? ' selected="selected"' : '').'>koi8-r -&gt; cp866</option>
+<option value="koi8-r -&gt; utf-8"' . ($_GET['charset'] == 'koi8-r -> utf-8' ? ' selected="selected"' : '') . '>koi8-r -&gt; utf-8</option>
+<option value="koi8-r -&gt; windows-1251"' . ($_GET['charset'] == 'koi8-r -> windows-1251' ? ' selected="selected"' : '') . '>koi8-r -&gt; windows-1251</option>
+<option value="koi8-r -&gt; iso-8859-1"' . ($_GET['charset'] == 'koi8-r -> iso-8859-1' ? ' selected="selected"' : '') . '>koi8-r -&gt; iso-8859-1</option>
+<option value="koi8-r -&gt; cp866"' . ($_GET['charset'] == 'koi8-r -> cp866' ? ' selected="selected"' : '') . '>koi8-r -&gt; cp866</option>
 </optgroup>
 </select><br/>
 <input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
