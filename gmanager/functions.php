@@ -2265,6 +2265,7 @@ function search($c = '', $s = '', $w = '', $r = '')
 
 function fname($f = '', $name = '', $register = '', $i = '')
 {
+    // [replace=from,to] - replace
     // [n=0] - meter
     // [f] - type
     // [name] - name
@@ -2274,6 +2275,12 @@ function fname($f = '', $name = '', $register = '', $i = '')
     // $f = rawurldecode($f);
 
     $info = pathinfo($f);
+
+    if (preg_match_all('/\[replace=([^,]),([^\]])/U', $name, $arr, PREG_SET_ORDER)) {
+        foreach ($arr as $var) {
+            $name = str_replace($var[1], $var[2], $info['filename'] . '.' . $info['extension']);
+        }
+    }
     if (preg_match_all('/\[n=*(\d*)\]/U', $name, $arr, PREG_SET_ORDER)) {
         foreach ($arr as $var) {
             $name = str_replace($var[0], $var[1] + $i, $name);

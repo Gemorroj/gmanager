@@ -103,6 +103,7 @@ echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
 ' . $GLOBALS['lng']['rename'] . '<br/>
+[replace=from,to] - ' . $GLOBALS['lng']['replace'] . '<br/>
 [name] - ' . $GLOBALS['lng']['name'] . '<br/>
 [f] - ' . $GLOBALS['lng']['type'] . '<br/>
 [n=0] - ' . $GLOBALS['lng']['meter'] . '<br/>
