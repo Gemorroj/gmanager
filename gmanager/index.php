@@ -40,17 +40,11 @@ echo str_replace('%dir%', $h_current, $GLOBALS['top']) . '
 ' . this($current);
 
 if ($GLOBALS['string']) {
-echo '<div>
-<form action="index.php?" method="get">
-<div>';
+    echo '<div><form action="index.php?" method="get"><div>';
     if ($ia) {
         echo '<input type="hidden" name="add_archive" value="' . rawurlencode($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
-echo '<input type="text" name="c" value="' . $h_current . '"/><br/>
-<input type="submit" value="' . $GLOBALS['lng']['go'] . '"/>
-</div>
-</form>
-</div>';
+echo '<input type="text" name="c" value="' . $h_current . '"/><br/><input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
 }
 
 if ($idown = isset($_GET['down'])) {
@@ -64,11 +58,11 @@ if ($idown = isset($_GET['down'])) {
 if (!$if) {
     if (!$archive) {
 
-    $itype = '';
+        $itype = '';
 
-    if (isset($_GET['time'])) {
-        $itype = 'time';
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        if (isset($_GET['time'])) {
+            $itype = 'time';
+            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -84,9 +78,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-    } else if (isset($_GET['type'])) {
-        $itype = 'type';
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        } else if (isset($_GET['type'])) {
+            $itype = 'type';
+            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -102,9 +96,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-    } else if (isset($_GET['size'])) {
-        $itype = 'size';
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        } else if (isset($_GET['size'])) {
+            $itype = 'size';
+            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -120,9 +114,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-    } else if (isset($_GET['chmod'])) {
-        $itype = 'chmod';
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        } else if (isset($_GET['chmod'])) {
+            $itype = 'chmod';
+            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -138,9 +132,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-    } else if (isset($_GET['uid'])) {
-        $itype = 'chmod';
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        } else if (isset($_GET['uid'])) {
+            $itype = 'chmod';
+            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -156,9 +150,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;uid' . $down . '">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-    } else {
-        $itype = '';
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        } else {
+            $itype = '';
+            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -174,9 +168,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-    }
-} else if ($archive != 'GZ') {
-    echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
+        }
+    } else if ($archive != 'GZ') {
+        echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 <div class="telo">
 <table>
 <tr>
@@ -192,7 +186,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
-}
+    }
 }
 
 if ($archive == 'ZIP') {
@@ -232,7 +226,7 @@ if ($GLOBALS['mode']->file_exists($current) || $GLOBALS['mode']->is_link($curren
     if ($archive) {
         $current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
         $found = '<div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
-} else {
+    } else {
         $found = '<form action="' . $_SERVER['PHP_SELF'] . '?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . $GLOBALS['limit'] . '" type="text" style="width:2%"/><input type="submit" value="' . $GLOBALS['lng']['limit'] . '"/></div></form>
 <div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div>
 <div class="rb"><a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div>
@@ -246,7 +240,7 @@ if ($GLOBALS['mode']->file_exists($current) || $GLOBALS['mode']->is_link($curren
 $tm = '<div class="rb">' . round(microtime(true) - $ms, 4) . '<br/></div>';
 
 if (!$if && !$f && !$ia) {
-echo '</table>
+    echo '</table>
 <div class="ch">
 <input type="submit" name="full_chmod" value="' .$GLOBALS['lng']['chmod'] . '"/>
 <input' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' type="submit" name="full_del" value="' . $GLOBALS['lng']['del'] . '"/>
@@ -257,17 +251,16 @@ echo '</table>
 </div>
 </form>' . $found . $tm . $GLOBALS['foot'];
 } else if ($f) {
-echo '</table>
+    echo '</table>
 <div class="ch">
 <input type="submit" name="full_extract" value="' . $GLOBALS['lng']['extract_file'] . '"/>
 <input type="submit" name="mega_full_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/>';
-if ($type != 'RAR') {
-    echo ' <input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/> <input type="submit" name="del_archive" value="' . $GLOBALS['lng']['del'] . '"/>';
-}
-echo '</div>
-</form>' . $found . $tm . $GLOBALS['foot'];
+    if ($type != 'RAR') {
+        echo ' <input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/> <input type="submit" name="del_archive" value="' . $GLOBALS['lng']['del'] . '"/>';
+    }
+echo '</div></div></form>' . $found . $tm . $GLOBALS['foot'];
 } else if ($ia) {
-echo '</table>
+    echo '</table>
 <div class="ch">
 <input type="hidden" name="add_archive" value="' . rawurlencode($_GET['add_archive']) . '"/>
 <input type="submit" name="name" value="' . $GLOBALS['lng']['add_archive'] . '"/>
