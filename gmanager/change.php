@@ -15,10 +15,8 @@
 
 
 if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
-    if (function_exists('phpinfo')) {
         phpinfo();
         exit;
-    }
 }
 
 require 'functions.php';
@@ -85,8 +83,8 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_func'] . '<br/>
 <input type="text" name="name" value="' . $realpath . '"/><br/>
-' . $GLOBALS['lng']['change_del'] . '<input type="checkbox" name="del" value="1"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
+<input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>
@@ -110,12 +108,11 @@ echo '<div class="input">
 [date] - ' . $GLOBALS['lng']['date'] . '<br/>
 [rand=8,16] - ' . $GLOBALS['lng']['rand'] . '<br/>
 <input type="text" name="name" value="[name].[f]"/><br/>
-' . $GLOBALS['lng']['str_register'] . '<br/>
 <select name="register">
 <option value="">' . $GLOBALS['lng']['str_register_no'] . '</option>
 <option value="1">' . $GLOBALS['lng']['str_register_low'] . '</option>
 <option value="2">' . $GLOBALS['lng']['str_register_up'] . '</option>
-</select><br/>
+</select>' . $GLOBALS['lng']['str_register'] . '<br/><br/>
 <input name="fname" type="hidden" value="1"/>';
 
                 for ($i = 0; $i < $x; ++$i) {
@@ -149,10 +146,8 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['rename'] . '"/>
 echo '<div class="input">
 <form action="change.php?go=1&amp;c=' . $r_current . '" method="post">
 <div>
-' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/>
-<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0644"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/>
-<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod[]" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/>
 <input name="full_chmod" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -178,10 +173,9 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
+<input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/>
+<input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/>
 <input name="mega_full_extract" type="hidden" value="1"/>
 <input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
 </div>
@@ -191,13 +185,13 @@ echo '<div class="input">
                 $archive = is_archive(get_type(basename($h_current)));
 
                 if ($archive == 'ZIP') {
-                    echo extract_zip_archive($current, $_POST['name'], $_POST['chmod']);
+                    echo extract_zip_archive($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    echo extract_tar_archive($current, $_POST['name'], $_POST['chmod']);
+                    echo extract_tar_archive($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'GZ') {
-                    echo gz_extract($current, $_POST['name'], $_POST['chmod']);
+                    echo gz_extract($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    echo extract_rar_archive($current, $_POST['name'], $_POST['chmod']);
+                    echo extract_rar_archive($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['full_extract'])) {
@@ -207,8 +201,8 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input name="full_extract" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -223,11 +217,11 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
                 $archive = is_archive(get_type(basename($h_current)));
 
                 if ($archive == 'ZIP') {
-                    echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+                    echo extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+                    echo extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    echo extract_rar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check']);
+                    echo extract_rar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['gz_extract'])) {
@@ -237,15 +231,15 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input name="gz_extract" type="hidden" value="1"/>
 <input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/>
 </div>
 </form>
 </div>';
             } else {
-                echo gz_extract($current, $_POST['name'], $_POST['chmod']);
+                echo gz_extract($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['create_archive'])) {
             if (!isset($_POST['name'])) {
@@ -254,8 +248,7 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . 'archive.zip"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 ' . $GLOBALS['lng']['comment_archive'] . '<br/>
 <textarea name="comment" rows="2" cols="24"></textarea><br/>
 <input name="create_archive" type="hidden" value="1"/>';
@@ -310,8 +303,7 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_func2'] . '<br/>
 <input type="text" name="name" value="' . $realpath . '"/><br/>
-' . $GLOBALS['lng']['change_del'] . '<br/>
-<input type="checkbox" name="del" value="1"/><br/>
+<input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/>
 <input name="full_rename" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -355,8 +347,7 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 echo '<div class="input">
 <form action="change.php?go=chmod&amp;c=' . $r_current . '" method="post">
 <div>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/><br/>
+<input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
 </div>
 </form>
@@ -373,8 +364,7 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="dir"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/>
 </div>
 </form>
@@ -392,15 +382,13 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="file.php"/><br/>
-' . $GLOBALS['lng']['pattern'] . '<br/>
 <select name="ptn">';
             for ($i = 0, $all = sizeof($pattern); $i < $all; ++$i) {
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
 
-echo '</select><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+echo '</select>' . $GLOBALS['lng']['pattern'] . '<br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/>
 </div>
 </form>
@@ -460,11 +448,9 @@ Connection: Close</textarea><br/>
 <div id="fl"><input type="file" name="f[]"/><br/></div>
 ' . $GLOBALS['lng']['name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . '"/><br/>
-' . $GLOBALS['lng']['change_chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="width:28pt;"/><br/>
-' . $GLOBALS['lng']['set_time_limit'] . '<br/>
-<input type="text" name="set_time_limit" value="3600" size="5" style="width:28pt;"/><br/>
-' . $GLOBALS['lng']['ignore_user_abort'] . ' <input type="checkbox" name="ignore_user_abort" checked="checked" /><br/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="width:28pt;"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
+<input type="text" name="set_time_limit" value="3600" size="5" style="width:28pt;"/>' . $GLOBALS['lng']['set_time_limit'] . '<br/>
+<input type="checkbox" name="ignore_user_abort" checked="checked" />' . $GLOBALS['lng']['ignore_user_abort'] . '<br/><br/>
 <input type="submit" value="' . $GLOBALS['lng']['upload'] . '"/>
 </div>
 </form>
@@ -620,7 +606,7 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
 </tr>';
 
-echo search($_POST['where'], $_POST['search'], $_POST['in'], $_POST['register']);
+echo search($_POST['where'], $_POST['search'], $_POST['in'], isset($_POST['register']));
 
 echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;">
 <input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>
@@ -657,11 +643,7 @@ echo '<div class="input">
 </select><br/>
 ' . $GLOBALS['lng']['what_search'] . '<br/>
 <input type="text" name="search" value="' . $v . '"/><br/>
-' . $GLOBALS['lng']['register'] . '<br/>
-<select name="register">
-<option value="0">' . $GLOBALS['lng']['yes'] . '</option>
-<option value="1"' . (isset($_POST['register']) && $_POST['register'] == 1 ? ' selected="selected"' : '') . '>' . $GLOBALS['lng']['no'] . '</option>
-</select><br/>
+<input type="checkbox" name="register"' . (isset($_POST['register']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['register'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/>
 </div>
 </form>
@@ -779,8 +761,7 @@ echo '<div class="input">
 <input type="text" name="charset" value="utf8"/><br/>
 ' . $GLOBALS['lng']['tables_file'] . '<br/>
 <input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/>
-' . $GLOBALS['lng']['chmod'] . '<br/>
-<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/><br/>
+<input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['chmod'] . '<br/>
 <input name="save_as" type="submit" value="' . $GLOBALS['lng']['save_as'] . '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/>
 </div>
 </form>
