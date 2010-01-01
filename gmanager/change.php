@@ -58,10 +58,7 @@ echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($
 switch ($_GET['go']) {
     default:
 
-        if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
-            echo report($GLOBALS['lng']['disable_function'], 1);
-            break;
-        } else if (!$GLOBALS['mode']->file_exists($current)) {
+        if (!$GLOBALS['mode']->file_exists($current)) {
             echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
@@ -83,6 +80,7 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_func'] . '<br/>
 <input type="text" name="name" value="' . $realpath . '"/><br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
 <input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/>
 <input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
@@ -112,7 +110,8 @@ echo '<div class="input">
 <option value="">' . $GLOBALS['lng']['str_register_no'] . '</option>
 <option value="1">' . $GLOBALS['lng']['str_register_low'] . '</option>
 <option value="2">' . $GLOBALS['lng']['str_register_up'] . '</option>
-</select>' . $GLOBALS['lng']['str_register'] . '<br/><br/>
+</select>' . $GLOBALS['lng']['str_register'] . '<br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
 <input name="fname" type="hidden" value="1"/>';
 
                 for ($i = 0; $i < $x; ++$i) {
@@ -126,7 +125,7 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['rename'] . '"/>
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    echo fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i);
+                    echo fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i, isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['full_del'])) {
@@ -249,6 +248,7 @@ echo '<div class="input">
 ' . $GLOBALS['lng']['change_name'] . '<br/>
 <input type="text" name="name" value="' . $h_current . 'archive.zip"/><br/>
 <input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
 ' . $GLOBALS['lng']['comment_archive'] . '<br/>
 <textarea name="comment" rows="2" cols="24"></textarea><br/>
 <input name="create_archive" type="hidden" value="1"/>';
@@ -261,7 +261,7 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['create_archive'] . '"/>
 </div>';
             } else {
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
-                echo create_zip_archive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment']);
+                echo create_zip_archive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['add_archive'])) {
             if (!isset($_POST['name'])) {
@@ -303,6 +303,7 @@ echo '<div class="input">
 <div>
 ' . $GLOBALS['lng']['change_func2'] . '<br/>
 <input type="text" name="name" value="' . $realpath . '"/><br/>
+<input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>
 <input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/>
 <input name="full_rename" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
@@ -315,7 +316,7 @@ echo '<input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/>
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name']);
+                    echo frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['del_archive'])) {
@@ -418,8 +419,10 @@ echo '<div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.
         break;
 
     case 'rename':
-        echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name']);
-        echo rechmod($_POST['name'], $_POST['chmod']);
+        echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+        if ($_POST['chmod']) {
+            echo rechmod($_POST['name'], $_POST['chmod']);
+        }
         break;
 
     case 'del_zip_archive':
