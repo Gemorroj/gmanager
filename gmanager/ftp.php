@@ -112,7 +112,7 @@ final class ftp
 
     public function file_put_contents($file = '', $data = '')
     {
-        $php_temp = $GLOBALS['temp'] . '/GmanagerEditor' . time() . '.tmp';
+        $php_temp = $GLOBALS['temp'] . '/GmanagerEditor' . $_SERVER['REQUEST_TIME'] . '.tmp';
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 
@@ -279,7 +279,7 @@ final class ftp
 
     public function fileperms($str = '')
     {
-        if($str == '.' || $str == '/' || $str == ''){
+        if ($str == '.' || $str == '/' || $str == ''){
             return 0;
         }
         //$str = self::change_symbol($str);
@@ -310,7 +310,7 @@ final class ftp
         $t2 = explode(' -> ', $t1);
         $t2 = end($t2);
         if ($t2[0] != PATH_SEPARATOR) {
-            if($t2 == '.'){
+            if ($t2 == '.') {
                 $t2 = substr($GLOBALS['current'], 0, -1);
             } else if ($t2 == '..') {
                 $t2 = substr(strrev(strstr(strrev($GLOBALS['current']), '/')), 0, -1);

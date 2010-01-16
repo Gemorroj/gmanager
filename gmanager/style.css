@@ -30,3 +30,5 @@ a:active{color:#ffffff;}
 .submit a:hover{color:#333333;background-color:#f0f0f0;}
 .submit a:visited{color:#111111;}
 .edit input[type="text"],textarea{margin:0 0 0 2pt;width:95%;font-family: Courier New, momonospace;}
+.pedit{border-radius:3pt;background-color:#ebebeb;color:#cc0000;font-weight:bold;}
+.pedit input[type="text"]{width:99.5%;}

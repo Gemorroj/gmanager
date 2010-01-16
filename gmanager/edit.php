@@ -21,7 +21,6 @@ if (!isset($_GET['charset'])) {
     $_GET['charset'] = '';
 } else {
     $_GET['c'] = rawurldecode($_GET['c']);
-    
     if ($_GET['f'] != '') {
         $_GET['f'] = rawurldecode($_GET['f']);
     }
@@ -35,6 +34,17 @@ if (isset($_POST['get'])) {
 }
 
 require 'functions.php';
+
+if (isset($_GET['editor'])) {
+    if ($_GET['editor'] == 1) {
+        $GLOBALS['line_editor']['on'] = 0;
+    } else {
+        $GLOBALS['line_editor']['on'] = 1;
+    }
+    setcookie('gmanager_ediror', $GLOBALS['line_editor']['on'], 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
+} else if (isset($_COOKIE['gmanager_ediror'])) {
+    $GLOBALS['line_editor']['on'] = $_COOKIE['gmanager_ediror'];
+}
 
 $charset = array('', '');
 $full_charset = '';
@@ -108,29 +118,29 @@ if ($GLOBALS['class'] == 'http' && $path) {
 }
 
 if ($GLOBALS['line_editor']['on']) {
-    $i = $start = isset($_POST['start']) ? intval($_POST['start']) - 1 : 0;
-    $end = isset($_POST['end']) ? intval($_POST['end']) : $GLOBALS['line_editor']['lines'];
-    
-    $edit = '';
-    foreach(array_slice(explode("\n", $content['text']), $start, $end) as $var) {
+    $i = $start = isset($_REQUEST['start']) ? intval($_REQUEST['start']) - 1 : 0;
+    $j = 0;
+    $end = isset($_REQUEST['end']) ? intval($_REQUEST['end']) : $GLOBALS['line_editor']['lines'];
+
+    $edit = '<table class="pedit">';
+
+    foreach (array_slice(explode("\n", $content['text']), $start, $end) as $var) {
+        $j++;
         $i++;
-        $edit .= $i . '<input name="line[' . ($i - 1) . ']" type="text" value="' . $var . '"/><br/>';
+        $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . $var . '"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="editor(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="editor(0,this.parentNode);">[-]</a></td></tr>';
     }
     if ($end > $i) {
-        $edit .= '<strong class="red">' . ($i + 1) . '</strong><input name="line[' . $i . ']" type="text"/><br/>';
+        $j++;
+        $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="editor(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="editor(0,this.parentNode);">[-]</a></td></tr>';
     }
 
-    $edit .= '<input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . ($start + 1) . '" name="start" />
-    -
-    <input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . $end . '" name="end"/>
-    <input name="line_editor" type="submit" value="' . $GLOBALS['lng']['look'] . '"/><br/>';
+    $edit .= '</table><input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="line_editor" type="submit" value="' . $GLOBALS['lng']['look'] . '"/><br/>';
 } else {
     $edit = '<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
 }
 
 echo '<div class="input">
-' . $GLOBALS['lng']['sz'] . ': ' . $content['size'] . '<br/>
-Строк: ' . $content['lines'] . '
+' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '
 <form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post">
 <div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/>
 <select name="charset">
@@ -144,6 +154,7 @@ echo '<div class="input">
 <input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/>
 </div>
 </form>
+<a href="edit.php?editor=1&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['progressive_editor'] . '</a>
 </div>
 <div class="input">
 <form action="edit.php?go=replace&amp;c=' . $r_current . $f . '" method="post">
@@ -169,10 +180,12 @@ if ($archive == '' && extension_loaded('xml')) {
 
 echo '<div class="rb">
 ' . $GLOBALS['lng']['charset'] . '
-<form action="edit.php?" method="get" style="padding:0; margin:0;">
+<form action="edit.php?" method="get" style="padding:0;margin:0;">
 <div>
 <input type="hidden" name="c" value="' . $r_current . '"/>
 <input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>
+<input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>
+' . ($GLOBALS['line_editor']['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '
 <select name="charset">
 <option value="">' . $GLOBALS['lng']['charset_no'] . '</option>
 <optgroup label="UTF-8">
@@ -218,7 +231,13 @@ echo '<div class="rb">
         if ($GLOBALS['line_editor']['on']) {
             $_POST['text'] = $_POST['line'] + explode("\n", $GLOBALS['mode']->file_get_contents($current));
             ksort($_POST['text'], SORT_NUMERIC);
-            $_POST['text'] = implode("\n", $_POST['text']);
+
+            $tmp = '';
+            foreach ($_POST['text'] as $v) {
+                $tmp .=  (is_array($v) ? implode("\n", $v) : $v) . "\n";
+            }
+            $tmp = substr($tmp, 0, -1);
+            $_POST['text'] = & $tmp;
         }
 
         if ($_POST['charset'] != 'utf-8') {

@@ -44,10 +44,10 @@ function send_header($u = '')
     // кол-во файлов на странице
     $ip = isset($_POST['limit']);
     $ig = isset($_GET['limit']);
-    $GLOBALS['limit'] = abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : (isset($_COOKIE['limit']) ? $_COOKIE['limit'] : $GLOBALS['limit'])));
+    $GLOBALS['limit'] = abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : (isset($_COOKIE['gmanager_limit']) ? $_COOKIE['gmanager_limit'] : $GLOBALS['limit'])));
 
     if ($ip || $ig) {
-        setcookie('limit', $GLOBALS['limit'], 2592000 + time());
+        setcookie('gmanager_limit', $GLOBALS['limit'], 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
     }
 }
 
@@ -836,7 +836,7 @@ function zip_syntax($current = '', $f = '', $charset = array())
 {
     $content = edit_zip_file($current, $f);
 
-    $tmp = $GLOBALS['temp'] . '/GmanagerSyntax' . time() . '.tmp';
+    $tmp = $GLOBALS['temp'] . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
     $fp = fopen($tmp, 'w');
 
     if (!$fp) {
@@ -1180,7 +1180,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
     require_once $GLOBALS['pclzip'];
 
     define('PCLZIP_TMP_NAME', $f);
-    $tmp = $GLOBALS['temp'] . '/GmanagerArchivers' . time() . '.tmp';
+    $tmp = $GLOBALS['temp'] . '/GmanagerArchivers' . $_SERVER['REQUEST_TIME'] . '.tmp';
 
     $fp = fopen($tmp, 'w');
 
@@ -1256,7 +1256,7 @@ function look_rar_file($current = '', $f = '')
     $entry = rar_entry_get($rar, $f);
 
     // создаем временный файл
-    $tmp = $GLOBALS['temp'] . '/GmanagerRAR' . time() . '.tmp';
+    $tmp = $GLOBALS['temp'] . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
     $entry->extract(true, $tmp); // запишет сюда данные
 
     $ext = file_get_contents($tmp);
@@ -1311,8 +1311,8 @@ function extract_zip_archive($current = '', $name = '', $chmod = array(), $overw
 
        if ($GLOBALS['class'] == 'ftp') {
            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-           $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpZip' . time() . '.tmp';
-           $ftp_name = $GLOBALS['temp'] . '/GmanagerZipFtp' . time() . '/';
+           $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+           $ftp_name = $GLOBALS['temp'] . '/GmanagerZipFtp' . $_SERVER['REQUEST_TIME'] . '/';
            mkdir($ftp_name, 0777);
            file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
        }
@@ -1338,7 +1338,7 @@ function extract_zip_archive($current = '', $name = '', $chmod = array(), $overw
     }
 
     if (!$res) {
-        if($GLOBALS['class'] == 'ftp') {
+        if ($GLOBALS['class'] == 'ftp') {
             unlink($ftp_current);
             rmdir($ftp_name);
         }
@@ -1367,15 +1367,15 @@ function extract_rar_archive($current = '', $name = '', $chmod = array(), $overw
 
     if ($GLOBALS['class'] == 'ftp') {
         $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpRar' . time() . '.tmp';
-        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpRar' . time() . '/';
+        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '/';
         mkdir($ftp_name, 0777);
         file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
     }
 
     $rar = rar_open($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
 
-    foreach(rar_list($rar) as $f) {
+    foreach (rar_list($rar) as $f) {
         $n = $f->getName();
         if ($overwrite || !$GLOBALS['mode']->file_exists($name . '/' . $n)) {
             $entry = rar_entry_get($rar, $n);
@@ -1416,8 +1416,8 @@ function extract_tar_archive($current = '', $name = '', $chmod = array(), $overw
 
     if ($GLOBALS['class'] == 'ftp') {
         $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpTar' . time() . '.tmp';
-        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpTar' . time() . '/';
+        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
         mkdir($ftp_name, 0777);
         file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
     }
@@ -1429,7 +1429,7 @@ function extract_tar_archive($current = '', $name = '', $chmod = array(), $overw
         $res = $tgz->extract($GLOBALS['class'] == 'ftp' ? $ftp_name : $name);
     } else {
         $list = array();
-        foreach($extract as $f) {
+        foreach ($extract as $f) {
             if (!$GLOBALS['mode']->file_exists($name . '/' . $f['filename'])) {
                 $list[] = $f['filename'];
             }
@@ -1478,8 +1478,8 @@ function extract_zip_file($current = '', $name = '', $chmod = '0755', $ext = '',
 
        if ($GLOBALS['class'] == 'ftp') {
            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-           $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpZipArchive' . time() . '.tmp';
-           $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZipFile' . time() . '.tmp';
+           $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpZipArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+           $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZipFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
            file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
        }
 
@@ -1526,8 +1526,8 @@ function extract_rar_file($current = '', $name = '', $chmod = '0755', $ext = '',
 
     if ($GLOBALS['class'] == 'ftp') {
         $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpRarArchive' . time() . '.tmp';
-        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpRarFile' . time() . '.tmp';
+        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpRarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpRarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
         file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
     }
 
@@ -1579,8 +1579,8 @@ function extract_tar_file($current = '', $name = '', $chmod = '0755', $ext = '',
 
     if ($GLOBALS['class'] == 'ftp') {
            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-           $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpTarArchive' . time() . '.tmp';
-           $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpTarFile' . time() . '.tmp';
+           $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpTarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+           $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpTarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
            file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
     }
 
@@ -1617,7 +1617,7 @@ function del_zip_archive($current = '', $f = '')
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
 //    $comment = $zip->properties();
 //    $comment = $comment['comment'];
-// :TODO: сохранение комментариев
+//  TODO: сохранение комментариев
 
     // fix del directory
     foreach ($zip->listContent() as $index) {
@@ -1627,8 +1627,6 @@ function del_zip_archive($current = '', $f = '')
     }
     $list = $zip->delete(PCLZIP_OPT_BY_INDEX, $index['index']);
     
-    //$list = $zip->delete(PCLZIP_OPT_BY_NAME, $f);
-
     if ($GLOBALS['class'] == 'ftp') {
         ftp_archive_end($current);
     }
@@ -1659,7 +1657,7 @@ function del_tar_archive($current = '', $f = '')
         }
     }
 
-    $tmp_name = $GLOBALS['temp'] . '/GmanagerTar' . time() . '/';
+    $tmp_name = $GLOBALS['temp'] . '/GmanagerTar' . $_SERVER['REQUEST_TIME'] . '/';
     $tgz->extractList($new_tar, $tmp_name);
 
     $GLOBALS['mode']->unlink($current);
@@ -1724,8 +1722,8 @@ function add_zip_archive($current = '', $ext = '', $dir = '')
     require_once $GLOBALS['pclzip'];
     
     if ($GLOBALS['class'] == 'ftp') {
-        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpZip' . time() . '.tmp';
-        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZip' . time() . '/';
+        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '/';
         mkdir($ftp_name, 0777);
 
         file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
@@ -1761,8 +1759,8 @@ function add_tar_archive($current = '', $ext = '', $dir = '')
     require_once $GLOBALS['tar'];
 
     if ($GLOBALS['class'] == 'ftp') {
-        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpTar' . time() . '.tmp';
-        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpTar' . time() . '/';
+        $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
         mkdir($ftp_name, 0777);
 
         file_put_contents($ftp_current, $GLOBALS['mode']->file_get_contents($current));
@@ -1809,7 +1807,7 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
     create_dir(iconv_substr($name, 0, strrpos($name, '/')));
 
     if ($GLOBALS['class'] == 'ftp') {
-         $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZip' . time() . '.tmp';
+         $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
          $ftp = array();
          foreach ($ext as $f) {
              $ftp[] = $tmp = $GLOBALS['temp'] . '/' . basename($f);
@@ -1957,7 +1955,7 @@ function get_archive_file($archive = '', $f = '')
         $entry = rar_entry_get($rar, $f);
     
         // создаем временный файл
-        $tmp = $GLOBALS['temp'] . '/GmanagerRAR' . time() . '.tmp';
+        $tmp = $GLOBALS['temp'] . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
         $entry->extract(true, $tmp); // запишет сюда данные
 
         $ext = file_get_contents($tmp);
@@ -1999,6 +1997,8 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
         ignore_user_abort(true);
     }
 
+    ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
+        
     $tmp = array();
     $url = trim($url);
 
@@ -2011,12 +2011,19 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
         if (substr($name, -1) != '/') {
             $name = dirname($name) . '/' . basename($name);
         } else {
-            $name = $name . basename($url);
+            $h = get_headers($url, 1);
+            if (isset($h['Content-Disposition'])) {
+                preg_match('/.+;\s+filename=(?:")?([^"]+)/i', $h['Content-Disposition'], $arr);
+                if (isset($arr[1])) {
+                    $name = $name . basename($arr[1]);
+                }
+            } else {
+                $h = parse_url($url);
+                $name = $name . basename($h['path']);
+            }
         }
         $tmp[] = array($url, $name);
     }
-
-    ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
 
     $out = '';
     foreach ($tmp as $v) {
@@ -2266,7 +2273,7 @@ function search($c = '', $s = '', $w = '', $r = '')
         $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pn = '';
 
         if ($GLOBALS['index']['name']) {
-            if($archive) {
+            if ($archive) {
                 $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
             } else {
                 $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a>' . $in . '</td>';
@@ -2696,6 +2703,10 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
                 $mime = 'image/png';
                 break;
 
+            case 'bmp':
+                $mime = 'image/bmp';
+                break;
+
             case 'txt':
             case 'dat':
             case 'php':
@@ -2772,7 +2783,7 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
     }
 
 
-    //header('Date: ' . gmdate('r', time()));
+    //header('Date: ' . gmdate('r', $_SERVER['REQUEST_TIME']));
     //header('Content-Transfer-Encoding: binary');
     //header('Last-Modified: ' . gmdate('r', 1234));
 
@@ -2817,7 +2828,7 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
 
 
 
-function getData($url = '', $headers = '')
+function getData($url = '', $headers = '', $only_headers = false)
 {
 
 $u = parse_url($url);
@@ -2857,15 +2868,17 @@ if (isset($u['fragment'])) {
         while ($str = trim(fgets($fp, 512))) {
             $headers .= $str . "\r\n";
         }
-        while (!feof($fp)) {
-            $body .= fgets($fp, 4096);
+        if (!$only_headers) {
+            while (!feof($fp)) {
+                $body .= fgets($fp, 4096);
+            }
         }
         fclose($fp);
     }
 
     return array (
-        'headers' => $headers,
-        'body' => $body
+        'headers'   => $headers,
+        'body'      => $body
         );
 }
 
@@ -2935,7 +2948,7 @@ rmdir($from);
 
 function ftp_archive_start($current = '')
 {
-    $GLOBALS['ftp_archive_start'] = $GLOBALS['temp'] . '/GmanagerFtpArchive' . time() . '.tmp';
+    $GLOBALS['ftp_archive_start'] = $GLOBALS['temp'] . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
     file_put_contents($GLOBALS['ftp_archive_start'], $GLOBALS['mode']->file_get_contents($current));
     return $GLOBALS['ftp_archive_start'];
 }

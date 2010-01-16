@@ -442,6 +442,7 @@ echo '<div class="input">
 <textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>
 ' . $GLOBALS['lng']['headers'] . '<br/>
 <textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
+Cookie:
 Referer:
 Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
 Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
@@ -467,7 +468,7 @@ Connection: Close</textarea><br/>
                     }
                 }
 
-                for ($i = 0; $i < $all; ++ $i ) {
+                for ($i = 0; $i < $all; ++$i ) {
                     echo upload_files($_FILES['f']['tmp_name'][$i], $_FILES['f']['name'][$i], $_POST['name'], $_POST['chmod']);
                 }
             } else {
@@ -519,18 +520,21 @@ echo '<div class="input">
 <input type="text" name="url" value="http://"/><br/>
 ' . $GLOBALS['lng']['headers'] . '<br/>
 <textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . '
+Cookie:
 Referer:
 Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . '
 Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . '
 Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . '
 Connection: Close</textarea><br/>
+<input type="checkbox" name="oh"/>' . $GLOBALS['lng']['only_headers'] . '<br/>
 <input type="submit" value="' . $GLOBALS['lng']['look'] . '"/>
 </div>
 </form>
 </div>';
         } else {
-            if ($url = getData($_POST['url'], $_POST['headers'])) {
-                $url = $url['headers'] . "\r\n\r\n" . $url['body'];
+            $only_headers = isset($_POST['oh']);
+            if ($url = getData($_POST['url'], $_POST['headers'], $only_headers)) {
+                $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
                 echo code($url, 0);
             } else {
                 echo report($GLOBALS['lng']['not_connect'], 2);
@@ -561,10 +565,11 @@ echo '<div class="input">
         break;
 
     case 'eval':
-        $v = '';
         if (isset($_POST['eval'])) {
             echo show_eval($_POST['eval']);
             $v = htmlspecialchars($_POST['eval'], ENT_NOQUOTES);
+        } else {
+            $v = '';
         }
 echo '<div class="input">
 <form action="change.php?go=eval&amp;c=' . $r_current . '" method="post">
@@ -578,7 +583,6 @@ echo '<div class="input">
         break;
 
     case 'search':
-        $v = '';
         if (isset($_POST['search']) && $_POST['search'] != '') {
             $v = htmlspecialchars($_POST['search'], ENT_NOQUOTES);
             if ($GLOBALS['string']) {
@@ -607,11 +611,9 @@ echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
 ' . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '
 ' . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . '
 ' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
-</tr>';
-
-echo search($_POST['where'], $_POST['search'], $_POST['in'], isset($_POST['register']));
-
-echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;">
+</tr>'
+. search($_POST['where'], $_POST['search'], $_POST['in'], isset($_POST['register'])) .
+'<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;">
 <input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>
 ' . $GLOBALS['lng']['check'] . '
 </td></tr>
@@ -634,6 +636,8 @@ echo '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" sty
 <div class="rb">
 <a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/>
 </div>';
+        } else {
+            $v = '';
         }
 echo '<div class="input">
 <form action="change.php?go=search&amp;c=' . $r_current . '" method="post">
@@ -737,7 +741,7 @@ echo '<div class="input">
 </form>
 </div>';
         } else {
-echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']), $_POST['charset']);
+            echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']), $_POST['charset']);
         }
         break;
 
@@ -779,10 +783,11 @@ echo '<div class="input">
         break;
         
     case 'cmd':
-        $v = '';
         if (isset($_POST['cmd'])) {
             echo show_cmd($_POST['cmd']);
             $v = htmlspecialchars($_POST['cmd'], ENT_COMPAT);
+        } else {
+            $v = '';
         }
 echo '<div class="input">
 <form action="change.php?go=cmd&amp;c=' . $r_current . '" method="post">
