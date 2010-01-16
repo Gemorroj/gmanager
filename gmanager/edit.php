@@ -229,15 +229,19 @@ echo '<div class="rb">
 
     case 'save':
         if ($GLOBALS['line_editor']['on']) {
-            $_POST['text'] = $_POST['line'] + explode("\n", $GLOBALS['mode']->file_get_contents($current));
-            ksort($_POST['text'], SORT_NUMERIC);
 
-            $tmp = '';
-            foreach ($_POST['text'] as $v) {
-                $tmp .=  (is_array($v) ? implode("\n", $v) : $v) . "\n";
+            $range = range($_POST['start'], $_POST['end'], 1);
+            $tmp = explode("\n", $GLOBALS['mode']->file_get_contents($current));
+            for ($i = 0, $all = sizeof($tmp); $i <= $all; ++$i) {
+                if (isset($range[$i])) {
+                    if (isset($_POST['line'][$i])) {
+                        $tmp[$i] = (is_array($_POST['line'][$i]) ? implode("\n", $_POST['line'][$i]) : $_POST['line'][$i] . "\n");
+                    } else {
+                        unset($tmp[$i]);
+                    }
+                }
             }
-            $tmp = substr($tmp, 0, -1);
-            $_POST['text'] = & $tmp;
+            $_POST['text'] = substr(implode("\n", $tmp), 0, -1);
         }
 
         if ($_POST['charset'] != 'utf-8') {
