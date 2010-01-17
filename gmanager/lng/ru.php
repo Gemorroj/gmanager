@@ -125,6 +125,7 @@ $GLOBALS['lng'] = array(
 'extract_file'                  =>  'Распаковать Файлы/Папки',
 'extract_file_true'             =>  'Файлы/Папки Распакованы',
 'extract_file_false'            =>  'Файлы/Папки не Распакованы',
+'extract_file_false_ext'        =>  'Файл %file% не Распакован',
 'extract_true'                  =>  'Архив Распакован',
 'extract_false'                 =>  'Архив не Распакован',
 'archive_error'                 =>  'Невозможно Открыть Архив',
