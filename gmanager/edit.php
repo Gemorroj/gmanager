@@ -29,7 +29,7 @@ if (!isset($_GET['charset'])) {
 if (isset($_POST['get'])) {
     header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ? '&f=' . $_GET['f'] : ''))));
     exit;
-} elseif (isset($_POST['line_editor'])) {
+} elseif (isset($_POST['line_edit'])) {
     $_GET['go'] = '';
 }
 
@@ -127,14 +127,14 @@ if ($GLOBALS['line_editor']['on']) {
     foreach (array_slice(explode("\n", $content['text']), $start, $end) as $var) {
         $j++;
         $i++;
-        $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . $var . '"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="editor(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="editor(0,this.parentNode);">[-]</a></td></tr>';
+        $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . $var . '"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="edit(0,this.parentNode);">[-]</a></td></tr>';
     }
     if ($end > $i) {
         $j++;
-        $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="editor(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="editor(0,this.parentNode);">[-]</a></td></tr>';
+        $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="edit(0,this.parentNode);">[-]</a></td></tr>';
     }
 
-    $edit .= '</table><input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="line_editor" type="submit" value="' . $GLOBALS['lng']['look'] . '"/><br/>';
+    $edit .= '</table><input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return number(event)" style="width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="line_edit" type="submit" value="' . $GLOBALS['lng']['look'] . '"/><br/>';
 } else {
     $edit = '<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
 }

@@ -535,7 +535,7 @@ Connection: Close</textarea><br/>
             $only_headers = isset($_POST['oh']);
             if ($url = getData($_POST['url'], $_POST['headers'], $only_headers)) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
-                echo code($url, 0);
+                echo '<div class="code">IP: ' . implode(',', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '<br/></div>' . code($url, 0);
             } else {
                 echo report($GLOBALS['lng']['not_connect'], 2);
             }
