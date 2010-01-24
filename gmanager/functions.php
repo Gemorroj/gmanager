@@ -2076,12 +2076,15 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
             $name = dirname($name) . '/' . basename($name);
         } else {
             $h = get_headers($url, 1);
+            $temp = false;
             if (isset($h['Content-Disposition'])) {
                 preg_match('/.+;\s+filename=(?:")?([^"]+)/i', $h['Content-Disposition'], $arr);
                 if (isset($arr[1])) {
+                    $temp = true;
                     $name = $name . basename($arr[1]);
                 }
-            } else {
+            }
+            if (!$temp) {
                 $h = parse_url($url);
                 $name = $name . basename($h['path']);
             }
@@ -2091,6 +2094,12 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 
     $out = '';
     foreach ($tmp as $v) {
+
+        $dir = dirname($v[1]);
+        if (!$GLOBALS['mode']->is_dir($dir)) {
+            $GLOBALS['mode']->mkdir($dir, '0755');
+        }
+
         if ($GLOBALS['class'] == 'ftp') {
             $tmp = getData($v[0], '');
             $r = $GLOBALS['mode']->file_put_contents($v[1], $tmp['body']);
