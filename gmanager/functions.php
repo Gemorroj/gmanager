@@ -1940,7 +1940,7 @@ function gz_extract($c = '', $name = '', $chmod = array(), $overwrite = false)
         ob_end_clean();
     } else {
         $gz = gzopen($tmp, 'r');
-        $get = gzread($gz, 2147483647);
+        $get = gzread($gz, PHP_INT_MAX);
         gzclose($gz);
     }
 
@@ -2324,7 +2324,7 @@ function search($c = '', $s = '', $w = '', $r = '')
                     ob_end_clean();
                 } else {
                     $gz = gzopen($c . $f, 'r');
-                    $fl = gzread($gz, 2147483647);
+                    $fl = gzread($gz, PHP_INT_MAX);
                     gzclose($gz);
                 }
             } else {
