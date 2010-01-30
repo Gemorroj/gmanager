@@ -36,6 +36,11 @@ php_flag ignore_repeated_source Off
 php_value default_charset UTF-8
 AddDefaultCharset UTF-8
 
+<IfModule mod_charset.c>
+CharsetRecodeMultipartForms Off
+CharsetDisable On
+</IfModule>
+
 # Максимальный размер загружаемого файла
 php_value upload_max_filesize 999M
 php_value post_max_size 999M

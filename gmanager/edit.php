@@ -229,11 +229,15 @@ echo '<div class="rb">
 
     case 'save':
         if ($GLOBALS['line_editor']['on']) {
+            $fill = array_fill($_POST['start'], $_POST['end'], 1);
+            if ($archive == 'ZIP') {
+                $tmp = explode("\n", look_zip_file($current, $_GET['f'], true));
+            } else {
+                $tmp = explode("\n", $GLOBALS['mode']->file_get_contents($current));
+            }
 
-            $range = range($_POST['start'], $_POST['end'], 1);
-            $tmp = explode("\n", $GLOBALS['mode']->file_get_contents($current));
             for ($i = 0, $all = sizeof($tmp); $i <= $all; ++$i) {
-                if (isset($range[$i])) {
+                if (isset($fill[$i])) {
                     if (isset($_POST['line'][$i])) {
                         $tmp[$i] = (is_array($_POST['line'][$i]) ? implode("\n", $_POST['line'][$i]) : $_POST['line'][$i] . "\n");
                     } else {
@@ -241,7 +245,7 @@ echo '<div class="rb">
                     }
                 }
             }
-            $_POST['text'] = substr(implode("\n", $tmp), 0, -1);
+            $_POST['text'] = implode("\n", $tmp);
         }
 
         if ($_POST['charset'] != 'utf-8') {

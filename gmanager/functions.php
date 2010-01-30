@@ -762,7 +762,7 @@ function syntax($source = '', $charset = array())
         return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, 2);
     }
 
-    $erl = 0;
+    $erl = false;
     $page = '';
     if ($v == 255 || $size > 2) {
         if ($st = trim(strip_tags($rt[1]))) {
@@ -780,21 +780,7 @@ function syntax($source = '', $charset = array())
         $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
     }
 
-    if (substr_count($fl, "\r") > 2) {
-        $arr = explode("\r", xhtml_highlight(str_replace("\n", '', $fl)));
-    } else {
-        $arr = explode('<br />', xhtml_highlight($fl));
-    }
-
-    for ($i = 0, $end = sizeof($arr); $i < $end; ++$i) {
-        if ($i == ($erl - 1)) {
-            $page .= '<span class="fail_code">&#160;' . ($i + 1) . '&#160;</span> ' . $arr[$i] . '<br/>';
-        } else {
-            $page .= '<span class="true_code">' . ($i + 1) . '</span> ' . $arr[$i] . '<br/>';
-        }
-    }
-
-    return report($pg, 0) . '<div class="code">' . $page . '</div>';
+    return report($pg, $erl ? 1 : 0) . code($fl, $erl);
 }
 
 
@@ -877,14 +863,14 @@ function validator($current = '', $charset = array())
         return report('Error [Line ' . $line . ', Column ' . $column . ']: ' . $err, 1) . code($fl, $line);
     } else {
         xml_parser_free($xml_parser);
-        return report($GLOBALS['lng']['validator_true'], 0) . code($fl, 0);
+        return report($GLOBALS['lng']['validator_true'], 0) . code($fl);
     }
 }
 
 
 function xhtml_highlight($fl = '')
 {
-    return preg_replace('#color="(.*?)"#', 'style="color: $1"', str_replace(array('<font ', '</font>'), array('<span ', '</span>'), highlight_string($fl, true)));
+    return str_replace(array('&nbsp;', '<code>', '</code>'), array('&#160;', '', ''), preg_replace('#color="(.*?)"#', 'style="color: $1"', str_replace(array('<font ', '</font>'), array('<span ', '</span>'), highlight_string($fl, true))));
 }
 
 
@@ -901,22 +887,17 @@ function url_highlight($fl = '')
 
 function code($fl = '', $line = 0)
 {
+    $array = explode('<br />', xhtml_highlight($fl));
+    $all = sizeof($array);
+    $len = strlen($all);
     $page = '';
-
-    if (substr_count($fl, "\r") > 2) {
-        $arr = explode("\r", url_highlight(str_replace("\n", '', $fl)));
-    } else {
-        $arr = explode("\n", url_highlight($fl));
+    for ($i = 0; $i < $all; ++$i) {
+        $next = $i + 1;
+        $l = strlen($next);
+        $page .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . '<br/>';
     }
 
-    for ($i = 0, $end = sizeof($arr); $i < $end; ++$i) {
-        if ($i == ($line - 1)) {
-            $page .= '<span class="fail_code">&#160;' . ($i + 1) . '&#160;</span> ' . $arr[$i];
-        } else {
-            $page .= '<span class="true_code">' . ($i + 1) . '</span> ' . $arr[$i];
-        }
-    }
-    return '<div class="code">' . $page . '</div>';
+    return '<div class="code"><code>' . $page . '</code></div>';
 }
 
 
@@ -1224,7 +1205,7 @@ function edit_zip_file_ok($current = '', $f = '', $text = '')
 }
 
 
-function look_zip_file($current = '', $f = '')
+function look_zip_file($current = '', $f = '', $str = false)
 {
     require_once $GLOBALS['pclzip'];
     $r_current = str_replace('%2F', '/', rawurlencode($current));
@@ -1242,12 +1223,16 @@ function look_zip_file($current = '', $f = '')
     } else if ($ext[0]['status'] == 'unsupported_encryption') {
         return report($GLOBALS['lng']['archive_error_encrypt'], 2);
     } else {
-        return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', 0) . archive_fl(trim($ext[0]['content']));
+        if ($str) {
+            return $ext[0]['content'];
+        } else {
+            return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', 0) . code(trim($ext[0]['content']));
+        }
     }
 }
 
 
-function look_rar_file($current = '', $f = '')
+function look_rar_file($current = '', $f = '', $str = false)
 {
     $r_current = str_replace('%2F', '/', rawurlencode($current));
     $r_f = str_replace('%2F', '/', rawurlencode($f));
@@ -1269,12 +1254,16 @@ function look_rar_file($current = '', $f = '')
     if (!$ext) {
         return report($GLOBALS['lng']['archive_error'], 2);
     } else {
-        return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($entry->getPackedSize()) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($entry->getUnpackedSize()) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], strtotime($entry->getFileTime()))) . archive_fl(trim($ext));
+        if ($str) {
+            return $ext;
+        } else {
+            return report($GLOBALS['lng']['archive_size'] . ': ' . format_size($entry->getPackedSize()) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($entry->getUnpackedSize()) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], strtotime($entry->getFileTime()))) . code(trim($ext));
+        }
     }
 }
 
 
-function look_tar_file($current = '', $f = '')
+function look_tar_file($current = '', $f = '', $str = false)
 {
     require_once $GLOBALS['tar'];
 
@@ -1298,7 +1287,11 @@ function look_tar_file($current = '', $f = '')
             if ($list[$i]['filename'] != $f) {
                 continue;
             } else {
-                return report($GLOBALS['lng']['real_size'] . ': ' . format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), 0) . archive_fl(trim($ext));
+                if ($str) {
+                    return $ext;
+                } else {
+                    return report($GLOBALS['lng']['real_size'] . ': ' . format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $list[$i]['mtime']), 0) . code(trim($ext));
+                }
             }
         }
     }
@@ -1921,7 +1914,7 @@ function gz($c = '')
         if (!$len = @iconv_strlen($ext)) {
             $len = strlen($ext);
         }
-        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[0], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), 0) . archive_fl(trim($ext));
+        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[0], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['mode']->filemtime($c)), 0) . code(trim($ext));
     } else {
         return report($GLOBALS['lng']['archive_error'], 2);
     }
@@ -1970,23 +1963,6 @@ function gz_extract($c = '', $name = '', $chmod = array(), $overwrite = false)
     } else {
         return report($GLOBALS['lng']['extract_file_false'], 2);
     }
-}
-
-
-function archive_fl($fl = '')
-{
-    if (substr_count($fl, "\r") > 2) {
-        $arr = explode("\r", xhtml_highlight(str_replace("\n", '', $fl)));
-    } else {
-        $arr = explode('<br />', xhtml_highlight($fl));
-    }
-
-    $page = '';
-    foreach ($arr as $i => $val) {
-        $page .= '<span class="true_code">' . ($i + 1) . '</span> ' . $val . '<br/>';
-    }
-
-    return '<div class="code">' . $page . '</div>';
 }
 
 
