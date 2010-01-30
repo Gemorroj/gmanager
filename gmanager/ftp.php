@@ -85,7 +85,7 @@ final class ftp
         ftp_chdir($this->res, '/');
         settype($chmod, 'string');
         $strlen = strlen($chmod);
-        if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
             return false;
         }
         if ($strlen == 3) {

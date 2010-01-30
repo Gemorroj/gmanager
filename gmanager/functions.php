@@ -680,7 +680,7 @@ function rechmod($current = '', $chmod = '0755')
     settype($chmod, 'string');
     $strlen = strlen($chmod);
 
-    if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+    if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
         return report($GLOBALS['lng']['chmod_mode_false'], 2);
     }
 

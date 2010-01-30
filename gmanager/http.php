@@ -25,7 +25,7 @@ final class http
     {
         settype($chmod, 'string');
         $strlen = strlen($chmod);
-        if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
             // return false;
             $chmod = '0755';
         }
@@ -53,7 +53,7 @@ final class http
 
         settype($chmod, 'string');
         $strlen = strlen($chmod);
-        if (!ctype_digit($chmod) || ($strlen != 3 && $strlen != 4)) {
+        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
             return false;
         }
 
