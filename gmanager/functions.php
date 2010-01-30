@@ -2463,15 +2463,14 @@ function sql_parser($sql = '')
     $arr = explode("\n", $sql);
 
     for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {
-        if (isset($arr[$i]) && $arr[$i][0] != '#' && $arr[$i][0] . $arr[$i][1] != '--') {
-            $str .= $arr[$i];
+        if (isset($arr[$i]) && @$arr[$i][0] != '#' && @$arr[$i][0] . @$arr[$i][1] != '--') {
+            $str .= $arr[$i] . "\n";
         }
     }
 
     //$str = "SET sql_mode = 'IGNORE_SPACE';\n".$str;
 
-    $str = trim(preg_replace('/;[\s+](EXPLAIN|SELECT|ALTER|CREATE|INSERT|DELETE|UPDATE|DROP|OPTIMIZE|ANALYZE|RESTORE|CHECKSUM|CHECK\s+TABLE|BACKUP\s+TABLE|REPAIR|TRUNCATE|REPLACE|SHOW|SET|USE|LOAD\s+DATA|RENAME\s+TABLE|EXECUTE|DEALLOCATE|DESCRIBE|LOCK\s+TABLES|START\s+TRANSACTION|PREPARE|CALL|HANDLER|SAVEPOINT|HELP|GRANT|REVOKE|DO)\s+/i', ";\n$1 ", $str));
-    return preg_split('/;[\t\r\n]+/i', $str);
+    return preg_split('/;[\t\r\n]+/i', trim(preg_replace('/;[\s+](EXPLAIN|SELECT|ALTER|CREATE|INSERT|DELETE|UPDATE|DROP|OPTIMIZE|ANALYZE|RESTORE|CHECKSUM|CHECK\s+TABLE|BACKUP\s+TABLE|REPAIR|TRUNCATE|REPLACE|SHOW|SET|USE|LOAD\s+DATA|RENAME\s+TABLE|EXECUTE|DEALLOCATE|DESCRIBE|LOCK\s+TABLES|START\s+TRANSACTION|PREPARE|CALL|HANDLER|SAVEPOINT|HELP|GRANT|REVOKE|DO)\s+/i', ";\n$1 ", $str)));
 }
 
 
