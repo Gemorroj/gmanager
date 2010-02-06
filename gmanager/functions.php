@@ -2770,6 +2770,12 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
             case 'js':
             case 'xml':
             case 'sql':
+            case 'tpl':
+            case 'tmp':
+            case 'cgi':
+            case 'py':
+            case 'pl':
+            case 'rb':
                 $mime = 'text/plain';
                 break;
 
