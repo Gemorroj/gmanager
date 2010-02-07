@@ -7,7 +7,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.2 beta
+ * @version 0.7.2
  * 
  * PHP version >= 5.2.1
  * 
@@ -1728,42 +1728,11 @@ function del_tar_archive($current = '', $f = '')
 
 function add_archive($c = '')
 {
-$current = dirname($c) . '/';
-$r_current = str_replace('%2F', '/', rawurlencode($current));
-
-echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post">
-<div class="telo">
-<table>
-<tr>
-<th>' . $GLOBALS['lng']['ch_index'] . '</th>
-' . ($GLOBALS['index']['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . '
-' . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . '
-' . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . '
-' . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . '
-' . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . '
-' . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . '
-' . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '
-' . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . '
-' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '
-</tr>';
-
-echo look($current);
-
-echo '</table>
-<div class="ch">
-<input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/>
-</div>
-</div>
-</form>
-<div class="rb">' . $GLOBALS['lng']['create'] . '
-<a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/>
-</div>
-<div class="rb">
-<a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/>
-</div>
-<div class="rb">
-<a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/>
-</div>';
+    $current = dirname($c) . '/';
+    $r_current = str_replace('%2F', '/', rawurlencode($current));
+    echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . '' . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . '' . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . '' . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . '' . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . '' . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . '' . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '' . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . '' . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+    echo look($current);
+    echo '</table><div class="ch"><input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/></div></div></form><div class="rb">' . $GLOBALS['lng']['create'] . '<a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
 }
 
 
@@ -2070,7 +2039,6 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
 
     $out = '';
     foreach ($tmp as $v) {
-
         $dir = dirname($v[1]);
         if (!$GLOBALS['mode']->is_dir($dir)) {
             $GLOBALS['mode']->mkdir($dir, '0755');
@@ -2107,7 +2075,6 @@ function send_mail($theme = '', $mess = '', $to = '', $from = '')
 
 function show_eval($eval = '')
 {
-
     if (ob_start()) {
         $info['time'] = microtime(true);
         $info['ram'] = memory_get_usage(false);
@@ -2141,43 +2108,42 @@ function show_eval($eval = '')
 
 function show_cmd($cmd = '')
 {
-$buf = '';
-
-/*
-    $h = popen($cmd, 'r');
-    while (!feof($h)) {
-           $buf .= fgets($h, 4096);
+    $buf = '';
+    
+    /*
+        $h = popen($cmd, 'r');
+        while (!feof($h)) {
+               $buf .= fgets($h, 4096);
+        }
+        pclose($h);
+    */
+    
+    $win = false;
+    if ((substr(PHP_OS, 0, 3) == 'WIN')) {
+        $win = true;
+        $cmd = iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $cmd);
     }
-    pclose($h);
-*/
-
-$win = false;
-if ((substr(PHP_OS, 0, 3) == 'WIN')) {
-    $win = true;
-    $cmd = iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $cmd);
-}
-
-if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
-
-    //fwrite($pipes[0], '');
-    fclose($pipes[0]);
-
-    $buf = stream_get_contents($pipes[1]);
-    fclose($pipes[1]);
-
-    proc_close($h);
-
-    $rows = sizeof(explode("\n", $buf)) + 1;
-    if ($rows < 3) {
-        $rows = 3;
+    
+    if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
+        //fwrite($pipes[0], '');
+        fclose($pipes[0]);
+    
+        $buf = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+    
+        proc_close($h);
+    
+        $rows = sizeof(explode("\n", $buf)) + 1;
+        if ($rows < 3) {
+            $rows = 3;
+        }
+    
+        if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
+            $buf = iconv($GLOBALS['consencoding'], 'UTF-8//TRANSLIT', $buf);
+        }
+    } else {
+        return '<div class="red">' . $GLOBALS['lng']['cmd_error'] . '<br/></div>';
     }
-
-    if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
-        $buf = iconv($GLOBALS['consencoding'], 'UTF-8//TRANSLIT', $buf);
-    }
-} else {
-    return '<div class="red">' . $GLOBALS['lng']['cmd_error'] . '<br/></div>';
-}
     return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
 }
 
@@ -2885,18 +2851,18 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
 function getData($url = '', $headers = '', $only_headers = false)
 {
 
-$u = parse_url($url);
-
-$host = $u['host'];
-$path = isset($u['path']) ? $u['path'] : '/';
-$port = isset($u['port']) ? $u['port'] : 80;
-
-if (isset($u['query'])) {
-    $path .= '?' . $u['query'];
-}
-if (isset($u['fragment'])) {
-    $path .= '#' . $u['fragment'];
-}
+    $u = parse_url($url);
+    
+    $host = $u['host'];
+    $path = isset($u['path']) ? $u['path'] : '/';
+    $port = isset($u['port']) ? $u['port'] : 80;
+    
+    if (isset($u['query'])) {
+        $path .= '?' . $u['query'];
+    }
+    if (isset($u['fragment'])) {
+        $path .= '#' . $u['fragment'];
+    }
 
     $fp = fsockopen($host, $port, $errno, $errstr, 10);
     if (!$fp) {
@@ -2930,10 +2896,7 @@ if (isset($u['fragment'])) {
         fclose($fp);
     }
 
-    return array (
-        'headers'   => $headers,
-        'body'      => $body
-        );
+    return array ('headers' => $headers, 'body' => $body);
 }
 
 
@@ -2995,8 +2958,8 @@ function ftp_move_files($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'
             unlink($from . '/' . $f);
         }
     }
-closedir($h);
-rmdir($from);
+    closedir($h);
+    rmdir($from);
 }
 
 
@@ -3059,8 +3022,8 @@ function clean($name = '')
             unlink($name . '/' . $f);
         }
     }
-closedir($h);
-rmdir($name);
+    closedir($h);
+    rmdir($name);
 }
 
 ?>
