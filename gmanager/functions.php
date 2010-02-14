@@ -644,7 +644,9 @@ function size($source = '', $is_dir = false)
 
 
 function format_size($size = '', $int = 2) {
-    if ($size < 1024) {
+    if ($size === false) {
+        return $GLOBALS['lng']['unknown'];
+    } else if ($size < 1024) {
         return $size . ' Byte';
     } else if ($size < 1048576) {
         return round($size / 1024, $int) . ' Kb';
@@ -2501,7 +2503,6 @@ echo \'</div></body></html>\'
 
 function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset = '')
 {
-
     if (!$connect = mysql_connect($host, $name, $pass)) {
         return report($GLOBALS['lng']['mysq_connect_false'], 1);
     }
