@@ -147,7 +147,7 @@ echo '<div class="rb">' . $GLOBALS['lng']['charset'] . '<form action="edit.php?"
 
     case 'save':
         if ($GLOBALS['line_editor']['on']) {
-            $fill = array_fill($_POST['start'], $_POST['end'] - 1, 1);
+            $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
             if ($archive == 'ZIP') {
                 $tmp = explode("\n", look_zip_file($current, $_GET['f'], true));
             } else {
