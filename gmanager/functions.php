@@ -139,7 +139,7 @@ function look($current = '', $itype = '', $down = '')
         echo '<tr><td class="red" colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . $GLOBALS['lng']['permission_denided'] . '</td></tr>';
         return;
     }
-    
+
     $out = $t = $add = $html = '';
     $page = $page0 = $page1 = $page2 = array();
     $i = 0;

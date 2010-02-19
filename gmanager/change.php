@@ -13,12 +13,6 @@
  * 
  */
 
-
-if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
-        phpinfo();
-        exit;
-}
-
 require 'functions.php';
 
 $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
@@ -48,6 +42,15 @@ $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h
 
 
 send_header($_SERVER['HTTP_USER_AGENT']);
+
+
+if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
+    phpinfo();
+    exit;
+} else if (isset($_POST['add_archive']) && !isset($_POST['name'])) {
+    header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . dirname($current) . '&add_archive=' . $current, true, 301);
+    exit;
+}
 
 echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . this($current);
 
@@ -174,16 +177,7 @@ switch ($_GET['go']) {
                 echo create_zip_archive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['add_archive'])) {
-            if (!isset($_POST['name'])) {
-                header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . dirname($current) . '&add_archive=' . $current, true, 301);
-                exit;
-            } else if (!isset($_POST['dir'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['add_archive_dir'] . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
-                for ($i = 0; $i < $x; ++$i) {
-                    echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
-                }
-                echo '<input type="submit" name="name" value="' . $GLOBALS['lng']['add_archive'] . '"/></div></form></div>';
-            } else {
+            if (isset($_POST['dir'])) {
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
                 $_POST['dir'] = rawurldecode($_POST['dir']);
                 $_POST['add_archive'] = rawurldecode($_POST['add_archive']);
@@ -197,6 +191,12 @@ switch ($_GET['go']) {
                 } else if ($archive == 'RAR') {
                     echo add_rar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
+            } else {
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['add_archive_dir'] . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
+                for ($i = 0; $i < $x; ++$i) {
+                    echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
+                }
+                echo '<input type="submit" name="name" value="' . $GLOBALS['lng']['add_archive'] . '"/></div></form></div>';
             }
         } else if (isset($_POST['full_rename'])) {
             if (!isset($_GET['go2'])) {
