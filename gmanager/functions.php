@@ -139,7 +139,7 @@ function look($current = '', $itype = '', $down = '')
         echo '<tr><td class="red" colspan="' . (array_sum($GLOBALS['index']) + 1) . '">' . $GLOBALS['lng']['permission_denided'] . '</td></tr>';
         return;
     }
-
+    
     $out = $t = $add = $html = '';
     $page = $page0 = $page1 = $page2 = array();
     $i = 0;
@@ -2223,14 +2223,18 @@ function zip_replace($current = '', $f = '', $from = '', $to = '', $regexp = '')
 }
 
 
-function search($c = '', $s = '', $w = '', $r = '')
+function search($c = '', $s = '', $w = '', $r = '', $h = '')
 {
     if ($GLOBALS['target']) {
         $t = ' target="_blank"';
     } else {
         $t = '';
     }
-    
+
+    if ($h) {
+        $s = implode('', array_map('chr', str_split($s, 4)));
+    }
+
     $c = str_replace('//', '/', $c . '/');
 
     $i = 0;
@@ -2330,16 +2334,19 @@ function search($c = '', $s = '', $w = '', $r = '')
 
     natcasesort($page);
 
+    
+    $in = '';
     $line = false;
     foreach ($page as $var) {
         $line = !$line;
         if ($line) {
-            echo '<tr class="border">' . $var . '</tr>';
+            $in .= '<tr class="border">' . $var . '</tr>';
         } else {
-            echo '<tr class="border2">' . $var . '</tr>';
+            $in .= '<tr class="border2">' . $var . '</tr>';
         }
     }
 
+    return $in;
 }
 
 
