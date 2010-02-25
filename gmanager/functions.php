@@ -2224,7 +2224,7 @@ function zip_replace($current = '', $f = '', $from = '', $to = '', $regexp = '')
 
 
 function search($c = '', $s = '', $w = '', $r = '', $h = '')
-{
+{    
     if ($GLOBALS['target']) {
         $t = ' target="_blank"';
     } else {
@@ -2235,6 +2235,8 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
         $s = implode('', array_map('chr', str_split($s, 4)));
     }
 
+    $s = !$r ? strtolower($s) : $s;
+
     $c = str_replace('//', '/', $c . '/');
 
     $i = 0;
@@ -2243,7 +2245,7 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
 
     foreach ($GLOBALS['mode']->iterator($c) as $f) {
         if ($GLOBALS['mode']->is_dir($c . $f)) {
-            search($c . $f . '/', $s, $w, $r);
+            search($c . $f . '/', $s, $w, $r, '');
             continue;
         }
 
@@ -2253,18 +2255,8 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
         $archive = is_archive($type);
         $stat = $GLOBALS['mode']->stat($c . $f);
         $name = htmlspecialchars(str_link($c . $f), ENT_NOQUOTES);
-        
-        if ($r) {
-            $s = strtolower($s);
-            $f = strtolower($f);
-        }
 
-        if (!$w) {
-            if (@iconv_strpos($f, $s) === false) {
-                continue;
-            }
-        } else {
-
+        if ($w) {
             if ($type == 'GZ') {
                 if (ob_start()) {
                     readgzfile($c . $f);
@@ -2279,14 +2271,16 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
                 $fl = $GLOBALS['mode']->file_get_contents($c . $f);
             }
 
-            if ($r) {
-                $fl = strtolower($fl);
-            }
-
+            $fl = !$r ? strtolower($fl) : $fl;
             if (!$in = substr_count($fl, $s)) {
                 continue;
             }
             $in = ' (' . $in . ')';
+        } else {
+            $f = !$r ? strtolower($f) : $f;
+            if (@iconv_strpos($f, $s) === false) {
+                continue;
+            }
         }
 
 
