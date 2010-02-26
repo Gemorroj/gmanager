@@ -2224,23 +2224,32 @@ function zip_replace($current = '', $f = '', $from = '', $to = '', $regexp = '')
 
 
 function search($c = '', $s = '', $w = '', $r = '', $h = '')
-{    
-    if ($GLOBALS['target']) {
-        $t = ' target="_blank"';
-    } else {
-        $t = '';
+{
+    static $count = 0;
+    static $t;
+    static $out;
+
+    if (!$count) {
+        if ($GLOBALS['target']) {
+            $t = ' target="_blank"';
+        } else {
+            $t = '';
+        }
+    
+        if ($h) {
+            $s = implode('', array_map('chr', str_split($s, 4)));
+        }
+        
+        // Fix for PHP < 6.0
+        $s = $r ? $s : strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $s));
     }
 
-    if ($h) {
-        $s = implode('', array_map('chr', str_split($s, 4)));
-    }
+    $count++;
 
-    $s = !$r ? strtolower($s) : $s;
 
     $c = str_replace('//', '/', $c . '/');
 
     $i = 0;
-    $in = '';
     $page = array();
 
     foreach ($GLOBALS['mode']->iterator($c) as $f) {
@@ -2255,6 +2264,8 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
         $archive = is_archive($type);
         $stat = $GLOBALS['mode']->stat($c . $f);
         $name = htmlspecialchars(str_link($c . $f), ENT_NOQUOTES);
+
+        $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pn = $in = null;
 
         if ($w) {
             if ($type == 'GZ') {
@@ -2271,21 +2282,30 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
                 $fl = $GLOBALS['mode']->file_get_contents($c . $f);
             }
 
-            $fl = !$r ? strtolower($fl) : $fl;
+            // Fix for PHP < 6.0
+            if (!$r) {
+                if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {
+                    $fl = strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $fl));
+                }
+            }
             if (!$in = substr_count($fl, $s)) {
                 continue;
             }
             $in = ' (' . $in . ')';
         } else {
-            $f = !$r ? strtolower($f) : $f;
-            if (@iconv_strpos($f, $s) === false) {
+            // Fix for PHP < 6.0
+            if (!$r) {
+                if (@iconv('UTF-8', 'UTF-8', $f) == $f) {
+                    $f = strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $f));
+                }
+            }
+            if (strpos($f, $s) === false) {
                 continue;
             }
         }
 
-
         $i++;
-        $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pn = '';
+        
 
         if ($GLOBALS['index']['name']) {
             if ($archive) {
@@ -2328,19 +2348,14 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
 
     natcasesort($page);
 
-    
-    $in = '';
+
     $line = false;
     foreach ($page as $var) {
         $line = !$line;
-        if ($line) {
-            $in .= '<tr class="border">' . $var . '</tr>';
-        } else {
-            $in .= '<tr class="border2">' . $var . '</tr>';
-        }
+        $out .= $line ? '<tr class="border">' . $var . '</tr>' : '<tr class="border2">' . $var . '</tr>';
     }
 
-    return $in;
+    return $out;
 }
 
 
