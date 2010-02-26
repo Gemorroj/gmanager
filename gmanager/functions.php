@@ -2286,6 +2286,8 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
             if (!$r) {
                 if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {
                     $fl = strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $fl));
+                } else {
+                    $fl = strtolower($fl);
                 }
             }
             if (!$in = substr_count($fl, $s)) {
@@ -2297,6 +2299,8 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
             if (!$r) {
                 if (@iconv('UTF-8', 'UTF-8', $f) == $f) {
                     $f = strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $f));
+                } else {
+                    $f = strtolower($f);
                 }
             }
             if (strpos($f, $s) === false) {
