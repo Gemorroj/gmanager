@@ -2869,7 +2869,7 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
 
 
 
-function getData($url = '', $headers = '', $only_headers = false)
+function getData($url = '', $headers = '', $only_headers = false, $post = '')
 {
 
     $u = parse_url($url);
@@ -2889,8 +2889,7 @@ function getData($url = '', $headers = '', $only_headers = false)
     if (!$fp) {
         return false;
     } else {
-        $out = 'GET ' . $path . ' HTTP/1.0' . "\r\n";
-        $out .= 'Host: ' . $host . "\r\n";
+        $out = 'Host: ' . $host . "\r\n";
         
         if ($headers) {
             $out .= trim($headers) . "\r\n";
@@ -2902,7 +2901,14 @@ function getData($url = '', $headers = '', $only_headers = false)
             //$out .= 'TE: deflate, gzip, chunked, identity, trailers' . "\r\n";
             $out .= 'Connection: Close' . "\r\n";
         }
-        $out .= "\r\n";
+        
+        if ($post) {
+            $out .= 'Content-type: application/x-www-form-urlencoded' . "\r\n";
+            $out .= 'Content-Length: ' . strlen($post) . "\r\n";
+            $out = 'POST ' . $path . ' HTTP/1.0' . "\r\n" . $out . "\r\n" . $post;
+        } else {
+            $out = 'GET ' . $path . ' HTTP/1.0' . "\r\n" . $out . "\r\n";
+        }
 
         fwrite($fp, $out);
         $headers = $body = '';

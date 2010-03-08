@@ -330,10 +330,10 @@ switch ($_GET['go']) {
 
     case 'scan':
         if (!isset($_POST['url']) || $_POST['url'] == 'http://') {
-            echo '<div class="input"><form action="change.php?go=scan&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['url'] . '<br/><input type="text" name="url" value="http://"/><br/>' . $GLOBALS['lng']['headers'] . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . "\n" . 'Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . "\n" . 'Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . "\n" . 'Connection: Close' . "\n" . '</textarea><br/><input type="checkbox" name="oh"/>' . $GLOBALS['lng']['only_headers'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['look'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=scan&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['url'] . '<br/><input type="text" name="url" value="http://"/><br/>' . $GLOBALS['lng']['headers'] . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . "\n" . 'Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . "\n" . 'Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . "\n" . 'Connection: Close' . "\n" . '</textarea><br/>POST<br/><input type="text" name="post"/><br/><input type="checkbox" name="oh"/>' . $GLOBALS['lng']['only_headers'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['look'] . '"/></div></form></div>';
         } else {
             $only_headers = isset($_POST['oh']);
-            if ($url = getData($_POST['url'], $_POST['headers'], $only_headers)) {
+            if ($url = getData($_POST['url'], $_POST['headers'], $only_headers, $_POST['post'])) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
                 echo '<div class="code">IP: ' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '<br/></div>' . code($url, 0);
             } else {

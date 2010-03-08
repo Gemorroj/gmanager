@@ -81,7 +81,7 @@ $GLOBALS['altencoding'] = 'Windows-1251';
 $GLOBALS['consencoding'] = 'CP866';
 
 //ignore_user_abort(1);                             // продолжать работу скрипта, даже если закрыли окно браузера
-set_time_limit(999);                                // максимальное время работы скрипта
+@set_time_limit(999);                               // максимальное время работы скрипта
 ini_set('max_execution_time', '999');               // максимальное время работы скрипта
 iconv_set_encoding('internal_encoding', 'UTF-8');   // кодировка по умолчанию для iconv
 ini_set('memory_limit', '128M');                    // лимит оперативной памяти
@@ -104,9 +104,7 @@ $GLOBALS['top'] = '<?xml version="1.0" encoding="UTF-8"?>
 <body>';
 
 // Низ
-$GLOBALS['foot'] = '<div class="w">Powered by Gemorroj<br/>
-<a href="http://wapinet.ru">wapinet.ru</a></div>
-</body></html>';
+$GLOBALS['foot'] = '<div class="w">Powered by Gemorroj<br/><a href="http://wapinet.ru">wapinet.ru</a></div></body></html>';
 
 
 // Версия Менеджера (Не Менять!)

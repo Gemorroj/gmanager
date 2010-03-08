@@ -100,7 +100,7 @@ final class ftp
     public function file_get_contents($str = '')
     {
         ftp_chdir($this->res, '/');
-        $tmp = fopen('php://temp', 'r+');
+        $tmp = fopen('php://memory', 'r+');
 
         if (ftp_fget($this->res, $tmp, $str, FTP_BINARY, 0)) {
             rewind($tmp);
