@@ -2923,7 +2923,7 @@ function getData($url = '', $headers = '', $only_headers = false, $post = '')
         fclose($fp);
     }
 
-    return array ('headers' => $headers, 'body' => $body);
+    return array('headers' => $headers, 'body' => $body);
 }
 
 
@@ -2934,7 +2934,11 @@ function getData($url = '', $headers = '', $only_headers = false, $post = '')
 function error()
 {
     $err = error_get_last();
-    return $err['message'] . ' (' . $err['file'] . ': ' . $err['line'] . ')';
+    if ($err) {
+        return $err['message'] . ' (' . $err['file'] . ': ' . $err['line'] . ')';
+    } else {
+        return $GLOBALS['lng']['unknown_error'];
+    }
 }
 
 

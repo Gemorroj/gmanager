@@ -197,6 +197,7 @@ $GLOBALS['lng'] = array(
 'set_time_limit'                =>  'Ограничение по времени (сек)',
 'ignore_user_abort'             =>  'Продолжать даже если закрыть старницу',
 'permission_denided'            =>  'Недостаточно прав',
+'unknown_error'                 =>  'Неизвестная ошибка',
 );
 
 ?>
