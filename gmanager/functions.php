@@ -1,5 +1,4 @@
 <?php
-// encoding = 'utf-8'
 /**
  * 
  * This software is distributed under the GNU LGPL v3.0 license.
@@ -922,7 +921,8 @@ function list_zip_archive($current = '', $down = '')
             $list = array_reverse($list);
         }
 
-        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
+        $s = sizeof($list);
+        for ($i = 0; $i < $s; ++$i) {
 
             $r_name = str_replace('%2F', '/', rawurlencode($list[$i]['filename']));
 
@@ -1006,7 +1006,8 @@ function list_rar_archive($current = '', $down = '')
             $list = array_reverse($list);
         }
 
-        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
+        $s = sizeof($list);
+        for ($i = 0; $i < $s; ++$i) {
 
             $r_name = str_replace('%2F', '/', rawurlencode($list[$i]->getName()));
 
@@ -1083,7 +1084,8 @@ function list_tar_archive($current = '', $down = '')
             $list = array_reverse($list);
         }
 
-        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
+        $s = sizeof($list);
+        for ($i = 0; $i < $s; ++$i) {
             $r_name = rawurlencode($list[$i]['filename']);
 
             if ($list[$i]['typeflag']) {
@@ -1285,7 +1287,8 @@ function look_tar_file($current = '', $f = '', $str = false)
             ftp_archive_end('');
         }
 
-        for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
+        $s = sizeof($list);
+        for ($i = 0; $i < $s; ++$i) {
             if ($list[$i]['filename'] != $f) {
                 continue;
             } else {
@@ -1700,8 +1703,8 @@ function del_tar_archive($current = '', $f = '')
     $list = $tgz->listContent();
 
     $new_tar = array();
-
-    for ($i = 0, $s = sizeof($list); $i < $s; ++$i) {
+    $s = sizeof($list);
+    for ($i = 0; $i < $s; ++$i) {
         if ($list[$i]['filename'] == $f) {
             continue;
         } else {
@@ -2425,8 +2428,9 @@ function sql_parser($sql = '')
 {
     $str = '';
     $arr = explode("\n", $sql);
-
-    for ($i = 0, $size = sizeof($arr); $i <= $size; ++$i) {
+    
+    $size = sizeof($arr);
+    for ($i = 0; $i <= $size; ++$i) {
         if (isset($arr[$i]) && @$arr[$i][0] != '#' && @$arr[$i][0] . @$arr[$i][1] != '--') {
             $str .= $arr[$i] . "\n";
         }

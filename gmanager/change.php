@@ -255,7 +255,8 @@ switch ($_GET['go']) {
         include 'pattern.dat';
         if (!isset($_POST['name'])) {
             echo '<div class="input"><form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="file.php"/><br/><select name="ptn">';
-            for ($i = 0, $all = sizeof($pattern); $i < $all; ++$i) {
+            $all = sizeof($pattern);
+            for ($i = 0; $i < $all; ++$i) {
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
             echo '</select>' . $GLOBALS['lng']['pattern'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/></div></form></div>';
@@ -378,7 +379,8 @@ switch ($_GET['go']) {
         if (isset($_POST['name']) && isset($_POST['host'])) {
             include 'pattern.dat';
             $tmp = '<select id="ptn" onchange="paste(this.value);">';
-            for ($i = 0, $all = sizeof($sql_ptn); $i < $all; ++$i) {
+            $all = sizeof($sql_ptn);
+            for ($i = 0; $i < $all; ++$i) {
                 $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
             }
             $tmp .= '</select>';

@@ -155,7 +155,8 @@ echo '<div class="rb">' . $GLOBALS['lng']['charset'] . '<form action="edit.php?"
             }
 
 
-            for ($i = 0, $all = sizeof($tmp); $i <= $all; ++$i) {
+            $all = sizeof($tmp);
+            for ($i = 0; $i <= $all; ++$i) {
                 if (isset($fill[$i])) {
                     if (isset($_POST['line'][$i])) {
                         $tmp[$i] = (is_array($_POST['line'][$i]) ? implode("\n", $_POST['line'][$i]) : $_POST['line'][$i] . "\n");
