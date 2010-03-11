@@ -902,6 +902,112 @@ function code($fl = '', $line = 0)
 }
 
 
+function rename_zip_file($current, $name, $arch_name, $del, $overwrite)
+{
+    require_once $GLOBALS['pclzip'];
+    
+    $tmp = $GLOBALS['temp'] . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
+    $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+    $folder = '';
+
+    foreach ($zip->extract(PCLZIP_OPT_PATH, $tmp) as $f) {
+        if ($f['status'] != 'ok') {
+            del_dir($tmp);
+            if ($GLOBALS['class'] == 'ftp') {
+                ftp_archive_end();
+            }
+            return report($GLOBALS['lng']['extract_false'], 1);
+            break;
+        }
+        if ($arch_name == $f['stored_filename']) {
+            $folder = $f['folder'];
+        }
+    }
+
+    if (file_exists($tmp . '/' . $name)) {
+        if ($overwrite) {
+            unlink($tmp . '/' . $name);
+        } else {
+            del_dir($tmp);
+            if ($GLOBALS['class'] == 'ftp') {
+                ftp_archive_end();
+            }
+            return report($GLOBALS['lng']['overwrite_false'], 1);
+            break;
+        }
+    }
+    
+    if ($folder) {
+        @mkdir($tmp . '/' . $name, 0755, true);
+    } else {
+        @mkdir($tmp . '/' . dirname($name), 0755, true);
+    }
+
+    if ($del) {
+        $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+    } else {
+        $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+    }
+
+    if (!$result) {
+        del_dir($tmp);
+        if ($GLOBALS['class'] == 'ftp') {
+            ftp_archive_end();
+        }
+        if ($folder) {
+            if ($del) {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+            } else {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+            }
+        } else {
+            if ($del) {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+            } else {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+            }
+        }
+    }
+
+    $result = $zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, $tmp);
+
+    del_dir($tmp);
+    if ($GLOBALS['class'] == 'ftp') {
+        ftp_archive_end();
+    }
+
+    if ($result) {
+        if ($folder) {
+            if ($del) {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+            } else {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+            }
+        } else {
+            if ($del) {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_true']), 0);
+            } else {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_true']), 0);
+            }
+        }
+    } else {
+        if ($folder) {
+            if ($del) {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+            } else {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+            }
+        } else {
+            if ($del) {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+            } else {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+            }
+        }
+    }
+}
+
+
 function list_zip_archive($current = '', $down = '')
 {
     require_once $GLOBALS['pclzip'];
@@ -929,11 +1035,13 @@ function list_zip_archive($current = '', $down = '')
             if ($list[$i]['folder']) {
                 $type = 'DIR';
                 $name = htmlspecialchars($list[$i]['filename'], ENT_NOQUOTES);
-                $size = '';
+                $size = ' ';
+                $down = ' ';
             } else {
                 $type = htmlspecialchars(get_type($list[$i]['filename']), ENT_NOQUOTES);
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
                 $size = format_size($list[$i]['size']);
+                $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
             }
 
             $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -941,7 +1049,7 @@ function list_zip_archive($current = '', $down = '')
                 $l .= '<td>' . $name . '</td>';
             }
             if ($GLOBALS['index']['down']) {
-                $l .= '<td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+                $l .= '<td>' . $down . '</td>';
             }
             if ($GLOBALS['index']['type']) {
                 $l .= '<td>' . $type . '</td>';
@@ -950,7 +1058,7 @@ function list_zip_archive($current = '', $down = '')
                 $l .= '<td>' . $size . '</td>';
             }
             if ($GLOBALS['index']['change']) {
-                $l .= '<td> </td>';
+                $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
             }
             if ($GLOBALS['index']['del']) {
                 $l .= '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
@@ -1014,11 +1122,13 @@ function list_rar_archive($current = '', $down = '')
             if (!$list[$i]->getCrc()) {
                 $type = 'DIR';
                 $name = htmlspecialchars($list[$i]->getName(), ENT_NOQUOTES);
-                $size = '';
+                $size = ' ';
+                $down = ' ';
             } else {
                 $type = htmlspecialchars(get_type($list[$i]->getName()), ENT_NOQUOTES);
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]->getName()), ENT_NOQUOTES) . '</a>';
                 $size = format_size($list[$i]->getUnpackedSize());
+                $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
             }
 
             $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -1026,7 +1136,7 @@ function list_rar_archive($current = '', $down = '')
                 $l .= '<td>' . $name . '</td>';
             }
             if ($GLOBALS['index']['down']) {
-                $l .= '<td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+                $l .= '<td>' . $down . '</td>';
             }
             if ($GLOBALS['index']['type']) {
                 $l .= '<td>' . $type . '</td>';
@@ -1092,17 +1202,19 @@ function list_tar_archive($current = '', $down = '')
                 $type = 'DIR';
                 $name = htmlspecialchars($list[$i]['filename'], ENT_NOQUOTES);
                 $size = ' ';
+                $down = ' ';
             } else {
                 $type = htmlspecialchars(get_type($list[$i]['filename']), ENT_NOQUOTES);
                 $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(str_link($list[$i]['filename']), ENT_NOQUOTES) . '</a>';
                 $size = format_size($list[$i]['size']);
+                $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
             }
             $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
             if ($GLOBALS['index']['name']) {
                 $l .= '<td>' . $name . '</td>';
             }
             if ($GLOBALS['index']['down']) {
-                $l .= '<td><a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+                $l .= '<td>' . $down . '</td>';
             }
             if ($GLOBALS['index']['type']) {
                 $l .= '<td>' . $type . '</td>';
@@ -1676,12 +1788,14 @@ function del_zip_archive($current = '', $f = '')
 
     // fix del directory
     foreach ($zip->listContent() as $index) {
-        if ($index['filename'] == $f) {
+        if ($index['stored_filename'] == $f) {
             break;
         }
     }
+
     $list = $zip->delete(PCLZIP_OPT_BY_INDEX, $index['index']);
-    
+
+
     if ($GLOBALS['class'] == 'ftp') {
         ftp_archive_end($current);
     }
@@ -1763,6 +1877,7 @@ function add_zip_archive($current = '', $ext = '', $dir = '')
 
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_current : $current);
     $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH);
+    // TODO: добавление пустых директорий
 
     if ($GLOBALS['class'] == 'ftp') {
         $GLOBALS['mode']->file_put_contents($current, file_get_contents($ftp_current));

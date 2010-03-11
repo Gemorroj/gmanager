@@ -17,7 +17,7 @@
 $GLOBALS['mode'] = new http;
 $GLOBALS['class'] = 'http';
 
-final class http
+class http
 {
     static private $stat = array();
 

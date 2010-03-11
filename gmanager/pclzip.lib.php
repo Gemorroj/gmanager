@@ -66,7 +66,7 @@
   //   define( 'PCLZIP_TEMPORARY_DIR', '' );
   // }
 
-define('PCLZIP_TEMPORARY_DIR', $GLOBALS['temp']);
+define('PCLZIP_TEMPORARY_DIR', $GLOBALS['temp'] . '/');
 
   // ----- Optional threshold ratio for use of temporary files
   //       Pclzip sense the size of the file to add/extract and decide to

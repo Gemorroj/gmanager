@@ -17,7 +17,7 @@
 $GLOBALS['mode'] = new ftp;
 $GLOBALS['class'] = 'ftp';
 
-final class ftp
+class ftp
 {
     private $user = 'root';      // логин
     private $password = '';      // пароль

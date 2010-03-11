@@ -56,25 +56,30 @@ echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($
 
 switch ($_GET['go']) {
     default:
-
         if (!$GLOBALS['mode']->file_exists($current)) {
             echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
 
-        if ($GLOBALS['mode']->is_dir($current)) {
-            $size = format_size(size($current, true));
-            $md5 = '';
-        } else if ($GLOBALS['mode']->is_file($current) || $GLOBALS['mode']->is_link($current)) {
-            $size = format_size(size($current));
-            if ($GLOBALS['class'] == 'ftp') {
-                $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['mode']->file_get_contents($current));
-            } else {
-                $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
+        if (isset($_GET['f']) && is_archive(get_type($current)) == 'ZIP') {
+            $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
+            $h_file = htmlspecialchars($_GET['f']);
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
+        } else {
+            if ($GLOBALS['mode']->is_dir($current)) {
+                $size = format_size(size($current, true));
+                $md5 = '';
+            } else if ($GLOBALS['mode']->is_file($current) || $GLOBALS['mode']->is_link($current)) {
+                $size = format_size(size($current));
+                if ($GLOBALS['class'] == 'ftp') {
+                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['mode']->file_get_contents($current));
+                } else {
+                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
+                }
             }
+    
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>';
         }
-
-        echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div><div class="rb"><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dl'] . '</a><br/></div>';
         break;
 
     case 1:
@@ -276,9 +281,13 @@ switch ($_GET['go']) {
         break;
 
     case 'rename':
-        echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
-        if ($_POST['chmod']) {
-            echo rechmod($_POST['name'], $_POST['chmod']);
+        if (isset($_GET['f']) && is_archive(get_type($current)) == 'ZIP') {
+            echo rename_zip_file($current, $_POST['name'], $_POST['arch_name'], isset($_POST['del']), isset($_POST['overwrite']));
+        } else {
+            echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+            if ($_POST['chmod']) {
+                echo rechmod($_POST['name'], $_POST['chmod']);
+            }
         }
         break;
 
