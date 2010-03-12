@@ -912,7 +912,7 @@ function rename_zip_file($current, $name, $arch_name, $del, $overwrite)
 
     foreach ($zip->extract(PCLZIP_OPT_PATH, $tmp) as $f) {
         if ($f['status'] != 'ok') {
-            del_dir($tmp);
+            clean($tmp);
             if ($GLOBALS['class'] == 'ftp') {
                 ftp_archive_end();
             }
@@ -926,9 +926,13 @@ function rename_zip_file($current, $name, $arch_name, $del, $overwrite)
 
     if (file_exists($tmp . '/' . $name)) {
         if ($overwrite) {
-            unlink($tmp . '/' . $name);
+            if ($folder) {
+                clean($tmp . '/' . $name);
+            } else {
+                unlink($tmp . '/' . $name);
+            }
         } else {
-            del_dir($tmp);
+            clean($tmp);
             if ($GLOBALS['class'] == 'ftp') {
                 ftp_archive_end();
             }
@@ -936,21 +940,30 @@ function rename_zip_file($current, $name, $arch_name, $del, $overwrite)
             break;
         }
     }
-    
+
     if ($folder) {
         @mkdir($tmp . '/' . $name, 0755, true);
     } else {
         @mkdir($tmp . '/' . dirname($name), 0755, true);
     }
 
-    if ($del) {
-        $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+    if ($folder) {
+        // переделать на ftp
+        if ($del) {
+            $result = move_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
+        } else {
+            $result = copy_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
+        }
     } else {
-        $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+        if ($del) {
+            $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+        } else {
+            $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+        }
     }
 
     if (!$result) {
-        del_dir($tmp);
+        clean($tmp);
         if ($GLOBALS['class'] == 'ftp') {
             ftp_archive_end();
         }
@@ -971,7 +984,7 @@ function rename_zip_file($current, $name, $arch_name, $del, $overwrite)
 
     $result = $zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, $tmp);
 
-    del_dir($tmp);
+    clean($tmp);
     if ($GLOBALS['class'] == 'ftp') {
         ftp_archive_end();
     }
