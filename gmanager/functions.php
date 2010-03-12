@@ -535,8 +535,8 @@ function copy_file($source = '', $dest = '', $chmod = '' /* 0644 */, $overwrite 
     if ($GLOBALS['mode']->copy($source, $dest)) {
         if (!$chmod) {
             $chmod = look_chmod($source);
-           }
-            rechmod($dest, $chmod);
+        }
+        rechmod($dest, $chmod);
 
         return report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_true'])), 0);
     } else {
@@ -621,21 +621,21 @@ function del_dir($d = '')
 function size($source = '', $is_dir = false)
 {
     if ($is_dir) {
-    $ds = array($source);
-    $sz = 0;
-    do {
-        $d = array_shift($ds);
-
-        foreach ($GLOBALS['mode']->iterator($d) as $file) {
-                if ($GLOBALS['mode']->is_dir($d . '/' . $file)) {
-                    $ds[] = $d . '/' . $file;
-                } else {
-                    $sz += $GLOBALS['mode']->filesize($d . '/' . $file);
-                }
-        }
-    } while (sizeof($ds) > 0);
-
-    return $sz;
+        $ds = array($source);
+        $sz = 0;
+        do {
+            $d = array_shift($ds);
+    
+            foreach ($GLOBALS['mode']->iterator($d) as $file) {
+                    if ($GLOBALS['mode']->is_dir($d . '/' . $file)) {
+                        $ds[] = $d . '/' . $file;
+                    } else {
+                        $sz += $GLOBALS['mode']->filesize($d . '/' . $file);
+                    }
+            }
+        } while (sizeof($ds) > 0);
+    
+        return $sz;
     }
 
     return $GLOBALS['mode']->filesize($source);
@@ -986,7 +986,7 @@ function rename_zip_file($current, $name, $arch_name, $del, $overwrite)
 
     clean($tmp);
     if ($GLOBALS['class'] == 'ftp') {
-        ftp_archive_end();
+        ftp_archive_end($current);
     }
 
     if ($result) {
@@ -1954,26 +1954,33 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
 
     require_once $GLOBALS['pclzip'];
 
-    define('CUR', str_replace('//', '/', '/' . strstr($GLOBALS['current'], '/')));
-
     create_dir(iconv_substr($name, 0, strrpos($name, '/')));
 
     if ($GLOBALS['class'] == 'ftp') {
          $ftp_name = $GLOBALS['temp'] . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
          $ftp = array();
+         $temp = $GLOBALS['temp'] . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+         mkdir($temp, 0755, true);
          foreach ($ext as $f) {
-             $ftp[] = $tmp = $GLOBALS['temp'] . '/' . basename($f);
-             file_put_contents($tmp, $GLOBALS['mode']->file_get_contents($f));
+             $ftp[] = $tmp = $temp . '/' . basename($f);
+             if ($GLOBALS['mode']->is_dir($f)) {
+                mkdir($tmp, 0755, true);
+                ftp_copy_files($f, $tmp);
+             } else {
+                file_put_contents($tmp, $GLOBALS['mode']->file_get_contents($f));
+             }
         }
         $ext = $ftp;
         unset($ftp);
+    } else {
+        $temp = $GLOBALS['current'];
     }
 
     $zip = new PclZip($GLOBALS['class'] == 'ftp' ? $ftp_name : $name);
     if ($comment != '') {
-        $r = $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $GLOBALS['current'], PCLZIP_OPT_COMMENT, $comment);
+        $r = $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp, PCLZIP_OPT_COMMENT, $comment);
     } else {
-        $r  = $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $GLOBALS['current']);
+        $r  = $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp);
     }
 
     $err = false;
@@ -1982,13 +1989,10 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
             $err = error();
         }
         unlink($ftp_name);
-        foreach ($ext as $f) {
-            unlink($f);
-        }
+        clean($temp);
     }
 
-
-    if ($GLOBALS['mode']->is_file($name)) {
+    if ($GLOBALS['mode']->is_file($name) || ($err === false && $GLOBALS['class'] == 'ftp')) {
         if ($chmod) {
             rechmod($name, $chmod);
         }
@@ -3126,6 +3130,25 @@ function ftp_move_files($from = '', $to = '', $chmodf = '0644', $chmodd = '0755'
 }
 
 
+function ftp_copy_files($from = '', $to = '', $chmodf = '0644', $chmodd = '0755', $overwrite = false)
+{
+    foreach ($GLOBALS['mode']->iterator($from) as $f) {
+        if ($f == '.' || $f == '..') {
+            continue;
+        }
+
+        if ($GLOBALS['mode']->is_dir($from . '/' . $f)) {
+            mkdir($to . '/' . $f, $chmodd);
+            ftp_copy_files($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
+        } else {
+            if ($overwrite || !file_exists($to . '/' . $f)) {
+                file_put_contents($to . '/' . $f, $GLOBALS['mode']->file_get_contents($from . '/' . $f));
+            }
+        }
+    }
+}
+
+
 function ftp_archive_start($current = '')
 {
     $GLOBALS['ftp_archive_start'] = $GLOBALS['temp'] . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
@@ -3172,14 +3195,18 @@ function is_archive($type)
 
 function clean($name = '')
 {
-    $h = opendir($name);
+    $h = @opendir($name);
+    if (!$h) {
+        return false;
+    }
+
     while (($f = readdir($h)) !== false) {
         if ($f == '.' || $f == '..') {
             continue;
         }
 
         if (is_dir($name . '/' . $f)) {
-            rmdir($name . '/' . $f);
+            @rmdir($name . '/' . $f);
             clean($name . '/' . $f);
         } else {
             unlink($name . '/' . $f);

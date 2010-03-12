@@ -17,6 +17,7 @@
 $GLOBALS['mode'] = new ftp;
 $GLOBALS['class'] = 'ftp';
 
+
 class ftp
 {
     private $user = 'root';      // логин
@@ -26,7 +27,9 @@ class ftp
     private $res;
     private $url;
     private $dir;
+    private $systype = '';
     static private $rawlist;
+
 
     public function __construct()
     {
@@ -38,11 +41,13 @@ class ftp
 
         // включение пассивного режима
         ftp_pasv($this->res, true);
-        
+
+        // тип операционной системы
+        $this->systype = ftp_systype($this->res);
+
         // формируем строку URL
         //$this->url = 'ftp://' . $this->user . ':' . $this->password . '@' . $this->host . ':' . $this->port;
     }
-
 
 
     public function __destruct()
@@ -52,12 +57,11 @@ class ftp
     }
 
 
-    //////////////////////////////////////////////////////////////////
-
     public static function change_symbol($str = '')
     {
         return ($str[0] == '/' ? $str : '/' . $str);
     }
+
 
     public function mkdir($dir = '', $chmod = '0755')
     {
@@ -72,15 +76,13 @@ class ftp
         return true;
     }
 
+
     public function chmod($file = '', $chmod = '0755')
     {
-        /*
-        $win = ftp_systype($this->res);
-        if ($win[0] . $win[1] . $win[2] == 'WIN') {
-            trigger_error($GLOBALS['lng']['win_chmod']);
-            return false;
+        if (substr($this->systype, 0, 3) == 'WIN') {
+            //trigger_error($GLOBALS['lng']['win_chmod']);
+            return true;
         }
-        */
 
         ftp_chdir($this->res, '/');
         settype($chmod, 'string');
@@ -97,6 +99,7 @@ class ftp
         return ftp_chmod($this->res, octdec(intval($chmod)), $file);
     }
 
+
     public function file_get_contents($str = '')
     {
         ftp_chdir($this->res, '/');
@@ -109,6 +112,7 @@ class ftp
             return false;
         }
     }
+
 
     public function file_put_contents($file = '', $data = '')
     {
@@ -128,6 +132,7 @@ class ftp
         return $result;
     }
 
+
     public function is_dir($str = '')
     {
         //$str = self::change_symbol($str);
@@ -143,6 +148,7 @@ class ftp
         $b = basename($str);
         return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'dir');
     }
+
 
     public function is_file($str = '')
     {
@@ -161,6 +167,7 @@ class ftp
         return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'file');
     }
 
+
     public function is_link($str = '')
     {
         //$str = self::change_symbol($str);
@@ -178,6 +185,7 @@ class ftp
         return (isset(self::$rawlist[$dir][$b]) && self::$rawlist[$dir][$b]['type'] == 'link');
     }
 
+
     public function is_readable($str = '')
     {
         return true;
@@ -185,12 +193,14 @@ class ftp
         //return is_readable($this->url.$str);
     }
 
+
     public function is_writable($str = '')
     {
         return true;
         //$str = self::change_symbol($str);
         //return is_writable($this->url.$str);
     }
+
 
     public function filesize($str = '')
     {
@@ -206,12 +216,14 @@ class ftp
         return self::$rawlist[$dir][basename($str)]['size'];
     }
 
+
     public function file_exists($str = '')
     {
         //$str = self::change_symbol($str);
         //return file_exists($this->url.$str);
         return ($this->is_file($str) || $this->is_dir($str) || $this->is_link($str));
     }
+
 
     public function filemtime($str = '')
     {
@@ -224,12 +236,14 @@ class ftp
         return self::$rawlist[$dir][basename($str)]['mtime'];
     }
 
+
     public function unlink($str = '')
     {
         //$str = self::change_symbol($str);
         ftp_chdir($this->res, '/');
         return ftp_delete($this->res, $str);
     }
+
 
     public function rename($from = '', $to = '')
     {
@@ -238,6 +252,7 @@ class ftp
         ftp_chdir($this->res, '/');
         return ftp_rename($this->res, $from, $to);
     }
+
 
     public function copy($from = '', $to = '', $chmod = '0644')
     {
@@ -255,12 +270,14 @@ class ftp
         return $result;
     }
 
+
     public function rmdir($str = '')
     {
         //$str = self::change_symbol($str);
         ftp_chdir($this->res, '/');
-        return ftp_rmdir($this->res, $str);
+        return @ftp_rmdir($this->res, $str);
     }
+
 
     public function iterator($str = '')
     {
@@ -270,16 +287,17 @@ class ftp
             $this->rawlist($str);
         }
 
-        foreach (self::$rawlist[$str] as $var) {
+        foreach ((array)@self::$rawlist[$str] as $var) {
             $tmp[] = basename($var['file']);
         }
 
         return $tmp;
     }
 
+
     public function fileperms($str = '')
     {
-        if ($str == '.' || $str == '/' || $str == ''){
+        if ($str == '.' || $str == '/' || $str == '' || $str = '\\'){
             return 0;
         }
         //$str = self::change_symbol($str);
@@ -291,6 +309,7 @@ class ftp
         return self::$rawlist[$dir][basename($str)]['chmod'];
     }
 
+
     public function stat($str = '')
     {
         $dir = str_replace('\\', '/', dirname($str));
@@ -299,6 +318,7 @@ class ftp
         }
         return self::$rawlist[$dir][basename($str)];
     }
+
 
     public function readlink($str = '')
     {
@@ -325,6 +345,7 @@ class ftp
         );
     }
 
+
     public function getcwd()
     {
         $str = ftp_pwd($this->res);
@@ -333,6 +354,7 @@ class ftp
         }
         return $str;
     }
+
 
     private function rawlist($dir = '/')
     {
@@ -343,25 +365,31 @@ class ftp
         }
 
         $items = array();
-        foreach (array_slice((array)ftp_rawlist($this->res, '/' . $raw_dir), 2) as $var) {
-            @preg_replace(
-                '`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
-                '$items[basename(trim("$10"))] = array(
-                "chmod" => $this->chmodnum("$1"),
-                "uid" => "$3",
-                "gid" => "$4",
-                "size" => "$5",
-                "mtime" => strtotime("$6 $7 $8:$9"),
-                "file" => trim("$10"),
-                "type" => substr("$1", 0, 1) == "d" ? "dir" : (substr("$1", 0, 1) == "l" ? "link" : "file")
-                );',
-                $var
-            );
+        foreach ((array)ftp_rawlist($this->res, '/' . $raw_dir) as $var) {
+            if (substr($var, -2) == ' .' || substr($var, -3) == ' ..') {
+                continue;
+            } else {
+                @preg_replace(
+                    '`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
+                    '$items[basename(trim("$10"))] = array(
+                        "chmod" => $this->chmodnum("$1"),
+                        "uid" => "$3",
+                        "gid" => "$4",
+                        "size" => "$5",
+                        "mtime" => strtotime("$6 $7 $8:$9"),
+                        "file" => trim("$10"),
+                        "type" => substr("$1", 0, 1) == "d" ? "dir" : (substr("$1", 0, 1) == "l" ? "link" : "file")
+                    );',
+                    $var
+                );
+            }
         }
+        
         $this->dir = $dir;
         self::$rawlist[$dir] = & $items;
         return $items;
     }
+
 
     private function chmodnum($perm = 'rw-r--r--')
     {

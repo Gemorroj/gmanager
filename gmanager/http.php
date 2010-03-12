@@ -17,9 +17,11 @@
 $GLOBALS['mode'] = new http;
 $GLOBALS['class'] = 'http';
 
+
 class http
 {
     static private $stat = array();
+
 
     public function mkdir($dir = '', $chmod = '0755')
     {
@@ -40,6 +42,7 @@ class http
         }
         return $result;
     }
+
 
     public function chmod($file = '', $chmod = '0755')
     {
@@ -64,10 +67,12 @@ class http
         return @chmod($file, octdec(intval($chmod)));
     }
 
+
     public function file_get_contents($str = '')
     {
         return file_get_contents($str);
     }
+
 
     public function file_put_contents($file = '', $data = '')
     {
@@ -86,30 +91,36 @@ class http
         return 1;
     }
 
+
     public function is_dir($str = '')
     {
         return @is_dir($str);
     }
+
 
     public function is_file($str = '')
     {
         return is_file($str);
     }
 
+
     public function is_link($str = '')
     {
         return is_link($str);
     }
 
+
     public function is_readable($str = '')
     {
         return is_readable($str);
     }
-    
+
+
     public function is_writable($str = '')
     {
         return is_writable($str);
     }
+
 
     public function stat($str = '')
     {
@@ -122,6 +133,7 @@ class http
         return self::$stat[$str];
     }
 
+
     public function fileperms($str = '')
     {
         if (!isset(self::$stat[$str][2])) {
@@ -130,6 +142,7 @@ class http
         return self::$stat[$str][2];
         //return fileperms($str);
     }
+
 
     public function filesize($str = '')
     {
@@ -140,6 +153,7 @@ class http
         //return sprintf('%u', filesize($str));
     }
 
+
     public function filemtime($str = '')
     {
         if (!isset(self::$stat[$str][9])) {
@@ -148,6 +162,7 @@ class http
         return self::$stat[$str][9];
         //return filemtime($str);
     }
+
 
     public function readlink($str = '')
     {
@@ -158,20 +173,24 @@ class http
         );
     }
 
+
     public function file_exists($str = '')
     {
         return file_exists($str);
     }
+
 
     public function unlink($str = '')
     {
         return unlink($str);
     }
 
+
     public function rename($from = '', $to = '')
     {
         return rename($from, $to);
     }
+
 
     public function copy($from = '', $to = '', $chmod = '0644')
     {
@@ -181,15 +200,18 @@ class http
         return $result;
     }
 
+
     public function rmdir($str = '')
     {
         return rmdir($str);
     }
 
+
     public function getcwd()
     {
         return getcwd();
     }
+
 
     public function iterator($str = '')
     {
