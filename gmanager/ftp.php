@@ -297,7 +297,7 @@ class ftp
 
     public function fileperms($str = '')
     {
-        if ($str == '.' || $str == '/' || $str == '' || $str = '\\'){
+        if ($str == '.' || $str == '/' || $str == '' || $str == '\\'){
             return 0;
         }
         //$str = self::change_symbol($str);
@@ -370,21 +370,21 @@ class ftp
                 continue;
             } else {
                 @preg_replace(
-                    '`^(.{10}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
-                    '$items[basename(trim("$10"))] = array(
-                        "chmod" => $this->chmodnum("$1"),
-                        "uid" => "$3",
-                        "gid" => "$4",
-                        "size" => "$5",
-                        "mtime" => strtotime("$6 $7 $8:$9"),
-                        "file" => trim("$10"),
-                        "type" => substr("$1", 0, 1) == "d" ? "dir" : (substr("$1", 0, 1) == "l" ? "link" : "file")
+                    '`^(d|l|\-{1}+)(.{9}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
+                    '$items[basename(trim("$11"))] = array(
+                        "chmod" => $this->chmodnum("$2"),
+                        "uid" => "$4",
+                        "gid" => "$5",
+                        "size" => "$6",
+                        "mtime" => strtotime("$7 $8 $9:$10"),
+                        "file" => trim("$11"),
+                        "type" => "$1" == "d" ? "dir" : ("$1" == "l" ? "link" : "file")
                     );',
                     $var
                 );
             }
         }
-        
+
         $this->dir = $dir;
         self::$rawlist[$dir] = & $items;
         return $items;
@@ -393,52 +393,51 @@ class ftp
 
     private function chmodnum($perm = 'rw-r--r--')
     {
-        $m = 0; 
+        $m = 0;
 
-        if ($perm[1] == 'r') {
+        if ($perm[0] == 'r') {
             $m += 0400;
         }
-        if ($perm[2] == 'w') {
+        if ($perm[1] == 'w') {
             $m += 0200;
         }
-        if ($perm[3] == 'x') {
+        if ($perm[2] == 'x') {
             $m += 0100;
-        } else if ($perm[3] == 's') {
+        } else if ($perm[2] == 's') {
             $m += 04100;
-        } else if ($perm[3] == 'S') {
+        } else if ($perm[2] == 'S') {
             $m += 04000;
         }
 
 
-        if ($perm[4] == 'r') {
+        if ($perm[3] == 'r') {
             $m += 040;
         }
-        if ($perm[5] == 'w') {
+        if ($perm[4] == 'w') {
             $m += 020;
         }
-        if ($perm[6] == 'x') {
+        if ($perm[5] == 'x') {
             $m += 010;
-        } else if ($perm[6] == 's') {
+        } else if ($perm[5] == 's') {
             $m += 02010;
-        } else if ($perm[6] == 'S') {
+        } else if ($perm[5] == 'S') {
             $m += 02000;
         }
 
 
-        if ($perm[7] == 'r') {
+        if ($perm[6] == 'r') {
             $m += 04;
         }
-        if ($perm[8] == 'w') {
+        if ($perm[7] == 'w') {
             $m += 02;
         }
-        if ($perm[9] == 'x') {
+        if ($perm[8] == 'x') {
             $m += 01;
-        } else if ($perm[9] == 't') {
+        } else if ($perm[8] == 't') {
             $m += 01001;
-        } else if ($perm[9] == 'T') {
+        } else if ($perm[8] == 'T') {
             $m += 01000;
         }
-
 
         return $m;
     }
