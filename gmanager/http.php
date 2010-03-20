@@ -48,8 +48,7 @@ class http
     public function chmod($file = '', $chmod = '0755')
     {
         /*
-        $win = PHP_OS;
-        if ($win[0] . $win[1] . $win[2] == 'WIN') {
+        if (PHP_OS == 'WIN32') {
             trigger_error($GLOBALS['lng']['win_chmod']);
             return false;
         }
@@ -132,11 +131,11 @@ class http
         if (isset(self::$uid[self::$stat[$str][4]])) {
             self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]];
         } else {
-            if (@exec('id -p ' . self::$stat[$str][4], $row)) {
+            if (function_exists('posix_getpwuid') && $uid = @posix_getpwuid(self::$stat[$str][4])) {
+                self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = $uid['name'];
+            } else if (@exec('id -p ' . self::$stat[$str][4], $row)) {
                 $row = explode("\t", $row[0]);
                 self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = $row[1];
-            } else if (function_exists('posix_getpwuid') && $uid = @posix_getpwuid(self::$stat[$str][4])) {
-                self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = $uid['name'];
             } else {
                 self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = self::$stat[$str][4];
             }
