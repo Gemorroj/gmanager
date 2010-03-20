@@ -52,7 +52,7 @@ if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
     exit;
 }
 
-echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars($_SERVER['QUERY_STRING'], ENT_NOQUOTES)))))), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . this($current);
+echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars(rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . this($current);
 
 switch ($_GET['go']) {
     default:
@@ -61,7 +61,8 @@ switch ($_GET['go']) {
             break;
         }
 
-        if (isset($_GET['f']) && is_archive(get_type($current)) == 'ZIP') {
+        $archive = is_archive(get_type($current));
+        if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR')) {
             $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
             $h_file = htmlspecialchars($_GET['f']);
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
@@ -77,7 +78,7 @@ switch ($_GET['go']) {
                     $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
                 }
             }
-    
+
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="width:28pt;" name="chmod" value="' . look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>';
         }
         break;
@@ -281,8 +282,12 @@ switch ($_GET['go']) {
         break;
 
     case 'rename':
-        if (isset($_GET['f']) && is_archive(get_type($current)) == 'ZIP') {
-            echo rename_zip_file($current, $_POST['name'], $_POST['arch_name'], isset($_POST['del']), isset($_POST['overwrite']));
+        $archive = is_archive(get_type($current));
+        $if = isset($_GET['f']);
+        if ($if && $archive == 'ZIP') {
+            echo rename_zip_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+        } else if ($if && $archive == 'TAR') {
+            echo rename_tar_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
         } else {
             echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
             if ($_POST['chmod']) {

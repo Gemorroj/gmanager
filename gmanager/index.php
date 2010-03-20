@@ -34,7 +34,7 @@ $ia = isset($_GET['add_archive']);
 
 send_header($_SERVER['HTTP_USER_AGENT']);
 
-echo str_replace('%dir%', $h_current, $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . this($current);
+echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . this($current);
 
 if ($GLOBALS['string']) {
     echo '<div><form action="index.php?" method="get"><div>';

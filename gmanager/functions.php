@@ -53,7 +53,6 @@ function send_header($u = '')
 
 function c($query = '', $c = '')
 {
-
     if (!$query) {
         return '.';
     } else {
@@ -853,7 +852,7 @@ function validator($current = '', $charset = array())
     $fl = $GLOBALS['mode']->file_get_contents($current);
     if ($charset[0]) {
         $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
-    } 
+    }
 
     $xml_parser = xml_parser_create();
     if (!xml_parse($xml_parser, $fl)) {
@@ -1188,6 +1187,126 @@ function list_rar_archive($current = '', $down = '')
 }
 
 
+function rename_tar_file($current, $name, $arch_name, $del, $overwrite)
+{
+    require_once $GLOBALS['tar'];
+
+    $tmp = $GLOBALS['temp'] . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
+    $tgz = new Archive_Tar($GLOBALS['class'] == 'ftp' ? ftp_archive_start($current) : $current);
+
+    $folder = '';
+    foreach($tgz->listContent() as $f) {
+        if ($arch_name == $f['filename']) {
+            $folder = $f['typeflag'] == 5 ? 1 : 0;
+            break;
+        }
+    }
+
+    if (!$tgz->extract($tmp)) {
+        clean($tmp);
+        if ($GLOBALS['class'] == 'ftp') {
+            ftp_archive_end();
+        }
+        return report($GLOBALS['lng']['extract_false'], 1);
+    }
+
+    if (file_exists($tmp . '/' . $name)) {
+        if ($overwrite) {
+            if ($folder) {
+                clean($tmp . '/' . $name);
+            } else {
+                unlink($tmp . '/' . $name);
+            }
+        } else {
+            clean($tmp);
+            if ($GLOBALS['class'] == 'ftp') {
+                ftp_archive_end();
+            }
+            return report($GLOBALS['lng']['overwrite_false'], 1);
+            break;
+        }
+    }
+
+    if ($folder) {
+        @mkdir($tmp . '/' . $name, 0755, true);
+    } else {
+        @mkdir($tmp . '/' . dirname($name), 0755, true);
+    }
+
+    if ($folder) {
+        // переделать на ftp
+        if ($del) {
+            $result = move_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
+        } else {
+            $result = copy_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
+        }
+    } else {
+        if ($del) {
+            $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+        } else {
+            $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+        }
+    }
+
+    if (!$result) {
+        clean($tmp);
+        if ($GLOBALS['class'] == 'ftp') {
+            ftp_archive_end();
+        }
+        if ($folder) {
+            if ($del) {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+            } else {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+            }
+        } else {
+            if ($del) {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+            } else {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+            }
+        }
+    }
+
+    $result = $tgz->createModify($tmp, '.', $tmp);
+
+    clean($tmp);
+    if ($GLOBALS['class'] == 'ftp') {
+        ftp_archive_end($current);
+    }
+
+    if ($result) {
+        if ($folder) {
+            if ($del) {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+            } else {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+            }
+        } else {
+            if ($del) {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_true']), 0);
+            } else {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_true']), 0);
+            }
+        }
+    } else {
+        if ($folder) {
+            if ($del) {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+            } else {
+                return report(str_replace('%dir%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+            }
+        } else {
+            if ($del) {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+            } else {
+                return report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+            }
+        }
+    }
+}
+
+
 function list_tar_archive($current = '', $down = '')
 {
     require_once $GLOBALS['tar'];
@@ -1236,7 +1355,7 @@ function list_tar_archive($current = '', $down = '')
                 $l .= '<td>' . $size . '</td>';
             }
             if ($GLOBALS['index']['change']) {
-                $l .= '<td> </td>';
+                $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
             }
             if ($GLOBALS['index']['del']) {
                 $l .= '<td><a' . ($GLOBALS['del_notify'] ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
@@ -2080,11 +2199,11 @@ function get_archive_file($archive = '', $f = '')
         $zip = new PclZip($GLOBALS['class'] == 'ftp' ? ftp_archive_start($archive) : $archive);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
-            if ($GLOBALS['class'] == 'ftp') {
-                ftp_archive_end('');
-            }
+        if ($GLOBALS['class'] == 'ftp') {
+            ftp_archive_end('');
+        }
 
-            return $ext[0]['content'];
+        return $ext[0]['content'];
     } else if ($tmp == 'TAR') {
         require_once $GLOBALS['tar'];
         $tgz = new Archive_Tar($archive);
@@ -2370,11 +2489,11 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
         } else {
             $t = '';
         }
-    
+
         if ($h) {
             $s = implode('', array_map('chr', str_split($s, 4)));
         }
-        
+
         // Fix for PHP < 6.0
         $s = $r ? $s : strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $s));
     }
@@ -2679,13 +2798,12 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         $result = array();
         $str = '';
 
-
         while (iconv_substr($q, iconv_strlen($q)-1, 1) == ';') {
             $q = iconv_substr($q, 0, -1);
         }
 
         $start = microtime(true);
-            $r = mysql_query($q . ';', $connect);
+        $r = mysql_query($q . ';', $connect);
         $time += microtime(true) - $start;
 
         if (!$r) {
@@ -2700,7 +2818,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
             }
         }
         $i++;
-        
+
         if ($result) {
             $str .= '<tr><th> ' . implode(' </th><th> ', array_map('htmlspecialchars', array_keys($result[0]))) . ' </th></tr>';
 
@@ -3007,7 +3125,6 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
 
 function getData($url = '', $headers = '', $only_headers = false, $post = '')
 {
-
     $u = parse_url($url);
     
     $host = $u['host'];
