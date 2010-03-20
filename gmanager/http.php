@@ -21,6 +21,7 @@ $GLOBALS['class'] = 'http';
 class http
 {
     static private $stat = array();
+    static private $uid  = array();
 
 
     public function mkdir($dir = '', $chmod = '0755')
@@ -127,8 +128,18 @@ class http
         if (!isset(self::$stat[$str])) {
             self::$stat[$str] = @stat($str);
         }
-        if (function_exists('posix_getpwuid') && $uid = @posix_getpwuid(self::$stat[$str][4])) {
-            self::$stat[$str][4] = self::$stat[$str]['uid'] = $uid['name'];
+
+        if (isset(self::$uid[self::$stat[$str][4]])) {
+            self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]];
+        } else {
+            if (@exec('id -p ' . self::$stat[$str][4], $row)) {
+                $row = explode("\t", $row[0]);
+                self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = $row[1];
+            } else if (function_exists('posix_getpwuid') && $uid = @posix_getpwuid(self::$stat[$str][4])) {
+                self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = $uid['name'];
+            } else {
+                self::$stat[$str]['name'] = self::$uid[self::$stat[$str][4]] = self::$stat[$str][4];
+            }
         }
         return self::$stat[$str];
     }

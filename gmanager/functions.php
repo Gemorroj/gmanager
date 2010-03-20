@@ -233,7 +233,7 @@ function look($current = '', $itype = '', $down = '')
                 $pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
             }
             if ($GLOBALS['index']['uid']) {
-                $puid = '<td>' . htmlspecialchars($stat['uid'], ENT_NOQUOTES) . '</td>';
+                $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
             }
         $page0[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
         } else if ($GLOBALS['mode']->is_dir($file)) {
@@ -279,7 +279,7 @@ function look($current = '', $itype = '', $down = '')
                 $pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
             }
             if ($GLOBALS['index']['uid']) {
-                $puid = '<td>' . htmlspecialchars($stat['uid'], ENT_NOQUOTES) . '</td>';
+                $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
             }
 
         $page1[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
@@ -334,7 +334,7 @@ function look($current = '', $itype = '', $down = '')
                 $pdate = '<td>' . strftime($GLOBALS['date_format'], $time) . '</td>';
             }
             if ($GLOBALS['index']['uid']) {
-                $puid = '<td>' . htmlspecialchars($stat['uid'], ENT_NOQUOTES) . '</td>';
+                $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
             }
 
             $page2[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid;
@@ -2594,7 +2594,7 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
             $pdate = '<td>' . strftime($GLOBALS['date_format'], $stat['mtime']) . '</td>';
         }
         if ($GLOBALS['index']['uid']) {
-            $puid = '<td>' . htmlspecialchars($stat['uid'], ENT_NOQUOTES) . '</td>';
+            $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
         }
         if ($GLOBALS['index']['n']) {
             $pn = '<td>' . $i . '</td>';
