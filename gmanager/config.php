@@ -7,22 +7,22 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3 beta
+ * @version 0.7.3
  * 
  * PHP version >= 5.2.1
  * 
  */
 
 
-// E_ALL | E_STRICT
-//error_reporting(E_ALL | E_STRICT); // Отключаем сообщения об ошибках
+// Уровень предупреждений
+// error_reporting(-1);
 
 // Протокол, через который будет работать менеджер (ftp или http)
 // настройки соединения FTP в файле ftp.php
 require 'http.php';
 //require 'ftp.php';
 
-// Локализация
+// Локализация (en, ua, ru)
 require 'lng/ru.php';
 
 
@@ -97,17 +97,17 @@ $GLOBALS['top'] = '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
 <head>
-<title>%dir% - Gmanager 0.7.3 beta</title>
+<title>%dir% - Gmanager 0.7.3</title>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <script type="text/javascript" src="js.js"></script>
 </head>
 <body>';
 
 // Низ
-$GLOBALS['foot'] = '<div class="w">Powered by Gemorroj<br/><a href="http://wapinet.ru">wapinet.ru</a></div></body></html>';
+$GLOBALS['foot'] = '<div class="w">Powered by Gemorroj<br/><a href="http://wapinet.ru/gmanager/">wapinet.ru</a></div></body></html>';
 
 
 // Версия Менеджера (Не Менять!)
-$GLOBALS['version'] = '0.7.3b';
+$GLOBALS['version'] = '0.7.3';
 
 ?>

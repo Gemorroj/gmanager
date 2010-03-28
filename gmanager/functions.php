@@ -6,7 +6,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3 beta
+ * @version 0.7.3
  * 
  * PHP version >= 5.2.1
  * 
