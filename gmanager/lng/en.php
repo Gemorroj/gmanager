@@ -7,7 +7,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3
+ * @version 0.7.4 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -163,6 +163,11 @@ $GLOBALS['lng'] = array(
 'tables_file'                   =>  'File with Tables',
 'sql'                           =>  'SQL',
 'sql_query'                     =>  'SQL Query',
+'mysql_backup'                  =>  'Backup',
+'mysql_backup_structure'        =>  'Structure tables',
+'mysql_backup_data'             =>  'Data tables',
+'mysql_backup_true'             =>  'Backup successfully created',
+'mysql_backup_false'            =>  'Errors occurred during the performing of operations: ',
 'mysql_user'                    =>  'DB User',
 'mysql_pass'                    =>  'DB Password',
 'mysql_host'                    =>  'Host',
@@ -198,6 +203,7 @@ $GLOBALS['lng'] = array(
 'ignore_user_abort'             =>  'Ignore user abort',
 'permission_denided'            =>  'Permission Denided',
 'unknown_error'                 =>  'Unknown Error',
+'filename_empty'                =>  'Filename cannot be empty',
 );
 
 ?>

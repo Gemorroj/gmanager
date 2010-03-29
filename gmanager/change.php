@@ -7,7 +7,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3
+ * @version 0.7.4 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -282,17 +282,21 @@ switch ($_GET['go']) {
         break;
 
     case 'rename':
-        $archive = is_archive(get_type($current));
-        $if = isset($_GET['f']);
-        if ($if && $archive == 'ZIP') {
-            echo rename_zip_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
-        } else if ($if && $archive == 'TAR') {
-            echo rename_tar_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
-        } else {
-            echo frename($current, $_POST['name'], $_POST['chmod'], isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
-            if ($_POST['chmod']) {
-                echo rechmod($_POST['name'], $_POST['chmod']);
+        if (@$_POST['name'] != '') {
+            $archive = is_archive(get_type($current));
+            $if = isset($_GET['f']);
+            if ($if && $archive == 'ZIP') {
+                echo rename_zip_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+            } else if ($if && $archive == 'TAR') {
+                echo rename_tar_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+            } else {
+                echo frename($current, $_POST['name'], @$_POST['chmod'], isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+                if (@$_POST['chmod']) {
+                    echo rechmod($_POST['name'], $_POST['chmod']);
+                }
             }
+        } else {
+            echo report($GLOBALS['lng']['filename_empty'], 1);
         }
         break;
 
@@ -391,21 +395,29 @@ switch ($_GET['go']) {
     case 'sql':
         $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
         if (isset($_POST['name']) && isset($_POST['host'])) {
-            include 'pattern.dat';
-            $tmp = '<select id="ptn" onchange="paste(this.value);">';
-            $all = sizeof($sql_ptn);
-            for ($i = 0; $i < $all; ++$i) {
-                $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
-            }
-            $tmp .= '</select>';
+            if (isset($_POST['backup'])) {
+                if (@$_POST['file']) {
+                    echo sql_backup($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], $_POST['sql'], $_POST['charset'], array('tables' => @array_map('rawurldecode', @$_POST['tables']), 'data' => @array_map('rawurldecode', @$_POST['data']), 'file' => $_POST['file']));
+                } else {
+                    $tables = sql_backup($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], $_POST['sql'], $_POST['charset'], false);
+                    echo '<div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['mysql_backup_structure'] . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . $GLOBALS['lng']['mysql_backup_data'] . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . $GLOBALS['lng']['file'] . '<br/><input type="text" name="file" value="' . $h_current . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . $GLOBALS['lng']['mysql_backup'] . '"/></div></form></div>';
+                }
+            } else {
+                include 'pattern.dat';
+                $tmp = '<select id="ptn" onchange="paste(this.value);">';
+                $all = sizeof($sql_ptn);
+                for ($i = 0; $i < $all; ++$i) {
+                    $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
+                }
+                $tmp .= '</select>';
 
-            if (!$_POST['sql'] && !$_POST['db']) {
-                $_POST['sql'] = 'SHOW DATABASES';
-            } else if (!$_POST['sql']) {
-                $_POST['sql'] = 'SHOW TABLES';
+                if (!$_POST['sql'] && !$_POST['db']) {
+                    $_POST['sql'] = 'SHOW DATABASES';
+                } else if (!$_POST['sql']) {
+                    $_POST['sql'] = 'SHOW TABLES';
+                }
+                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] : '') . '<br/></div>' . sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], $_POST['sql'], $_POST['charset']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post"><div>' . $GLOBALS['lng']['sql_query'] . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . $GLOBALS['lng']['mysql_backup'] . '"/>' : '') . '</div></form></div>';
             }
-
-            echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] : '') . '<br/></div>' . sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], $_POST['sql'], $_POST['charset']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post"><div>' . $GLOBALS['lng']['sql_query'] . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . $_POST['name'] . '"/><input type="hidden" name="pass" value="' . $_POST['pass'] . '"/><input type="hidden" name="host" value="' . $_POST['host'] . '"/><input type="hidden" name="db" value="' . $_POST['db'] . '"/><input type="hidden" name="charset" value="' . $_POST['charset'] . '"/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/></div></form></div>';
         } else {
             echo '<div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name" value=""/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['sql_query'] . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/></div></form></div>';
         }

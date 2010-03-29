@@ -7,7 +7,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3
+ * @version 0.7.4 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -163,6 +163,11 @@ $GLOBALS['lng'] = array(
 'tables_file'                   =>  'Файл с Таблицями',
 'sql'                           =>  'SQL',
 'sql_query'                     =>  'SQL Запит',
+'mysql_backup'                  =>  'Бекап',
+'mysql_backup_structure'        =>  'Структура таблиць',
+'mysql_backup_data'             =>  'Дані таблиць',
+'mysql_backup_true'             =>  'Бекап успішно створений',
+'mysql_backup_false'            =>  'При виконанні операцій відбулися помилки: ',
 'mysql_user'                    =>  'Користувач',
 'mysql_pass'                    =>  'Пароль',
 'mysql_host'                    =>  'Хост',
@@ -198,6 +203,7 @@ $GLOBALS['lng'] = array(
 'ignore_user_abort'             =>  'Продовжувати навіть, якщо закрити сторінку (вікно)',
 'permission_denided'            =>  'Недостатньо прав',
 'unknown_error'                 =>  'Невідома помилка',
+'filename_empty'                =>  'Ім`я файлу не може бути порожнім',
 );
 
 ?>

@@ -6,7 +6,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3
+ * @version 0.7.4 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -2776,13 +2776,88 @@ echo \'</div></body></html>\'
 }
 
 
+function sql_backup($name = '', $pass = '', $host = '', $db = '', $data = '', $charset = '', $tables = array())
+{
+    if (!$connect = mysql_connect($host, $name, $pass)) {
+        return report($GLOBALS['lng']['mysq_connect_false'], 1);
+    }
+    if ($charset) {
+        mysql_query('SET NAMES `' . mysql_real_escape_string($charset, $connect) . '`', $connect);
+    }
+
+    if ($db) {
+        if (!mysql_select_db($db, $connect)) {
+            return report($GLOBALS['lng']['mysq_select_db_false'], 1);
+        }
+    }
+
+
+    $true = $false = '';
+    if ($tables) {
+        if ($tables['tables']) {
+            foreach ($tables['tables'] as $f) {
+                $q = mysql_query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;', $connect);
+                if ($q) {
+                    $true .= mysql_result($q, 0, 1) . ";\n\n";
+                } else {
+                    $false .= mysql_error($connect) . "\n";
+                }
+            }
+        }
+        if ($tables['data']) {
+            foreach ($tables['data'] as $f) {
+                $q = mysql_query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;', $connect);
+                if ($q) {
+                    if (mysql_num_rows($q)) {
+                        $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
+                        while ($row = mysql_fetch_row($q)) {
+                            $true .= "\n(";
+                            foreach ($row as $v) {
+                                $true .= $v === null ? 'NULL,' : "'" . mysql_real_escape_string($v, $connect) . "',";
+                            }
+                            $true = rtrim($true, ',') . '),';
+                        }
+                        $true = rtrim($true, ',') . ";\n\n";
+                    }
+                } else {
+                    $false .= mysql_error($connect) . "\n";
+                }
+            }
+        }
+
+        if ($true) {
+            @mkdir(dirname($tables['file']), null, true);
+            if (!@file_put_contents($tables['file'], $true)) {
+                $false .= error() . "\n";
+            }
+        }
+
+        if ($false) {
+            return report($GLOBALS['lng']['mysql_backup_false'] . '<pre>' . trim($false) . '</pre>', 1);
+        } else {
+            return report($GLOBALS['lng']['mysql_backup_true'], 0);
+        }
+    } else {
+        $q = mysql_query('SHOW TABLES;', $connect);
+        if ($q) {
+            while($row = mysql_fetch_row($q)) {
+                $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
+            }
+            return $true;
+        }
+    }
+
+    return false;
+}
+
+
 function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset = '')
 {
     if (!$connect = mysql_connect($host, $name, $pass)) {
         return report($GLOBALS['lng']['mysq_connect_false'], 1);
     }
     if ($charset) {
-        mysql_query('SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`', $connect);
+        mysql_query('SET NAMES `' . mysql_real_escape_string($charset, $connect) . '`', $connect);
     }
 
     if ($db) {
@@ -2811,9 +2886,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         } else {
             if (mysql_affected_rows($connect)) {
                 while ($arr = mysql_fetch_assoc($r)) {
-                    //if ($arr && $arr !== true) {
-                        $result[] = $arr;
-                    //}
+                    $result[] = $arr;
                 }
             }
         }
@@ -2825,7 +2898,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
             foreach ($result as $v) {
                 $str .= '<tr class="border">';
                 foreach ($v as $value) {
-                    $str .= '<td><pre style="margin:0;"><a href="#sql" onclick="paste(\'' . rawurlencode($value) . '\');">' . htmlspecialchars($value, ENT_NOQUOTES) . '</a></pre></td>';
+                    $str .= $value === null ? '<td><pre style="margin:0;">NULL</pre></td>' : '<td><pre style="margin:0;"><a href="#sql" onclick="paste(\'' . rawurlencode($value) . '\');">' . htmlspecialchars($value, ENT_NOQUOTES) . '</a></pre></td>';
                 }
                 $str .= '</tr>';
             }

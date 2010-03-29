@@ -7,7 +7,7 @@
  * @copyright 2008-2010 http://wapinet.ru
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.3
+ * @version 0.7.4 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -97,7 +97,7 @@ $GLOBALS['top'] = '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
 <head>
-<title>%dir% - Gmanager 0.7.3</title>
+<title>%dir% - Gmanager 0.7.4 beta</title>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <script type="text/javascript" src="js.js"></script>
 </head>
@@ -108,6 +108,6 @@ $GLOBALS['foot'] = '<div class="w">Powered by Gemorroj<br/><a href="http://wapin
 
 
 // Версия Менеджера (Не Менять!)
-$GLOBALS['version'] = '0.7.3';
+$GLOBALS['version'] = '0.7.4b';
 
 ?>
