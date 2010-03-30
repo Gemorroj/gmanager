@@ -2826,8 +2826,8 @@ function sql_backup($name = '', $pass = '', $host = '', $db = '', $data = '', $c
         }
 
         if ($true) {
-            @mkdir(dirname($tables['file']), null, true);
-            if (!@file_put_contents($tables['file'], $true)) {
+            $GLOBALS['mode']->mkdir(dirname($tables['file']));
+            if (!$GLOBALS['mode']->file_put_contents($tables['file'], $true)) {
                 $false .= error() . "\n";
             }
         }
