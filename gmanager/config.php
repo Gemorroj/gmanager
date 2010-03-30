@@ -69,7 +69,7 @@ $GLOBALS['line_editor'] = array(
 
 
 // Локаль
-setlocale(LC_ALL, 'ru_RU.utf8');
+setlocale(LC_ALL, $GLOBALS['lng']['locale']);
 // Формат даты
 $GLOBALS['date_format'] = '%d.%m.%Y %H:%M';
 // Временная зона

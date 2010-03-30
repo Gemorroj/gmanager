@@ -15,6 +15,7 @@
 
 
 $GLOBALS['lng'] = array(
+'locale'                        =>  'en_US.UTF-8',
 'title_index'                   =>  'Index of Directory',
 'title_edit'                    =>  'Editor',
 'title_change'                  =>  'More',

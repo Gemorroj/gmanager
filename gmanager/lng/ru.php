@@ -15,6 +15,7 @@
 
 
 $GLOBALS['lng'] = array(
+'locale'                        =>  'ru_RU.UTF-8',
 'title_index'                   =>  'Содержимое Папки',
 'title_edit'                    =>  'Редактор',
 'title_change'                  =>  'Дополнительно',
