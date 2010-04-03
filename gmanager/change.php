@@ -17,12 +17,12 @@ require 'functions.php';
 
 $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 
-if (isset($_GET['get']) && $GLOBALS['mode']->is_file($_GET['get'])) {
+if (isset($_GET['get']) && $GLOBALS['class']->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
         $f = get_archive_file($_GET['get'], $_GET['f']);
         $name = basename($_GET['f']);
     } else {
-        $f = $GLOBALS['mode']->file_get_contents($_GET['get']);
+        $f = $GLOBALS['class']->file_get_contents($_GET['get']);
         $name = basename($_GET['get']);
     }
 
@@ -35,7 +35,7 @@ $current = c($_SERVER['QUERY_STRING'], isset($_POST['c']) ? $_POST['c'] : (isset
 $h_current = htmlspecialchars($current);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 $realpath = realpath($current);
-if ($realpath && $GLOBALS['mode']->is_dir($current)) {
+if ($realpath && $GLOBALS['class']->is_dir($current)) {
     $realpath .= '/';
 }
 $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h_current;
@@ -56,7 +56,7 @@ echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($
 
 switch ($_GET['go']) {
     default:
-        if (!$GLOBALS['mode']->file_exists($current)) {
+        if (!$GLOBALS['class']->file_exists($current)) {
             echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
@@ -67,13 +67,13 @@ switch ($_GET['go']) {
             $h_file = htmlspecialchars($_GET['f']);
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
         } else {
-            if ($GLOBALS['mode']->is_dir($current)) {
+            if ($GLOBALS['class']->is_dir($current)) {
                 $size = format_size(size($current, true));
                 $md5 = '';
-            } else if ($GLOBALS['mode']->is_file($current) || $GLOBALS['mode']->is_link($current)) {
+            } else if ($GLOBALS['class']->is_file($current) || $GLOBALS['class']->is_link($current)) {
                 $size = format_size(size($current));
-                if ($GLOBALS['class'] == 'ftp') {
-                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['mode']->file_get_contents($current));
+                if ($GLOBALS['mode'] == 'FTP') {
+                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($GLOBALS['class']->file_get_contents($current));
                 } else {
                     $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
                 }
@@ -103,7 +103,7 @@ switch ($_GET['go']) {
         } else if (isset($_POST['full_del'])) {
             for ($i = 0; $i < $x; ++$i) {
                 $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                if ($GLOBALS['mode']->is_dir($_POST['check'][$i])) {
+                if ($GLOBALS['class']->is_dir($_POST['check'][$i])) {
                     echo del_dir($_POST['check'][$i] . '/');
                 } else {
                     echo del_file($_POST['check'][$i]);
@@ -122,7 +122,7 @@ switch ($_GET['go']) {
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    if ($GLOBALS['mode']->is_dir($_POST['check'][$i])) {
+                    if ($GLOBALS['class']->is_dir($_POST['check'][$i])) {
                         echo rechmod($_POST['check'][$i], $_POST['chmod'][1]);
                     } else {
                         echo rechmod($_POST['check'][$i], $_POST['chmod'][0]);
@@ -234,7 +234,7 @@ switch ($_GET['go']) {
         break;
 
     case 'del':
-        if ($GLOBALS['mode']->is_dir($current)) {
+        if ($GLOBALS['class']->is_dir($current)) {
             echo del_dir($current);
         } else {
             echo del_file($current);
@@ -267,7 +267,7 @@ switch ($_GET['go']) {
             }
             echo '</select>' . $GLOBALS['lng']['pattern'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/></div></form></div>';
         } else {
-            if ($GLOBALS['mode']->file_exists($current . $_POST['name']) && !isset($_POST['a'])) {
+            if ($GLOBALS['class']->file_exists($current . $_POST['name']) && !isset($_POST['a'])) {
                 echo '<div class="red">' . $GLOBALS['lng']['warning'] . '<br/></div><form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post"><div><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/><input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/><input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/><input type="hidden" name="a" value="1"/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form>';
             } else {
                 if ($GLOBALS['realname']) {
@@ -425,10 +425,10 @@ switch ($_GET['go']) {
         break;
 
     case 'tables':
-        if (!(isset($_POST['tables']) && $GLOBALS['mode']->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && $GLOBALS['class']->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=tables&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name"/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['tables_file'] . '<br/><input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . $GLOBALS['lng']['tables'] . '"/></div></form></div>';
         } else {
-            echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']), $_POST['charset']);
+            echo sql($_POST['name'], $_POST['pass'], $_POST['host'], $_POST['db'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['class']->file_get_contents($_POST['tables']), $_POST['charset']);
         }
         break;
 
@@ -439,10 +439,10 @@ switch ($_GET['go']) {
             $d_current = $h_current;
         }
 
-        if (!(isset($_POST['tables']) && $GLOBALS['mode']->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {    
+        if (!(isset($_POST['tables']) && $GLOBALS['class']->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {    
             echo '<div class="input"><form action="change.php?go=installer" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name"/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['tables_file'] . '<br/><input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="width:28pt;" value="0644"/>' . $GLOBALS['lng']['chmod'] . '<br/><input name="save_as" type="submit" value="' . $GLOBALS['lng']['save_as'] . '"/><input type="text" name="c" value="' . $d_current . 'sql_installer.php"/><br/></div></form></div>';
         } else {
-            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['mode']->file_get_contents($_POST['tables']))) {
+            if ($sql = sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $GLOBALS['class']->file_get_contents($_POST['tables']))) {
                 echo create_file(trim($_POST['c']), $sql, $_POST['chmod']);
             } else {
                 echo report($GLOBALS['lng']['sql_parser_error'], 2);

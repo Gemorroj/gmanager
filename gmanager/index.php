@@ -19,7 +19,7 @@ require 'functions.php';
 
 $current = c($_SERVER['QUERY_STRING'], isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
 if ($current == '.') {
-    $h_current = htmlspecialchars($GLOBALS['mode']->getcwd(), ENT_COMPAT);
+    $h_current = htmlspecialchars($GLOBALS['class']->getcwd(), ENT_COMPAT);
 } else {
     $h_current = htmlspecialchars($current, ENT_COMPAT);
 }
@@ -114,7 +114,7 @@ if (!$if) {
 }
 
 
-if ($GLOBALS['mode']->file_exists($current) || $GLOBALS['mode']->is_link($current)) {
+if ($GLOBALS['class']->file_exists($current) || $GLOBALS['class']->is_link($current)) {
     if ($archive) {
         $current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
         $found = '<div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';

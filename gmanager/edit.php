@@ -69,7 +69,7 @@ switch ($_GET['go']) {
     case 'replace':
         $to = $from = '';
 
-        if (!$GLOBALS['mode']->is_file($current)) {
+        if (!$GLOBALS['class']->is_file($current)) {
             echo report($GLOBALS['lng']['not_found'], 1);
             break;
         }
@@ -89,7 +89,7 @@ switch ($_GET['go']) {
             $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
-            $content['text'] = htmlspecialchars($GLOBALS['mode']->file_get_contents($current), ENT_COMPAT);
+            $content['text'] = htmlspecialchars($GLOBALS['class']->file_get_contents($current), ENT_COMPAT);
             $content['size'] = format_size(size($current));
             $content['lines'] = sizeof(explode("\n", $content['text']));
             $f = '';
@@ -105,7 +105,7 @@ if (!$path = @iconv_substr($r, $l)) {
     $path = iconv($GLOBALS['altencoding'], 'UTF-8', substr($r, $l));
 }
 
-if ($GLOBALS['class'] == 'http' && $path) {
+if ($GLOBALS['mode'] == 'HTTP' && $path) {
     $http = '<div class="rb"><a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . str_replace('%2F', '/', rawurlencode(str_replace('\\', '/', $path)))) . '">' . $GLOBALS['lng']['look'] . '</a><br/></div>';
 } else {
     $http = '';
@@ -151,7 +151,7 @@ echo '<div class="rb">' . $GLOBALS['lng']['charset'] . '<form action="edit.php?"
             if ($archive == 'ZIP') {
                 $tmp = explode("\n", look_zip_file($current, $_GET['f'], true));
             } else {
-                $tmp = explode("\n", $GLOBALS['mode']->file_get_contents($current));
+                $tmp = explode("\n", $GLOBALS['class']->file_get_contents($current));
             }
 
 
