@@ -209,7 +209,7 @@ class HTTP
 
     public function rmdir($str = '')
     {
-        return rmdir($str);
+        return is_dir($str) ? rmdir($str) : true;;
     }
 
 

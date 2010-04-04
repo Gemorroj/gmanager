@@ -1,7 +1,7 @@
 body{background-color:#f7f7f7;color:#000000;font-size:small;margin:0;padding:1px;border:3px solid #ebebeb;}
 textarea,select[multiple="true"],input[type="text"],input[type="file"]{width:85%;margin:2pt 1%;background-color:#f0f0f0;color:#000000;font-family:"Courier New";border:1px solid #000000;}
 .check{text-align:center;}
-.input textarea,.input select,.input input[type="checkbox"]{margin:2pt 1%;}
+.input textarea,.input select,.input input[type="checkbox"],.input input[type="radio"]{margin:2pt 1%;}
 th{border-radius:5pt;background-color:#777777;}
 tr:hover,input:checked,table{background-color:#aaccff;}
 input[type="text"]:hover,input[type="file"]:hover{background-color:#aaccff;}

@@ -43,7 +43,7 @@ $GLOBALS['limit']           = 50;                   // Максимальное 
 $GLOBALS['php']             = '/usr/local/bin/php'; // Путь к PHP
 
 // Набор символов для рандомного переименования файлов
-$GLOBALS['rand']        = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+$GLOBALS['rand']            = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 
 // Отображаемые колонки (0 - выкл, 1 - вкл)
@@ -70,21 +70,20 @@ $GLOBALS['line_editor'] = array(
 
 // Локаль
 setlocale(LC_ALL, 'ru_RU.UTF-8');
-// Формат даты
-$GLOBALS['date_format'] = '%d.%m.%Y %H:%M';
 // Временная зона
 date_default_timezone_set('Europe/Moscow');
-
+// Формат даты
+$GLOBALS['date_format']     = '%d.%m.%Y %H:%M';
 // Вторичная кодировка
-$GLOBALS['altencoding'] = 'Windows-1251';
+$GLOBALS['altencoding']     = 'Windows-1251';
 // Кодировка в консоли
-$GLOBALS['consencoding'] = 'CP866';
+$GLOBALS['consencoding']    = 'CP866';
 
-//ignore_user_abort(1);                             // продолжать работу скрипта, даже если закрыли окно браузера
-@set_time_limit(999);                               // максимальное время работы скрипта
-ini_set('max_execution_time', '999');               // максимальное время работы скрипта
-iconv_set_encoding('internal_encoding', 'UTF-8');   // кодировка по умолчанию для iconv
-ini_set('memory_limit', '128M');                    // лимит оперативной памяти
+//ignore_user_abort(1);                           // продолжать работу скрипта, даже если закрыли окно браузера
+@set_time_limit(1024);                            // максимальное время работы скрипта
+ini_set('max_execution_time', '1024');            // максимальное время работы скрипта
+iconv_set_encoding('internal_encoding', 'UTF-8'); // кодировка по умолчанию для iconv
+ini_set('memory_limit', '128M');                  // лимит оперативной памяти
 
 // Временная папка
 //$GLOBALS['temp'] = ini_get('upload_tmp_dir');
@@ -109,5 +108,12 @@ $GLOBALS['foot'] = '<div class="w">Powered by Gemorroj<br/><a href="http://wapin
 
 // Версия Менеджера (Не Менять!)
 $GLOBALS['version'] = '0.7.4b';
+
+
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . DIRECTORY_SEPARATOR . 'lib');
+function __autoload ($class)
+{
+    require 'lib/' . str_replace('_', '/', $class) . '.php';
+}
 
 ?>

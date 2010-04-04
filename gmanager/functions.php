@@ -26,12 +26,6 @@ if ($GLOBALS['mode'] == 'FTP') {
 }
 
 
-function __autoload ($class)
-{
-    require 'lib/' . $class . '.php';
-}
-
-
 if ($GLOBALS['auth']) {
     if (@$_SERVER['PHP_AUTH_USER'] != $GLOBALS['user_name'] || @$_SERVER['PHP_AUTH_PW'] != $GLOBALS['user_pass']) {
         header('WWW-Authenticate: Basic realm="Authentification"');
@@ -2106,22 +2100,26 @@ function create_zip_archive($name = '', $chmod = '0644', $ext = array(), $commen
 
 function gz($c = '')
 {
-    $ext = implode('', gzfile($GLOBALS['mode'] == 'FTP' ? ftp_archive_start($c) : $c));
-    $gz = explode(chr(0), substr($GLOBALS['class']->file_get_contents($c), 10));
+    $data = $GLOBALS['mode'] == 'FTP' ? ftp_archive_start($c) : $c;
 
-    if (!isset($gz[0]) || $gz[0] == '') {
-        $gz[0] = basename($c, '.gz');
+    $fo = fopen($data, 'rb');
+    fseek($fo, -4, SEEK_END);
+    $len = end(@unpack('V', fread($fo, 4)));
+    fseek($fo, 10, SEEK_SET);
+    $gz = strtok(fread($fo, 1024), chr(0));
+    if ($gz == '') {
+        $gz = basename($c, '.gz');
     }
+    fclose($fo);
+
+    $ext = implode('', gzfile($data));
 
     if ($GLOBALS['mode'] == 'FTP') {
         ftp_archive_end();
     }
 
     if ($ext) {
-        if (!$len = @iconv_strlen($ext)) {
-            $len = strlen($ext);
-        }
-        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz[0], ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['class']->filemtime($c)), 0) . code(trim($ext));
+        return report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz, ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . format_size(size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime($GLOBALS['date_format'], $GLOBALS['class']->filemtime($c)), 0) . code(trim($ext));
     } else {
         return report($GLOBALS['lng']['archive_error'], 2);
     }
@@ -2133,36 +2131,32 @@ function gz_extract($c = '', $name = '', $chmod = array(), $overwrite = false)
     create_dir($name, $chmod[1]);
 
     $tmp = ($GLOBALS['mode'] == 'FTP' ? ftp_archive_start($c) : $c);
+    
+    $fo = fopen($tmp, 'rb');
+    fseek($fo, 10, SEEK_SET);
+    $gz = strtok(fread($fo, 1024), chr(0));
+    if ($gz == '') {
+        $gz = basename($c, '.gz');
+    }
+    fclose($fo);
 
-    if (ob_start()) {
-        readgzfile($tmp);
-        $get = ob_get_contents();
-        ob_end_clean();
+    $data = null;
+    if ($overwrite || !$GLOBALS['class']->file_exists($name . '/' . $gz)) {
+        if (!$GLOBALS['class']->file_put_contents($name . '/' . $gz, implode('', gzfile($tmp)))) {
+            $data = report($GLOBALS['lng']['extract_file_false'] . '<br/>' . error(), 2);
+        }
     } else {
-        $gz = gzopen($tmp, 'r');
-        $get = gzread($gz, PHP_INT_MAX);
-        gzclose($gz);
+        $data = report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($name . '/' . $gz, ENT_NOQUOTES) . ')', 1);
     }
 
     if ($GLOBALS['mode'] == 'FTP') {
         ftp_archive_end();
     }
-
-
-    $gz = explode(chr(0), substr($GLOBALS['class']->file_get_contents($c), 10));
-    if (!isset($gz[0]) || $gz[0] == '') {
-        $gz[0] = basename($c, '.gz');
+    if ($data) {
+        return $data;
     }
 
-    if ($overwrite || !$GLOBALS['class']->file_exists($name . '/' . $gz[0])) {
-        if (!$GLOBALS['class']->file_put_contents($name . '/' . $gz[0], $get)) {
-            return report($GLOBALS['lng']['extract_file_false'] . '<br/>' . error(), 2);
-        }
-    } else {
-        return report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($name . '/' . $gz[0], ENT_NOQUOTES) . ')', 1);
-    }
-
-    if ($GLOBALS['class']->is_file($name . '/' . $gz[0])) {
+    if ($GLOBALS['class']->is_file($name . '/' . $gz)) {
         if ($chmod[0]) {
             rechmod($name, $chmod[0]);
         }
@@ -2457,7 +2451,7 @@ function zip_replace($current = '', $f = '', $from = '', $to = '', $regexp = '')
 }
 
 
-function search($c = '', $s = '', $w = '', $r = '', $h = '')
+function search($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
 {
     static $count = 0;
     static $t;
@@ -2488,32 +2482,43 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
 
     foreach ($GLOBALS['class']->iterator($c) as $f) {
         if ($GLOBALS['class']->is_dir($c . $f)) {
-            search($c . $f . '/', $s, $w, $r, '');
+            search($c . $f . '/', $s, $w, $r, false, $limit, $archive);
             continue;
         }
 
         //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
         $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
         $type = htmlspecialchars(get_type(basename($f)), ENT_NOQUOTES);
-        $archive = is_archive($type);
+        $arch = is_archive($type);
         $stat = $GLOBALS['class']->stat($c . $f);
         $name = htmlspecialchars(str_link($c . $f), ENT_NOQUOTES);
 
         $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pn = $in = null;
 
         if ($w) {
+            if ($stat['size'] > $limit || ($arch && !$archive) || ($arch && $archive && $type != 'GZ')) {
+                continue;
+            }
+
+            $fl = $GLOBALS['class']->file_get_contents($c . $f);
             if ($type == 'GZ') {
-                if (ob_start()) {
-                    readgzfile($c . $f);
-                    $fl = ob_get_contents();
-                    ob_end_clean();
-                } else {
-                    $gz = gzopen($c . $f, 'r');
-                    $fl = gzread($gz, PHP_INT_MAX);
-                    gzclose($gz);
+                $gz = null;
+                if (!$gz = @gzinflate($fl)) {
+                    if (!$gz = @gzuncompress($fl)) {
+                        // Fix for PHP < 6.0
+                        if (!function_exists('gzdecode')) {
+                            function gzdecode($data)
+                            {
+                                file_put_contents($GLOBALS['temp'] . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp', $data);
+                                $gz = implode('', gzfile($GLOBALS['temp'] . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp'));
+                                unlink($GLOBALS['temp'] . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp');
+                                return $gz;
+                            }
+                        }
+                        $gz = gzdecode($fl);
+                    }
                 }
-            } else {
-                $fl = $GLOBALS['class']->file_get_contents($c . $f);
+                $fl = & $gz;
             }
 
             // Fix for PHP < 6.0
@@ -2546,7 +2551,7 @@ function search($c = '', $s = '', $w = '', $r = '', $h = '')
         
 
         if ($GLOBALS['index']['name']) {
-            if ($archive) {
+            if ($arch) {
                 $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
             } else {
                 $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a>' . $in . '</td>';
@@ -2655,21 +2660,77 @@ function fname($f = '', $name = '', $register = '', $i = '', $overwrite = false)
 }
 
 
-function sql_parser($sql = '')
+function sql_parser($sql)
 {
-    $str = '';
-    $arr = explode("\n", $sql);
-    
-    $size = sizeof($arr);
-    for ($i = 0; $i <= $size; ++$i) {
-        if (isset($arr[$i]) && @$arr[$i][0] != '#' && @$arr[$i][0] . @$arr[$i][1] != '--') {
-            $str .= $arr[$i] . "\n";
+    $queries  = array();
+    $position = 0;
+    $query    = '';
+
+    for ($strlen = iconv_strlen($sql); $position < $strlen; ++$position) {
+        $char  = $sql[$position];
+
+        switch ($char) {
+            case '-':
+                if (substr($sql, $position, 3) != '-- ') {
+                    $query .= $char;
+                    break;
+                }
+
+            case '#':
+                while ($char != "\r" && $char != "\n" && $position < $strlen - 1) {
+                    $char = $sql[++$position];
+                }
+                break;
+
+            case '`':
+            case "'":
+            case '"':
+                $quote  = $char;
+                $query .= $quote;
+
+                while ($position < $strlen - 1) {
+                    $char = $sql[++$position];
+                    if ($char == '\\') {
+                        $query .= $char;
+                        if ($position < $strlen - 1) {
+                            $char   = $sql[++$position];
+                            $query .= $char;
+                            if ($position < $strlen - 1) {
+                                $char = $sql[++$position];
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if ($char == $quote) {
+                        break;
+                    }
+                    $query .= $char;
+                }
+
+                $query .= $quote;
+                break;
+
+            case ';':
+                $query = trim($query);
+                if ($query) {
+                    $queries[] = $query;
+                }
+                $query = '';
+                break;
+
+            default:
+                $query .= $char;
+                break;
         }
     }
 
-    //$str = "SET sql_mode = 'IGNORE_SPACE';\n".$str;
-
-    return preg_split('/;[\t\r\n]+/i', trim(preg_replace('/;[\s+](EXPLAIN|SELECT|ALTER|CREATE|INSERT|DELETE|UPDATE|DROP|OPTIMIZE|ANALYZE|RESTORE|CHECKSUM|CHECK\s+TABLE|BACKUP\s+TABLE|REPAIR|TRUNCATE|REPLACE|SHOW|SET|USE|LOAD\s+DATA|RENAME\s+TABLE|EXECUTE|DEALLOCATE|DESCRIBE|LOCK\s+TABLES|START\s+TRANSACTION|PREPARE|CALL|HANDLER|SAVEPOINT|HELP|GRANT|REVOKE|DO)\s+/i', ";\n$1 ", $str)));
+    $query = trim($query);
+    if ($query) {
+        $queries[] = $query;
+    }
+    return $queries;
 }
 
 
@@ -2853,7 +2914,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         $result = array();
         $str = '';
 
-        while (iconv_substr($q, iconv_strlen($q)-1, 1) == ';') {
+        while (iconv_substr($q, iconv_strlen($q) - 1, 1) == ';') {
             $q = iconv_substr($q, 0, -1);
         }
 
