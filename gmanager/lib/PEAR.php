@@ -212,7 +212,7 @@ class PEAR
     * @return mixed   A reference to the variable. If not set it will be
     *                 auto initialised to NULL.
     */
-    static function &getStaticProperty($class, $var)
+    function &getStaticProperty($class, $var)
     {
         static $properties;
         if (!isset($properties[$class])) {
@@ -762,6 +762,9 @@ class PEAR
     // }}}
 }
 
+if (PEAR_ZE2) {
+    include_once 'PEAR5.php';
+}
 
 // {{{ _PEAR_call_destructors()
 
@@ -772,8 +775,11 @@ function _PEAR_call_destructors()
         sizeof($_PEAR_destructor_object_list))
     {
         reset($_PEAR_destructor_object_list);
-        $destructLifoExists = PEAR::getStaticProperty('PEAR', 'destructlifo');
-
+        if (PEAR_ZE2) {
+            $destructLifoExists = PEAR5::getStaticProperty('PEAR', 'destructlifo');
+        } else {
+            $destructLifoExists = PEAR::getStaticProperty('PEAR', 'destructlifo');
+        }
 
         if ($destructLifoExists) {
             $_PEAR_destructor_object_list = array_reverse($_PEAR_destructor_object_list);
@@ -868,7 +874,11 @@ class PEAR_Error
         $this->mode      = $mode;
         $this->userinfo  = $userinfo;
 
-		$skiptrace = PEAR::getStaticProperty('PEAR_Error', 'skiptrace');
+        if (PEAR_ZE2) {
+            $skiptrace = PEAR5::getStaticProperty('PEAR_Error', 'skiptrace');
+        } else {
+            $skiptrace = PEAR::getStaticProperty('PEAR_Error', 'skiptrace');
+        }
 
         if (!$skiptrace) {
             $this->backtrace = debug_backtrace();
