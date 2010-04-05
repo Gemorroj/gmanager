@@ -3430,10 +3430,9 @@ function uid2name($uid = 0, $os = 'UNIX')
         return '';
     } else {
         if (function_exists('posix_getpwuid') && $name = @posix_getpwuid($uid)) {
+            return $name['name'];
+        } else if ($name = @exec('perl -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellcmd($uid) . ');print "$login";\'')) {
             return $name;
-        } else if (@exec('id -p ' . @escapeshellarg($uid), $row)) {
-            $row = explode("\t", $row[0]);
-            return $row[1];
         } else {
             return $uid;
         }
