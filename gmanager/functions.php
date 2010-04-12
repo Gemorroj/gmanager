@@ -3040,13 +3040,6 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
     }
 
 
-    // Заголовки...
-    if ($file_range['from']) {
-        header('HTTP/1.0 206 Partial Content');
-    } else {
-        header('HTTP/1.0 200 OK');
-    }
-
     // Ставим MIME в зависимости от расширения
     if (!$mime) {
         switch (strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
@@ -3191,23 +3184,41 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
         }
     }
 
+    // Хэш
+    $etag = md5($f);
+    $etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
 
-    //header('Date: ' . gmdate('r', $_SERVER['REQUEST_TIME']));
+    if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
+        if ($_SERVER['HTTP_IF_NONE_MATCH'] == '"' . $etag . '"') {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified');
+            //header('Date: ' . gmdate('r'));
+            exit;
+        }
+    }
+
+
+    // Заголовки...
+    if ($file_range['from']) {
+        header($_SERVER['SERVER_PROTOCOL'] . ' 206 Partial Content');
+    } else {
+        header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
+    }
+
+    header('ETag: "' . $etag . '"');
+
+
+    //header('Date: ' . gmdate('r'));
     //header('Content-Transfer-Encoding: binary');
-    //header('Last-Modified: ' . gmdate('r', 1234));
+    //header('Last-Modified: ' . gmdate('r'));
 
     // Кэш
-    header('Cache-Control: public, must-revalidate, max-age=0');
+    header('Cache-Control: public, must-revalidate, max-age=60');
     header('Pragma: cache');
-
-    // Хэш
-    //$etag = md5($f);
-    //$etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
-    //header('ETag: "' . $etag . '"');
+    //header('Expires: Tue, 10 Apr 2038 01:00:00 GMT');
 
 
     //header('Connection: Close');
-    header('Keep-Alive: timeout=15, max=50');
+    header('Keep-Alive: timeout=10, max=60');
     header('Connection: Keep-Alive');
 
     header('Accept-Ranges: bytes');
