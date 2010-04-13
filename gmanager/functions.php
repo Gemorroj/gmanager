@@ -27,9 +27,19 @@ if ($GLOBALS['mode'] == 'FTP') {
 
 
 if ($GLOBALS['auth']) {
+    // CGI fix
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $auth_params = explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
+        $_SERVER['PHP_AUTH_USER'] = $auth_params[0];
+        unset($auth_params[0]);
+        $_SERVER['PHP_AUTH_PW'] = implode('', $auth_params);
+        unset($auth_params);
+    }
+    // CGI fix
+
     if (@$_SERVER['PHP_AUTH_USER'] != $GLOBALS['user_name'] || @$_SERVER['PHP_AUTH_PW'] != $GLOBALS['user_pass']) {
         header('WWW-Authenticate: Basic realm="Authentification"');
-        header('HTTP/1.0 401 Unauthorized');
+        header($_SERVER['SERVER_PROTOCOL'] . ' 401 Unauthorized');
         header('Content-type: text/html; charset=utf-8');
         exit('<html><head><title>Error</title></head><body><p style="color:red;font-size:24pt;text-align:center">Unauthorized</p></body></html>');
     }
