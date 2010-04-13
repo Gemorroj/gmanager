@@ -23,7 +23,7 @@ class HTTP
 
     public function __construct()
     {
-        $this->systype = substr(PHP_OS, 0, 3);
+        $this->systype = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
     }
 
 

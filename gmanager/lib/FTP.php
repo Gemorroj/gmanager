@@ -28,7 +28,7 @@ class FTP
         $this->_res = ftp_connect($host, $port, 10);
         ftp_login($this->_res, $user, $password);
         ftp_pasv($this->_res, true);
-        $this->systype = substr(ftp_systype($this->_res), 0, 3);
+        $this->systype = strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $password . '@' . $host . ':' . $port;

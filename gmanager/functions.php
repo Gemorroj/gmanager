@@ -22,7 +22,7 @@ require 'lng/' . $GLOBALS['lng'] . '.php';
 if ($GLOBALS['mode'] == 'FTP') {
     $GLOBALS['class'] = new FTP($GLOBALS['FTP']['user'], $GLOBALS['FTP']['password'], $GLOBALS['FTP']['host'], $GLOBALS['FTP']['port']);
 } else {
-    $GLOBALS['class'] = new $GLOBALS['mode'];
+    $GLOBALS['class'] = new HTTP;
 }
 
 
@@ -30,7 +30,7 @@ if ($GLOBALS['auth']) {
     if (@$_SERVER['PHP_AUTH_USER'] != $GLOBALS['user_name'] || @$_SERVER['PHP_AUTH_PW'] != $GLOBALS['user_pass']) {
         header('WWW-Authenticate: Basic realm="Authentification"');
         header('HTTP/1.0 401 Unauthorized');
-        header("Content-type: text/html; charset=utf-8");
+        header('Content-type: text/html; charset=utf-8');
         exit('<html><head><title>Error</title></head><body><p style="color:red;font-size:24pt;text-align:center">Unauthorized</p></body></html>');
     }
 }
@@ -38,14 +38,13 @@ if ($GLOBALS['auth']) {
 
 function send_header($u = '')
 {
-    /*
-    if (substr_count($u, 'MSIE')) {
+    if (stripos($u, 'MSIE') !== false) {
         header('Content-type: text/html; charset=UTF-8');
     } else {
         header('Content-type: application/xhtml+xml; charset=UTF-8');
     }
-    */
-    header('Content-type: text/html; charset=UTF-8');
+
+    //header('Content-type: text/html; charset=UTF-8');
     header('Cache-control: no-cache');
     
     // кол-во файлов на странице
@@ -2229,8 +2228,6 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
         ignore_user_abort(true);
     }
 
-    ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
-        
     $tmp = array();
     $url = trim($url);
 
@@ -2260,8 +2257,7 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
                 }
             }
             if (!$temp) {
-                $h = parse_url($url);
-                $name = $name . basename($h['path']);
+                $name = $name . rawurldecode(basename(parse_url($url, PHP_URL_PATH)));
             }
         }
         $tmp[] = array($url, $name);
@@ -2275,10 +2271,11 @@ function upload_url($url = '', $name = '', $chmod = '0644', $headers = '')
         }
 
         if ($GLOBALS['mode'] == 'FTP') {
-            $tmp = getData($v[0], '');
+            $tmp = getData($v[0], $headers);
             $r = $GLOBALS['class']->file_put_contents($v[1], $tmp['body']);
             $GLOBALS['class']->chmod($v[1], $chmod);
         } else {
+            ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
             $r = $GLOBALS['class']->copy($v[0], $v[1], $chmod);
         }
 
@@ -2339,7 +2336,7 @@ function show_eval($eval = '')
 function show_cmd($cmd = '')
 {
     $buf = '';
-    
+
     /*
         $h = popen($cmd, 'r');
         while (!feof($h)) {
@@ -2347,27 +2344,27 @@ function show_cmd($cmd = '')
         }
         pclose($h);
     */
-    
+
     $win = false;
-    if ((substr(PHP_OS, 0, 3) == 'WIN')) {
+    if ($GLOBALS['class']->systype == 'WIN') {
         $win = true;
         $cmd = iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $cmd);
     }
-    
+
     if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
         //fwrite($pipes[0], '');
         fclose($pipes[0]);
-    
+
         $buf = stream_get_contents($pipes[1]);
         fclose($pipes[1]);
-    
+
         proc_close($h);
-    
+
         $rows = sizeof(explode("\n", $buf)) + 1;
         if ($rows < 3) {
             $rows = 3;
         }
-    
+
         if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
             $buf = iconv($GLOBALS['consencoding'], 'UTF-8//TRANSLIT', $buf);
         }
@@ -2405,12 +2402,11 @@ function replace($current = '', $from = '', $to = '', $regexp = '')
             return report($GLOBALS['lng']['replace_false_str'], 1);
         }
 
-
         if (!$GLOBALS['class']->file_put_contents($current, str_replace($from, $to, $c))) {
             return report($GLOBALS['lng']['replace_false_file'] . '<br/>' . error(), 2);
         }
-           
-           $str = true;
+
+        $str = true;
     }
 
     if ($str) {
@@ -2469,7 +2465,7 @@ function search($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8
         }
 
         // Fix for PHP < 6.0
-        $s = $r ? $s : strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $s));
+        $s = $r ? $s : strtolower(@iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $s));
     }
 
     $count++;
@@ -2524,7 +2520,7 @@ function search($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8
             // Fix for PHP < 6.0
             if (!$r) {
                 if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {
-                    $fl = strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $fl));
+                    $fl = strtolower(@iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $fl));
                 } else {
                     $fl = strtolower($fl);
                 }
@@ -2537,7 +2533,7 @@ function search($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8
             // Fix for PHP < 6.0
             if (!$r) {
                 if (@iconv('UTF-8', 'UTF-8', $f) == $f) {
-                    $f = strtolower(@iconv('UTF-8', 'Windows-1251//TRANSLIT', $f));
+                    $f = strtolower(@iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $f));
                 } else {
                     $f = strtolower($f);
                 }
