@@ -177,6 +177,7 @@ $GLOBALS['lng'] = array(
 'mysq_select_db_false'          =>  'Unable to connect to database',
 'mysq_query_false'              =>  'Error executing database operation',
 'mysql_true'                    =>  'Number of Queries: ',
+'mysql_rows'                    =>  'Affected rows: ',
 'microtime'                     =>  'Query time: %time% sec.',
 'create_sql_installer'          =>  'Create Installer',
 'save_as'                       =>  'Save as',

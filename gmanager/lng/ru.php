@@ -177,6 +177,7 @@ $GLOBALS['lng'] = array(
 'mysq_select_db_false'          =>  'Не Удалось Соединиться с Базой',
 'mysq_query_false'              =>  'Ошибка При Выполнении Операций с Базой',
 'mysql_true'                    =>  'Выполнено Запросов: ',
+'mysql_rows'                    =>  'Затронуто строк: ',
 'microtime'                     =>  'Операция Заняла: %time% сек.',
 'create_sql_installer'          =>  'Создать Инсталлятор',
 'save_as'                       =>  'Сохранить как',

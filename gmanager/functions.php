@@ -1614,7 +1614,6 @@ function extract_zip_archive($current = '', $name = '', $chmod = array(), $overw
 
 function extract_rar_archive($current = '', $name = '', $chmod = array(), $overwrite = false)
 {
-
     if ($GLOBALS['mode'] == 'FTP') {
         $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
         $ftp_current = $GLOBALS['temp'] . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '.tmp';
@@ -2914,15 +2913,12 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
     }
 
 
-    $i = $time = 0;
-    $out = '';
+    $i = $time = $rows = 0;
+    $out = null;
     foreach (sql_parser($data) as $q) {
         $result = array();
         $str = '';
-
-        while (iconv_substr($q, iconv_strlen($q) - 1, 1) == ';') {
-            $q = iconv_substr($q, 0, -1);
-        }
+        $q = rtrim($q, ';');
 
         $start = microtime(true);
         $r = mysql_query($q . ';', $connect);
@@ -2931,10 +2927,13 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
         if (!$r) {
             return report($GLOBALS['lng']['mysq_query_false'], 2) . '<div><code>' . mysql_error($connect) . '</code></div>';
         } else {
-            if (mysql_affected_rows($connect)) {
-                while ($arr = mysql_fetch_assoc($r)) {
-                    $result[] = $arr;
+            if (is_resource($r) && $row = mysql_num_rows($r)) {
+                $rows += $row;
+                while ($row = mysql_fetch_assoc($r)) {
+                    $result[] = $row;
                 }
+            } else if ($r === true) {
+                $rows += mysql_affected_rows($connect);
             }
         }
         $i++;
@@ -2955,7 +2954,7 @@ function sql($name = '', $pass = '', $host = '', $db = '', $data = '', $charset 
     }
 
     mysql_close($connect);
-    return report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), 0) . $out;
+    return report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . $GLOBALS['lng']['mysql_rows'] . $rows . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), 0) . $out;
 }
 
 
