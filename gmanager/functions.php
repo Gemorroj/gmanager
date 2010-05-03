@@ -860,6 +860,13 @@ function zip_syntax($current = '', $f = '', $charset = array())
 }
 
 
+function beautify($str)
+{
+    $beautify = new Beautifier_PHP();
+    return $beautify->beautify($str);
+}
+
+
 function validator($current = '', $charset = array())
 {
     if (!extension_loaded('xml')) {
@@ -3180,11 +3187,28 @@ function getf($f = '', $name = '', $attach = false, $mime = false)
 
             case 'doc':
             case 'docx':
+            case 'dot':
                 $mime = 'application/msword';
                 break;
 
             case 'swf':
                 $mime = 'application/x-shockwave-flash';
+                break;
+
+            case 'xls':
+                $mime = 'application/vnd.ms-excel';
+                break;
+
+            case 'xlsx':
+                $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                break;
+
+            case 'svg':
+                $mime = 'image/svg+xml';
+                break;
+
+            case 'ico':
+                $mime = 'image/x-icon';
                 break;
         }
     }
