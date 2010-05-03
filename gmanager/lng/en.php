@@ -206,6 +206,8 @@ $GLOBALS['lng'] = array(
 'permission_denided'            =>  'Permission Denided',
 'unknown_error'                 =>  'Unknown Error',
 'filename_empty'                =>  'Filename cannot be empty',
+'beautifier'                    =>  'Beautifier',
+'beautify'                      =>  'Beautify',
 );
 
 ?>

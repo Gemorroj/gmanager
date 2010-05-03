@@ -206,6 +206,8 @@ $GLOBALS['lng'] = array(
 'permission_denided'            =>  'Недостатньо прав',
 'unknown_error'                 =>  'Невідома помилка',
 'filename_empty'                =>  'Ім`я файлу не може бути порожнім',
+'beautifier'                    =>  'Форматування',
+'beautify'                      =>  'Форматувати',
 );
 
 ?>
