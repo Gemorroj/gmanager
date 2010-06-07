@@ -16,7 +16,6 @@
 class FTP
 {
     private $_res               = null;
-    public $systype             = null;
     //private $_url               = null;
     static private $_uid        = array();
     static private $_rawlist    = null;
@@ -28,7 +27,7 @@ class FTP
         $this->_res = ftp_connect($host, $port, 10);
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
-        $this->systype = strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
+        Gmanager::$sysType = strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $pass . '@' . $host . ':' . $port;
@@ -63,7 +62,7 @@ class FTP
 
     public function chmod ($file = '', $chmod = '0755')
     {
-        if ($this->systype == 'WIN') {
+        if (Gmanager::$sysType == 'WIN') {
             //trigger_error($GLOBALS['lng']['win_chmod']);
             return true;
         }
@@ -372,9 +371,9 @@ class FTP
         $data[10] = trim($data[10]);
 
         self::$_rawlist[self::$_dir][basename($data[10])] = array(
-            'chmod' => $data[1] == 'd' && $this->systype == 'WIN' ? 0777 : ($this->systype == 'WIN' ? 0666 : $this->_chmodnum($data[2])),
+            'chmod' => $data[1] == 'd' && Gmanager::$sysType == 'WIN' ? 0777 : (Gmanager::$sysType == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
-            'name'  => is_numeric($data[3]) ? (isset(self::$_uid[$data[3]]) ? self::$_uid[$data[3]] : self::$_uid[$data[3]] = Gmanager::uid2name($data[3], $this->systype)) : $data[3],
+            'name'  => is_numeric($data[3]) ? (isset(self::$_uid[$data[3]]) ? self::$_uid[$data[3]] : self::$_uid[$data[3]] = Gmanager::uid2name($data[3], Gmanager::$sysType)) : $data[3],
             'gid'   => $data[4],
             'size'  => $data[5],
             'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
@@ -384,7 +383,7 @@ class FTP
     }
 
 
-    private function _chmodnum ($perm = 'rw-r--r--')
+    private function _chmodNum ($perm = 'rw-r--r--')
     {
         $m = 0;
 

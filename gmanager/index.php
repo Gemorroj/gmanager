@@ -16,31 +16,27 @@
 require 'config.php';
 
 
-$current = $Gmanager->c($_SERVER['QUERY_STRING'], isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
-if ($current == '.') {
-    $h_current = htmlspecialchars($Gmanager->getcwd(), ENT_COMPAT);
-} else {
-    $h_current = htmlspecialchars($current, ENT_COMPAT);
+if ($Gmanager->current == '.') {
+    $Gmanager->hCurrent = htmlspecialchars($Gmanager->getcwd(), ENT_COMPAT);
 }
-$r_current = str_replace('%2F', '/', rawurlencode($current));
 
 
-$type = $Gmanager->get_type(basename($h_current));
+$type = $Gmanager->get_type(basename($Gmanager->hCurrent));
 $archive = $Gmanager->is_archive($type);
 $f = 0;
 $if = isset($_GET['f']);
 $ia = isset($_GET['add_archive']);
 
-$Gmanager->send_header();
+$Gmanager->sendHeader();
 
-echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->this($current);
+echo str_replace('%dir%', rawurldecode($Gmanager->hCurrent), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->head();
 
 if ($GLOBALS['string']) {
     echo '<div><form action="index.php?" method="get"><div>';
     if ($ia) {
         echo '<input type="hidden" name="add_archive" value="' . rawurlencode($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
-    echo '<input type="text" name="c" value="' . $h_current . '"/><br/><input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
+    echo '<input type="text" name="c" value="' . $Gmanager->hCurrent . '"/><br/><input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
 }
 
 if ($idown = isset($_GET['down'])) {
@@ -58,54 +54,54 @@ if (!$if) {
 
         if (isset($_GET['time'])) {
             $itype = 'time';
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $r_current . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;time' . $down . '">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . '&amp;time' . $down . '">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
         } else if (isset($_GET['type'])) {
             $itype = 'type';
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $r_current . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;type' . $down . '">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . '&amp;type' . $down . '">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
         } else if (isset($_GET['size'])) {
             $itype = 'size';
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $r_current . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;size' . $down . '">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . '&amp;size' . $down . '">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
         } else if (isset($_GET['chmod'])) {
             $itype = 'chmod';
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $r_current . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;chmod' . $down . '">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . '&amp;chmod' . $down . '">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
         } else if (isset($_GET['uid'])) {
             $itype = 'chmod';
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $r_current . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . '&amp;uid' . $down . '">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . '&amp;uid' . $down . '">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
         } else {
             $itype = '';
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . $down . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $r_current . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $r_current . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $r_current . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $r_current . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $r_current . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . $down . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;type">' . $GLOBALS['lng']['type'] . '</a></th>' : '') . ($GLOBALS['index']['size'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;size">' . $GLOBALS['lng']['size'] . '</a></th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;chmod">' . $GLOBALS['lng']['chmod'] . '</a></th>' : '') . ($GLOBALS['index']['date'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;time">' . $GLOBALS['lng']['date'] . '</a></th>' : '') . ($GLOBALS['index']['uid'] ? '<th><a href="?c=' . $Gmanager->rCurrent . '&amp;uid">' . $GLOBALS['lng']['uid'] . '</a></th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
         }
     } else if ($archive != 'GZ') {
-        echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $mnem . ' <a href="?c=' . $r_current . $down . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
+        echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $mnem . ' <a href="?c=' . $Gmanager->rCurrent . $down . '">' . $GLOBALS['lng']['name'] . '</a></th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
     }
 }
 
 if ($archive == 'ZIP') {
     if ($if) {
-        echo $Gmanager->look_zip_file($current, $_GET['f']);
+        echo $Gmanager->look_zip_file($Gmanager->current, $_GET['f']);
     } else {
-        echo $Gmanager->list_zip_archive($current, $idown);
+        echo $Gmanager->list_zip_archive($Gmanager->current, $idown);
         $f = 1;
     }
 } else if ($archive == 'TAR') {
     if ($if) {
-        echo $Gmanager->look_tar_file($current, $_GET['f']);
+        echo $Gmanager->look_tar_file($Gmanager->current, $_GET['f']);
     } else {
-        echo $Gmanager->list_tar_archive($current, $idown);
+        echo $Gmanager->list_tar_archive($Gmanager->current, $idown);
         $f = 1;
     }
 } else if ($archive == 'GZ') {
-    echo $Gmanager->gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
+    echo $Gmanager->gz($Gmanager->current) . '<div class="ch"><form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
     $if = true;
 } else if ($archive == 'RAR' && extension_loaded('rar')) {
     if ($if) {
-        echo $Gmanager->look_rar_file($current, $_GET['f']);
+        echo $Gmanager->look_rar_file($Gmanager->current, $_GET['f']);
     } else {
-        echo $Gmanager->list_rar_archive($current, $idown);
+        echo $Gmanager->list_rar_archive($Gmanager->current, $idown);
         $f = 1;
     }
 } else {
-    $Gmanager->look($current, $itype, $idown);
+    $Gmanager->look($Gmanager->current, $itype, $idown);
 }
 
 if (!$if) {
@@ -113,15 +109,15 @@ if (!$if) {
 }
 
 
-if ($Gmanager->file_exists($current) || $Gmanager->is_link($current)) {
+if ($Gmanager->file_exists($Gmanager->current) || $Gmanager->is_link($Gmanager->current)) {
     if ($archive) {
-        $current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
-        $found = '<div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
+        $d = str_replace('%2F', '/', rawurlencode(dirname($Gmanager->current)));
+        $found = '<div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $d . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $d . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $d . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $d . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
     } else {
-        $found = '<form action="' . $_SERVER['PHP_SELF'] . '?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . $GLOBALS['limit'] . '" type="text" onkeypress="return number(event)" style="-wap-input-format:\'*N\';width:2%;"/><input type="submit" value="' . $GLOBALS['lng']['limit'] . '"/></div></form><div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
+        $found = '<form action="' . $_SERVER['PHP_SELF'] . '?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . $GLOBALS['limit'] . '" type="text" onkeypress="return number(event)" style="-wap-input-format:\'*N\';width:2%;"/><input type="submit" value="' . $GLOBALS['lng']['limit'] . '"/></div></form><div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
     }
 } else {
-    $found = '<div class="red">' . $GLOBALS['lng']['not_found'] . '(' . $h_current . ')' . '<br/></div>';
+    $found = '<div class="red">' . $GLOBALS['lng']['not_found'] . '(' . $Gmanager->hCurrent . ')' . '<br/></div>';
 }
 
 

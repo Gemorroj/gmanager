@@ -135,7 +135,13 @@ function __autoload ($class)
 }
 
 if ($GLOBALS['mode'] == 'HTTP') {
-    class Main extends HTTP{}
+    class Main extends HTTP
+    {
+        public function __construct ()
+        {
+            parent::__construct();
+        }
+    }
 } else {
     class Main extends FTP
     {

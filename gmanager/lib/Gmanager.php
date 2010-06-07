@@ -16,11 +16,47 @@
 class Gmanager extends Main
 {
     public static $pclzipTmp;
-    public static $pclzipF = 0644;
-    public static $pclzipD = 0755;
+    public static $pclzipF  = 0644;
+    public static $pclzipD  = 0755;
+    public static $sysType  = null;
+    public        $current  = '.';
+    public        $hCurrent = '.';
+    public        $rCurrent = '.';
 
 
-    public function send_header ()
+    public function __construct ()
+    {
+        parent::__construct();
+        if ($_SERVER['QUERY_STRING']) {
+            $c = isset($_POST['c']) ? $_POST['c'] : (isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
+
+            if ($c) {
+                $this->current = str_replace('\\', '/', trim(rawurldecode($c)));
+
+                if ($this->is_dir($this->current) || $this->is_link($this->current)) {
+                    $l = strrev($this->current);
+                    if ($l[0] != '/') {
+                        $this->current .= '/';
+                    }
+                }
+            } else {
+                $this->current = str_replace('\\', '/', trim(rawurldecode($_SERVER['QUERY_STRING'])));
+                if ($this->is_dir($this->current) || $this->is_link($this->current)) {
+                    $l = strrev($this->current);
+                    if ($l[0] != '/') {
+                        $this->current .= '/';
+                    }
+                }
+            }
+        }
+
+        $this->hCurrent = htmlspecialchars($this->current, ENT_COMPAT);
+        $this->rCurrent = str_replace('%2F', '/', rawurlencode($this->current));
+        return $this->current;
+    }
+
+
+    public function sendHeader ()
     {
         if (stripos(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
             header('Content-type: text/html; charset=UTF-8');
@@ -42,61 +78,32 @@ class Gmanager extends Main
     }
 
 
-    public function c ($query = '', $c = '')
-    {
-        if (!$query) {
-            return '.';
-        } else {
-            if ($c) {
-                $current = str_replace('\\', '/', trim(rawurldecode($c)));
-    
-                if ($this->is_dir($current) || $this->is_link($current)) {
-                    $l = strrev($current);
-                    if ($l[0] != '/') {
-                        $current .= '/';
-                    }
-                }
-                return $current;
-            } else {
-                $query = str_replace('\\', '/', trim(rawurldecode($query)));
-                if ($this->is_dir($query) || $this->is_link($query)) {
-                    $l = strrev($query);
-                    if ($l[0] != '/') {
-                        $query .= '/';
-                    }
-                }
-                return $query;
-            }
-        }
-    }
-
-
-    public function this ($current = '')
+    public function head ()
     {
         if ($GLOBALS['mode'] != 'FTP') {
-            $realpath = realpath($current);
-            $realpath = $realpath ? $realpath : $current;
+            $realpath = realpath($this->current);
+            $realpath = $realpath ? $realpath : $this->current;
         } else {
-            $realpath = $current;
+            $realpath = $this->current;
         }
-        $chmod = $this->look_chmod($current);
+        $chmod = $this->look_chmod($this->current);
         $chmod = $chmod ? $chmod : (isset($_POST['chmod'][0]) ? htmlspecialchars($_POST['chmod'][0], ENT_NOQUOTES) : (isset($_POST['chmod']) ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0));
     
         $d = dirname(str_replace('\\', '/', $realpath));
-        $archive = $this->is_archive($this->get_type(basename($current)));
+        $archive = $this->is_archive($this->get_type(basename($this->current)));
 
-        if ($this->is_dir($current) || $this->is_link($current)) {
-            if ($current == '.') {
+        if ($this->is_dir($this->current) || $this->is_link($this->current)) {
+            if ($this->current == '.') {
                 return '<div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php">' . htmlspecialchars($this->getcwd(), ENT_NOQUOTES) . '</a></strong> (' . $this->look_chmod($this->getcwd()) . ')<br/></div>';
             } else {
-                return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($current)) . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
+                return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . $this->rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
             }
         } else if ($this->is_file($current) && $archive) {
             $up = dirname($d);
-            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($up, ENT_NOQUOTES) . '</a> (' . $this->look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a></strong> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($current)) . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($up, ENT_NOQUOTES) . '</a> (' . $this->look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a></strong> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="index.php?' . $this->rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
         } else {
             $up = dirname($d);
-            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($up, ENT_NOQUOTES) . '</a> (' . $this->look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a></strong> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . str_replace('%2F', '/', rawurlencode($current)) . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($up, ENT_NOQUOTES) . '</a> (' . $this->look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a></strong> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . $this->rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $realpath), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
         }
     }
 
@@ -2349,7 +2356,7 @@ class Gmanager extends Main
         */
 
         $win = false;
-        if ($this->systype == 'WIN') {
+        if (self::$sysType == 'WIN') {
             $win = true;
             $cmd = iconv('UTF-8', $GLOBALS['altencoding'] . '//TRANSLIT', $cmd);
         }

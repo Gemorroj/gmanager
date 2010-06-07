@@ -32,21 +32,18 @@ if (isset($_GET['get']) && $Gmanager->is_file($_GET['get'])) {
 }
 
 
-$current = $Gmanager->c($_SERVER['QUERY_STRING'], isset($_POST['c']) ? $_POST['c'] : (isset($_GET['c']) ? rawurlencode($_GET['c']) : ''));
-$h_current = htmlspecialchars($current);
-$r_current = str_replace('%2F', '/', rawurlencode($current));
-$realpath = realpath($current);
-if ($realpath && $Gmanager->is_dir($current)) {
+$realpath = realpath($Gmanager->current);
+if ($realpath && $Gmanager->is_dir($Gmanager->current)) {
     $realpath .= '/';
 }
-$realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $h_current;
+$realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath)) : $Gmanager->hCurrent;
 
 
-$Gmanager->send_header();
+$Gmanager->sendHeader();
 
 
 if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
-    if ($Gmanager->systype == 'WIN' && ob_start()) {
+    if (Gmanager::$sysType == 'WIN' && ob_start()) {
         phpinfo();
         $phpinfo = iconv($GLOBALS['altencoding'], 'UTF-8', ob_get_contents());
         ob_end_clean();
@@ -56,38 +53,38 @@ if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
     }
     exit;
 } else if (isset($_POST['add_archive']) && !isset($_POST['name'])) {
-    header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . dirname($current) . '&add_archive=' . $current, true, 301);
+    header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . dirname($Gmanager->current) . '&add_archive=' . $Gmanager->current, true, 301);
     exit;
 }
 
-echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars(rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . $Gmanager->this($current);
+echo str_replace('%dir%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars(rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . $Gmanager->head();
 
 switch ($_GET['go']) {
     default:
-        if (!$Gmanager->file_exists($current)) {
+        if (!$Gmanager->file_exists($Gmanager->current)) {
             echo $Gmanager->report($GLOBALS['lng']['not_found'], 1);
             break;
         }
 
-        $archive = $Gmanager->is_archive($Gmanager->get_type($current));
+        $archive = $Gmanager->is_archive($Gmanager->get_type($Gmanager->current));
         if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR')) {
             $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
             $h_file = htmlspecialchars($_GET['f']);
-            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $Gmanager->rCurrent . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
         } else {
-            if ($Gmanager->is_dir($current)) {
-                $size = $Gmanager->format_size($Gmanager->size($current, true));
+            if ($Gmanager->is_dir($Gmanager->current)) {
+                $size = $Gmanager->format_size($Gmanager->size($Gmanager->current, true));
                 $md5 = '';
-            } else if ($Gmanager->is_file($current) || $Gmanager->is_link($current)) {
-                $size = $Gmanager->format_size($Gmanager->size($current));
+            } else if ($Gmanager->is_file($Gmanager->current) || $Gmanager->is_link($Gmanager->current)) {
+                $size = $Gmanager->format_size($Gmanager->size($Gmanager->current));
                 if ($GLOBALS['mode'] == 'FTP') {
-                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($Gmanager->file_get_contents($current));
+                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5($Gmanager->file_get_contents($Gmanager->current));
                 } else {
-                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($current);
+                    $md5 = $GLOBALS['lng']['md5'] . ': ' . md5_file($Gmanager->current);
                 }
             }
 
-            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>';
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->look_chmod($Gmanager->current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>';
         }
         break;
 
@@ -95,7 +92,7 @@ switch ($_GET['go']) {
         $x = isset($_POST['check']) ? sizeof($_POST['check']) : 0;
         if (isset($_POST['fname'])) {
             if (!isset($_POST['name'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['rename'] . '<br/>[replace=from,to] - ' . $GLOBALS['lng']['replace'] . '<br/>[name] - ' . $GLOBALS['lng']['name'] . '<br/>[f] - ' . $GLOBALS['lng']['type'] . '<br/>[n=0] - ' . $GLOBALS['lng']['meter'] . '<br/>[date] - ' . $GLOBALS['lng']['date'] . '<br/>[rand=8,16] - ' . $GLOBALS['lng']['rand'] . '<br/><input type="text" name="name" value="[name].[f]"/><br/><select name="register"><option value="">' . $GLOBALS['lng']['str_register_no'] . '</option><option value="1">' . $GLOBALS['lng']['str_register_low'] . '</option><option value="2">' . $GLOBALS['lng']['str_register_up'] . '</option></select>' . $GLOBALS['lng']['str_register'] . '<br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input name="fname" type="hidden" value="1"/>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['rename'] . '<br/>[replace=from,to] - ' . $GLOBALS['lng']['replace'] . '<br/>[name] - ' . $GLOBALS['lng']['name'] . '<br/>[f] - ' . $GLOBALS['lng']['type'] . '<br/>[n=0] - ' . $GLOBALS['lng']['meter'] . '<br/>[date] - ' . $GLOBALS['lng']['date'] . '<br/>[rand=8,16] - ' . $GLOBALS['lng']['rand'] . '<br/><input type="text" name="name" value="[name].[f]"/><br/><select name="register"><option value="">' . $GLOBALS['lng']['str_register_no'] . '</option><option value="1">' . $GLOBALS['lng']['str_register_low'] . '</option><option value="2">' . $GLOBALS['lng']['str_register_up'] . '</option></select>' . $GLOBALS['lng']['str_register'] . '<br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input name="fname" type="hidden" value="1"/>';
 
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
@@ -122,7 +119,7 @@ switch ($_GET['go']) {
 
         } else if (isset($_POST['full_chmod'])) {
             if (!isset($_POST['chmod'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/><input name="full_chmod" type="hidden" value="1"/>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/><input name="full_chmod" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
@@ -139,23 +136,23 @@ switch ($_GET['go']) {
             }
         } else if (isset($_REQUEST['mega_full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/><input name="mega_full_extract" type="hidden" value="1"/><input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname($Gmanager->current), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . ' ' . $GLOBALS['lng']['of folders'] . '<br/><input name="mega_full_extract" type="hidden" value="1"/><input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
             } else {
-                $archive = $Gmanager->is_archive($Gmanager->get_type(basename($h_current)));
+                $archive = $Gmanager->is_archive($Gmanager->get_type(basename($Gmanager->hCurrent)));
 
                 if ($archive == 'ZIP') {
-                    echo $Gmanager->extract_zip_archive($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    echo $Gmanager->extract_zip_archive($Gmanager->current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    echo $Gmanager->extract_tar_archive($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    echo $Gmanager->extract_tar_archive($Gmanager->current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'GZ') {
-                    echo $Gmanager->gz_extract($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    echo $Gmanager->gz_extract($Gmanager->current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    echo $Gmanager->extract_rar_archive($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    echo $Gmanager->extract_rar_archive($Gmanager->current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input name="full_extract" type="hidden" value="1"/>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname($Gmanager->current), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input name="full_extract" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
@@ -163,25 +160,25 @@ switch ($_GET['go']) {
             } else {
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
-                $archive = $Gmanager->is_archive($Gmanager->get_type(basename($h_current)));
+                $archive = $Gmanager->is_archive($Gmanager->get_type(basename($Gmanager->hCurrent)));
 
                 if ($archive == 'ZIP') {
-                    echo $Gmanager->extract_zip_file($current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    echo $Gmanager->extract_zip_file($Gmanager->current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    echo $Gmanager->extract_tar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    echo $Gmanager->extract_tar_file($Gmanager->current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    echo $Gmanager->extract_rar_file($current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    echo $Gmanager->extract_rar_file($Gmanager->current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['gz_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname($current), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input name="gz_extract" type="hidden" value="1"/><input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname($Gmanager->current), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input name="gz_extract" type="hidden" value="1"/><input type="submit" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
             } else {
-                echo $Gmanager->gz_extract($current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                echo $Gmanager->gz_extract($Gmanager->current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['create_archive'])) {
             if (!isset($_POST['name'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . $h_current . 'archive.zip"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>' . $GLOBALS['lng']['comment_archive'] . '<br/><textarea name="comment" rows="2" cols="24"></textarea><br/><input name="create_archive" type="hidden" value="1"/>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="' . $Gmanager->hCurrent . 'archive.zip"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/>' . $GLOBALS['lng']['comment_archive'] . '<br/><textarea name="comment" rows="2" cols="24"></textarea><br/><input name="create_archive" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
@@ -206,7 +203,7 @@ switch ($_GET['go']) {
                     echo $Gmanager->add_rar_archive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             } else {
-                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['add_archive_dir'] . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
+                echo '<div class="input"><form action="change.php?go=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['add_archive_dir'] . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
@@ -214,7 +211,7 @@ switch ($_GET['go']) {
             }
         } else if (isset($_POST['full_rename'])) {
             if (!isset($_GET['go2'])) {
-                echo '<div class="input"><form action="change.php?go=1&amp;go2=1&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_func2'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input name="full_rename" type="hidden" value="1"/>';
+                echo '<div class="input"><form action="change.php?go=1&amp;go2=1&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_func2'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input name="full_rename" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
                     echo '<input name="check[]" type="hidden" value="' . $_POST['check'][$i] . '"/>';
                 }
@@ -226,79 +223,79 @@ switch ($_GET['go']) {
                 }
             }
         } else if (isset($_POST['del_archive'])) {
-                $archive = $Gmanager->is_archive($Gmanager->get_type(basename($current)));
+                $archive = $Gmanager->is_archive($Gmanager->get_type(basename($Gmanager->current)));
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
                 if ($archive == 'ZIP') {
-                    foreach ($_POST['check'] AS $ch) {
-                        echo $Gmanager->del_zip_archive($current, $ch);
+                    foreach ($_POST['check'] as $ch) {
+                        echo $Gmanager->del_zip_archive($Gmanager->current, $ch);
                     }
                 } else if ($archive == 'TAR') {
-                    foreach ($_POST['check'] AS $ch) {
-                        echo $Gmanager->del_tar_archive($current, $ch);
+                    foreach ($_POST['check'] as $ch) {
+                        echo $Gmanager->del_tar_archive($Gmanager->current, $ch);
                     }
                 }
         }
         break;
 
     case 'del':
-        if ($Gmanager->is_dir($current)) {
-            echo $Gmanager->del_dir($current);
+        if ($Gmanager->is_dir($Gmanager->current)) {
+            echo $Gmanager->del_dir($Gmanager->current);
         } else {
-            echo $Gmanager->del_file($current);
+            echo $Gmanager->del_file($Gmanager->current);
         }
         break;
 
     case 'chmod':
         if (!isset($_POST['chmod'])) {
-            echo '<div class="input"><form action="change.php?go=chmod&amp;c=' . $r_current . '" method="post"><div><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->look_chmod($current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=chmod&amp;c=' . $Gmanager->rCurrent . '" method="post"><div><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->look_chmod($Gmanager->current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
         } else {
-            echo $Gmanager->rechmod($current, $_POST['chmod']);
+            echo $Gmanager->rechmod($Gmanager->current, $_POST['chmod']);
         }
         break;
 
     case 'create_dir':
         if (!isset($_POST['name'])) {
-            echo '<div class="input"><form action="change.php?go=create_dir&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="dir"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=create_dir&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="dir"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/></div></form></div>';
         } else {
-            echo $Gmanager->create_dir($current . $_POST['name'], $_POST['chmod']);
+            echo $Gmanager->create_dir($Gmanager->current . $_POST['name'], $_POST['chmod']);
         }
         break;
 
     case 'create_file':
         include 'pattern.dat';
         if (!isset($_POST['name'])) {
-            echo '<div class="input"><form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="file.php"/><br/><select name="ptn">';
+            echo '<div class="input"><form action="change.php?go=create_file&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_name'] . '<br/><input type="text" name="name" value="file.php"/><br/><select name="ptn">';
             $all = sizeof($pattern);
             for ($i = 0; $i < $all; ++$i) {
                 echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
             }
             echo '</select>' . $GLOBALS['lng']['pattern'] . '<br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['cr'] . '"/></div></form></div>';
         } else {
-            if ($Gmanager->file_exists($current . $_POST['name']) && !isset($_POST['a'])) {
-                echo '<div class="red">' . $GLOBALS['lng']['warning'] . '<br/></div><form action="change.php?go=create_file&amp;c=' . $r_current . '" method="post"><div><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/><input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/><input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/><input type="hidden" name="a" value="1"/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form>';
+            if ($Gmanager->file_exists($Gmanager->current . $_POST['name']) && !isset($_POST['a'])) {
+                echo '<div class="red">' . $GLOBALS['lng']['warning'] . '<br/></div><form action="change.php?go=create_file&amp;c=' . $Gmanager->rCurrent . '" method="post"><div><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/><input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/><input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/><input type="hidden" name="a" value="1"/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form>';
             } else {
                 if ($GLOBALS['realname']) {
                     $realpath = $realpath . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 } else {
-                    $realpath = $h_current . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
+                    $realpath = $Gmanager->hCurrent . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 }
 
-                echo '<div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . $r_current . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . $Gmanager->create_file($current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
+                echo '<div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . $Gmanager->rCurrent . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . $Gmanager->create_file($Gmanager->current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
             }
         }
         break;
 
     case 'rename':
         if (isset($_POST['name']) && $_POST['name'] != '') {
-            $archive = $Gmanager->is_archive($Gmanager->get_type($current));
+            $archive = $Gmanager->is_archive($Gmanager->get_type($Gmanager->current));
             $if = isset($_GET['f']);
             if ($if && $archive == 'ZIP') {
-                echo $Gmanager->rename_zip_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                echo $Gmanager->rename_zip_file($Gmanager->current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'TAR') {
-                echo $Gmanager->rename_tar_file($current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                echo $Gmanager->rename_tar_file($Gmanager->current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else {
-                echo $Gmanager->frename($current, $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+                echo $Gmanager->frename($Gmanager->current, $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 if (isset($_POST['chmod']) && $_POST['chmod']) {
                     echo $Gmanager->rechmod($_POST['name'], $_POST['chmod']);
                 }
@@ -318,7 +315,7 @@ switch ($_GET['go']) {
 
     case 'upload':
         if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!isset($_FILES['f']) || $_FILES['f']['error'][0])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
-            echo '<div class="input"><form action="change.php?go=upload&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['url'] . '<br/><textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>' . $GLOBALS['lng']['headers'] . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . "\n" . 'Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . "\n" . 'Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . "\n" . 'Connection: Close' . "\n" . '</textarea><br/>' . $GLOBALS['lng']['file'] . ' (' . ini_get('upload_max_filesize') . ') <a href="#" onclick="files(1);">[+]</a> / <a href="#" onclick="files(0);">[-]</a><br/><div id="fl"><input type="file" name="f[]"/><br/></div>' . $GLOBALS['lng']['name'] . '<br/><input type="text" name="name" value="' . $h_current . '"/><br/><input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="text" name="set_time_limit" value="3600" size="5" style="-wap-input-format:\'*N\';width:28pt;"/>' . $GLOBALS['lng']['set_time_limit'] . '<br/><input type="checkbox" name="ignore_user_abort" checked="checked" />' . $GLOBALS['lng']['ignore_user_abort'] . '<br/><br/><input type="submit" value="' . $GLOBALS['lng']['upload'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=upload&amp;c=' . $Gmanager->rCurrent . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['url'] . '<br/><textarea name="url" type="text" rows="3" cols="48" wrap="off">http://</textarea><br/>' . $GLOBALS['lng']['headers'] . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . "\n" . 'Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . "\n" . 'Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . "\n" . 'Connection: Close' . "\n" . '</textarea><br/>' . $GLOBALS['lng']['file'] . ' (' . ini_get('upload_max_filesize') . ') <a href="#" onclick="files(1);">[+]</a> / <a href="#" onclick="files(0);">[-]</a><br/><div id="fl"><input type="file" name="f[]"/><br/></div>' . $GLOBALS['lng']['name'] . '<br/><input type="text" name="name" value="' . $Gmanager->hCurrent . '"/><br/><input onkeypress="return number(event)" type="text" name="chmod" value="0644" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="text" name="set_time_limit" value="3600" size="5" style="-wap-input-format:\'*N\';width:28pt;"/>' . $GLOBALS['lng']['set_time_limit'] . '<br/><input type="checkbox" name="ignore_user_abort" checked="checked" />' . $GLOBALS['lng']['ignore_user_abort'] . '<br/><br/><input type="submit" value="' . $GLOBALS['lng']['upload'] . '"/></div></form></div>';
         } else {
             if (!$_FILES['f']['error'][0]) {
                 $all = sizeof($_FILES['f']['tmp_name']);
@@ -339,7 +336,7 @@ switch ($_GET['go']) {
 
     case 'mod':
         $safe = strtolower(ini_get('safe_mode'));
-        echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . $r_current . '">' . $GLOBALS['lng']['search'] . '</a></li><li><a href="change.php?go=eval&amp;c=' . $r_current . '">' . $GLOBALS['lng']['eval'] . '</a></li><li><a href="change.php?go=cmd&amp;c=' . $r_current . '">' . $GLOBALS['lng']['cmd'] . '</a></li><li><a href="change.php?go=sql&amp;c=' . $r_current . '">' . $GLOBALS['lng']['sql'] . '</a></li><li><a href="change.php?go=tables&amp;c=' . $r_current . '">' . $GLOBALS['lng']['tables'] . '</a></li><li><a href="change.php?go=installer&amp;c=' . $r_current . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></li><li><a href="change.php?go=scan&amp;c=' . $r_current . '">' . $GLOBALS['lng']['scan'] . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . $r_current . '">' . $GLOBALS['lng']['send_mail'] . '</a></li><li><a href="change.php?phpinfo">' . $GLOBALS['lng']['phpinfo'] . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . $r_current . '">' . $GLOBALS['lng']['new_version'] . '</a></li></ul><span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'on' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(php_uname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . $GLOBALS['lng']['disk_total_space'] . ' ' . $Gmanager->format_size(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . $GLOBALS['lng']['disk_free_space'] . ' ' . $Gmanager->format_size(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
+        echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['search'] . '</a></li><li><a href="change.php?go=eval&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['eval'] . '</a></li><li><a href="change.php?go=cmd&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['cmd'] . '</a></li><li><a href="change.php?go=sql&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['sql'] . '</a></li><li><a href="change.php?go=tables&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['tables'] . '</a></li><li><a href="change.php?go=installer&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></li><li><a href="change.php?go=scan&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['scan'] . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['send_mail'] . '</a></li><li><a href="change.php?phpinfo">' . $GLOBALS['lng']['phpinfo'] . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['new_version'] . '</a></li></ul><span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'on' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(php_uname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . $GLOBALS['lng']['disk_total_space'] . ' ' . $Gmanager->format_size(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . $GLOBALS['lng']['disk_free_space'] . ' ' . $Gmanager->format_size(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
     break;
 
     case 'new_version':
@@ -358,7 +355,7 @@ switch ($_GET['go']) {
 
     case 'scan':
         if (!isset($_POST['url']) || $_POST['url'] == 'http://') {
-            echo '<div class="input"><form action="change.php?go=scan&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['url'] . '<br/><input type="text" name="url" value="http://"/><br/>' . $GLOBALS['lng']['headers'] . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . "\n" . 'Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . "\n" . 'Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . "\n" . 'Connection: Close' . "\n" . '</textarea><br/>POST<br/><input type="text" name="post"/><br/><input type="checkbox" name="oh"/>' . $GLOBALS['lng']['only_headers'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['look'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=scan&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['url'] . '<br/><input type="text" name="url" value="http://"/><br/>' . $GLOBALS['lng']['headers'] . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . htmlspecialchars(@$_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) . "\n" . 'Accept-Charset: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) . "\n" . 'Accept-Language: ' . htmlspecialchars(@$_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) . "\n" . 'Connection: Close' . "\n" . '</textarea><br/>POST<br/><input type="text" name="post"/><br/><input type="checkbox" name="oh"/>' . $GLOBALS['lng']['only_headers'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['look'] . '"/></div></form></div>';
         } else {
             $only_headers = isset($_POST['oh']);
             if ($url = $Gmanager->getData($_POST['url'], $_POST['headers'], $only_headers, $_POST['post'])) {
@@ -372,7 +369,7 @@ switch ($_GET['go']) {
 
     case 'send_mail':
         if (!isset($_POST['from']) || !isset($_POST['theme']) || !isset($_POST['mess']) || !isset($_POST['to'])) {
-            echo '<div class="input"><form action="change.php?go=send_mail&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['mail_to'] . '<br/><input type="text" name="to" value="' . (isset($_POST['to']) ? htmlspecialchars($_POST['to'], ENT_COMPAT) : '@') . '"/><br/>' . $GLOBALS['lng']['mail_from'] . '<br/><input type="text" name="from" value="admin@' . $_SERVER['HTTP_HOST'] . '"/><br/>' . $GLOBALS['lng']['mail_theme'] . '<br/><input type="text" name="theme" value="' . (isset($_POST['theme']) ? htmlspecialchars($_POST['theme'], ENT_COMPAT) : 'Hello') . '"/><br/>' . $GLOBALS['lng']['mail_mess'] . '<br/><textarea name="mess" rows="8" cols="48">' . (isset($_POST['mess']) ? htmlspecialchars($_POST['mess'], ENT_NOQUOTES) : '') . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['send_mail'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=send_mail&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['mail_to'] . '<br/><input type="text" name="to" value="' . (isset($_POST['to']) ? htmlspecialchars($_POST['to'], ENT_COMPAT) : '@') . '"/><br/>' . $GLOBALS['lng']['mail_from'] . '<br/><input type="text" name="from" value="admin@' . $_SERVER['HTTP_HOST'] . '"/><br/>' . $GLOBALS['lng']['mail_theme'] . '<br/><input type="text" name="theme" value="' . (isset($_POST['theme']) ? htmlspecialchars($_POST['theme'], ENT_COMPAT) : 'Hello') . '"/><br/>' . $GLOBALS['lng']['mail_mess'] . '<br/><textarea name="mess" rows="8" cols="48">' . (isset($_POST['mess']) ? htmlspecialchars($_POST['mess'], ENT_NOQUOTES) : '') . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['send_mail'] . '"/></div></form></div>';
         } else {
             echo $Gmanager->send_mail($_POST['theme'], $_POST['mess'], $_POST['to'], $_POST['from']);
         }
@@ -385,7 +382,7 @@ switch ($_GET['go']) {
         } else {
             $v = '';
         }
-        echo '<div class="input"><form action="change.php?go=eval&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['php_code'] . '<br/><textarea name="eval" rows="10" cols="48">' . $v . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/></div></form></div>';
+        echo '<div class="input"><form action="change.php?go=eval&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['php_code'] . '<br/><textarea name="eval" rows="10" cols="48">' . $v . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/></div></form></div>';
         break;
 
     case 'search':
@@ -394,11 +391,11 @@ switch ($_GET['go']) {
             if ($GLOBALS['string']) {
                 echo '<div><form action="change.php?" method="get"><div><input type="text" name="c" value="' . $realpath . '"/><br/><input type="hidden" name="go" value="search"/><input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
             }
-            echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>' . $Gmanager->search($_POST['where'], $_POST['search'], isset($_POST['in']), isset($_POST['register']), isset($_POST['hex']), $_POST['size'] * 1048576, isset($_POST['archive'])) . '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>' . $GLOBALS['lng']['check'] . '</td></tr></table><div class="ch"><input type="submit" name="full_chmod" value="' . $GLOBALS['lng']['chmod'] . '"/><input type="submit" name="full_del" value="' . $GLOBALS['lng']['del'] . '"/><input type="submit" name="full_rename" value="' . $GLOBALS['lng']['change'] . '"/><input type="submit" name="create_archive" value="' . $GLOBALS['lng']['create_archive'] . '"/></div></div></form><div class="rb">' . $GLOBALS['lng']['create'] . '<a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
+            echo '<form action="change.php?c=' . $Gmanager->rCurrent . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . ($GLOBALS['index']['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . ($GLOBALS['index']['down'] ? '<th>' . $GLOBALS['lng']['get'] . '</th>' : '') . ($GLOBALS['index']['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . ($GLOBALS['index']['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . ($GLOBALS['index']['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . ($GLOBALS['index']['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . ($GLOBALS['index']['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . ($GLOBALS['index']['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . ($GLOBALS['index']['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . ($GLOBALS['index']['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>' . $Gmanager->search($_POST['where'], $_POST['search'], isset($_POST['in']), isset($_POST['register']), isset($_POST['hex']), $_POST['size'] * 1048576, isset($_POST['archive'])) . '<tr><td class="w" colspan="' . (array_sum($GLOBALS['index']) + 1) . '" style="text-align:left;padding:0 0 0 1%;"><input type="checkbox" value="check" onclick="check(this.form,\'check[]\',this.checked)"/>' . $GLOBALS['lng']['check'] . '</td></tr></table><div class="ch"><input type="submit" name="full_chmod" value="' . $GLOBALS['lng']['chmod'] . '"/><input type="submit" name="full_del" value="' . $GLOBALS['lng']['del'] . '"/><input type="submit" name="full_rename" value="' . $GLOBALS['lng']['change'] . '"/><input type="submit" name="create_archive" value="' . $GLOBALS['lng']['create_archive'] . '"/></div></div></form><div class="rb">' . $GLOBALS['lng']['create'] . '<a href="change.php?go=create_file&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $Gmanager->rCurrent . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
         } else {
             $v = '';
         }
-        echo '<div class="input"><form action="change.php?go=search&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['where_search'] . '<br/><input type="text" name="where" value="' . (isset($_POST['where']) ? htmlspecialchars($_POST['where'], ENT_COMPAT) : $realpath) . '"/><br/>' . $GLOBALS['lng']['what_search'] . '<br/><input type="text" name="search" value="' . $v . '"/><br/><fieldset><legend><input type="checkbox" name="in"' . (isset($_POST['in']) ? ' checked="checked"' : '') . '/> ' . $GLOBALS['lng']['in_text'] . '</legend><input type="text" name="size" value="' . (isset($_POST['size']) ? htmlspecialchars($_POST['size']) : 8) . '" style="-wap-input-format:\'*N\';width:28pt;" size="4" onkeypress="return number(event)"/> ' . $GLOBALS['lng']['search_limit'] . '<br/><input type="checkbox" name="archive"' . (isset($_POST['archive']) ? ' checked="checked"' : '') . '/> ' . $GLOBALS['lng']['search_archives'] . ' (GZ)<br/></fieldset><input type="checkbox" name="register"' . (isset($_POST['register']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['register'] . '<br/><input type="checkbox" name="hex"' . (isset($_POST['hex']) ? ' checked="checked"' : '') . '/>HEX<br/><input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/></div></form></div>';
+        echo '<div class="input"><form action="change.php?go=search&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['where_search'] . '<br/><input type="text" name="where" value="' . (isset($_POST['where']) ? htmlspecialchars($_POST['where'], ENT_COMPAT) : $realpath) . '"/><br/>' . $GLOBALS['lng']['what_search'] . '<br/><input type="text" name="search" value="' . $v . '"/><br/><fieldset><legend><input type="checkbox" name="in"' . (isset($_POST['in']) ? ' checked="checked"' : '') . '/> ' . $GLOBALS['lng']['in_text'] . '</legend><input type="text" name="size" value="' . (isset($_POST['size']) ? htmlspecialchars($_POST['size']) : 8) . '" style="-wap-input-format:\'*N\';width:28pt;" size="4" onkeypress="return number(event)"/> ' . $GLOBALS['lng']['search_limit'] . '<br/><input type="checkbox" name="archive"' . (isset($_POST['archive']) ? ' checked="checked"' : '') . '/> ' . $GLOBALS['lng']['search_archives'] . ' (GZ)<br/></fieldset><input type="checkbox" name="register"' . (isset($_POST['register']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['register'] . '<br/><input type="checkbox" name="hex"' . (isset($_POST['hex']) ? ' checked="checked"' : '') . '/>HEX<br/><input type="submit" value="' . $GLOBALS['lng']['eval_go'] . '"/></div></form></div>';
         break;
 
     case 'sql':
@@ -409,7 +406,7 @@ switch ($_GET['go']) {
                     echo $Gmanager->sql_backup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['sql'], $_POST['charset'], array('tables' => @array_map('rawurldecode', @$_POST['tables']), 'data' => @array_map('rawurldecode', @$_POST['data']), 'file' => $_POST['file']));
                 } else {
                     $tables = $Gmanager->sql_backup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['sql'], $_POST['charset'], false);
-                    echo '<div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['mysql_backup_structure'] . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . $GLOBALS['lng']['mysql_backup_data'] . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . $GLOBALS['lng']['file'] . '<br/><input type="text" name="file" value="' . $h_current . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . $GLOBALS['lng']['mysql_backup'] . '"/></div></form></div>';
+                    echo '<div class="input"><form action="change.php?go=sql&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['mysql_backup_structure'] . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . $GLOBALS['lng']['mysql_backup_data'] . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . $GLOBALS['lng']['file'] . '<br/><input type="text" name="file" value="' . $Gmanager->hCurrent . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . $GLOBALS['lng']['mysql_backup'] . '"/></div></form></div>';
                 }
             } else {
                 include 'pattern.dat';
@@ -425,30 +422,30 @@ switch ($_GET['go']) {
                 } else if (!$_POST['sql']) {
                     $_POST['sql'] = 'SHOW TABLES';
                 }
-                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] : '') . '<br/></div>' . $Gmanager->sql_query($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post"><div>' . $GLOBALS['lng']['sql_query'] . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . $GLOBALS['lng']['mysql_backup'] . '"/>' : '') . '</div></form></div>';
+                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . $_POST['db'] : '') . '<br/></div>' . $Gmanager->sql_query($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sql&amp;c=' . $Gmanager->rCurrent . '" method="post" id="post"><div>' . $GLOBALS['lng']['sql_query'] . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . $GLOBALS['lng']['mysql_backup'] . '"/>' : '') . '</div></form></div>';
             }
         } else {
-            echo '<div class="input"><form action="change.php?go=sql&amp;c=' . $r_current . '" method="post" id="post"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name" value=""/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['sql_query'] . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=sql&amp;c=' . $Gmanager->rCurrent . '" method="post" id="post"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name" value=""/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['sql_query'] . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . $GLOBALS['lng']['sql'] . '"/></div></form></div>';
         }
         break;
 
     case 'tables':
         if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
-            echo '<div class="input"><form action="change.php?go=tables&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name"/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['tables_file'] . '<br/><input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . $GLOBALS['lng']['tables'] . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=tables&amp;c=' . $Gmanager->rCurrent . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name"/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['tables_file'] . '<br/><input type="text" name="tables" value="' . $Gmanager->hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . $GLOBALS['lng']['tables'] . '"/></div></form></div>';
         } else {
             echo $Gmanager->sql_query($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
         }
         break;
 
     case 'installer':
-        if (substr($h_current, -1) != '/') {
-            $d_current = str_replace('\\', '/', htmlspecialchars(dirname($current) . '/', ENT_COMPAT));
+        if (substr($Gmanager->hCurrent, -1) != '/') {
+            $d = str_replace('\\', '/', htmlspecialchars(dirname($Gmanager->current) . '/', ENT_COMPAT));
         } else {
-            $d_current = $h_current;
+            $d = $Gmanager->hCurrent;
         }
 
         if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
-            echo '<div class="input"><form action="change.php?go=installer&amp;c=' . $r_current . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name"/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['tables_file'] . '<br/><input type="text" name="tables" value="' . $h_current . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['chmod'] . '<br/><input name="save_as" type="submit" value="' . $GLOBALS['lng']['save_as'] . '"/><input type="text" name="file" value="' . $d_current . 'sql_installer.php"/><br/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=installer&amp;c=' . $Gmanager->rCurrent . '" method="post" enctype="multipart/form-data"><div>' . $GLOBALS['lng']['mysql_user'] . '<br/><input type="text" name="name"/><br/>' . $GLOBALS['lng']['mysql_pass'] . '<br/><input type="text" name="pass"/><br/>' . $GLOBALS['lng']['mysql_host'] . '<br/><input type="text" name="host" value="localhost"/><br/>' . $GLOBALS['lng']['mysql_db'] . '<br/><input type="text" name="db"/><br/>' . $GLOBALS['lng']['charset'] . '<br/><input type="text" name="charset" value="utf8"/><br/>' . $GLOBALS['lng']['tables_file'] . '<br/><input type="text" name="tables" value="' . $Gmanager->hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . $GLOBALS['lng']['chmod'] . '<br/><input name="save_as" type="submit" value="' . $GLOBALS['lng']['save_as'] . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
         } else {
             if ($sql = $Gmanager->sql_installer(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']))) {
                 echo $Gmanager->create_file(trim($_POST['file']), $sql, $_POST['chmod']);
@@ -465,7 +462,7 @@ switch ($_GET['go']) {
         } else {
             $v = '';
         }
-        echo '<div class="input"><form action="change.php?go=cmd&amp;c=' . $r_current . '" method="post"><div>' . $GLOBALS['lng']['cmd_code'] . '<br/><input name="cmd" value="' . $v . '" style="width:99%"/><br/><input type="submit" value="' . $GLOBALS['lng']['cmd_go'] . '"/></div></form></div>';
+        echo '<div class="input"><form action="change.php?go=cmd&amp;c=' . $Gmanager->rCurrent . '" method="post"><div>' . $GLOBALS['lng']['cmd_code'] . '<br/><input name="cmd" value="' . $v . '" style="width:99%"/><br/><input type="submit" value="' . $GLOBALS['lng']['cmd_go'] . '"/></div></form></div>';
 
         break;
 }

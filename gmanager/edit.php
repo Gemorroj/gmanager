@@ -13,9 +13,6 @@
  */
 
 
-require 'config.php';
-
-
 $_GET['f'] = isset($_GET['f']) ? $_GET['f'] : '';
 $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 $_GET['c'] = isset($_GET['c']) ? $_GET['c'] : '';
@@ -41,6 +38,9 @@ if (isset($_POST['get'])) {
 }
 
 
+require 'config.php';
+
+
 if (isset($_GET['editor'])) {
     if ($_GET['editor'] == 1) {
         $GLOBALS['line_editor']['on'] = 0;
@@ -60,22 +60,18 @@ if ($_GET['charset']) {
     $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
-$current = $Gmanager->c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
-$h_current = htmlspecialchars($current, ENT_COMPAT);
-$r_current = str_replace('%2F', '/', rawurlencode($current));
+$Gmanager->sendHeader();
 
-$Gmanager->send_header();
+echo str_replace('%dir%', rawurldecode($Gmanager->hCurrent), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->head();
 
-echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->this($current);
-
-$archive = $Gmanager->is_archive($Gmanager->get_type(basename($h_current)));
+$archive = $Gmanager->is_archive($Gmanager->get_type(basename($Gmanager->hCurrent)));
 
 switch ($_GET['go']) {
     default:
     case 'replace':
         $to = $from = '';
 
-        if (!$Gmanager->is_file($current)) {
+        if (!$Gmanager->is_file($Gmanager->current)) {
             echo $Gmanager->report($GLOBALS['lng']['not_found'], 1);
             break;
         }
@@ -84,19 +80,19 @@ switch ($_GET['go']) {
             $from = htmlspecialchars($_POST['from'], ENT_COMPAT);
             $to = htmlspecialchars($_POST['to'], ENT_COMPAT);
             if ($archive == 'ZIP') {
-                echo $Gmanager->zip_replace($current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
+                echo $Gmanager->zip_replace($Gmanager->current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
             } else {
-                echo $Gmanager->replace($current, $_POST['from'], $_POST['to'], isset($_POST['regexp']));
+                echo $Gmanager->replace($Gmanager->current, $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             }
         }
 
         if ($archive == 'ZIP') {
-            $content = $Gmanager->edit_zip_file($current, $_GET['f']);
+            $content = $Gmanager->edit_zip_file($Gmanager->current, $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
-            $content['text'] = htmlspecialchars($Gmanager->file_get_contents($current), ENT_COMPAT);
-            $content['size'] = $Gmanager->format_size($Gmanager->size($current));
+            $content['text'] = htmlspecialchars($Gmanager->file_get_contents($Gmanager->current), ENT_COMPAT);
+            $content['size'] = $Gmanager->format_size($Gmanager->size($Gmanager->current));
             $content['lines'] = substr_count($content['text'], "\n");
             $f = '';
         }
@@ -112,7 +108,7 @@ switch ($_GET['go']) {
         }
 
 
-        $r = realpath($current);
+        $r = realpath($Gmanager->current);
         $l = iconv_strlen($_SERVER['DOCUMENT_ROOT']);
         if (!$path = @iconv_substr($r, $l)) {
             $path = iconv($GLOBALS['altencoding'], 'UTF-8', substr($r, $l));
@@ -146,14 +142,14 @@ switch ($_GET['go']) {
             $edit = '<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
         }
 
-        echo '<div class="input">' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . $Gmanager->look_chmod($current) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/></div></form><a href="edit.php?editor=1&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['line_editor'] . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . $r_current . $f . '" method="post"><div>' . $GLOBALS['lng']['replace_from'] . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $GLOBALS['lng']['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['regexp'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['replace'] . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/></div>';
+        echo '<div class="input">' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . $Gmanager->rCurrent . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . $Gmanager->look_chmod($Gmanager->current) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/></div></form><a href="edit.php?editor=1&amp;c=' . $Gmanager->rCurrent . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . $Gmanager->rCurrent . $f . '">' . $GLOBALS['lng']['line_editor'] . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . $Gmanager->rCurrent . $f . '" method="post"><div>' . $GLOBALS['lng']['replace_from'] . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $GLOBALS['lng']['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['regexp'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['replace'] . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . $Gmanager->rCurrent . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/></div>';
 
 
         if ($archive == '' && extension_loaded('xml')) {
-            echo '<div class="rb"><a href="edit.php?c=' . $r_current . '&amp;' . $full_charset . 'go=validator">' . $GLOBALS['lng']['validator'] . '</a><br/></div>';
+            echo '<div class="rb"><a href="edit.php?c=' . $Gmanager->rCurrent . '&amp;' . $full_charset . 'go=validator">' . $GLOBALS['lng']['validator'] . '</a><br/></div>';
         }
 
-        echo '<div class="rb">' . $GLOBALS['lng']['charset'] . '<form action="edit.php?" style="padding:0;margin:0;"><div><input type="hidden" name="c" value="' . $r_current . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>' . ($GLOBALS['line_editor']['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '<select name="charset"><option value="">' . $GLOBALS['lng']['charset_no'] . '</option><optgroup label="UTF-8"><option value="utf-8 -&gt; windows-1251"' . ($_GET['charset'] == 'utf-8 -> windows-1251' ? ' selected="selected"' : '') . '>utf-8 -&gt; windows-1251</option><option value="utf-8 -&gt; iso-8859-1"' . ($_GET['charset'] == 'utf-8 -> iso-8859-1' ? ' selected="selected"' : '') . '>utf-8 -&gt; iso-8859-1</option><option value="utf-8 -&gt; cp866"' . ($_GET['charset'] == 'utf-8 -> cp866' ? ' selected="selected"' : '') . '>utf-8 -&gt; cp866</option><option value="utf-8 -&gt; koi8-r"' . ($_GET['charset'] == 'utf-8 -> koi8-r' ? ' selected="selected"' : '') . '>utf-8 -&gt; koi8-r</option></optgroup><optgroup label="Windows-1251"><option value="windows-1251 -&gt; utf-8"' . ($_GET['charset'] == 'windows-1251 -> utf-8' ? ' selected="selected"' : '') . '>windows-1251 -&gt; utf-8</option><option value="windows-1251 -&gt; iso-8859-1"' . ($_GET['charset'] == 'windows-1251 -> iso-8859-1' ? ' selected="selected"' : '') . '>windows-1251 -&gt; iso-8859-1</option><option value="windows-1251 -&gt; cp866"' . ($_GET['charset'] == 'windows-1251 -> cp866' ? ' selected="selected"' : '') . '>windows-1251 -&gt; cp866</option><option value="windows-1251 -&gt; koi8-r"' . ($_GET['charset'] == 'windows-1251 -> koi8-r' ? ' selected="selected"' : '') . '>windows-1251 -&gt; koi8-r</option></optgroup><optgroup label="ISO-8859-1"><option value="iso-8859-1 -&gt; utf-8"' . ($_GET['charset'] == 'iso-8859-1 -> utf-8' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; utf-8</option><option value="iso-8859-1 -&gt; windows-1251"' . ($_GET['charset'] == 'iso-8859-1 -> windows-1251' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; windows-1251</option><option value="iso-8859-1 -&gt; cp866"' . ($_GET['charset'] == 'iso-8859-1 -> cp866' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; cp866</option><option value="iso-8859-1 -&gt; koi8-r"' . ($_GET['charset'] == 'iso-8859-1 -> koi8-r' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; koi8-r</option></optgroup><optgroup label="CP866"><option value="cp866 -&gt; utf-8"' . ($_GET['charset'] == 'cp866 -> utf-8' ? ' selected="selected"' : '') . '>cp866 -&gt; utf-8</option><option value="cp866 -&gt; windows-1251"' . ($_GET['charset'] == 'cp866 -> windows-1251' ? ' selected="selected"' : '') . '>cp866 -&gt; windows-1251</option><option value="cp866 -&gt; iso-8859-1"' . ($_GET['charset'] == 'cp866 -> iso-8859-1' ? ' selected="selected"' : '') . '>cp866 -&gt; iso-8859-1</option><option value="cp866 -&gt; koi8-r"' . ($_GET['charset'] == 'cp866 -> koi8-r' ? ' selected="selected"' : '') . '>cp866 -&gt; koi8-r</option></optgroup><optgroup label="KOI8-R"><option value="koi8-r -&gt; utf-8"' . ($_GET['charset'] == 'koi8-r -> utf-8' ? ' selected="selected"' : '') . '>koi8-r -&gt; utf-8</option><option value="koi8-r -&gt; windows-1251"' . ($_GET['charset'] == 'koi8-r -> windows-1251' ? ' selected="selected"' : '') . '>koi8-r -&gt; windows-1251</option><option value="koi8-r -&gt; iso-8859-1"' . ($_GET['charset'] == 'koi8-r -> iso-8859-1' ? ' selected="selected"' : '') . '>koi8-r -&gt; iso-8859-1</option><option value="koi8-r -&gt; cp866"' . ($_GET['charset'] == 'koi8-r -> cp866' ? ' selected="selected"' : '') . '>koi8-r -&gt; cp866</option></optgroup></select><br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div class="rb">' . $GLOBALS['lng']['beautifier'] . ' (alpha)<form action="edit.php?" style="padding:0;margin:0;"><div><input type="hidden" name="beautify" value="1"/><input type="hidden" name="c" value="' . $r_current . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>' . ($GLOBALS['line_editor']['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '<input type="submit" value="' . $GLOBALS['lng']['beautify'] . '" /></div></form></div>';
+        echo '<div class="rb">' . $GLOBALS['lng']['charset'] . '<form action="edit.php?" style="padding:0;margin:0;"><div><input type="hidden" name="c" value="' . $Gmanager->rCurrent . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>' . ($GLOBALS['line_editor']['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '<select name="charset"><option value="">' . $GLOBALS['lng']['charset_no'] . '</option><optgroup label="UTF-8"><option value="utf-8 -&gt; windows-1251"' . ($_GET['charset'] == 'utf-8 -> windows-1251' ? ' selected="selected"' : '') . '>utf-8 -&gt; windows-1251</option><option value="utf-8 -&gt; iso-8859-1"' . ($_GET['charset'] == 'utf-8 -> iso-8859-1' ? ' selected="selected"' : '') . '>utf-8 -&gt; iso-8859-1</option><option value="utf-8 -&gt; cp866"' . ($_GET['charset'] == 'utf-8 -> cp866' ? ' selected="selected"' : '') . '>utf-8 -&gt; cp866</option><option value="utf-8 -&gt; koi8-r"' . ($_GET['charset'] == 'utf-8 -> koi8-r' ? ' selected="selected"' : '') . '>utf-8 -&gt; koi8-r</option></optgroup><optgroup label="Windows-1251"><option value="windows-1251 -&gt; utf-8"' . ($_GET['charset'] == 'windows-1251 -> utf-8' ? ' selected="selected"' : '') . '>windows-1251 -&gt; utf-8</option><option value="windows-1251 -&gt; iso-8859-1"' . ($_GET['charset'] == 'windows-1251 -> iso-8859-1' ? ' selected="selected"' : '') . '>windows-1251 -&gt; iso-8859-1</option><option value="windows-1251 -&gt; cp866"' . ($_GET['charset'] == 'windows-1251 -> cp866' ? ' selected="selected"' : '') . '>windows-1251 -&gt; cp866</option><option value="windows-1251 -&gt; koi8-r"' . ($_GET['charset'] == 'windows-1251 -> koi8-r' ? ' selected="selected"' : '') . '>windows-1251 -&gt; koi8-r</option></optgroup><optgroup label="ISO-8859-1"><option value="iso-8859-1 -&gt; utf-8"' . ($_GET['charset'] == 'iso-8859-1 -> utf-8' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; utf-8</option><option value="iso-8859-1 -&gt; windows-1251"' . ($_GET['charset'] == 'iso-8859-1 -> windows-1251' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; windows-1251</option><option value="iso-8859-1 -&gt; cp866"' . ($_GET['charset'] == 'iso-8859-1 -> cp866' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; cp866</option><option value="iso-8859-1 -&gt; koi8-r"' . ($_GET['charset'] == 'iso-8859-1 -> koi8-r' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; koi8-r</option></optgroup><optgroup label="CP866"><option value="cp866 -&gt; utf-8"' . ($_GET['charset'] == 'cp866 -> utf-8' ? ' selected="selected"' : '') . '>cp866 -&gt; utf-8</option><option value="cp866 -&gt; windows-1251"' . ($_GET['charset'] == 'cp866 -> windows-1251' ? ' selected="selected"' : '') . '>cp866 -&gt; windows-1251</option><option value="cp866 -&gt; iso-8859-1"' . ($_GET['charset'] == 'cp866 -> iso-8859-1' ? ' selected="selected"' : '') . '>cp866 -&gt; iso-8859-1</option><option value="cp866 -&gt; koi8-r"' . ($_GET['charset'] == 'cp866 -> koi8-r' ? ' selected="selected"' : '') . '>cp866 -&gt; koi8-r</option></optgroup><optgroup label="KOI8-R"><option value="koi8-r -&gt; utf-8"' . ($_GET['charset'] == 'koi8-r -> utf-8' ? ' selected="selected"' : '') . '>koi8-r -&gt; utf-8</option><option value="koi8-r -&gt; windows-1251"' . ($_GET['charset'] == 'koi8-r -> windows-1251' ? ' selected="selected"' : '') . '>koi8-r -&gt; windows-1251</option><option value="koi8-r -&gt; iso-8859-1"' . ($_GET['charset'] == 'koi8-r -> iso-8859-1' ? ' selected="selected"' : '') . '>koi8-r -&gt; iso-8859-1</option><option value="koi8-r -&gt; cp866"' . ($_GET['charset'] == 'koi8-r -> cp866' ? ' selected="selected"' : '') . '>koi8-r -&gt; cp866</option></optgroup></select><br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div class="rb">' . $GLOBALS['lng']['beautifier'] . ' (alpha)<form action="edit.php?" style="padding:0;margin:0;"><div><input type="hidden" name="beautify" value="1"/><input type="hidden" name="c" value="' . $Gmanager->rCurrent . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>' . ($GLOBALS['line_editor']['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '<input type="submit" value="' . $GLOBALS['lng']['beautify'] . '" /></div></form></div>';
         break;
 
 
@@ -161,9 +157,9 @@ switch ($_GET['go']) {
         if ($GLOBALS['line_editor']['on']) {
             $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
             if ($archive == 'ZIP') {
-                $tmp = explode("\n", $Gmanager->look_zip_file($current, $_GET['f'], true));
+                $tmp = explode("\n", $Gmanager->look_zip_file($Gmanager->current, $_GET['f'], true));
             } else {
-                $tmp = explode("\n", $Gmanager->file_get_contents($current));
+                $tmp = explode("\n", $Gmanager->file_get_contents($Gmanager->current));
             }
 
 
@@ -185,21 +181,21 @@ switch ($_GET['go']) {
         }
 
         if ($archive == 'ZIP') {
-            echo $Gmanager->edit_zip_file_ok($current, $_GET['f'], $_POST['text']);
+            echo $Gmanager->edit_zip_file_ok($Gmanager->current, $_GET['f'], $_POST['text']);
         } else {
-            echo $Gmanager->create_file($current, $_POST['text'], $_POST['chmod']);
+            echo $Gmanager->create_file($Gmanager->current, $_POST['text'], $_POST['chmod']);
         }
         break;
 
 
     case 'syntax':
         if ($archive == 'ZIP') {
-            echo $Gmanager->zip_syntax($current, $_GET['f'], $charset);
+            echo $Gmanager->zip_syntax($Gmanager->current, $_GET['f'], $charset);
         } else {
             if ($GLOBALS['syntax']) {
-                echo $Gmanager->syntax2($current, $charset);
+                echo $Gmanager->syntax2($Gmanager->current, $charset);
             } else {
-                echo $Gmanager->syntax($current, $charset);
+                echo $Gmanager->syntax($Gmanager->current, $charset);
             }
         }
         break;
@@ -207,9 +203,9 @@ switch ($_GET['go']) {
 
     case 'validator':
         /*
-        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
+        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($Gmanager->current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
         */
-        echo $Gmanager->validator($current, $charset);
+        echo $Gmanager->validator($Gmanager->current, $charset);
         break;
 }
 

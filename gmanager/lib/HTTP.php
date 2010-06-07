@@ -15,14 +15,13 @@
 
 class HTTP
 {
-    public         $systype = null;
     static private $_stat   = array();
     static private $_uid    = array();
 
 
     public function __construct ()
     {
-        $this->systype = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
+        Gmanager::$sysType = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
     }
 
 
@@ -50,7 +49,7 @@ class HTTP
     public function chmod ($file = '', $chmod = '0755')
     {
         /*
-        if ($this->systype == 'WIN') {
+        if (Gmanager::$sysType == 'WIN') {
             trigger_error($GLOBALS['lng']['win_chmod']);
             return false;
         }
@@ -133,7 +132,7 @@ class HTTP
         if (isset(self::$_uid[self::$_stat[$str][4]])) {
             self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]];
         } else {
-            self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]] = Gmanager::uid2name(self::$_stat[$str][4], $this->systype);
+            self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]] = Gmanager::uid2name(self::$_stat[$str][4], Gmanager::$sysType);
         }
         return self::$_stat[$str];
     }
