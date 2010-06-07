@@ -20,6 +20,7 @@ class FTP
     //private $_url               = null;
     static private $_uid        = array();
     static private $_rawlist    = null;
+    static private $_dir        = '/';
 
 
     public function __construct ($user = 'root', $pass = '', $host = 'localhost', $port = 21)
@@ -271,7 +272,9 @@ class FTP
         }
 
         foreach ((array)@self::$_rawlist[$dir] as $var) {
-            $tmp[] = basename($var['file']);
+            if ($var['file'] != '.') {
+                $tmp[] = basename($var['file']);
+            }
         }
 
         return $tmp;
@@ -280,8 +283,8 @@ class FTP
 
     public function fileperms ($str = '')
     {
-        if ($str == '.' || $str == '/' || $str == '' || $str == '\\'){
-            return 0;
+        if ($str == ' .' || $str == './' || $str == '/' || $str == '' || $str == '\\'){
+            $str = '.';
         }
 
         //$str = self::_change_symbol($str);
@@ -290,7 +293,7 @@ class FTP
         if (!isset(self::$_rawlist[$dir])) {
             $this->_rawlist($dir);
         }
-        return @self::$_rawlist[$dir][basename($str)]['chmod'];
+        return self::$_rawlist[$dir][basename($str)]['chmod'];
     }
 
 
@@ -343,35 +346,41 @@ class FTP
     private function _rawlist ($dir = '/')
     {
         ftp_chdir($this->_res, '/');
-        $raw_dir = $dir = str_replace('\\', '/', $dir);
+        $raw_dir = self::$_dir = str_replace('\\', '/', $dir);
         if (preg_match('/^[A-Z]+?:[\\*|\/*]+(.*)/', $dir, $match)) {
             $raw_dir = $match[1] ? '/' . $match[1] : '/';
         }
 
-        $items = array();
         foreach ((array)ftp_rawlist($this->_res, '/' . $raw_dir) as $var) {
-            if (substr($var, -2) == ' .' || substr($var, -3) == ' ..') {
+            if (substr($var, -3) == ' ..') {
                 continue;
             } else {
-                @preg_replace(
-                    '`^(d|l|\-{1}+)(.{9}+)\s*(\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`Ue',
-                    '$items[basename(trim("$11"))] = array(
-                        "chmod" => "$1" == "d" && $this->systype == "WIN" ? 0777 : ($this->systype == "WIN" ? 0666 : $this->_chmodnum("$2")),
-                        "uid" => "$4",
-                        "name" => isset(self::$_uid["$4"]) ? self::$_uid["$4"] : self::$_uid["$4"] = Gmanager::uid2name("$4", $this->systype),
-                        "gid" => "$5",
-                        "size" => "$6",
-                        "mtime" => strtotime("$7 $8 $9:$10"),
-                        "file" => trim("$11"),
-                        "type" => "$1" == "d" ? "dir" : ("$1" == "l" ? "link" : "file")
-                    );',
+                preg_replace_callback(
+                    '`^(d|l|\-{1}+)(.{9}+)\s*(?:\d{1,3})\s*(\d+?|\w+?)\s*(\d+?|\w+?)\s*(\d*)\s([a-zA-Z]{3}+)\s*([0-9]{1,2}+)\s*([0-9]{2}+):?([0-9]{2}+)\s*(.*)$`U',
+                    array($this, '_rawlistCallback'),
                     $var
                 );
             }
         }
 
-        self::$_rawlist[$dir] = & $items;
-        return $items;
+        return self::$_rawlist[self::$_dir];
+    }
+
+
+    private function _rawlistCallback ($data)
+    {
+        $data[10] = trim($data[10]);
+
+        self::$_rawlist[self::$_dir][basename($data[10])] = array(
+            'chmod' => $data[1] == 'd' && $this->systype == 'WIN' ? 0777 : ($this->systype == 'WIN' ? 0666 : $this->_chmodnum($data[2])),
+            'uid'   => $data[3],
+            'name'  => is_numeric($data[3]) ? (isset(self::$_uid[$data[3]]) ? self::$_uid[$data[3]] : self::$_uid[$data[3]] = Gmanager::uid2name($data[3], $this->systype)) : $data[3],
+            'gid'   => $data[4],
+            'size'  => $data[5],
+            'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
+            'file'  => $data[10],
+            'type'  => $data[1] == 'd' ? 'dir' : ($data[1] == 'l' ? 'link' : 'file')
+        );
     }
 
 

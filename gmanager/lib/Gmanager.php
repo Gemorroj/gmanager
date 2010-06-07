@@ -3032,6 +3032,20 @@ class Gmanager extends Main
                     }
                     break;
 
+                case E_STRICT:
+                    $GLOBALS['php_errormsg'] = 'STRICT: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
+                    if ($GLOBALS['errors']) {
+                        file_put_contents($GLOBALS['errors'], $GLOBALS['php_errormsg'] . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    }
+                    break;
+
+                case E_RECOVERABLE_ERROR:
+                    $GLOBALS['php_errormsg'] = 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
+                    if ($GLOBALS['errors']) {
+                        file_put_contents($GLOBALS['errors'], $GLOBALS['php_errormsg'] . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    }
+                    break;
+
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                     $GLOBALS['php_errormsg'] = 'DEPRECATED: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
