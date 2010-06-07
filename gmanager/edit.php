@@ -1,5 +1,4 @@
 <?php
-// encoding = 'utf-8'
 /**
  * 
  * This software is distributed under the GNU LGPL v3.0 license.
@@ -12,6 +11,9 @@
  * PHP version >= 5.2.1
  * 
  */
+
+
+require 'config.php';
 
 
 $_GET['f'] = isset($_GET['f']) ? $_GET['f'] : '';
@@ -38,7 +40,6 @@ if (isset($_POST['get'])) {
     $_GET['go'] = '';
 }
 
-require 'functions.php';
 
 if (isset($_GET['editor'])) {
     if ($_GET['editor'] == 1) {
@@ -55,27 +56,27 @@ $charset = array('', '');
 $full_charset = '';
 
 if ($_GET['charset']) {
-    list($charset[0], $charset[1],) = encoding('', $_GET['charset']);
+    list($charset[0], $charset[1],) = $Gmanager->encoding('', $_GET['charset']);
     $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
-$current = c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
+$current = $Gmanager->c($_SERVER['QUERY_STRING'], rawurlencode($_GET['c']));
 $h_current = htmlspecialchars($current, ENT_COMPAT);
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-send_header($_SERVER['HTTP_USER_AGENT']);
+$Gmanager->send_header();
 
-echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . this($current);
+echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->this($current);
 
-$archive = is_archive(get_type(basename($h_current)));
+$archive = $Gmanager->is_archive($Gmanager->get_type(basename($h_current)));
 
 switch ($_GET['go']) {
     default:
     case 'replace':
         $to = $from = '';
 
-        if (!$GLOBALS['class']->is_file($current)) {
-            echo report($GLOBALS['lng']['not_found'], 1);
+        if (!$Gmanager->is_file($current)) {
+            echo $Gmanager->report($GLOBALS['lng']['not_found'], 1);
             break;
         }
 
@@ -83,19 +84,19 @@ switch ($_GET['go']) {
             $from = htmlspecialchars($_POST['from'], ENT_COMPAT);
             $to = htmlspecialchars($_POST['to'], ENT_COMPAT);
             if ($archive == 'ZIP') {
-                echo zip_replace($current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
+                echo $Gmanager->zip_replace($current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
             } else {
-                echo replace($current, $_POST['from'], $_POST['to'], isset($_POST['regexp']));
+                echo $Gmanager->replace($current, $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             }
         }
 
         if ($archive == 'ZIP') {
-            $content = edit_zip_file($current, $_GET['f']);
+            $content = $Gmanager->edit_zip_file($current, $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
-            $content['text'] = htmlspecialchars($GLOBALS['class']->file_get_contents($current), ENT_COMPAT);
-            $content['size'] = format_size(size($current));
+            $content['text'] = htmlspecialchars($Gmanager->file_get_contents($current), ENT_COMPAT);
+            $content['size'] = $Gmanager->format_size($Gmanager->size($current));
             $content['lines'] = substr_count($content['text'], "\n");
             $f = '';
         }
@@ -105,8 +106,8 @@ switch ($_GET['go']) {
         }
 
         if ($_GET['beautify']) {
-            $content['text'] = beautify($content['text']);
-            $content['size'] = format_size(strlen($content['text']));
+            $content['text'] = $Gmanager->beautify($content['text']);
+            $content['size'] = $Gmanager->format_size(strlen($content['text']));
             $content['lines'] = substr_count($content['text'], "\n");
         }
 
@@ -145,7 +146,7 @@ switch ($_GET['go']) {
             $edit = '<textarea name="text" rows="18" cols="64" wrap="' . ($GLOBALS['wrap'] ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
         }
 
-        echo '<div class="input">' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . look_chmod($current) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/></div></form><a href="edit.php?editor=1&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['line_editor'] . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . $r_current . $f . '" method="post"><div>' . $GLOBALS['lng']['replace_from'] . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $GLOBALS['lng']['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['regexp'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['replace'] . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/></div>';
+        echo '<div class="input">' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . $r_current . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . $Gmanager->look_chmod($current) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/></div></form><a href="edit.php?editor=1&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . $r_current . $f . '">' . $GLOBALS['lng']['line_editor'] . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . $r_current . $f . '" method="post"><div>' . $GLOBALS['lng']['replace_from'] . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $GLOBALS['lng']['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['regexp'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['replace'] . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . $r_current . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/></div>';
 
 
         if ($archive == '' && extension_loaded('xml')) {
@@ -160,9 +161,9 @@ switch ($_GET['go']) {
         if ($GLOBALS['line_editor']['on']) {
             $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
             if ($archive == 'ZIP') {
-                $tmp = explode("\n", look_zip_file($current, $_GET['f'], true));
+                $tmp = explode("\n", $Gmanager->look_zip_file($current, $_GET['f'], true));
             } else {
-                $tmp = explode("\n", $GLOBALS['class']->file_get_contents($current));
+                $tmp = explode("\n", $Gmanager->file_get_contents($current));
             }
 
 
@@ -184,31 +185,31 @@ switch ($_GET['go']) {
         }
 
         if ($archive == 'ZIP') {
-            echo edit_zip_file_ok($current, $_GET['f'], $_POST['text']);
+            echo $Gmanager->edit_zip_file_ok($current, $_GET['f'], $_POST['text']);
         } else {
-            echo create_file($current, $_POST['text'], $_POST['chmod']);
+            echo $Gmanager->create_file($current, $_POST['text'], $_POST['chmod']);
         }
         break;
 
 
     case 'syntax':
         if ($archive == 'ZIP') {
-            echo zip_syntax($current, $_GET['f'], $charset);
+            echo $Gmanager->zip_syntax($current, $_GET['f'], $charset);
         } else {
             if ($GLOBALS['syntax']) {
-                echo syntax2($current, $charset);
+                echo $Gmanager->syntax2($current, $charset);
             } else {
-                echo syntax($current, $charset);
+                echo $Gmanager->syntax($current, $charset);
             }
         }
         break;
 
 
     case 'validator':
-    /*
-        echo validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
-    */
-        echo validator($current, $charset);
+        /*
+        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath($current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
+        */
+        echo $Gmanager->validator($current, $charset);
         break;
 }
 

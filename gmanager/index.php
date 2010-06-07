@@ -1,5 +1,4 @@
 <?php
-// encoding = 'utf-8'
 /**
  * 
  * This software is distributed under the GNU LGPL v3.0 license.
@@ -14,27 +13,27 @@
 
 
 
-require 'functions.php';
+require 'config.php';
 
 
-$current = c($_SERVER['QUERY_STRING'], isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
+$current = $Gmanager->c($_SERVER['QUERY_STRING'], isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
 if ($current == '.') {
-    $h_current = htmlspecialchars($GLOBALS['class']->getcwd(), ENT_COMPAT);
+    $h_current = htmlspecialchars($Gmanager->getcwd(), ENT_COMPAT);
 } else {
     $h_current = htmlspecialchars($current, ENT_COMPAT);
 }
 $r_current = str_replace('%2F', '/', rawurlencode($current));
 
 
-$type = get_type(basename($h_current));
-$archive = is_archive($type);
+$type = $Gmanager->get_type(basename($h_current));
+$archive = $Gmanager->is_archive($type);
 $f = 0;
 $if = isset($_GET['f']);
 $ia = isset($_GET['add_archive']);
 
-send_header($_SERVER['HTTP_USER_AGENT']);
+$Gmanager->send_header();
 
-echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . this($current);
+echo str_replace('%dir%', rawurldecode($h_current), $GLOBALS['top']) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->this($current);
 
 if ($GLOBALS['string']) {
     echo '<div><form action="index.php?" method="get"><div>';
@@ -83,30 +82,30 @@ if (!$if) {
 
 if ($archive == 'ZIP') {
     if ($if) {
-        echo look_zip_file($current, $_GET['f']);
+        echo $Gmanager->look_zip_file($current, $_GET['f']);
     } else {
-        echo list_zip_archive($current, $idown);
+        echo $Gmanager->list_zip_archive($current, $idown);
         $f = 1;
     }
 } else if ($archive == 'TAR') {
     if ($if) {
-        echo look_tar_file($current, $_GET['f']);
+        echo $Gmanager->look_tar_file($current, $_GET['f']);
     } else {
-        echo list_tar_archive($current, $idown);
+        echo $Gmanager->list_tar_archive($current, $idown);
         $f = 1;
     }
 } else if ($archive == 'GZ') {
-    echo gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
+    echo $Gmanager->gz($current) . '<div class="ch"><form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
     $if = true;
 } else if ($archive == 'RAR' && extension_loaded('rar')) {
     if ($if) {
-        echo look_rar_file($current, $_GET['f']);
+        echo $Gmanager->look_rar_file($current, $_GET['f']);
     } else {
-        echo list_rar_archive($current, $idown);
+        echo $Gmanager->list_rar_archive($current, $idown);
         $f = 1;
     }
 } else {
-    look($current, $itype, $idown);
+    $Gmanager->look($current, $itype, $idown);
 }
 
 if (!$if) {
@@ -114,7 +113,7 @@ if (!$if) {
 }
 
 
-if ($GLOBALS['class']->file_exists($current) || $GLOBALS['class']->is_link($current)) {
+if ($Gmanager->file_exists($current) || $Gmanager->is_link($current)) {
     if ($archive) {
         $current_d = str_replace('%2F', '/', rawurlencode(dirname($current)));
         $found = '<div class="rb">' . $GLOBALS['lng']['create'] . ' <a href="change.php?go=create_file&amp;c=' . $current_d . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $current_d . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $current_d . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $current_d . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';

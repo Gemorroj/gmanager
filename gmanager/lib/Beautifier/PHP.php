@@ -1,5 +1,4 @@
 <?php
-// encoding = 'utf-8'
 /**
  * 
  * This software is distributed under the GNU LGPL v3.0 license.
@@ -16,10 +15,16 @@
 
 class Beautifier_PHP
 {
-    public $tab = '    ';
+    public static $tab = '    ';
 
 
-    public function beautify($str)
+    /**
+     * Beautifier
+     * 
+     * @param string $str Code
+     * @return string
+     */
+    public static function beautify ($str)
     {
         $out = null;
         $tab = 0;
@@ -89,14 +94,14 @@ class Beautifier_PHP
 
 
                 case "\t":
-                    $out .= $this->tab;
+                    $out .= self::$tab;
                     break;
 
 
                 case "\n":
                     $block[3] = $block[4] = false;
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3]) {
-                        $rep = str_repeat($this->tab, $tab);
+                        $rep = str_repeat(self::$tab, $tab);
                         $len = strlen($rep);
                         if (iconv_substr($out, -$len) != $rep) {
                             $out .= $str[$i] . $rep;
@@ -107,7 +112,7 @@ class Beautifier_PHP
                                 $i++;
                             }
                         }
-                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || iconv_substr($out, -(2 + iconv_strlen(str_repeat($this->tab, $tab)))) != '{' . "\n" . str_repeat($this->tab, $tab)) {
+                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || iconv_substr($out, -(2 + iconv_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab)) {
                         $out .= $str[$i];
                     }
                     break;
@@ -116,7 +121,7 @@ class Beautifier_PHP
                 case ' ':
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4] && (iconv_substr($out, -2) == ', ') || iconv_substr($out, -3) == ' . ' || iconv_substr($out, -3) == ' = ') {
                         break;
-                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || (iconv_substr($out, -(2 + iconv_strlen(str_repeat($this->tab, $tab)))) != '{' . "\n" . str_repeat($this->tab, $tab) && iconv_substr($out, -(2 + iconv_strlen(str_repeat($this->tab, $tab)))) != '(' . "\n" . str_repeat($this->tab, $tab))) {
+                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || (iconv_substr($out, -(2 + iconv_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab) && iconv_substr($out, -(2 + iconv_strlen(str_repeat(self::$tab, $tab)))) != '(' . "\n" . str_repeat(self::$tab, $tab))) {
                         $out .= $str[$i];
                     }
                     break;
@@ -130,14 +135,14 @@ class Beautifier_PHP
                         $out .= ' ';
                     }
                     $tab++;
-                    $out .= $str[$i] . "\n" . str_repeat($this->tab, $tab);
+                    $out .= $str[$i] . "\n" . str_repeat(self::$tab, $tab);
                     break;
 
 
                 case '}':
                     if (!$block[0] && !$block[1] && !$block[2] || $block[3] || $block[4]) {
                         $tab--;
-                        $out = rtrim($out) . "\n" . str_repeat($this->tab, $tab) . $str[$i] . "\n";
+                        $out = rtrim($out) . "\n" . str_repeat(self::$tab, $tab) . $str[$i] . "\n";
                     } else {
                         $out .= $str[$i];
                     }
@@ -149,7 +154,7 @@ class Beautifier_PHP
                         $out = rtrim($out);
                         if (strtoupper(iconv_substr($out, -5)) == 'ARRAY') {
                             $tab++;
-                            $out .= ' ' . $str[$i] . "\n" . str_repeat($this->tab, $tab);
+                            $out .= ' ' . $str[$i] . "\n" . str_repeat(self::$tab, $tab);
                             $array = true;
                         } else {
                             $out .= ' ' . $str[$i];
@@ -164,7 +169,7 @@ class Beautifier_PHP
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4] && $array) {
                         $tab--;
                         $array = false;
-                        $out = rtrim($out) . "\n" . str_repeat($this->tab, $tab) . $str[$i];
+                        $out = rtrim($out) . "\n" . str_repeat(self::$tab, $tab) . $str[$i];
                     } else {
                         $out .= $str[$i];
                     }
