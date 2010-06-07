@@ -3003,6 +3003,14 @@ class Gmanager extends Main
                     echo 'NOTICE: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
 
+                case E_STRICT:
+                    echo 'STRICT: ' . $errstr . ' on line ' . $errline . "\n";
+                    break;
+
+                case E_RECOVERABLE_ERROR:
+                    echo 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . "\n";
+                    break;
+
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                     echo 'DEPRECATED: ' . $errstr . ' on line ' . $errline . "\n";
