@@ -150,7 +150,7 @@ class SQL_MySQL
 
         $out = '<?php' . "\n"
              . '// MySQL Installer' . "\n"
-             . '// Created in Gmanager ' . $GLOBALS['version'] . "\n"
+             . '// Created in Gmanager ' . Config::$version . "\n"
              . '// http://wapinet.ru/gmanager/' . "\n\n"
 
              . 'error_reporting(0);' . "\n\n"

@@ -21,7 +21,7 @@ class HTTP
 
     public function __construct ()
     {
-        Gmanager::$sysType = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
+        Config::$sysType = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
     }
 
 
@@ -49,7 +49,7 @@ class HTTP
     public function chmod ($file = '', $chmod = '0755')
     {
         /*
-        if (Gmanager::$sysType == 'WIN') {
+        if (Config::$sysType == 'WIN') {
             trigger_error($GLOBALS['lng']['win_chmod']);
             return false;
         }
@@ -132,7 +132,7 @@ class HTTP
         if (isset(self::$_uid[self::$_stat[$str][4]])) {
             self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]];
         } else {
-            self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]] = Gmanager::uid2name(self::$_stat[$str][4], Gmanager::$sysType);
+            self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]] = Gmanager::uid2name(self::$_stat[$str][4], Config::$sysType);
         }
         return self::$_stat[$str];
     }
@@ -170,7 +170,7 @@ class HTTP
 
     public function readlink ($link = '')
     {
-        chdir($GLOBALS['current']);
+        chdir(Config::$current);
         return array(basename($link), realpath(readlink($link)));
     }
 

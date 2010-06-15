@@ -27,7 +27,7 @@ class FTP
         $this->_res = ftp_connect($host, $port, 10);
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
-        Gmanager::$sysType = strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
+        Config::$sysType = strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $pass . '@' . $host . ':' . $port;
@@ -62,7 +62,7 @@ class FTP
 
     public function chmod ($file = '', $chmod = '0755')
     {
-        if (Gmanager::$sysType == 'WIN') {
+        if (Config::$sysType == 'WIN') {
             //trigger_error($GLOBALS['lng']['win_chmod']);
             return true;
         }
@@ -99,7 +99,7 @@ class FTP
 
     public function file_put_contents ($file = '', $data = '')
     {
-        $php_temp = $GLOBALS['temp'] . '/GmanagerEditor' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $php_temp = Config::$temp . '/GmanagerEditor' . $_SERVER['REQUEST_TIME'] . '.tmp';
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 
@@ -317,11 +317,11 @@ class FTP
         $t2 = end($t2);
         if ($t2[0] != PATH_SEPARATOR) {
             if ($t2 == '.') {
-                $t2 = substr($GLOBALS['current'], 0, -1);
+                $t2 = substr(Config::$current, 0, -1);
             } else if ($t2 == '..') {
-                $t2 = substr(strrev(strstr(strrev($GLOBALS['current']), '/')), 0, -1);
+                $t2 = substr(strrev(strstr(strrev(Config::$current), '/')), 0, -1);
             } else {
-                $t2 = ($GLOBALS['current'] != '.' ? $GLOBALS['current'] : '') . $t2;
+                $t2 = (Config::$current != '.' ? Config::$current : '') . $t2;
             }
         }
 
@@ -371,9 +371,9 @@ class FTP
         $data[10] = trim($data[10]);
 
         self::$_rawlist[self::$_dir][basename($data[10])] = array(
-            'chmod' => $data[1] == 'd' && Gmanager::$sysType == 'WIN' ? 0777 : (Gmanager::$sysType == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
+            'chmod' => $data[1] == 'd' && Config::$sysType == 'WIN' ? 0777 : (Config::$sysType == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
-            'name'  => is_numeric($data[3]) ? (isset(self::$_uid[$data[3]]) ? self::$_uid[$data[3]] : self::$_uid[$data[3]] = Gmanager::uid2name($data[3], Gmanager::$sysType)) : $data[3],
+            'name'  => is_numeric($data[3]) ? (isset(self::$_uid[$data[3]]) ? self::$_uid[$data[3]] : self::$_uid[$data[3]] = Gmanager::uid2name($data[3], Config::$sysType)) : $data[3],
             'gid'   => $data[4],
             'size'  => $data[5],
             'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
