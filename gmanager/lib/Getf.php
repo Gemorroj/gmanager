@@ -278,7 +278,6 @@ class Getf
 
         exit($f);
     }
-
 }
 
 ?>

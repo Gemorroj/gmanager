@@ -68,7 +68,7 @@ $Gmanager->sendHeader();
 
 echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->head();
 
-$archive = $Gmanager->is_archive($Gmanager->get_type(basename(Config::$hCurrent)));
+$archive = $Gmanager->isArchive($Gmanager->getType(basename(Config::$hCurrent)));
 
 switch ($_GET['go']) {
     default:
@@ -84,19 +84,19 @@ switch ($_GET['go']) {
             $from = htmlspecialchars($_POST['from'], ENT_COMPAT);
             $to = htmlspecialchars($_POST['to'], ENT_COMPAT);
             if ($archive == 'ZIP') {
-                echo $Gmanager->zip_replace(Config::$current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
+                echo $Gmanager->zipReplace(Config::$current, $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
             } else {
                 echo $Gmanager->replace(Config::$current, $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             }
         }
 
         if ($archive == 'ZIP') {
-            $content = $Gmanager->edit_zip_file(Config::$current, $_GET['f']);
+            $content = $Gmanager->editZipFile(Config::$current, $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
             $content['text'] = htmlspecialchars($Gmanager->file_get_contents(Config::$current), ENT_COMPAT);
-            $content['size'] = $Gmanager->format_size($Gmanager->size(Config::$current));
+            $content['size'] = $Gmanager->formatSize($Gmanager->size(Config::$current));
             $content['lines'] = substr_count($content['text'], "\n");
             $f = '';
         }
@@ -107,7 +107,7 @@ switch ($_GET['go']) {
 
         if ($_GET['beautify']) {
             $content['text'] = $Gmanager->beautify($content['text']);
-            $content['size'] = $Gmanager->format_size(strlen($content['text']));
+            $content['size'] = $Gmanager->formatSize(strlen($content['text']));
             $content['lines'] = substr_count($content['text'], "\n");
         }
 
@@ -146,7 +146,7 @@ switch ($_GET['go']) {
             $edit = '<textarea name="text" rows="18" cols="64" wrap="' . (Config::$wrap ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
         }
 
-        echo '<div class="input">' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . Config::$rCurrent . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . $Gmanager->look_chmod(Config::$current) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/></div></form><a href="edit.php?editor=1&amp;c=' . Config::$rCurrent . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . Config::$rCurrent . $f . '">' . $GLOBALS['lng']['line_editor'] . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . Config::$rCurrent . $f . '" method="post"><div>' . $GLOBALS['lng']['replace_from'] . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $GLOBALS['lng']['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['regexp'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['replace'] . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . Config::$rCurrent . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/></div>';
+        echo '<div class="input">' . $content['lines'] . ' ' . $GLOBALS['lng']['lines'] . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . Config::$rCurrent . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . $GLOBALS['lng']['save'] . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . $GLOBALS['lng']['chmod'] . ' <input onkeypress="return number(event)" type="text" name="chmod" value="' . $Gmanager->lookChmod(Config::$current) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . $GLOBALS['lng']['get'] . '"/></div></form><a href="edit.php?editor=1&amp;c=' . Config::$rCurrent . $f . '">' . $GLOBALS['lng']['basic_editor'] . '</a> / <a href="edit.php?editor=2&amp;c=' . Config::$rCurrent . $f . '">' . $GLOBALS['lng']['line_editor'] . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . Config::$rCurrent . $f . '" method="post"><div>' . $GLOBALS['lng']['replace_from'] . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . $GLOBALS['lng']['replace_to'] . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/>' . $GLOBALS['lng']['regexp'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['replace'] . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . Config::$rCurrent . $f . '&amp;' . $full_charset . 'go=syntax">' . $GLOBALS['lng']['syntax'] . '</a><br/></div>';
 
 
         if ($archive == '' && extension_loaded('xml')) {
@@ -161,7 +161,7 @@ switch ($_GET['go']) {
         if (Config::$line_editor['on']) {
             $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
             if ($archive == 'ZIP') {
-                $tmp = explode("\n", $Gmanager->look_zip_file(Config::$current, $_GET['f'], true));
+                $tmp = explode("\n", $Gmanager->lookZipFile(Config::$current, $_GET['f'], true));
             } else {
                 $tmp = explode("\n", $Gmanager->file_get_contents(Config::$current));
             }
@@ -185,16 +185,16 @@ switch ($_GET['go']) {
         }
 
         if ($archive == 'ZIP') {
-            echo $Gmanager->edit_zip_file_ok(Config::$current, $_GET['f'], $_POST['text']);
+            echo $Gmanager->editZipFileOk(Config::$current, $_GET['f'], $_POST['text']);
         } else {
-            echo $Gmanager->create_file(Config::$current, $_POST['text'], $_POST['chmod']);
+            echo $Gmanager->createFile(Config::$current, $_POST['text'], $_POST['chmod']);
         }
         break;
 
 
     case 'syntax':
         if ($archive == 'ZIP') {
-            echo $Gmanager->zip_syntax(Config::$current, $_GET['f'], $charset);
+            echo $Gmanager->zipSyntax(Config::$current, $_GET['f'], $charset);
         } else {
             if (Config::$syntax) {
                 echo $Gmanager->syntax2(Config::$current, $charset);

@@ -25,28 +25,49 @@ class HTTP
     }
 
 
-    public function mkdir ($dir = '', $chmod = '0755')
+    /**
+     * Valid chmod
+     * 
+     * @param mixed $chmod
+     * @return int
+     */
+    private function _chmoder ($chmod)
     {
-        settype($chmod, 'string');
-        $strlen = strlen($chmod);
-        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
-            // return false;
-            $chmod = '0755';
+        if (!is_int($chmod)) {
+            $strlen = strlen($chmod);
+            
+            if (($strlen != 3 && $strlen != 4) || !is_numeric($chmod)) {
+                return false;
+            } else if ($strlen == 3) {
+                $chmod = '0' . $chmod;
+            }
+            $chmod = octdec($chmod);
         }
-        if ($strlen == 3) {
-            $chmod = '0' . $chmod;
-        }
-
-        $chmod = decoct(octdec(intval($chmod)));
-        $result = @mkdir($dir, $chmod, true);
-        if ($result) {
-            $this->chmod($dir, $chmod);
-        }
-        return $result;
+        return $chmod;
     }
 
 
-    public function chmod ($file = '', $chmod = '0755')
+    /**
+     * mkdir
+     * 
+     * @param string $dir
+     * @param mixed $chmod
+     * @return bool
+     */
+    public function mkdir ($dir, $chmod = 0755)
+    {
+        return @mkdir($dir, $this->_chmoder($chmod), true);
+    }
+
+
+    /**
+     * chmod
+     * 
+     * @param string $file
+     * @param mixed $chmod
+     * @return bool
+     */
+    public function chmod ($file, $chmod = 0755)
     {
         /*
         if (Config::$sysType == 'WIN') {
@@ -55,27 +76,30 @@ class HTTP
         }
         */
 
-        settype($chmod, 'string');
-        $strlen = strlen($chmod);
-        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
-            return false;
-        }
-
-        if ($strlen == 3) {
-            $chmod = '0' . $chmod;
-        }
-
-        return @chmod($file, octdec(intval($chmod)));
+        return @chmod($file, $this->_chmoder($chmod));
     }
 
 
-    public function file_get_contents ($file = '')
+    /**
+     * file_get_contents
+     * 
+     * @param string $file
+     * @return string
+     */
+    public function file_get_contents ($file)
     {
         return file_get_contents($file);
     }
 
 
-    public function file_put_contents ($file = '', $data = '')
+    /**
+     * file_put_contents
+     * 
+     * @param string $file
+     * @param string $data
+     * @return int (0 or 1)
+     */
+    public function file_put_contents ($file, $data = '')
     {
         if (!$f = @fopen($file, 'a')) {
             return 0;
@@ -93,37 +117,73 @@ class HTTP
     }
 
 
-    public function is_dir ($str = '')
+    /**
+     * is_dir
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_dir ($str)
     {
-        return @is_dir($str);
+        return is_dir($str);
     }
 
 
-    public function is_file ($str = '')
+    /**
+     * is_file
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_file ($str)
     {
         return is_file($str);
     }
 
 
-    public function is_link ($str = '')
+    /**
+     * is_link
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_link ($str)
     {
         return is_link($str);
     }
 
 
-    public function is_readable ($str = '')
+    /**
+     * is_readable
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_readable ($str)
     {
         return is_readable($str);
     }
 
 
-    public function is_writable ($str = '')
+    /**
+     * is_writable
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_writable ($str)
     {
         return is_writable($str);
     }
 
 
-    public function stat ($str = '')
+    /**
+     * stat
+     * 
+     * @param string $str
+     * @return array
+     */
+    public function stat ($str)
     {
         if (!isset(self::$_stat[$str])) {
             self::$_stat[$str] = @stat($str);
@@ -138,62 +198,110 @@ class HTTP
     }
 
 
-    public function fileperms ($str = '')
+    /**
+     * fileperms
+     * 
+     * @param string $str
+     * @return int
+     */
+    public function fileperms ($str)
     {
         if (!isset(self::$_stat[$str][2])) {
             self::$_stat[$str] = @stat($str);
         }
         return self::$_stat[$str][2];
-        //return fileperms($str);
     }
 
 
-    public function filesize ($file = '')
+    /**
+     * filesize
+     * 
+     * @param string $file
+     * @return int
+     */
+    public function filesize ($file)
     {
         if (!isset(self::$_stat[$file][7])) {
             self::$_stat[$file] = stat($file);
         }
         return self::$_stat[$file][7];
-        //return sprintf('%u', filesize($file));
     }
 
 
-    public function filemtime ($str = '')
+    /**
+     * filemtime
+     * 
+     * @param string $str
+     * @return int
+     */
+    public function filemtime ($str)
     {
         if (!isset(self::$_stat[$str][9])) {
             self::$_stat[$str] = stat($str);
         }
         return self::$_stat[$str][9];
-        //return filemtime($str);
     }
 
 
-    public function readlink ($link = '')
+    /**
+     * readlink
+     * 
+     * @param string $link
+     * @return array
+     */
+    public function readlink ($link)
     {
         chdir(Config::$current);
         return array(basename($link), realpath(readlink($link)));
     }
 
 
-    public function file_exists ($str = '')
+    /**
+     * file_exists
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function file_exists ($str)
     {
         return file_exists($str);
     }
 
 
-    public function unlink ($file = '')
+    /**
+     * unlink
+     * 
+     * @param string $file
+     * @return bool
+     */
+    public function unlink ($file)
     {
         return unlink($file);
     }
 
 
-    public function rename ($from = '', $to = '')
+    /**
+     * rename
+     * 
+     * @param string $from
+     * @param string $to
+     * @return bool
+     */
+    public function rename ($from, $to)
     {
         return rename($from, $to);
     }
 
 
-    public function copy ($from = '', $to = '', $chmod = '0644')
+    /**
+     * copy
+     * 
+     * @param string $from
+     * @param string $to
+     * @param mixed  $chmod
+     * @return bool
+     */
+    public function copy ($from, $to, $chmod = 0644)
     {
         if ($result = @copy($from, $to)) {
             $this->chmod($to, $chmod);
@@ -202,19 +310,36 @@ class HTTP
     }
 
 
-    public function rmdir ($dir = '')
+    /**
+     * rmdir
+     * 
+     * @param string $dir
+     * @return bool
+     */
+    public function rmdir ($dir)
     {
-        return is_dir($dir) ? rmdir($dir) : true;;
+        return is_dir($dir) ? rmdir($dir) : true;
     }
 
 
+    /**
+     * getcwd
+     * 
+     * @return string
+     */
     public function getcwd ()
     {
         return getcwd();
     }
 
 
-    public function iterator ($dir = '')
+    /**
+     * iterator
+     * 
+     * @param string $dir
+     * @return array
+     */
+    public function iterator ($dir)
     {
         return array_diff(scandir($dir, 0), array('.', '..'));
     }

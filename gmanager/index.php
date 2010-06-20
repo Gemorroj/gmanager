@@ -7,6 +7,7 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
  * @version 0.7.4 beta
+ * 
  * PHP version >= 5.2.1
  * 
  */
@@ -23,8 +24,8 @@ if (Config::$current == '.') {
 }
 
 
-$type = $Gmanager->get_type(basename(Config::$hCurrent));
-$archive = $Gmanager->is_archive($type);
+$type = $Gmanager->getType(basename(Config::$hCurrent));
+$archive = $Gmanager->isArchive($type);
 $f = 0;
 $if = isset($_GET['f']);
 $ia = isset($_GET['add_archive']);
@@ -36,7 +37,7 @@ echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">
 if (Config::$addressBar) {
     echo '<div><form action="index.php?" method="get"><div>';
     if ($ia) {
-        echo '<input type="hidden" name="add_archive" value="' . rawurlencode($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
+        echo '<input type="hidden" name="add_archive" value="' . htmlspecialchars($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
     echo '<input type="text" name="c" value="' . Config::$hCurrent . '"/><br/><input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
 }
@@ -80,16 +81,16 @@ if (!$if) {
 
 if ($archive == 'ZIP') {
     if ($if) {
-        echo $Gmanager->look_zip_file(Config::$current, $_GET['f']);
+        echo $Gmanager->lookZipFile(Config::$current, $_GET['f']);
     } else {
-        echo $Gmanager->list_zip_archive(Config::$current, $idown);
+        echo $Gmanager->listZipArchive(Config::$current, $idown);
         $f = 1;
     }
 } else if ($archive == 'TAR') {
     if ($if) {
-        echo $Gmanager->look_tar_file(Config::$current, $_GET['f']);
+        echo $Gmanager->lookTarFile(Config::$current, $_GET['f']);
     } else {
-        echo $Gmanager->list_tar_archive(Config::$current, $idown);
+        echo $Gmanager->listTarArchive(Config::$current, $idown);
         $f = 1;
     }
 } else if ($archive == 'GZ') {
@@ -97,9 +98,9 @@ if ($archive == 'ZIP') {
     $if = true;
 } else if ($archive == 'RAR' && extension_loaded('rar')) {
     if ($if) {
-        echo $Gmanager->look_rar_file(Config::$current, $_GET['f']);
+        echo $Gmanager->lookRarFile(Config::$current, $_GET['f']);
     } else {
-        echo $Gmanager->list_rar_archive(Config::$current, $idown);
+        echo $Gmanager->listRarArchive(Config::$current, $idown);
         $f = 1;
     }
 } else {

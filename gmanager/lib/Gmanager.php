@@ -15,10 +15,10 @@
 
 class Gmanager extends Config
 {
-    public static $pclzipTmp;
-    public static $pclzipF  = 0644;
-    public static $pclzipD  = 0755;
-    private static $_ftp_archive_start;
+    public  static $pclzipTmp;
+    public  static $pclzipF  = 0644;
+    public  static $pclzipD  = 0755;
+    private static $_ftpArchive;
     private static $_php_errormsg;
 
 
@@ -53,6 +53,11 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * sendHeader
+     * 
+     * @return void
+     */
     public function sendHeader ()
     {
         if (stripos(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
@@ -75,6 +80,11 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * head
+     * 
+     * @return string
+     */
     public function head ()
     {
         if (Config::$mode != 'FTP') {
@@ -83,29 +93,36 @@ class Gmanager extends Config
         } else {
             $realpath = Config::$current;
         }
-        $chmod = $this->look_chmod(Config::$current);
+        $chmod = $this->lookChmod(Config::$current);
         $chmod = $chmod ? $chmod : (isset($_POST['chmod'][0]) ? htmlspecialchars($_POST['chmod'][0], ENT_NOQUOTES) : (isset($_POST['chmod']) ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0));
     
         $d = dirname(str_replace('\\', '/', $realpath));
-        $archive = $this->is_archive($this->get_type(basename(Config::$current)));
+        $archive = $this->isArchive($this->getType(basename(Config::$current)));
 
         if ($this->is_dir(Config::$current) || $this->is_link(Config::$current)) {
             if (Config::$current == '.') {
-                return '<div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php">' . htmlspecialchars($this->strLink($this->getcwd()), ENT_NOQUOTES) . '</a></strong> (' . $this->look_chmod($this->getcwd()) . ')<br/></div>';
+                return '<div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php">' . htmlspecialchars($this->strLink($this->getcwd()), ENT_NOQUOTES) . '</a></strong> (' . $this->lookChmod($this->getcwd()) . ')<br/></div>';
             } else {
-                return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
+                return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
             }
         } else if ($this->is_file(Config::$current) && $archive) {
             $up = dirname($d);
-            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a></strong> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a></strong> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
         } else {
             $up = dirname($d);
-            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->look_chmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a></strong> (' . $this->look_chmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <strong><a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a></strong> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <strong><a href="edit.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a></strong> (' . $chmod . ')<br/></div>';
         }
     }
 
 
-    public function static_name ($current = '', $dest = '')
+    /**
+     * staticName
+     * 
+     * @param string $current
+     * @param string $dest
+     * @return string
+     */
+    public function staticName ($current = '', $dest = '')
     {
         $substr = 'iconv_substr';
         if (!$len = iconv_strlen($current)) {
@@ -126,6 +143,14 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * look
+     * 
+     * @param string $current
+     * @param string $itype
+     * @param string $down
+     * @return void
+     */
     public function look ($current = '', $itype = '', $down = '')
     {
         if (!$this->is_dir($current) || !$this->is_readable($current)) {
@@ -211,7 +236,7 @@ class Gmanager extends Config
                 }
                 if (Config::$index['size']) {
                     $isize = $stat['size'];
-                    $size = $this->format_size($isize);
+                    $size = $this->formatSize($isize);
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
@@ -221,7 +246,7 @@ class Gmanager extends Config
                     $pdel = '<td><a' . (Config::$del_notify ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
-                    $chmod = $this->look_chmod($file);
+                    $chmod = $this->lookChmod($file);
                     $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
                 if (Config::$index['date']) {
@@ -230,7 +255,7 @@ class Gmanager extends Config
                 if (Config::$index['uid']) {
                     $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
                 }
-            $page0[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
+                $page0[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
             } else if ($this->is_dir($file)) {
                 $type = 'DIR';
                 if (Config::$index['name']) {
@@ -254,7 +279,7 @@ class Gmanager extends Config
                 if (Config::$index['size']) {
                     if (Config::$dir_size) {
                         $isize = $this->size($file, true);
-                        $size = $this->format_size($isize);
+                        $size = $this->formatSize($isize);
                     } else {
                         $isize = $size = $GLOBALS['lng']['unknown'];
                     }
@@ -267,7 +292,7 @@ class Gmanager extends Config
                     $pdel = '<td><a' . (Config::$del_notify ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
-                    $chmod = $this->look_chmod($file);
+                    $chmod = $this->lookChmod($file);
                     $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
                 if (Config::$index['date']) {
@@ -276,14 +301,12 @@ class Gmanager extends Config
                 if (Config::$index['uid']) {
                     $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
                 }
-
-            $page1[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
+                $page1[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
             } else {
-                $type = htmlspecialchars($this->get_type($basename), ENT_NOQUOTES);
-                $archive = $this->is_archive($type);
+                $type = htmlspecialchars($this->getType($basename), ENT_NOQUOTES);
+                $archive = $this->isArchive($type);
 
                 if (Config::$index['name']) {
-
                     if (Config::$realname == 1) {
                         $realpath = realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
@@ -312,7 +335,7 @@ class Gmanager extends Config
                 }
                 if (Config::$index['size']) {
                     $isize = $stat['size'];
-                    $size = $this->format_size($stat['size']);
+                    $size = $this->formatSize($stat['size']);
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
@@ -322,7 +345,7 @@ class Gmanager extends Config
                     $pdel = '<td><a' . (Config::$del_notify ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
-                    $chmod = $this->look_chmod($file);
+                    $chmod = $this->lookChmod($file);
                     $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
                 if (Config::$index['date']) {
@@ -331,12 +354,9 @@ class Gmanager extends Config
                 if (Config::$index['uid']) {
                     $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
                 }
-
                 $page2[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid;
             }
-
         }
-
 
         $p = array_merge($page0, $page1, $page2);
 
@@ -361,14 +381,12 @@ class Gmanager extends Config
         }
         unset($p, $a, $b, $c);
 
-
         $all = ceil(sizeof($page) / Config::$limit);
         $pg = isset($_GET['pg']) ? intval($_GET['pg']) : 1;
         if ($pg < 1) {
             $pg = 1;
         }
         $page = array_slice($page, ($pg * Config::$limit) - Config::$limit, Config::$limit);
-
 
         if ($page) {
             $i = 1;
@@ -401,7 +419,15 @@ class Gmanager extends Config
     }
 
 
-    public function copy_d ($dest = '', $source = '', $to = '')
+    /**
+     * copyD
+     * 
+     * @param string $dest
+     * @param string $source
+     * @param string $to
+     * @return void
+     */
+    public function copyD ($dest = '', $source = '', $to = '')
     {
         $ex = explode('/', $source);
         $tmp1 = $tmp2 = '';
@@ -412,13 +438,22 @@ class Gmanager extends Config
             $tmp2 .= $ch[1] . '/';
 
             if (!$this->is_dir($tmp1)) {
-                $this->mkdir($tmp1, $this->look_chmod($tmp2));
+                $this->mkdir($tmp1, $this->lookChmod($tmp2));
             }
         }
     }
 
 
-    public function copy_files ($d = '', $dest = '', $static = '', $overwrite = false)
+    /**
+     * copyFiles
+     * 
+     * @param string $d
+     * @param string $dest
+     * @param string $static
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function copyFiles ($d = '', $dest = '', $static = '', $overwrite = false)
     {
         $error = array();
 
@@ -430,13 +465,13 @@ class Gmanager extends Config
                 break;
             }
 
-            $ch = $this->look_chmod($d . '/' . $file);
+            $ch = $this->lookChmod($d . '/' . $file);
 
             if ($this->is_dir($d . '/' . $file)) {
 
                 if ($this->mkdir($dest . '/' . $file, $ch)) {
                     $this->chmod($dest, $ch);
-                    $this->copy_files($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
+                    $this->copyFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']) . ' (' . $this->error() . ')';
                 }
@@ -462,7 +497,16 @@ class Gmanager extends Config
     }
 
 
-    public function move_files ($d = '', $dest = '', $static = '', $overwrite = false)
+    /**
+     * moveFiles
+     * 
+     * @param string $d
+     * @param string $dest
+     * @param string $static
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function moveFiles ($d = '', $dest = '', $static = '', $overwrite = false)
     {
         $error = array();
 
@@ -474,13 +518,13 @@ class Gmanager extends Config
                 break;
             }
 
-            $ch = $this->look_chmod($d . '/' . $file);
+            $ch = $this->lookChmod($d . '/' . $file);
 
             if ($this->is_dir($d . '/' . $file)) {
 
                 if ($this->mkdir($dest . '/' . $file, $ch)) {
                     $this->chmod($dest . '/' . $file, $ch);
-                    $this->move_files($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
+                    $this->moveFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                     $this->rmdir($d . '/' . $file);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']) . ' (' . $this->error() . ')';
@@ -510,7 +554,16 @@ class Gmanager extends Config
     }
 
 
-    public function copy_file ($source = '', $dest = '', $chmod = '' /* 0644 */, $overwrite = false)
+    /**
+     * copyFile
+     * 
+     * @param string $source
+     * @param string $dest
+     * @param mixed  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function copyFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
         if (!$overwrite && $this->file_exists($dest)) {
             return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', 1);
@@ -524,11 +577,11 @@ class Gmanager extends Config
         }
 
         $d = dirname($dest);
-        $this->copy_d($d, dirname($source), $d);
+        $this->copyD($d, dirname($source), $d);
 
         if ($this->copy($source, $dest)) {
             if (!$chmod) {
-                $chmod = $this->look_chmod($source);
+                $chmod = $this->lookChmod($source);
             }
             $this->rechmod($dest, $chmod);
 
@@ -539,7 +592,16 @@ class Gmanager extends Config
     }
 
 
-    public function move_file ($source = '', $dest = '', $chmod = '' /* 0644 */, $overwrite = false)
+    /**
+     * moveFile
+     * 
+     * @param string $source
+     * @param string $dest
+     * @param mixed  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function moveFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
         if (!$overwrite && $this->file_exists($dest)) {
             return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', 1);
@@ -553,11 +615,11 @@ class Gmanager extends Config
         }
 
         $d = dirname($dest);
-        $this->copy_d($d, dirname($source), $d);
+        $this->copyD($d, dirname($source), $d);
 
         if ($this->rename($source, $dest)) {
             if (!$chmod) {
-                $chmod = $this->look_chmod($source);
+                $chmod = $this->lookChmod($source);
             }
             $this->rechmod($dest, $chmod);
 
@@ -568,10 +630,14 @@ class Gmanager extends Config
     }
 
 
-    public function del_file ($f = '')
+    /**
+     * delFile
+     * 
+     * @param string $f
+     * @return string
+     */
+    public function delFile ($f = '')
     {
-        //$f = rawurldecode($f);
-
         if ($this->unlink($f)) {
             return $this->report($GLOBALS['lng']['del_file_true'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), 0);
         } else {
@@ -580,18 +646,24 @@ class Gmanager extends Config
     }
 
 
-    public function del_dir ($d = '')
+    /**
+     * delDir
+     * 
+     * @param string $d
+     * @return string
+     */
+    public function delDir ($d = '')
     {
         $err = '';
-        $this->chmod($d, '0777');
+        $this->chmod($d, 0777);
 
         foreach ($this->iterator($d) as $f) {
             $realpath = realpath($d . '/' . $f);
             $f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
-            $this->chmod($f, '0777');
+            $this->chmod($f, 0777);
 
             if ($this->is_dir($f) /*&& !$this->rmdir($f)*/) {
-                $this->del_dir($f . '/');
+                $this->delDir($f . '/');
                 $this->rmdir($f);
             } else if ($this->file_exists($f)) {
                 if (!$this->unlink($f)) {
@@ -610,6 +682,13 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * size
+     * 
+     * @param string $source
+     * @param bool   $is_dir
+     * @return string
+     */
     public function size ($source = '', $is_dir = false)
     {
         if ($is_dir) {
@@ -633,7 +712,14 @@ class Gmanager extends Config
     }
 
 
-    public function format_size ($size = '', $int = 2) {
+    /**
+     * formatSize
+     * 
+     * @param mixed $size
+     * @param int   $int
+     * @return string
+     */
+    public function formatSize ($size = false, $int = 2) {
         if ($size === false) {
             return $GLOBALS['lng']['unknown'];
         } else if ($size < 1024) {
@@ -648,15 +734,29 @@ class Gmanager extends Config
     }
 
 
-    public function look_chmod ($file = '')
+    /**
+     * lookChmod
+     * 
+     * @param string $file
+     * @return string
+     */
+    public function lookChmod ($file = '')
     {
         return substr(sprintf('%o', $this->fileperms($file)), -4);
     }
 
 
-    public function create_file ($file = '', $text = '', $chmod = '0644')
+    /**
+     * createFile
+     * 
+     * @param string $file
+     * @param string $text
+     * @param mixed  $chmod
+     * @return string
+     */
+    public function createFile ($file = '', $text = '', $chmod = 0644)
     {
-        $this->create_dir(dirname($file));
+        $this->createDir(dirname($file));
 
         if ($this->file_put_contents($file, $text)) {
             return $this->report($GLOBALS['lng']['fputs_file_true'], 0) . $this->rechmod($file, $chmod);
@@ -666,30 +766,14 @@ class Gmanager extends Config
     }
 
 
-    public function rechmod ($current = '', $chmod = '0755')
-    {
-        //$current = rawurldecode($current);
-
-        settype($chmod, 'string');
-        $strlen = strlen($chmod);
-
-        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
-            return $this->report($GLOBALS['lng']['chmod_mode_false'], 2);
-        }
-
-        if ($strlen == 3) {
-            $chmod = '0' . $chmod;
-        }
-
-        if ($this->chmod($current, $chmod)) {
-            return $this->report($GLOBALS['lng']['chmod_true'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . $chmod, 0);
-        } else {
-            return $this->report($GLOBALS['lng']['chmod_false'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
-        }
-    }
-
-
-    public function create_dir ($dir = '', $chmod = '0755')
+    /**
+     * createDir
+     * 
+     * @param string $dir
+     * @param mixed  $chmod
+     * @return string
+     */
+    public function createDir ($dir = '', $chmod = 0755)
     {
         $tmp = $tmp2 = $err = '';
         $i = 0;
@@ -719,35 +803,74 @@ class Gmanager extends Config
     }
 
 
-    public function frename ($current = '', $name = '', $chmod = '' /* 0644 */, $del = '', $to = '', $overwrite = false)
+    /**
+     * rechmod
+     * 
+     * @param string $current
+     * @param mixed  $chmod
+     * @return string
+     */
+    public function rechmod ($current = '', $chmod = 0755)
     {
-        // $current = rawurldecode($current);
+        $len = strlen($chmod);
 
+        if (($len != 3 && $len != 4) || !is_numeric($chmod)) {
+            return $this->report($GLOBALS['lng']['chmod_mode_false'], 2);
+        }
+
+        if ($this->chmod($current, $chmod)) {
+            return $this->report($GLOBALS['lng']['chmod_true'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . (is_int($chmod) ? decoct($chmod) : $chmod), 0);
+        } else {
+            return $this->report($GLOBALS['lng']['chmod_false'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
+        }
+    }
+
+
+    /**
+     * frename
+     * 
+     * @param string $current
+     * @param string $name
+     * @param mixed  $chmod
+     * @param bool   $del
+     * @param string $to
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function frename ($current = '', $name = '', $chmod = '', $del = false, $to = '', $overwrite = false)
+    {
         if ($this->is_dir($current)) {
-            $this->copy_d($name, $current, $to);
+            $this->copyD($name, $current, $to);
 
             if ($del) {
-                return $this->move_files($current, $name, $this->static_name($current, $name), $overwrite);
+                return $this->moveFiles($current, $name, $this->staticName($current, $name), $overwrite);
             } else {
-                return $this->copy_files($current, $name, $this->static_name($current, $name), $overwrite);
+                return $this->copyFiles($current, $name, $this->staticName($current, $name), $overwrite);
             }
         } else {
             if ($del) {
-                return $this->move_file($current, $name, $chmod, $overwrite);
+                return $this->moveFile($current, $name, $chmod, $overwrite);
             } else {
-                return $this->copy_file($current, $name, $chmod, $overwrite);
+                return $this->copyFile($current, $name, $chmod, $overwrite);
             }
         }
     }
 
 
-    public function syntax ($source = '', $charset = array())
+    /**
+     * syntax
+     * 
+     * @param string $current
+     * @param array  $charset
+     * @return string
+     */
+    public function syntax ($current = '', $charset = array())
     {
-        if (!$this->is_file($source)) {
+        if (!$this->is_file($current)) {
             return $this->report($GLOBALS['lng']['not_found'], 2);
         }
 
-        exec(escapeshellcmd(Config::$php) . ' -c -f -l ' . escapeshellarg($source), $rt, $v);
+        exec(escapeshellcmd(Config::$php) . ' -c -f -l ' . escapeshellarg($current), $rt, $v);
         $error = $this->error();
         $size = sizeof($rt);
 
@@ -768,7 +891,7 @@ class Gmanager extends Config
             $pg = $GLOBALS['lng']['syntax_true'];
         }
 
-        $fl = trim($this->file_get_contents($source));
+        $fl = trim($this->file_get_contents($current));
         if ($charset[0]) {
             $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
         }
@@ -777,6 +900,13 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * syntax2
+     * 
+     * @param string $current
+     * @param array  $charset
+     * @return string
+     */
     public function syntax2 ($current = '', $charset = array())
     {
         if (!$charset[0]) {
@@ -811,9 +941,17 @@ class Gmanager extends Config
     }
 
 
-    public function zip_syntax ($current = '', $f = '', $charset = array())
+    /**
+     * zipSyntax
+     * 
+     * @param string $current
+     * @param string $f
+     * @param array  $charset
+     * @return string
+     */
+    public function zipSyntax ($current = '', $f = '', $charset = array())
     {
-        $content = $this->edit_zip_file($current, $f);
+        $content = $this->editZipFile($current, $f);
 
         $tmp = Config::$temp . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
         $fp = fopen($tmp, 'w');
@@ -836,12 +974,25 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * beautify
+     * 
+     * @param string $str
+     * @return string
+     */
     public function beautify ($str)
     {
         return Beautifier_PHP::beautify($str);
     }
 
 
+    /**
+     * validator
+     * 
+     * @param string $current
+     * @param array  $charset
+     * @return string
+     */
     public function validator ($current = '', $charset = array())
     {
         if (!extension_loaded('xml')) {
@@ -867,13 +1018,25 @@ class Gmanager extends Config
     }
 
 
-    public function xhtml_highlight ($fl = '')
+    /**
+     * xhtmlHighlight
+     * 
+     * @param string $fl
+     * @return string
+     */
+    public function xhtmlHighlight ($fl = '')
     {
         return str_replace(array('&nbsp;', '<code>', '</code>'), array('&#160;', '', ''), preg_replace('#color="(.*?)"#', 'style="color: $1"', str_replace(array('<font ', '</font>'), array('<span ', '</span>'), highlight_string($fl, true))));
     }
 
 
-    public function url_highlight ($fl = '')
+    /**
+     * urlHighlight
+     * 
+     * @param string $fl
+     * @return string
+     */
+    public function urlHighlight ($fl = '')
     {
         return '<code>' . nl2br(
             preg_replace('/(&quot;|&#039;)[^<>]*(&quot;|&#039;)/iU', '<span style="color:#DD0000">$0</span>',
@@ -887,9 +1050,17 @@ class Gmanager extends Config
     }
 
 
-    public function code ($fl = '', $line = 0)
+    /**
+     * code
+     * 
+     * @param string $fl
+     * @param int    $line
+     * @param bool   $url
+     * @return string
+     */
+    public function code ($fl = '', $line = 0, $url = false)
     {
-        $array = explode('<br />', $this->xhtml_highlight($fl));
+        $array = explode('<br />', $url ? $this->urlHighlight($fl) : $this->xhtmlHighlight($fl));
         $all = sizeof($array);
         $len = strlen($all);
         $page = '';
@@ -903,17 +1074,27 @@ class Gmanager extends Config
     }
 
 
-    public function rename_zip_file ($current, $name, $arch_name, $del, $overwrite)
+    /**
+     * renameZipFile
+     * 
+     * @param string $current
+     * @param string $name
+     * @param string $arch_name
+     * @param bool   $del
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function renameZipFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
         $tmp = Config::$temp . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $folder = '';
 
         foreach ($zip->extract(PCLZIP_OPT_PATH, $tmp) as $f) {
             if ($f['status'] != 'ok') {
                 $this->clean($tmp);
                 if (Config::$mode == 'FTP') {
-                    $this->ftp_archive_end();
+                    $this->ftpArchiveEnd();
                 }
                 return $this->report($GLOBALS['lng']['extract_false'], 1);
                 break;
@@ -933,7 +1114,7 @@ class Gmanager extends Config
             } else {
                 $this->clean($tmp);
                 if (Config::$mode == 'FTP') {
-                    $this->ftp_archive_end();
+                    $this->ftpArchiveEnd();
                 }
                 return $this->report($GLOBALS['lng']['overwrite_false'], 1);
                 break;
@@ -949,9 +1130,9 @@ class Gmanager extends Config
         if ($folder) {
             // переделать на ftp
             if ($del) {
-                $result = $this->move_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
+                $result = $this->moveFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
             } else {
-                $result = $this->copy_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
+                $result = $this->copyFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
             }
         } else {
             if ($del) {
@@ -964,7 +1145,7 @@ class Gmanager extends Config
         if (!$result) {
             $this->clean($tmp);
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end();
+                $this->ftpArchiveEnd();
             }
             if ($folder) {
                 if ($del) {
@@ -985,7 +1166,7 @@ class Gmanager extends Config
 
         $this->clean($tmp);
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end($current);
+            $this->ftpArchiveEnd($current);
         }
 
         if ($result) {
@@ -1020,15 +1201,149 @@ class Gmanager extends Config
     }
 
 
-    public function list_zip_archive ($current = '', $down = '')
+    /**
+     * renameTarFile
+     * 
+     * @param string $current
+     * @param string $name
+     * @param bool   $del
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function renameTarFile ($current, $name, $arch_name, $del = false, $overwrite = false)
+    {
+        $tmp = Config::$temp . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
+        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+
+        $folder = '';
+        foreach($tgz->listContent() as $f) {
+            if ($arch_name == $f['filename']) {
+                $folder = $f['typeflag'] == 5 ? 1 : 0;
+                break;
+            }
+        }
+
+        if (!$tgz->extract($tmp)) {
+            $this->clean($tmp);
+            if (Config::$mode == 'FTP') {
+                $this->ftpArchiveEnd();
+            }
+            return $this->report($GLOBALS['lng']['extract_false'], 1);
+        }
+
+        if (file_exists($tmp . '/' . $name)) {
+            if ($overwrite) {
+                if ($folder) {
+                    $this->clean($tmp . '/' . $name);
+                } else {
+                    unlink($tmp . '/' . $name);
+                }
+            } else {
+                $this->clean($tmp);
+                if (Config::$mode == 'FTP') {
+                    $this->ftpArchiveEnd();
+                }
+                return $this->report($GLOBALS['lng']['overwrite_false'], 1);
+                break;
+            }
+        }
+
+        if ($folder) {
+            @mkdir($tmp . '/' . $name, 0755, true);
+        } else {
+            @mkdir($tmp . '/' . dirname($name), 0755, true);
+        }
+
+        if ($folder) {
+            // переделать на ftp
+            if ($del) {
+                $result = $this->moveFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
+            } else {
+                $result = $this->copyFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
+            }
+        } else {
+            if ($del) {
+                $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+            } else {
+                $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+            }
+        }
+
+        if (!$result) {
+            $this->clean($tmp);
+            if (Config::$mode == 'FTP') {
+                $this->ftpArchiveEnd();
+            }
+            if ($folder) {
+                if ($del) {
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+                } else {
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+                }
+            } else {
+                if ($del) {
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+                } else {
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+                }
+            }
+        }
+
+        $result = $tgz->createModify($tmp, '.', $tmp);
+
+        $this->clean($tmp);
+        if (Config::$mode == 'FTP') {
+            $this->ftpArchiveEnd($current);
+        }
+
+        if ($result) {
+            if ($folder) {
+                if ($del) {
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+                } else {
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+                }
+            } else {
+                if ($del) {
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_true']), 0);
+                } else {
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_true']), 0);
+                }
+            }
+        } else {
+            if ($folder) {
+                if ($del) {
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+                } else {
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+                }
+            } else {
+                if ($del) {
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+                } else {
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * listZipArchive
+     * 
+     * @param string $current
+     * @param string $down
+     * @return string
+     */
+    public function listZipArchive ($current = '', $down = '')
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
 
         if (!$list = $zip->listContent()) {
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), 2) . '</td></tr>';
         } else {
@@ -1049,9 +1364,9 @@ class Gmanager extends Config
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars($this->get_type($list[$i]['filename']), ENT_NOQUOTES);
+                    $type = htmlspecialchars($this->getType($list[$i]['filename']), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars($this->strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
-                    $size = $this->format_size($list[$i]['size']);
+                    $size = $this->formatSize($list[$i]['size']);
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
                 }
 
@@ -1091,7 +1406,7 @@ class Gmanager extends Config
             }
 
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end();
+                $this->ftpArchiveEnd();
             }
 
             $prop = $zip->properties();
@@ -1107,15 +1422,22 @@ class Gmanager extends Config
     }
 
 
-    public function list_rar_archive ($current = '', $down = '')
+    /**
+     * listRarArchive
+     * 
+     * @param string $current
+     * @param string $down
+     * @return string
+     */
+    public function listRarArchive ($current = '', $down = '')
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-        $rar = rar_open(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $rar = rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
 
         if (!$list = rar_list($rar)) {
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report($GLOBALS['lng']['archive_error'], 2) . '</td></tr>';
         } else {
@@ -1136,9 +1458,9 @@ class Gmanager extends Config
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars(get_type($list[$i]->getName()), ENT_NOQUOTES);
+                    $type = htmlspecialchars($this->getType($list[$i]->getName()), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars($this->strLink($list[$i]->getName(), true), ENT_NOQUOTES) . '</a>';
-                    $size = $this->format_size($list[$i]->getUnpackedSize());
+                    $size = $this->formatSize($list[$i]->getUnpackedSize());
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
                 }
 
@@ -1178,7 +1500,7 @@ class Gmanager extends Config
             }
 
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end();
+                $this->ftpArchiveEnd();
             }
 
             return $l;
@@ -1186,131 +1508,20 @@ class Gmanager extends Config
     }
 
 
-    public function rename_tar_file ($current, $name, $arch_name, $del, $overwrite)
+    /**
+     * listTarArchive
+     * 
+     * @param string $current
+     * @param string $down
+     * @return string
+     */
+    public function listTarArchive ($current = '', $down = '')
     {
-        $tmp = Config::$temp . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
-
-        $folder = '';
-        foreach($tgz->listContent() as $f) {
-            if ($arch_name == $f['filename']) {
-                $folder = $f['typeflag'] == 5 ? 1 : 0;
-                break;
-            }
-        }
-
-        if (!$tgz->extract($tmp)) {
-            $this->clean($tmp);
-            if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end();
-            }
-            return $this->report($GLOBALS['lng']['extract_false'], 1);
-        }
-
-        if (file_exists($tmp . '/' . $name)) {
-            if ($overwrite) {
-                if ($folder) {
-                    $this->clean($tmp . '/' . $name);
-                } else {
-                    unlink($tmp . '/' . $name);
-                }
-            } else {
-                $this->clean($tmp);
-                if (Config::$mode == 'FTP') {
-                    $this->ftp_archive_end();
-                }
-                return $this->report($GLOBALS['lng']['overwrite_false'], 1);
-                break;
-            }
-        }
-
-        if ($folder) {
-            @mkdir($tmp . '/' . $name, 0755, true);
-        } else {
-            @mkdir($tmp . '/' . dirname($name), 0755, true);
-        }
-
-        if ($folder) {
-            // переделать на ftp
-            if ($del) {
-                $result = $this->move_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
-            } else {
-                $result = $this->copy_files($tmp . '/' . $name, $tmp . '/' . $arch_name);
-            }
-        } else {
-            if ($del) {
-                $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
-            } else {
-                $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
-            }
-        }
-
-        if (!$result) {
-            $this->clean($tmp);
-            if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end();
-            }
-            if ($folder) {
-                if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
-                } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
-                }
-            } else {
-                if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
-                } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
-                }
-            }
-        }
-
-        $result = $tgz->createModify($tmp, '.', $tmp);
-
-        $this->clean($tmp);
-        if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end($current);
-        }
-
-        if ($result) {
-            if ($folder) {
-                if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
-                } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
-                }
-            } else {
-                if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_true']), 0);
-                } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_true']), 0);
-                }
-            }
-        } else {
-            if ($folder) {
-                if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
-                } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
-                }
-            } else {
-                if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
-                } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
-                }
-            }
-        }
-    }
-
-
-    public function list_tar_archive ($current = '', $down = '')
-    {
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
 
         if (!$list = $tgz->listContent()) {
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report($GLOBALS['lng']['archive_error'], 2) . '</td></tr>';
         } else {
@@ -1331,9 +1542,9 @@ class Gmanager extends Config
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars($this->get_type($list[$i]['filename']), ENT_NOQUOTES);
+                    $type = htmlspecialchars($this->getType($list[$i]['filename']), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars($this->strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
-                    $size = $this->format_size($list[$i]['size']);
+                    $size = $this->formatSize($list[$i]['size']);
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
                 }
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -1372,7 +1583,7 @@ class Gmanager extends Config
             }
 
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end();
+                $this->ftpArchiveEnd();
             }
 
             return $l;
@@ -1380,24 +1591,39 @@ class Gmanager extends Config
     }
 
 
-    public function edit_zip_file ($current = '', $f = '')
+    /**
+     * editZipFile
+     * 
+     * @param string $current
+     * @param string $f
+     * @return string
+     */
+    public function editZipFile ($current = '', $f = '')
     {
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end('');
+            $this->ftpArchiveEnd('');
         }
 
         if (!$ext) {
             return array('text' => $GLOBALS['lng']['archive_error'], 'size' => 0, 'lines' => 0);
         } else {
-            return array('text' => trim($ext[0]['content']), 'size' => $this->format_size($ext[0]['size']), 'lines' => sizeof(explode("\n", $ext[0]['content'])));
+            return array('text' => trim($ext[0]['content']), 'size' => $this->formatSize($ext[0]['size']), 'lines' => sizeof(explode("\n", $ext[0]['content'])));
         }
     }
 
 
-    public function edit_zip_file_ok ($current = '', $f = '', $text = '')
+    /**
+     * editZipFileOk
+     * 
+     * @param string $current
+     * @param string $f
+     * @param string $text
+     * @return string
+     */
+    public function editZipFileOk ($current = '', $f = '', $text = '')
     {
         self::$pclzipTmp = $f;
         $tmp = Config::$temp . '/GmanagerArchivers' . $_SERVER['REQUEST_TIME'] . '.tmp';
@@ -1411,13 +1637,13 @@ class Gmanager extends Config
         fputs($fp, $text);
         fclose($fp);
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $comment = $zip->properties();
         $comment = $comment['comment'];
 
         if ($zip->delete(PCLZIP_OPT_BY_NAME, $f) == 0) {
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
             unlink($tmp);
             return $this->report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
@@ -1434,7 +1660,7 @@ class Gmanager extends Config
 
         unlink($tmp);
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end($current);
+            $this->ftpArchiveEnd($current);
         }
 
         if ($fl) {
@@ -1445,16 +1671,24 @@ class Gmanager extends Config
     }
 
 
-    public function look_zip_file ($current = '', $f = '', $str = false)
+    /**
+     * lookZipFile
+     * 
+     * @param string $current
+     * @param string $f
+     * @param string $str
+     * @return string
+     */
+    public function lookZipFile ($current = '', $f = '', $str = false)
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $r_f = str_replace('%2F', '/', rawurlencode($f));
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end('');
+            $this->ftpArchiveEnd('');
         }
 
         if (!$ext) {
@@ -1465,18 +1699,26 @@ class Gmanager extends Config
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return $this->report($GLOBALS['lng']['archive_size'] . ': ' . $this->format_size($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->format_size($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', 0) . $this->code(trim($ext[0]['content']));
+                return $this->report($GLOBALS['lng']['archive_size'] . ': ' . $this->formatSize($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', 0) . $this->code(trim($ext[0]['content']));
             }
         }
     }
 
 
-    public function look_rar_file ($current = '', $f = '', $str = false)
+    /**
+     * lookRarFile
+     * 
+     * @param string $current
+     * @param string $f
+     * @param string $str
+     * @return string
+     */
+    public function lookRarFile ($current = '', $f = '', $str = false)
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $r_f = str_replace('%2F', '/', rawurlencode($f));
     
-        $rar = rar_open(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $rar = rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $entry = rar_entry_get($rar, $f);
     
         // создаем временный файл
@@ -1487,7 +1729,7 @@ class Gmanager extends Config
         unlink($tmp);
     
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end('');
+            $this->ftpArchiveEnd('');
         }
     
         if (!$ext) {
@@ -1496,27 +1738,35 @@ class Gmanager extends Config
             if ($str) {
                 return $ext;
             } else {
-                return $this->report($GLOBALS['lng']['archive_size'] . ': ' . $this->format_size($entry->getPackedSize()) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->format_size($entry->getUnpackedSize()) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, strtotime($entry->getFileTime()))) . $this->code(trim($ext));
+                return $this->report($GLOBALS['lng']['archive_size'] . ': ' . $this->formatSize($entry->getPackedSize()) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($entry->getUnpackedSize()) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, strtotime($entry->getFileTime()))) . $this->code(trim($ext));
             }
         }
     }
 
 
-    public function look_tar_file ($current = '', $f = '', $str = false)
+    /**
+     * lookTarFile
+     * 
+     * @param string $current
+     * @param string $f
+     * @param string $str
+     * @return string
+     */
+    public function lookTarFile ($current = '', $f = '', $str = false)
     {
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $ext = $tgz->extractInString($f);
 
         if (!$ext) {
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
             return $this->report($GLOBALS['lng']['archive_error'], 2);
         } else {
             $list = $tgz->listContent();
 
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
 
             $s = sizeof($list);
@@ -1527,7 +1777,7 @@ class Gmanager extends Config
                     if ($str) {
                         return $ext;
                     } else {
-                        return $this->report($GLOBALS['lng']['real_size'] . ': ' . $this->format_size($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $list[$i]['mtime']), 0) . $this->code(trim($ext));
+                        return $this->report($GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $list[$i]['mtime']), 0) . $this->code(trim($ext));
                     }
                 }
             }
@@ -1535,7 +1785,16 @@ class Gmanager extends Config
     }
 
 
-    public function extract_zip_archive ($current = '', $name = '', $chmod = array(), $overwrite = false)
+    /**
+     * extractZipArchive
+     * 
+     * @param string $current
+     * @param string $name
+     * @param array  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function extractZipArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
     {
         if (Config::$mode == 'FTP') {
             $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
@@ -1583,8 +1842,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->create_dir($name, self::$pclzipD);
-            $this->ftp_move_files($ftp_name, $name, self::$pclzipF, self::$pclzipD, $overwrite);
+            $this->createDir($name, self::$pclzipD);
+            $this->ftpMoveFiles($ftp_name, $name, self::$pclzipF, self::$pclzipD, $overwrite);
             unlink($ftp_current);
         }
 
@@ -1599,7 +1858,16 @@ class Gmanager extends Config
     }
 
 
-    public function extract_rar_archive ($current = '', $name = '', $chmod = array(), $overwrite = false)
+    /**
+     * extractRarArchive
+     * 
+     * @param string $current
+     * @param string $name
+     * @param array  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function extractRarArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
     {
         if (Config::$mode == 'FTP') {
             $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
@@ -1635,8 +1903,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->create_dir($name, $chmod[1]);
-            $this->ftp_move_files($ftp_name, $name, $chmod[0], $chmod[1], $overwrite);
+            $this->createDir($name, $chmod[1]);
+            $this->ftpMoveFiles($ftp_name, $name, $chmod[0], $chmod[1], $overwrite);
             unlink($ftp_current);
         }
 
@@ -1649,7 +1917,16 @@ class Gmanager extends Config
     }
 
 
-    public function extract_tar_archive ($current = '', $name = '', $chmod = array(), $overwrite = false)
+    /**
+     * extractTarArchive
+     * 
+     * @param string $current
+     * @param string $name
+     * @param array  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function extractTarArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
     {
         if (Config::$mode == 'FTP') {
             $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
@@ -1698,8 +1975,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->create_dir($name, $chmod[1]);
-            $this->ftp_move_files($ftp_name, $name, $chmod[0], $chmod[1], $overwrite);
+            $this->createDir($name, $chmod[1]);
+            $this->ftpMoveFiles($ftp_name, $name, $chmod[0], $chmod[1], $overwrite);
             unlink($ftp_current);
         }
 
@@ -1712,7 +1989,17 @@ class Gmanager extends Config
     }
 
 
-    public function extract_zip_file ($current = '', $name = '', $chmod = '0755', $fl = '', $overwrite = false)
+    /**
+     * extractZipFile
+     * 
+     * @param string $current
+     * @param string $name
+     * @param mixed  $chmod
+     * @param string $fl
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function extractZipFile ($current = '', $name = '', $chmod = '', $fl = '', $overwrite = false)
     {
         $err = '';
         if ($overwrite) {
@@ -1757,8 +2044,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->create_dir($name);
-            $this->ftp_move_files($ftp_name, $name, $overwrite);
+            $this->createDir($name);
+            $this->ftpMoveFiles($ftp_name, $name, $overwrite);
             unlink($ftp_current);
         }
 
@@ -1773,7 +2060,17 @@ class Gmanager extends Config
     }
 
 
-    public function extract_rar_file ($current = '', $name = '', $chmod = '0755', $ext = '', $overwrite = false)
+    /**
+     * extractRarFile
+     * 
+     * @param string $current
+     * @param string $name
+     * @param mixed  $chmod
+     * @param string $fl
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function extractRarFile ($current = '', $name = '', $chmod = '', $ext = '', $overwrite = false)
     {
         $tmp = array();
         $err = '';
@@ -1819,8 +2116,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->create_dir($name);
-            $this->ftp_move_files($ftp_name, $name, $overwrite);
+            $this->createDir($name);
+            $this->ftpMoveFiles($ftp_name, $name, $overwrite);
             unlink($ftp_current);
         }
 
@@ -1835,7 +2132,17 @@ class Gmanager extends Config
     }
 
 
-    public function extract_tar_file ($current = '', $name = '', $chmod = '0755', $ext = '', $overwrite = false)
+    /**
+     * extractTarFile
+     * 
+     * @param string $current
+     * @param string $name
+     * @param mixed  $chmod
+     * @param string $fl
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function extractTarFile ($current = '', $name = '', $chmod = '', $ext = '', $overwrite = false)
     {
         $tmp = array();
         $err = '';
@@ -1874,8 +2181,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->create_dir($name);
-            $this->ftp_move_files($ftp_name, $name, $overwrite);
+            $this->createDir($name);
+            $this->ftpMoveFiles($ftp_name, $name, $overwrite);
             unlink($ftp_current);
         }
 
@@ -1890,9 +2197,16 @@ class Gmanager extends Config
     }
 
 
-    public function del_zip_archive ($current = '', $f = '')
+    /**
+     * delZipArchive
+     * 
+     * @param string $current
+     * @param string $f
+     * @return string
+     */
+    public function delZipArchive ($current = '', $f = '')
     {
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         //    $comment = $zip->properties();
         //    $comment = $comment['comment'];
         //  TODO: сохранение комментариев
@@ -1908,7 +2222,7 @@ class Gmanager extends Config
 
 
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end($current);
+            $this->ftpArchiveEnd($current);
         }
 
         if ($list != 0) {
@@ -1919,9 +2233,16 @@ class Gmanager extends Config
     }
 
 
-    public function del_tar_archive ($current = '', $f = '')
+    /**
+     * delTarArchive
+     * 
+     * @param string $current
+     * @param string $f
+     * @return string
+     */
+    public function delTarArchive ($current = '', $f = '')
     {
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftp_archive_start($current) : $current);
+        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
 
         $list = $tgz->listContent();
 
@@ -1943,7 +2264,7 @@ class Gmanager extends Config
         $this->clean($tmp_name);
 
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end($current);
+            $this->ftpArchiveEnd($current);
         }
 
         if ($list) {
@@ -1954,17 +2275,15 @@ class Gmanager extends Config
     }
 
 
-    public function add_archive ($c = '')
-    {
-        $current = dirname($c) . '/';
-        $r_current = str_replace('%2F', '/', rawurlencode($current));
-        echo '<form action="change.php?c=' . $r_current . '&amp;go=1" method="post"><div class="telo"><table><tr><th>' . $GLOBALS['lng']['ch_index'] . '</th>' . (Config::$index['name'] ? '<th>' . $GLOBALS['lng']['name'] . '</th>' : '') . '' . (Config::$index['type'] ? '<th>' . $GLOBALS['lng']['type'] . '</th>' : '') . '' . (Config::$index['size'] ? '<th>' . $GLOBALS['lng']['size'] . '</th>' : '') . '' . (Config::$index['change'] ? '<th>' . $GLOBALS['lng']['change'] . '</th>' : '') . '' . (Config::$index['del'] ? '<th>' . $GLOBALS['lng']['del'] . '</th>' : '') . '' . (Config::$index['chmod'] ? '<th>' . $GLOBALS['lng']['chmod'] . '</th>' : '') . '' . (Config::$index['date'] ? '<th>' . $GLOBALS['lng']['date'] . '</th>' : '') . '' . (Config::$index['uid'] ? '<th>' . $GLOBALS['lng']['uid'] . '</th>' : '') . '' . (Config::$index['n'] ? '<th>' . $GLOBALS['lng']['n'] . '</th>' : '') . '</tr>';
-        echo $this->look($current);
-        echo '</table><div class="ch"><input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/></div></div></form><div class="rb">' . $GLOBALS['lng']['create'] . '<a href="change.php?go=create_file&amp;c=' . $r_current . '">' . $GLOBALS['lng']['file'] . '</a> / <a href="change.php?go=create_dir&amp;c=' . $r_current . '">' . $GLOBALS['lng']['dir'] . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $r_current . '">' . $GLOBALS['lng']['upload'] . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $r_current . '">' . $GLOBALS['lng']['mod'] . '</a><br/></div>';
-    }
-
-
-    public function add_zip_archive ($current = '', $ext = '', $dir = '')
+    /**
+     * addZipArchive
+     * 
+     * @param string $current
+     * @param mixed  $ext
+     * @param string $dir
+     * @return string
+     */
+    public function addZipArchive ($current = '', $ext = array(), $dir = '')
     {
         if (Config::$mode == 'FTP') {
             $ftp_current = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
@@ -2000,7 +2319,15 @@ class Gmanager extends Config
     }
 
 
-    public function add_tar_archive ($current = '', $ext = '', $dir = '')
+    /**
+     * addTarArchive
+     * 
+     * @param string $current
+     * @param mixed  $ext
+     * @param string $dir
+     * @return string
+     */
+    public function addTarArchive ($current = '', $ext = array(), $dir = '')
     {
         if (Config::$mode == 'FTP') {
             $ftp_current = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
@@ -2038,13 +2365,23 @@ class Gmanager extends Config
     }
 
 
-    public function create_zip_archive ($name = '', $chmod = '0644', $ext = array(), $comment = '', $overwrite = false)
+    /**
+     * createZipArchive
+     * 
+     * @param string $name
+     * @param mixed  $chmod
+     * @param array  $ext
+     * @param string $comment
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function createZipArchive ($name = '', $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         if (!$overwrite && $this->file_exists($name)) {
             return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', 1);
         }
 
-        $this->create_dir(iconv_substr($name, 0, strrpos($name, '/')));
+        $this->createDir(iconv_substr($name, 0, strrpos($name, '/')));
 
         if (Config::$mode == 'FTP') {
              $ftp_name = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
@@ -2055,7 +2392,7 @@ class Gmanager extends Config
                  $ftp[] = $tmp = $temp . '/' . basename($f);
                  if ($this->is_dir($f)) {
                     mkdir($tmp, 0755, true);
-                    $this->ftp_copy_files($f, $tmp);
+                    $this->ftpCopyFiles($f, $tmp);
                  } else {
                     file_put_contents($tmp, $this->file_get_contents($f));
                  }
@@ -2093,9 +2430,15 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * gz
+     * 
+     * @param string $c
+     * @return string
+     */
     public function gz ($c = '')
     {
-        $data = Config::$mode == 'FTP' ? $this->ftp_archive_start($c) : $c;
+        $data = Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : $c;
 
         $fo = fopen($data, 'rb');
         fseek($fo, -4, SEEK_END);
@@ -2110,22 +2453,31 @@ class Gmanager extends Config
         $ext = implode('', gzfile($data));
 
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end();
+            $this->ftpArchiveEnd();
         }
 
         if ($ext) {
-            return $this->report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz, ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . $this->format_size($this->size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->format_size($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $this->filemtime($c)), 0) . $this->code(trim($ext));
+            return $this->report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz, ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . $this->formatSize($this->size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $this->filemtime($c)), 0) . $this->code(trim($ext));
         } else {
             return $this->report($GLOBALS['lng']['archive_error'], 2);
         }
     }
 
 
-    public function gz_extract ($c = '', $name = '', $chmod = array(), $overwrite = false)
+    /**
+     * gzExtract
+     * 
+     * @param string $c
+     * @param string $name
+     * @param array  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function gzExtract ($c = '', $name = '', $chmod = array(), $overwrite = false)
     {
-        $this->create_dir($name, $chmod[1]);
+        $this->createDir($name, $chmod[1]);
 
-        $tmp = (Config::$mode == 'FTP' ? $this->ftp_archive_start($c) : $c);
+        $tmp = (Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : $c);
 
         $fo = fopen($tmp, 'rb');
         fseek($fo, 10, SEEK_SET);
@@ -2145,7 +2497,7 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->ftp_archive_end();
+            $this->ftpArchiveEnd();
         }
         if ($data) {
             return $data;
@@ -2162,15 +2514,22 @@ class Gmanager extends Config
     }
 
 
-    public function get_archive_file ($archive = '', $f = '')
+    /**
+     * getArchiveFile
+     * 
+     * @param string $archive
+     * @param string $f
+     * @return string
+     */
+    public function getArchiveFile ($archive = '', $f = '')
     {
-        $tmp = $this->is_archive($this->get_type(basename($archive)));
+        $tmp = $this->isArchive($this->getType(basename($archive)));
         if ($tmp == 'ZIP') {
-            $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftp_archive_start($archive) : $archive);
+            $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($archive) : $archive);
             $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
             if (Config::$mode == 'FTP') {
-                $this->ftp_archive_end('');
+                $this->ftpArchiveEnd('');
             }
 
             return $ext[0]['content'];
@@ -2192,7 +2551,16 @@ class Gmanager extends Config
     }
 
 
-    public function upload_files ($tmp = '', $name = '', $dir = '', $chmod = '0644')
+    /**
+     * uploadFiles
+     * 
+     * @param string $tmp
+     * @param string $name
+     * @param string $dir
+     * @param mixed  $chmod
+     * @return string
+     */
+    public function uploadFiles ($tmp = '', $name = '', $dir = '', $chmod = 0644)
     {
         $fname = $name;
 
@@ -2215,12 +2583,23 @@ class Gmanager extends Config
     }
 
 
-    public function upload_url ($url = '', $name = '', $chmod = '0644', $headers = '')
+    /**
+     * uploadUrl
+     * 
+     * @param string $url
+     * @param string $name
+     * @param mixed  $chmod
+     * @param string $headers
+     * @param mixed  $set_time_limit
+     * @param bool   $ignore_user_abort
+     * @return string
+     */
+    public function uploadUrl ($url = '', $name = '', $chmod = 0644, $headers = '', $set_time_limit = false, $ignore_user_abort = false)
     {
-        if (isset($_POST['set_time_limit'])) {
-            set_time_limit($_POST['set_time_limit']);
+        if ($set_time_limit !== false) {
+            set_time_limit($set_time_limit);
         }
-        if (isset($_POST['ignore_user_abort'])) {
+        if ($ignore_user_abort) {
             ignore_user_abort(true);
         }
 
@@ -2263,7 +2642,7 @@ class Gmanager extends Config
         foreach ($tmp as $v) {
             $dir = dirname($v[1]);
             if (!$this->is_dir($dir)) {
-                $this->mkdir($dir, '0755');
+                $this->mkdir($dir, 0755);
             }
 
             if (Config::$mode == 'FTP') {
@@ -2286,7 +2665,16 @@ class Gmanager extends Config
     }
 
 
-    public function send_mail ($theme = '', $mess = '', $to = '', $from = '')
+    /**
+     * sendMail
+     * 
+     * @param string $theme
+     * @param string $mess
+     * @param string $to
+     * @param string $from
+     * @return string
+     */
+    public function sendMail ($theme = '', $mess = '', $to = '', $from = '')
     {
         if (mail($to, '=?utf-8?B?' . base64_encode($theme) . '?=', $mess, 'From: ' . $from . "\r\nContent-type: text/plain; charset=utf-8;\r\nX-Mailer: Gmanager " . Config::$version . "\r\nX-Priority: 3")) {
             return $this->report($GLOBALS['lng']['send_mail_true'], 0);
@@ -2296,7 +2684,13 @@ class Gmanager extends Config
     }
 
 
-    public function show_eval ($eval = '')
+    /**
+     * showEval
+     * 
+     * @param string $eval
+     * @return string
+     */
+    public function showEval ($eval = '')
     {
         if (ob_start()) {
             $info['time'] = microtime(true);
@@ -2305,7 +2699,7 @@ class Gmanager extends Config
             eval($eval);
 
             $info['time'] = round(microtime(true) - $info['time'], 6);
-            $info['ram'] = $this->format_size(memory_get_usage(false) - $info['ram'], 6);
+            $info['ram'] = $this->formatSize(memory_get_usage(false) - $info['ram'], 6);
             $buf = ob_get_contents();
             ob_end_clean();
 
@@ -2332,7 +2726,7 @@ class Gmanager extends Config
             eval($eval);
 
             $info['time'] = round(microtime(true) - $info['time'], 6);
-            $info['ram'] = $this->format_size(memory_get_usage(false) - $info['ram'], 6);
+            $info['ram'] = $this->formatSize(memory_get_usage(false) - $info['ram'], 6);
 
             echo '</code></pre>';
             echo str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' ' . $info['ram'] . '<br/></div>';
@@ -2340,7 +2734,13 @@ class Gmanager extends Config
     }
 
 
-    public function show_cmd ($cmd = '')
+    /**
+     * showCmd
+     * 
+     * @param string $cmd
+     * @return string
+     */
+    public function showCmd ($cmd = '')
     {
         $buf = '';
 
@@ -2383,7 +2783,16 @@ class Gmanager extends Config
     }
 
 
-    public function replace ($current = '', $from = '', $to = '', $regexp = '')
+    /**
+     * replace
+     * 
+     * @param string $current
+     * @param string $from
+     * @param string $to
+     * @param bool   $regexp
+     * @return string
+     */
+    public function replace ($current = '', $from = '', $to = '', $regexp = false)
     {
         if (!$from) {
             return $this->report($GLOBALS['lng']['replace_false_str'], 1);
@@ -2425,13 +2834,23 @@ class Gmanager extends Config
     }
 
 
-    public function zip_replace ($current = '', $f = '', $from = '', $to = '', $regexp = '')
+    /**
+     * zipReplace
+     * 
+     * @param string $current
+     * @param string $f
+     * @param string $from
+     * @param string $to
+     * @param bool   $regexp
+     * @return string
+     */
+    public function zipReplace ($current = '', $f = '', $from = '', $to = '', $regexp = false)
     {
         if (!$from) {
             return $this->report($GLOBALS['lng']['replace_false_str'], 1);
         }
 
-        $c = $this->edit_zip_file($current, $f);
+        $c = $this->editZipFile($current, $f);
         $c = $c['text'];
 
         if ($regexp) {
@@ -2441,7 +2860,7 @@ class Gmanager extends Config
             }
             $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
             if ($str) {
-                return $this->edit_zip_file_ok($current, $f, $str);
+                return $this->editZipFileOk($current, $f, $str);
             } else {
                 return $this->report($GLOBALS['lng']['regexp_error'], 1);
             }
@@ -2450,11 +2869,17 @@ class Gmanager extends Config
                 return $this->report($GLOBALS['lng']['replace_false_str'], 1);
             }
 
-            return $this->edit_zip_file_ok($current, $f, str_replace($from, $to, $c));
+            return $this->editZipFileOk($current, $f, str_replace($from, $to, $c));
         }
     }
 
 
+    /**
+     * gzencode
+     * 
+     * @param string $data
+     * @return string
+     */
     public function gzencode ($data)
     {
         if (function_exists('gzdecode')) {
@@ -2468,6 +2893,18 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * search
+     * 
+     * @param string $c
+     * @param string $s
+     * @param bool   $w
+     * @param bool   $r
+     * @param bool   $h
+     * @param int    $limit
+     * @param bool   $archive
+     * @return string
+     */
     public function search ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
     {
         static $count = 0;
@@ -2505,8 +2942,8 @@ class Gmanager extends Config
 
             //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
             $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
-            $type = htmlspecialchars($this->get_type(basename($f)), ENT_NOQUOTES);
-            $arch = $this->is_archive($type);
+            $type = htmlspecialchars($this->getType(basename($f)), ENT_NOQUOTES);
+            $arch = $this->isArchive($type);
             $stat = $this->stat($c . $f);
             $name = htmlspecialchars($this->strLink($c . $f, true), ENT_NOQUOTES);
 
@@ -2573,7 +3010,7 @@ class Gmanager extends Config
                 $ptype = '<td>' . $type . '</td>';
             }
             if (Config::$index['size']) {
-                $psize = '<td>' . $this->format_size($stat['size']) . '</td>';
+                $psize = '<td>' . $this->formatSize($stat['size']) . '</td>';
             }
             if (Config::$index['change']) {
                 $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
@@ -2582,7 +3019,7 @@ class Gmanager extends Config
                 $pdel = '<td><a' . (Config::$del_notify ? ' onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')"' : '') . ' href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if (Config::$index['chmod']) {
-                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $this->look_chmod($c . $f) . '</a></td>';
+                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $this->lookChmod($c . $f) . '</a></td>';
             }
             if (Config::$index['date']) {
                 $pdate = '<td>' . strftime(Config::$date_format, $stat['mtime']) . '</td>';
@@ -2611,7 +3048,17 @@ class Gmanager extends Config
     }
 
 
-    public function fname ($f = '', $name = '', $register = '', $i = '', $overwrite = false)
+    /**
+     * fname
+     * 
+     * @param string $f
+     * @param string $name
+     * @param int    $register
+     * @param int    $i
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function fname ($f = '', $name = '', $register = 0, $i = 0, $overwrite = false)
     {
         // [replace=from,to] - replace
         // [n=0] - meter
@@ -2669,27 +3116,69 @@ class Gmanager extends Config
     }
 
 
-    public function sql_installer ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
+    /**
+     * sqlInstaller
+     * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
+     * @param string $db
+     * @param string $charset
+     * @param string $sql
+     * @return string
+     */
+    public function sqlInstaller ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
     {
         $SQL = new SQL_MySQL($this);
         return $SQL->installer($host, $name, $pass, $db, $charset, $sql);
     }
 
 
-    public function sql_backup ($host = '', $name = '', $pass = '', $db = '', $data = '', $charset = '', $tables = array())
+    /**
+     * sqlBackup
+     * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
+     * @param string $db
+     * @param string $charset
+     * @param string $data
+     * @param array  $tables
+     * @return mixed
+     */
+    public function sqlBackup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '', $tables = array())
     {
         $SQL = new SQL_MySQL($this);
-        return $SQL->backup($host, $name, $pass, $db, $charset, $tables);
+        return $SQL->backup($host, $name, $pass, $db, $charset, $data, $tables);
     }
 
 
-    public function sql_query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
+    /**
+     * sqlQuery
+     * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
+     * @param string $db
+     * @param string $charset
+     * @param string $data
+     * @return string
+     */
+    public function sqlQuery ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
         $SQL = new SQL_MySQL($this);
         return $SQL->query($host, $name, $pass, $db, $charset, $data);
     }
 
 
+    /**
+     * go
+     * 
+     * @param int    $pg
+     * @param int    $all
+     * @param string $text
+     * @return string
+     */
     public function go ($pg = 0, $all = 0, $text = '')
     {
         $go = '';
@@ -2730,6 +3219,13 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * strLink
+     * 
+     * @param string $str
+     * @param bool   $sub
+     * @return string
+     */
     public function strLink ($str = '', $sub = false)
     {
         if (Config::$sysType == 'WIN') {
@@ -2750,6 +3246,15 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * getData
+     * 
+     * @param string $url
+     * @param string $headers
+     * @param bool   $only_headers
+     * @param string $post
+     * @return array
+     */
     public function getData ($url = '', $headers = '', $only_headers = false, $post = '')
     {
         $u = parse_url($url);
@@ -2808,7 +3313,8 @@ class Gmanager extends Config
 
 
     /**
-     * @param void
+     * error
+     * 
      * @return string
      */
     public function error ()
@@ -2827,8 +3333,11 @@ class Gmanager extends Config
 
 
     /**
-     * @param string
-     * @param int 0 - ok, 1 - error, 2 - error + email
+     * report
+     * 
+     * @param string $text
+     * @param int    $error 0 - ok, 1 - error, 2 - error + email
+     * @return string
      */
     public function report ($text = '', $error = 0)
     {
@@ -2842,7 +3351,14 @@ class Gmanager extends Config
     }
 
 
-    public function encoding ($text, $charset)
+    /**
+     * encoding
+     * 
+     * @param string $text
+     * @param string $charset
+     * @return array
+     */
+    public function encoding ($text = '', $charset)
     {
         $ch = explode(' -> ', $charset);
         if ($text) {
@@ -2852,7 +3368,17 @@ class Gmanager extends Config
     }
 
 
-    public function ftp_move_files ($from = '', $to = '', $chmodf = '0644', $chmodd = '0755', $overwrite = false)
+    /**
+     * ftpMoveFiles
+     * 
+     * @param string $from
+     * @param string $to
+     * @param int    $chmodf
+     * @param int    $chmodd
+     * @param bool   $overwrite
+     * @return void
+     */
+    public function ftpMoveFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
         $h = opendir($from);
         while (($f = readdir($h)) !== false) {
@@ -2862,7 +3388,7 @@ class Gmanager extends Config
 
             if (is_dir($from . '/' . $f)) {
                 $this->mkdir($to . '/' . $f, $chmodd);
-                $this->ftp_move_files($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
+                $this->ftpMoveFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
                 rmdir($from . '/' . $f);
             } else {
                 if ($overwrite || !$this->file_exists($to . '/' . $f)) {
@@ -2878,7 +3404,17 @@ class Gmanager extends Config
     }
 
 
-    public function ftp_copy_files ($from = '', $to = '', $chmodf = '0644', $chmodd = '0755', $overwrite = false)
+    /**
+     * ftpCopyFiles
+     * 
+     * @param string $from
+     * @param string $to
+     * @param int    $chmodf
+     * @param int    $chmodd
+     * @param bool   $overwrite
+     * @return void
+     */
+    public function ftpCopyFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
         foreach ($this->iterator($from) as $f) {
             if ($f == '.' || $f == '..') {
@@ -2887,7 +3423,7 @@ class Gmanager extends Config
 
             if ($this->is_dir($from . '/' . $f)) {
                 mkdir($to . '/' . $f, $chmodd);
-                $this->ftp_copy_files($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
+                $this->ftpCopyFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
             } else {
                 if ($overwrite || !file_exists($to . '/' . $f)) {
                     file_put_contents($to . '/' . $f, $this->file_get_contents($from . '/' . $f));
@@ -2897,24 +3433,42 @@ class Gmanager extends Config
     }
 
 
-    public function ftp_archive_start ($current = '')
+    /**
+     * ftpArchiveStart
+     * 
+     * @param string $current
+     * @return string
+     */
+    public function ftpArchiveStart ($current = '')
     {
-        self::$_ftp_archive_start = Config::$temp . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
-        file_put_contents(self::$_ftp_archive_start, $this->file_get_contents($current));
-        return self::$_ftp_archive_start;
+        self::$_ftpArchive = Config::$temp . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        file_put_contents(self::$_ftpArchive, $this->file_get_contents($current));
+        return self::$_ftpArchive;
     }
 
 
-    public function ftp_archive_end ($current = '')
+    /**
+     * ftpArchiveEnd
+     * 
+     * @param string $current
+     * @return void
+     */
+    public function ftpArchiveEnd ($current = '')
     {
         if ($current != '') {
-            $this->file_put_contents($current, file_get_contents(self::$_ftp_archive_start));
+            $this->file_put_contents($current, file_get_contents(self::$_ftpArchive));
         }
-        unlink(self::$_ftp_archive_start);
+        unlink(self::$_ftpArchive);
     }
 
 
-    public function get_type ($f)
+    /**
+     * getType
+     * 
+     * @param string $f
+     * @return string
+     */
+    public function getType ($f)
     {
         $type = array_reverse(explode('.', strtoupper($f)));
         if ((isset($type[1]) && $type[1] != '') && ($type[1] . '.' . $type[0] == 'TAR.GZ' || $type[1] . '.' . $type[0] == 'TAR.BZ' || $type[1] . '.' . $type[0] == 'TAR.GZ2' || $type[1] . '.' . $type[0] == 'TAR.BZ2')) {
@@ -2925,7 +3479,13 @@ class Gmanager extends Config
     }
 
 
-    public function is_archive ($type)
+    /**
+     * isArchive
+     * 
+     * @param string $type
+     * @return string
+     */
+    public function isArchive ($type)
     {
         if ($type == 'ZIP' || $type == 'JAR' || $type == 'AAR' || $type == 'WAR') {
             return 'ZIP';
@@ -2941,6 +3501,13 @@ class Gmanager extends Config
     }
 
 
+    /**
+     * uid2name
+     * 
+     * @param int    $uid
+     * @param string $os
+     * @return string
+     */
     public static function uid2name ($uid = 0, $os = 'UNIX')
     {
         if ($os == 'WIN') {
@@ -2957,11 +3524,17 @@ class Gmanager extends Config
     }
 
 
-    public function clean ($name = '')
+    /**
+     * clean
+     * 
+     * @param string $name
+     * @return void
+     */
+    public function clean ($dir = '')
     {
-        $h = @opendir($name);
+        $h = @opendir($dir);
         if (!$h) {
-            return false;
+            return;
         }
 
         while (($f = readdir($h)) !== false) {
@@ -2969,18 +3542,27 @@ class Gmanager extends Config
                 continue;
             }
 
-            if (is_dir($name . '/' . $f)) {
-                @rmdir($name . '/' . $f);
-                $this->clean($name . '/' . $f);
+            if (is_dir($dir . '/' . $f)) {
+                @rmdir($dir . '/' . $f);
+                $this->clean($dir . '/' . $f);
             } else {
-                unlink($name . '/' . $f);
+                unlink($dir . '/' . $f);
             }
         }
         closedir($h);
-        rmdir($name);
+        rmdir($dir);
     }
 
 
+    /**
+     * error_handler
+     * 
+     * @param int    $errno
+     * @param string $errstr
+     * @param string $errfile
+     * @param int    $errline
+     * @return bool
+     */
     public static function error_handler ($errno, $errstr, $errfile, $errline)
     {
         if (preg_match('/Gmanager\.php\((\d+)\) : eval\(\)\'d code/', $errfile)) {
@@ -3080,7 +3662,6 @@ class Gmanager extends Config
 
         return true;
     }
-
 }
 
 ?>

@@ -13,15 +13,13 @@
  */
 
 
-require dirname(__FILE__) . '/../lng/ru.php'; // Локализация (en, ua, ru)
+// Локализация (en, ua, ru)
+require dirname(__FILE__) . '/../lng/ru.php';
 
 
 class Config extends HTTP // Протокол, через который будет работать менеджер FTP или HTTP (в верхнем регистре)
 {
-    public static $current  = './';
-    public static $hCurrent;
-    public static $rCurrent;
-    public static $sysType;
+    public static $current          = './';                 // Директория по умолчанию
 
 
     public static $ftp = array (
@@ -29,14 +27,14 @@ class Config extends HTTP // Протокол, через который буд�
         'pass' => '',           // Пароль FTP
         'host' => 'localhost',  // Хост FTP
         'port' => 21            // Порт FTP
-    );     
-
-    public static $link            = 50;                   // Сокращать имена файлов, если они длиннее чем указанное количество символов
-    public static $auth = array (
-        'on'   => false,
-        'pass' => '1234',
-        'user' => 'Gemorroj'
     );
+
+    public static $auth = array (
+        'on'   => false,        // Авторизация на вход в менеджер
+        'pass' => '1234',       // Пароль
+        'user' => 'Gemorroj'    // Логин
+    );
+
 
     public static $addressBar      = true;                 // Поле ввода где можно в ручную набирать путь к папке/файлу
     public static $realname        = 2;                    // 0 - Относительные пути к файлам/директориям, 1 - Полные пути к файлам/директориям, 2 - Скрывать относительные пути к файлам/директориям
@@ -46,8 +44,9 @@ class Config extends HTTP // Протокол, через который буд�
     public static $del_notify      = 1;                    // Подтверждения при удалении файлов/директорий
     public static $wrap            = 0;                    // Переносы строк в текстовом редакторе (0 - выкл, 1 - вкл)
     public static $limit           = 50;                   // Максимальное количество файлов на странице по умолчанию
+    public static $link            = 50;                   // Сокращать имена файлов, если они длиннее чем указанное количество символов
     public static $php             = '/usr/local/bin/php'; // Путь к PHP
-    
+
 
     // Набор символов для рандомного переименования файлов
     public static $rand            = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -75,6 +74,7 @@ class Config extends HTTP // Протокол, через который буд�
         'lines'     =>  10  // количество строк в построчном редакторе
     );
 
+
     // Формат даты
     public static $date_format     = '%d.%m.%Y %H:%M';
     // Вторичная кодировка
@@ -86,7 +86,6 @@ class Config extends HTTP // Протокол, через который буд�
     // Верх
     // %title% - заменяется на имя текущей директории или файла
     public static $top = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru"><head><title>%title% - Gmanager 0.7.4 beta</title><link rel="stylesheet" type="text/css" href="style.css"/><script type="text/javascript" src="js.js"></script></head><body>';
-
     // Низ
     public static $foot = '<div class="w">Powered by Gemorroj<br/><a href="http://wapinet.ru/gmanager/">wapinet.ru</a></div></body></html>';
 
@@ -94,19 +93,25 @@ class Config extends HTTP // Протокол, через который буд�
     // Версия Менеджера (Не Менять!)
     public static $version = '0.7.4b';
 
+
+    // далее не трогаем
     public static $mode;
     public static $temp;
     public static $errors;
+    public static $hCurrent;
+    public static $rCurrent;
+    public static $sysType;
 
 
     public function __construct ()
     {
-        Auth::main($this); // Авторизация
+        // Авторизация
+        Auth::main($this);
 
         self::$mode = get_parent_class();
 
-        self::$temp    = dirname(__FILE__) . '/../data';      // Временная папка
-        self::$errors  = self::$temp . '/errors.dat';      // Запись ошибок (если false, пустая строка, null или 0, запись не производится)
+        self::$temp    = dirname(__FILE__) . '/../data';// Временная папка
+        self::$errors  = self::$temp . '/errors.dat';   // Запись ошибок (если false, пустая строка, null или 0, запись не производится)
 
 
         // Локаль
@@ -126,11 +131,7 @@ class Config extends HTTP // Протокол, через который буд�
             parent::__construct();
         }
     }
-
 }
-
-
-
 
 
 set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . DIRECTORY_SEPARATOR . 'lib');

@@ -1,22 +1,23 @@
-body{background-color:#f7f7f7;color:#000000;font-size:small;margin:0;padding:1px;border:3px solid #ebebeb;font-family:"Times New Roman",serif;}
+body{background-color:#f7f7f7;color:#000000;font-size:small;margin:0;padding:1px;border:3px solid #ebebeb;font-family:"Times New Roman","serif";}
 form{margin:0px;}
-textarea,select[multiple="true"],input[type="text"],input[type="file"]{width:85%;margin:2pt 1%;background-color:#f0f0f0;color:#000000;font-family:"Courier New",serif;border:1px solid #000000;}
-.check{text-align:center;}
+textarea{resize:both;}
+input[type="text"],input[type="file"]{resize:horizontal;}
+textarea,select[multiple="true"],input[type="text"],input[type="file"]{width:85%;margin:2pt 1%;background-color:#f0f0f0;color:#000000;font-family:"Courier New","serif";border:1px solid #000000;}
 input[type="text"]:hover,input[type="file"]:hover{background-color:#aaccff;}
-.input textarea,.input select,.input input[type="checkbox"],.input input[type="radio"]{margin:2pt 1%;}
 legend input[type="checkbox"]{margin:0 !important;}
-input[type="checkbox"]:checked{border:2px solid #ffffff;}
-input[type="checkbox"]:checked{background-color:#007090;}
+input[type="checkbox"]:checked{border:2px solid #ffffff;background-color:#007090;}
 tr:hover{background-color:#90bbdd;}
 th{border-radius:5pt;background-color:#777777;}
 table{width:100%;background-color:#b0b0b0;}
 a{color:#000033;text-decoration:none;}
 a:hover{text-decoration:underline;color:#aa0000;}
 a:active{color:#000000;}
+.input textarea,.input select,.input input[type="checkbox"],.input input[type="radio"]{margin:2pt 1%;}
+.check{text-align:center;}
 .w{border-radius:3pt;background-color:#007090;text-align:center;font-weight:bold;font-size:x-small;color:#000033;border:1px solid #000033;}
 .w a{color:#ffffff;}
 .w a:hover{color:#f0f0f0;}
-.w2{border-radius:10pt;text-align:center;font-weight:bold;margin:1% 2%;border:1px solid #0077a0;background-color:#000000;color:#ffffff;}
+.w2{text-shadow: 1pt 1pt 1pt #bbbbbb;border-radius:10pt;text-align:center;font-weight:bold;margin:1% 2%;border:1px solid #0077a0;background-color:#000000;color:#ffffff;}
 .telo{background-color:#007090;color:#ffffff;border:1px solid #000033;margin:1px;}
 .input{background-color:#aaaaaa;color:#000000;font-size:smaller;border:1px solid #0077a0;padding:0 0 0 1%;}
 .red{color:#ff0000;font-weight:bold;}
@@ -32,6 +33,6 @@ a:active{color:#000000;}
 .submit a{color:#000000;}
 .submit a:hover{color:#333333;background-color:#f0f0f0;}
 .submit a:visited{color:#111111;}
-.edit input[type="text"],textarea{margin:0 0 0 2pt;width:95%;font-family: Courier New, momonospace;}
+.edit input[type="text"],textarea{margin:0 0 0 2pt;width:95%;font-family:"Courier New","momonospace";}
 .pedit{border-radius:3pt;background-color:#ebebeb;color:#cc0000;font-weight:bold;}
 .pedit input[type="text"]{width:99.5%;}

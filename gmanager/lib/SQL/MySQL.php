@@ -19,6 +19,11 @@ class SQL_MySQL
     private $_Gmanager;
 
 
+    /**
+     * Constructor
+     * 
+     * @param object $data
+     */
     public function __construct (Gmanager $data)
     {
         $this->_Gmanager = $data;
@@ -43,7 +48,7 @@ class SQL_MySQL
         if ($charset) {
             mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
         }
-    
+
         if ($db) {
             if (!mysql_select_db($db, $this->_resource)) {
                 return $this->_Gmanager->report($GLOBALS['lng']['mysql_select_db_false'], 1);
@@ -136,16 +141,20 @@ class SQL_MySQL
 
 
     /**
+     * Installer
      * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
+     * @param string $db
+     * @param string $charset
+     * @param string $sql
+     * @return string
      */
     public function installer ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
     {
-        if (!$sql) {
-            return;
-        }
-
-        if (!$query = $this->_parser($sql)) {
-            return;
+        if (!$sql || !$query = $this->_parser($sql)) {
+            return '';
         }
 
         $out = '<?php' . "\n"
@@ -221,9 +230,18 @@ class SQL_MySQL
 
 
     /**
+     * Backup
      * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
+     * @param string $db
+     * @param string $charset
+     * @param string $data
+     * @param array  $tables
+     * @return mixed
      */
-    function backup ($host = '', $name = '', $pass = '', $db = '', $data = '', $charset = '', $tables = array())
+    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '', $tables = array())
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
         if (is_resource($connect)) {
@@ -292,7 +310,15 @@ class SQL_MySQL
 
 
     /**
+     * Query
      * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
+     * @param string $db
+     * @param string $charset
+     * @param string $data
+     * @return string
      */
     function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
@@ -346,7 +372,6 @@ class SQL_MySQL
         mysql_close($this->_resource);
         return $this->_Gmanager->report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . $GLOBALS['lng']['mysql_rows'] . $rows . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), 0) . $out;
     }
-
 }
 
 ?>

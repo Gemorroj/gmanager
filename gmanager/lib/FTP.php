@@ -46,7 +46,36 @@ class FTP
     }
     */
 
-    public function mkdir ($dir = '', $chmod = '0755')
+
+    /**
+     * Valid chmod
+     * 
+     * @param mixed $chmod
+     * @return int
+     */
+    private function _chmoder ($chmod)
+    {
+        if (!is_int($chmod)) {
+            $strlen = strlen($chmod);
+            
+            if (($strlen != 3 && $strlen != 4) || !is_numeric($chmod)) {
+                return false;
+            } else if ($strlen == 3) {
+                $chmod = '0' . $chmod;
+            }
+            $chmod = octdec($chmod);
+        }
+        return $chmod;
+    }
+
+
+    /**
+     * mkdir
+     * @param string $dir
+     * @param mixed $chmod
+     * @return bool
+     */
+    public function mkdir ($dir, $chmod = 0755)
     {
         ftp_chdir($this->_res, '/');
         if (!$this->is_dir($dir)) {
@@ -55,12 +84,18 @@ class FTP
             }
         }
 
-        $this->chmod($dir, $chmod);
+        $this->chmod($dir, $this->_chmoder($chmod));
         return true;
     }
 
 
-    public function chmod ($file = '', $chmod = '0755')
+    /**
+     * chmod
+     * @param string $file
+     * @param mixed $chmod
+     * @return bool
+     */
+    public function chmod ($file, $chmod = 0755)
     {
         if (Config::$sysType == 'WIN') {
             //trigger_error($GLOBALS['lng']['win_chmod']);
@@ -68,36 +103,41 @@ class FTP
         }
 
         ftp_chdir($this->_res, '/');
-        settype($chmod, 'string');
-        $strlen = strlen($chmod);
-        if (!is_numeric($chmod) || ($strlen != 3 && $strlen != 4)) {
-            return false;
-        }
-        if ($strlen == 3) {
-            $chmod = '0' . $chmod;
-        }
         if ($file[0] != '/') {
             $file = '/' . $file;
         }
-        return ftp_chmod($this->_res, octdec(intval($chmod)), $file);
+        return ftp_chmod($this->_res, $this->_chmoder($chmod), $file);
     }
 
 
-    public function file_get_contents ($file = '')
+    /**
+     * file_get_contents
+     * 
+     * @param string $file
+     * @return string
+     */
+    public function file_get_contents ($file)
     {
         ftp_chdir($this->_res, '/');
-        $tmp = fopen('php://memory', 'r+');
+        $tmp = fopen('php://temp', 'r+');
 
         if (ftp_fget($this->_res, $tmp, $file, FTP_BINARY, 0)) {
             rewind($tmp);
             return stream_get_contents($tmp);
         } else {
-            return false;
+            return '';
         }
     }
 
 
-    public function file_put_contents ($file = '', $data = '')
+    /**
+     * file_put_contents
+     * 
+     * @param string $file
+     * @param string $data
+     * @return int (0 or 1)
+     */
+    public function file_put_contents ($file, $data = '')
     {
         $php_temp = Config::$temp . '/GmanagerEditor' . $_SERVER['REQUEST_TIME'] . '.tmp';
         file_put_contents($php_temp, $data);
@@ -112,11 +152,17 @@ class FTP
         $result = ftp_put($this->_res, basename($file), $php_temp, FTP_BINARY);
 
         unlink($php_temp);
-        return $result;
+        return intval($result);
     }
 
 
-    public function is_dir ($str = '')
+    /**
+     * is_dir
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_dir ($str)
     {
         //$str = self::_change_symbol($str);
         //return is_dir($this->_url . $str);
@@ -133,7 +179,13 @@ class FTP
     }
 
 
-    public function is_file ($str = '')
+    /**
+     * is_file
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_file ($str)
     {
         //$str = self::_change_symbol($str);
         //return is_file($this->_url . $str);
@@ -151,7 +203,13 @@ class FTP
     }
 
 
-    public function is_link ($str = '')
+    /**
+     * is_link
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_link ($str)
     {
         //$str = self::_change_symbol($str);
         //return is_link($this->_url . $str);
@@ -169,7 +227,13 @@ class FTP
     }
 
 
-    public function is_readable ($str = '')
+    /**
+     * is_readable
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_readable ($str)
     {
         return true;
         //$str = self::_change_symbol($str);
@@ -177,7 +241,13 @@ class FTP
     }
 
 
-    public function is_writable ($str = '')
+    /**
+     * is_writable
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function is_writable ($str)
     {
         return true;
         //$str = self::_change_symbol($str);
@@ -185,7 +255,13 @@ class FTP
     }
 
 
-    public function filesize ($file = '')
+    /**
+     * filesize
+     * 
+     * @param string $file
+     * @return int
+     */
+    public function filesize ($file)
     {
         //$file = self::_change_symbol($file);
 
@@ -200,7 +276,13 @@ class FTP
     }
 
 
-    public function file_exists ($str = '')
+    /**
+     * file_exists
+     * 
+     * @param string $str
+     * @return bool
+     */
+    public function file_exists ($str)
     {
         //$str = self::_change_symbol($str);
         //return file_exists($this->_url . $str);
@@ -208,7 +290,13 @@ class FTP
     }
 
 
-    public function filemtime ($str = '')
+    /**
+     * filemtime
+     * 
+     * @param string $str
+     * @return int
+     */
+    public function filemtime ($str)
     {
         //$str = self::_change_symbol($str);
         //return filemtime($this->_url . $str);
@@ -220,7 +308,13 @@ class FTP
     }
 
 
-    public function unlink ($file = '')
+    /**
+     * unlink
+     * 
+     * @param string $file
+     * @return bool
+     */
+    public function unlink ($file)
     {
         //$file = self::_change_symbol($file);
         ftp_chdir($this->_res, '/');
@@ -228,7 +322,14 @@ class FTP
     }
 
 
-    public function rename ($from = '', $to = '')
+    /**
+     * rename
+     * 
+     * @param string $from
+     * @param string $to
+     * @return bool
+     */
+    public function rename ($from, $to)
     {
         //$from = self::_change_symbol($from);
         //$to = self::_change_symbol($to);
@@ -237,7 +338,15 @@ class FTP
     }
 
 
-    public function copy ($from = '', $to = '', $chmod = '0644')
+    /**
+     * copy
+     * 
+     * @param string $from
+     * @param string $to
+     * @param mixed  $chmod
+     * @return bool
+     */
+    public function copy ($from, $to, $chmod = 0644)
     {
         //$from = self::_change_symbol($from);
         //$to = self::_change_symbol($to);
@@ -254,7 +363,13 @@ class FTP
     }
 
 
-    public function rmdir ($dir = '')
+    /**
+     * rmdir
+     * 
+     * @param string $dir
+     * @return bool
+     */
+    public function rmdir ($dir)
     {
         //$dir = self::_change_symbol($dir);
         ftp_chdir($this->_res, '/');
@@ -262,7 +377,13 @@ class FTP
     }
 
 
-    public function iterator ($dir = '')
+    /**
+     * iterator
+     * 
+     * @param string $dir
+     * @return array
+     */
+    public function iterator ($dir)
     {
         $tmp = array();
 
@@ -280,7 +401,13 @@ class FTP
     }
 
 
-    public function fileperms ($str = '')
+    /**
+     * fileperms
+     * 
+     * @param string $str
+     * @return int
+     */
+    public function fileperms ($str)
     {
         if ($str == ' .' || $str == './' || $str == '/' || $str == '' || $str == '\\'){
             $str = '.';
@@ -296,7 +423,13 @@ class FTP
     }
 
 
-    public function stat ($str = '')
+    /**
+     * stat
+     * 
+     * @param string $str
+     * @return array
+     */
+    public function stat ($str)
     {
         $dir = str_replace('\\', '/', dirname($str));
         if (!isset(self::$_rawlist[$dir])) {
@@ -306,13 +439,19 @@ class FTP
     }
 
 
-    public function readlink ($str = '')
+    /**
+     * readlink
+     * 
+     * @param string $link
+     * @return array
+     */
+    public function readlink ($link)
     {
-        $dir = str_replace('\\', '/', dirname($str));
+        $dir = str_replace('\\', '/', dirname($link));
         if (!isset(self::$_rawlist[$dir])) {
             $this->_rawlist($dir);
         }
-        $t1 = self::$_rawlist[$dir][basename($str)]['file'];
+        $t1 = self::$_rawlist[$dir][basename($link)]['file'];
         $t2 = explode(' -> ', $t1);
         $t2 = end($t2);
         if ($t2[0] != PATH_SEPARATOR) {
@@ -325,13 +464,15 @@ class FTP
             }
         }
 
-        return array(
-            $t1,
-            $t2
-        );
+        return array($t1, $t2);
     }
 
 
+    /**
+     * getcwd
+     * 
+     * @return string
+     */
     public function getcwd ()
     {
         $str = ftp_pwd($this->_res);
@@ -342,6 +483,12 @@ class FTP
     }
 
 
+    /**
+     * rawlist
+     * 
+     * @param string $dir
+     * @return array
+     */
     private function _rawlist ($dir = '/')
     {
         ftp_chdir($this->_res, '/');
@@ -366,6 +513,12 @@ class FTP
     }
 
 
+    /**
+     * rawlistCallback
+     * 
+     * @param array $data
+     * @return void
+     */
     private function _rawlistCallback ($data)
     {
         $data[10] = trim($data[10]);
@@ -383,6 +536,12 @@ class FTP
     }
 
 
+    /**
+     * chmodNum
+     * 
+     * @param string $perm
+     * @return int
+     */
     private function _chmodNum ($perm = 'rw-r--r--')
     {
         $m = 0;
@@ -433,7 +592,6 @@ class FTP
 
         return $m;
     }
-
 }
 
 ?>
