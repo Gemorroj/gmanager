@@ -46,6 +46,8 @@ $Gmanager->sendHeader();
 
 
 if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
+    header('Content-Type: text/html; charset=UTF-8');
+
     if (Gmanager::$sysType == 'WIN' && ob_start()) {
         phpinfo();
         $phpinfo = iconv(Config::$altencoding, 'UTF-8', ob_get_contents());
