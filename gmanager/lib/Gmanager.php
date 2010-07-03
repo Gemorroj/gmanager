@@ -2676,7 +2676,7 @@ class Gmanager extends Config
      */
     public function sendMail ($theme = '', $mess = '', $to = '', $from = '')
     {
-        if (mail($to, '=?utf-8?B?' . base64_encode($theme) . '?=', $mess, 'From: ' . $from . "\r\nContent-type: text/plain; charset=utf-8;\r\nX-Mailer: Gmanager " . Config::$version . "\r\nX-Priority: 3")) {
+        if (mail($to, '=?UTF-8?B?' . base64_encode($theme) . '?=', wordwrap($mess, 70), 'From: ' . $from . "\r\nContent-type: text/plain; charset=UTF-8\r\nX-Mailer: Gmanager " . Config::$version)) {
             return $this->report($GLOBALS['lng']['send_mail_true'], 0);
         } else {
             return $this->report($GLOBALS['lng']['send_mail_false'] . '<br/>' . $this->error(), 2);
