@@ -152,57 +152,57 @@ class Gmanager extends Config
      * @return void
      */
     public function look ($current = '', $itype = '', $down = '')
-    {
+    {        
         if (!$this->is_dir($current) || !$this->is_readable($current)) {
             echo '<tr><td class="red" colspan="' . (array_sum(Config::$index) + 1) . '">' . $GLOBALS['lng']['permission_denided'] . '</td></tr>';
             return;
         }
 
-        $out = $t = $add = $html = '';
+        $html = $key = $type = $isize = $uid = $gid = $chmod = $name = $time = '';
         $page = $page0 = $page1 = $page2 = array();
         $i = 0;
 
         if (Config::$target) {
             $t = ' target="_blank"';
+        } else {
+            $t = '';
         }
 
         if (isset($_GET['add_archive'])) {
             $add = '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($_GET['add_archive']));
+        } else {
+            $add = '';
         }
-
 
         if ($itype == 'time') {
             $out = '&amp;time';
+            $key = & $time;
         } else if ($itype == 'type') {
             $out = '&amp;type';
+            $key = & $type;
         } else if ($itype == 'size') {
             $out = '&amp;size';
+            $key = & $isize;
         } else if ($itype == 'chmod') {
             $out = '&amp;chmod';
+            $key = & $chmod;
+        } else if ($itype == 'uid') {
+            $out = '&amp;uid';
+            $key = & $uid;
+        } else if ($itype == 'gid') {
+            $out = '&amp;gid';
+            $key = & $gid;
+        } else {
+            $out = '';
+            $key = & $name;
         }
 
         $out .= $down ? '&amp;down' : '&amp;up';
 
-        $key = $type = $isize = $uid = $chmod = $name = $time = '';
-
-            if ($itype == 'time') {
-                $key = & $time;
-            } else if ($itype == 'type') {
-                $key = & $type;
-            } else if ($itype == 'size') {
-                $key = & $isize;
-            } else if ($itype == 'chmod') {
-                $key = & $chmod;
-            } else if ($itype == 'uid') {
-                $key = & $uid;
-            } else {
-                $key = & $name;
-            }
-
 
         foreach ($this->iterator($current) as $file) {
             $i++;
-            $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $uid = $name = $size = $isize = $chmod = '';
+            $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $uid = $pgid = $gid = $name = $size = $isize = $chmod = '';
 
             /*
             if (substr($file, -1) == '/') {
@@ -218,6 +218,8 @@ class Gmanager extends Config
             $r_file = str_replace('%2F', '/', rawurlencode($file));
             $stat = $this->stat($file);
             $time = $stat['mtime'];
+            $uid  = $stat['owner'];
+            $gid  = $stat['group'];
 
             if ($this->is_link($file)) {
                 $type = 'LINK';
@@ -253,9 +255,12 @@ class Gmanager extends Config
                     $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
                 }
                 if (Config::$index['uid']) {
-                    $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
+                    $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
                 }
-                $page0[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
+                if (Config::$index['gid']) {
+                    $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
+                }
+                $page0[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid . $pgid;
             } else if ($this->is_dir($file)) {
                 $type = 'DIR';
                 if (Config::$index['name']) {
@@ -299,9 +304,12 @@ class Gmanager extends Config
                     $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
                 }
                 if (Config::$index['uid']) {
-                    $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
+                    $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
                 }
-                $page1[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid;
+                if (Config::$index['gid']) {
+                    $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
+                }
+                $page1[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
             } else {
                 $type = htmlspecialchars($this->getType($basename), ENT_NOQUOTES);
                 $archive = $this->isArchive($type);
@@ -352,11 +360,15 @@ class Gmanager extends Config
                     $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
                 }
                 if (Config::$index['uid']) {
-                    $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
+                    $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
                 }
-                $page2[$key . '_'][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid;
+                if (Config::$index['gid']) {
+                    $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
+                }
+                $page2[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
             }
         }
+
 
         $p = array_merge($page0, $page1, $page2);
 
@@ -1398,6 +1410,9 @@ class Gmanager extends Config
                 if (Config::$index['uid']) {
                     $l .= '<td> </td>';
                 }
+                if (Config::$index['gid']) {
+                    $l .= '<td> </td>';
+                }
                 if (Config::$index['n']) {
                     $l .= '<td>' . ($i + 1) . '</td>';
                 }
@@ -1492,6 +1507,9 @@ class Gmanager extends Config
                 if (Config::$index['uid']) {
                     $l .= '<td> </td>';
                 }
+                if (Config::$index['gid']) {
+                    $l .= '<td> </td>';
+                }
                 if (Config::$index['n']) {
                     $l .= '<td>' . ($i + 1) . '</td>';
                 }
@@ -1573,6 +1591,9 @@ class Gmanager extends Config
                     $l .= '<td>' . strftime(Config::$date_format, $list[$i]['mtime']) . '</td>';
                 }
                 if (Config::$index['uid']) {
+                    $l .= '<td> </td>';
+                }
+                if (Config::$index['gid']) {
                     $l .= '<td> </td>';
                 }
                 if (Config::$index['n']) {
@@ -2947,7 +2968,7 @@ class Gmanager extends Config
             $stat = $this->stat($c . $f);
             $name = htmlspecialchars($this->strLink($c . $f, true), ENT_NOQUOTES);
 
-            $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pn = $in = null;
+            $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pgid = $pn = $in = null;
 
             if ($w) {
                 if ($stat['size'] > $limit || ($arch && !$archive) || ($arch && $archive && $type != 'GZ')) {
@@ -3025,13 +3046,16 @@ class Gmanager extends Config
                 $pdate = '<td>' . strftime(Config::$date_format, $stat['mtime']) . '</td>';
             }
             if (Config::$index['uid']) {
-                $puid = '<td>' . htmlspecialchars($stat['name'], ENT_NOQUOTES) . '</td>';
+                $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
+            }
+            if (Config::$index['gid']) {
+                $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
             }
             if (Config::$index['n']) {
                 $pn = '<td>' . $i . '</td>';
             }
 
-            $page[$f] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pn;
+            $page[$f] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid . $pn;
 
         }
 
@@ -3502,25 +3526,40 @@ class Gmanager extends Config
 
 
     /**
-     * uid2name
+     * id2name
      * 
-     * @param int    $uid
+     * @param int    $id
      * @param string $os
      * @return string
      */
-    public static function uid2name ($uid = 0, $os = 'UNIX')
+    public static function id2name ($id = 0, $os = 'UNIX')
     {
         if ($os == 'WIN') {
             return '';
         } else {
-            if (function_exists('posix_getpwuid') && $name = @posix_getpwuid($uid)) {
+            if (function_exists('posix_getpwuid') && $name = @posix_getpwuid($id)) {
                 return $name['name'];
-            } else if ($name = @exec('perl -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellcmd($uid) . ');print "$login";\'')) {
+            } else if ($name = @exec('perl -e \'($login, $pass, $uid, $gid) = getpwuid(' . @escapeshellcmd($id) . ');print "$login";\'')) {
                 return $name;
             } else {
-                return $uid;
+                return $id;
             }
         }
+    }
+
+
+    /**
+     * getPHPUser
+     * 
+     * @return array
+     */
+    public function getPHPUser ()
+    {
+        if (function_exists('posix_getpwuid')) {
+            return posix_getpwuid(posix_geteuid());
+        }
+
+        return array();
     }
 
 
@@ -3614,7 +3653,7 @@ class Gmanager extends Config
                 case E_WARNING:
                 case E_USER_WARNING:
                     self::$_php_errormsg = 'WARNING: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    if (Config::$errors) {
+                    if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
@@ -3622,21 +3661,21 @@ class Gmanager extends Config
                 case E_NOTICE:
                 case E_USER_NOTICE:
                     self::$_php_errormsg = 'NOTICE: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    if (Config::$errors) {
+                    if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
 
                 case E_STRICT:
                     self::$_php_errormsg = 'STRICT: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    if (Config::$errors) {
+                    if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
 
                 case E_RECOVERABLE_ERROR:
                     self::$_php_errormsg = 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    if (Config::$errors) {
+                    if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
@@ -3644,14 +3683,14 @@ class Gmanager extends Config
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                     self::$_php_errormsg = 'DEPRECATED: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    if (Config::$errors) {
+                    if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
 
                 default:
                     self::$_php_errormsg = 'Error type: [' . $errno . '], ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    if (Config::$errors) {
+                    if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;

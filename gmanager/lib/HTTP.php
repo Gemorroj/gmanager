@@ -16,7 +16,7 @@
 class HTTP
 {
     static private $_stat   = array();
-    static private $_uid    = array();
+    static private $_id     = array();
 
 
     public function __construct ()
@@ -189,11 +189,18 @@ class HTTP
             self::$_stat[$str] = @stat($str);
         }
 
-        if (isset(self::$_uid[self::$_stat[$str][4]])) {
-            self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]];
+        if (isset(self::$_id[self::$_stat[$str]['uid']])) {
+            self::$_stat[$str]['owner'] = self::$_id[self::$_stat[$str]['uid']];
         } else {
-            self::$_stat[$str]['name'] = self::$_uid[self::$_stat[$str][4]] = Gmanager::uid2name(self::$_stat[$str][4], Config::$sysType);
+            self::$_stat[$str]['owner'] = Gmanager::id2name(self::$_stat[$str]['uid'], Config::$sysType);
         }
+
+        if (isset(self::$_id[self::$_stat[$str]['gid']])) {
+            self::$_stat[$str]['group'] = self::$_id[self::$_stat[$str]['gid']];
+        } else {
+            self::$_stat[$str]['group'] = Gmanager::id2name(self::$_stat[$str]['gid'], Config::$sysType);
+        }
+
         return self::$_stat[$str];
     }
 

@@ -17,7 +17,7 @@ class FTP
 {
     private $_res               = null;
     //private $_url               = null;
-    static private $_uid        = array();
+    static private $_id         = array();
     static private $_rawlist    = null;
     static private $_dir        = '/';
 
@@ -526,8 +526,9 @@ class FTP
         self::$_rawlist[self::$_dir][basename($data[10])] = array(
             'chmod' => $data[1] == 'd' && Config::$sysType == 'WIN' ? 0777 : (Config::$sysType == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
-            'name'  => is_numeric($data[3]) ? (isset(self::$_uid[$data[3]]) ? self::$_uid[$data[3]] : self::$_uid[$data[3]] = Gmanager::uid2name($data[3], Config::$sysType)) : $data[3],
+            'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Gmanager::id2name($data[3], Config::$sysType)) : $data[3],
             'gid'   => $data[4],
+            'group' => is_numeric($data[4]) ? (isset(self::$_id[$data[4]]) ? self::$_id[$data[4]] : self::$_id[$data[4]] = Gmanager::id2name($data[4], Config::$sysType)) : $data[4],
             'size'  => $data[5],
             'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
             'file'  => $data[10],
