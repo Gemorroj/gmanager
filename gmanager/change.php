@@ -72,7 +72,7 @@ switch ($_GET['go']) {
         }
 
         $archive = $Gmanager->isArchive($Gmanager->getType(Config::$current));
-        if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR')) {
+        if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR' || $archive == 'BZ2')) {
             $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
             $h_file = htmlspecialchars($_GET['f']);
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" checked="checked"/>' . $GLOBALS['lng']['overwrite_existing_files'] . '<br/><input type="checkbox" name="del" value="1"/>' . $GLOBALS['lng']['change_del'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div>';
@@ -151,6 +151,8 @@ switch ($_GET['go']) {
                     echo $Gmanager->extractTarArchive(Config::$current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'GZ') {
                     echo $Gmanager->gzExtract(Config::$current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+                    echo $Gmanager->extractTarArchive(Config::$current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
                     echo $Gmanager->extractRarArchive(Config::$current, $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
@@ -170,6 +172,8 @@ switch ($_GET['go']) {
                 if ($archive == 'ZIP') {
                     echo $Gmanager->extractZipFile(Config::$current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
+                    echo $Gmanager->extractTarFile(Config::$current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
                     echo $Gmanager->extractTarFile(Config::$current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
                     echo $Gmanager->extractRarFile(Config::$current, $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
@@ -204,6 +208,8 @@ switch ($_GET['go']) {
                     echo $Gmanager->addZipArchive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 } else if ($archive == 'TAR') {
                     echo $Gmanager->addTarArchive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+                    echo $Gmanager->addTarArchive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             } else {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Config::$rCurrent . '" method="post"><div>' . $GLOBALS['lng']['add_archive_dir'] . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
@@ -234,6 +240,10 @@ switch ($_GET['go']) {
                         echo $Gmanager->delZipArchive(Config::$current, $ch);
                     }
                 } else if ($archive == 'TAR') {
+                    foreach ($_POST['check'] as $ch) {
+                        echo $Gmanager->delTarArchive(Config::$current, $ch);
+                    }
+                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
                     foreach ($_POST['check'] as $ch) {
                         echo $Gmanager->delTarArchive(Config::$current, $ch);
                     }
@@ -296,6 +306,8 @@ switch ($_GET['go']) {
             if ($if && $archive == 'ZIP') {
                 echo $Gmanager->renameZipFile(Config::$current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'TAR') {
+                echo $Gmanager->renameTarFile(Config::$current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+            } else if ($if && $archive == 'BZ2' && extension_loaded('bz2')) {
                 echo $Gmanager->renameTarFile(Config::$current, $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else {
                 echo $Gmanager->frename(Config::$current, $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));

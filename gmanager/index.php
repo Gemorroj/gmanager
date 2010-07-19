@@ -99,6 +99,13 @@ if ($archive == 'ZIP') {
 } else if ($archive == 'GZ') {
     echo $Gmanager->gz(Config::$current) . '<div class="ch"><form action="change.php?c=' . Config::$rCurrent . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/></div></form></div>';
     $if = true;
+} else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+    if ($if) {
+        echo $Gmanager->lookTarFile(Config::$current, $_GET['f']);
+    } else {
+        echo $Gmanager->listTarArchive(Config::$current, $idown);
+        $f = 1;
+    }
 } else if ($archive == 'RAR' && extension_loaded('rar')) {
     if ($if) {
         echo $Gmanager->lookRarFile(Config::$current, $_GET['f']);

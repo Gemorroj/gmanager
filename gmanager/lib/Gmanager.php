@@ -2557,6 +2557,9 @@ class Gmanager extends Config
         } else if ($tmp == 'TAR') {
             $tgz = new Archive_Tar($archive);
             return $tgz->extractInString($f);
+        } else if ($tmp == 'BZ2' && extension_loaded('bz2')) {
+            $tgz = new Archive_Tar($archive);
+            return $tgz->extractInString($f);
         } else if ($tmp == 'RAR' && extension_loaded('rar')) {
             $rar = rar_open($archive);
             $entry = rar_entry_get($rar, $f);
@@ -3513,10 +3516,12 @@ class Gmanager extends Config
     {
         if ($type == 'ZIP' || $type == 'JAR' || $type == 'AAR' || $type == 'WAR') {
             return 'ZIP';
-        } else if ($type == 'TAR' || $type == 'TGZ' || $type == 'TGZ2' || $type == 'TBZ' || $type == 'TBZ2' || $type == 'TAR.GZ' || $type == 'TAR.GZ2' || $type == 'TAR.BZ' || $type == 'TAR.BZ2' || $type == 'BZ' || $type == 'BZ2') {
+        } else if ($type == 'TAR' || $type == 'TGZ' || $type == 'TGZ2' || $type == 'TAR.GZ' || $type == 'TAR.GZ2') {
             return 'TAR';
         } else if ($type == 'GZ' || $type == 'GZ2') {
             return 'GZ';
+        } else if (($type == 'TBZ' || $type == 'TBZ2' || $type == 'TAR.BZ' || $type == 'TAR.BZ2' || $type == 'BZ' || $type == 'BZ2') && extension_loaded('rar')) {
+            return 'BZ2';
         } else if ($type == 'RAR' && extension_loaded('rar')) {
             return 'RAR';
         }
