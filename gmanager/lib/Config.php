@@ -209,7 +209,7 @@ class Config extends HTTP // Протокол, через который буд�
 }
 
 
-set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . DIRECTORY_SEPARATOR . 'lib');
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__));
 function __autoload ($class)
 {
     require dirname(__FILE__) . '/' . str_replace('_', '/', $class) . '.php';
