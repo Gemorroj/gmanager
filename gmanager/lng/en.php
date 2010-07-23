@@ -37,7 +37,6 @@ $GLOBALS['lng'] = array(
 'uid'                           =>  'Owner',
 'gid'                           =>  'Group',
 'php_user'                      =>  'PHP runs on the user: ',
-'ch_index'                      =>  '*',
 'create'                        =>  'Create',
 'upload'                        =>  'Upload File',
 'up'                            =>  'Upload',
