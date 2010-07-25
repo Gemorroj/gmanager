@@ -192,6 +192,7 @@ $GLOBALS['lng'] = array(
 'md5'                           =>  'MD5',
 'look'                          =>  'View',
 'del_notify'                    =>  'Do you really want to delete?',
+'check_form'                    =>  'Check file or directory',
 //'win_chmod'                   =>  'OS Windows not support rights',
 'cmd'                           =>  'Command Line',
 'cmd_code'                      =>  'Command',

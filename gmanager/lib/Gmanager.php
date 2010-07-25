@@ -117,6 +117,17 @@ class Gmanager extends Config
 
 
     /**
+     * langJS
+     * 
+     * @return string
+     */
+    public function langJS ()
+    {
+        return '<div style="display:none;"><span id="chF">' . $GLOBALS['lng']['check_form'] . '</span><span id="delN">' . $GLOBALS['lng']['del_notify'] . '</span></div>';
+    }
+
+
+    /**
      * staticName
      * 
      * @param string $current
@@ -246,7 +257,7 @@ class Gmanager extends Config
                     $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $this->lookChmod($file);
@@ -295,7 +306,7 @@ class Gmanager extends Config
                     $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $this->lookChmod($file);
@@ -351,7 +362,7 @@ class Gmanager extends Config
                     $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $this->lookChmod($file);
@@ -1400,7 +1411,7 @@ class Gmanager extends Config
                     $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td><a onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
@@ -1583,7 +1594,7 @@ class Gmanager extends Config
                     $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td><a onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
@@ -3041,7 +3052,7 @@ class Gmanager extends Config
                 $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
             }
             if (Config::$index['del']) {
-                $pdel = '<td><a onclick="return confirm(\'' . $GLOBALS['lng']['del_notify'] . '\')" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
             }
             if (Config::$index['chmod']) {
                 $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $this->lookChmod($c . $f) . '</a></td>';
