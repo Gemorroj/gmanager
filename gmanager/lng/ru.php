@@ -210,6 +210,7 @@ $GLOBALS['lng'] = array(
 'filename_empty'                =>  'Имя файла не может быть пустым',
 'beautifier'                    =>  'Форматирование',
 'beautify'                      =>  'Форматировать',
+'hex'                           =>  'HEX',
 );
 
 ?>
