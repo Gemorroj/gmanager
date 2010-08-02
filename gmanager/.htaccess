@@ -2,16 +2,18 @@
 Allow from All
 
 # Защищаемся от неграмотных ModRewrite правил
+<IfModule mod_rewrite.c>
 RewriteEngine Off
+</IfModule>
 
 # Индексный Файл
 DirectoryIndex index.php
 
 # PHP 5
-#AddHandler application/x-httpd-php5 .php .php5 .phtml
+AddHandler application/x-httpd-php5 .php .php5 .phtml
 
 # PHP
-#AddHandler application/x-httpd-php .php .phtml
+AddHandler application/x-httpd-php .php .phtml
 
 # Магические Кавычки
 php_flag magic_quotes_gpc Off
