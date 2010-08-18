@@ -286,7 +286,7 @@ class SQL_MySQL
             if ($true) {
                 $this->_Gmanager->mkdir(dirname($tables['file']));
                 if (!$this->_Gmanager->file_put_contents($tables['file'], $true)) {
-                    $false .= error() . "\n";
+                    $false .= $this->_Gmanager->error() . "\n";
                 }
             }
 

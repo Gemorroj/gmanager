@@ -903,7 +903,6 @@ class Gmanager extends Config
         }
 
         $erl = false;
-        $page = '';
         if ($v == 255 || $size > 2) {
             if ($st = trim(strip_tags($rt[1]))) {
                 $erl = preg_replace('/.*\s(\d*)$/', '$1', $st, 1);
@@ -920,7 +919,7 @@ class Gmanager extends Config
             $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
         }
 
-        return report($pg, $erl ? 1 : 0) . code($fl, $erl);
+        return $this->report($pg, $erl ? 1 : 0) . $this->code($fl, $erl);
     }
 
 
@@ -981,7 +980,7 @@ class Gmanager extends Config
         $fp = fopen($tmp, 'w');
 
         if (!$fp) {
-            return report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $this->error(), 1);
+            return $this->report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $this->error(), 1);
         }
 
         fputs($fp, $content['text']);
@@ -1087,14 +1086,14 @@ class Gmanager extends Config
         $array = explode('<br />', $url ? $this->urlHighlight($fl) : $this->xhtmlHighlight($fl));
         $all = sizeof($array);
         $len = strlen($all);
-        $page = '';
+        $pg = '';
         for ($i = 0; $i < $all; ++$i) {
             $next = $i + 1;
             $l = strlen($next);
-            $page .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . '<br/>';
+            $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . '<br/>';
         }
     
-        return '<div class="code"><code>' . $page . '</code></div>';
+        return '<div class="code"><code>' . $pg . '</code></div>';
     }
 
 
@@ -1664,7 +1663,7 @@ class Gmanager extends Config
         $fp = fopen($tmp, 'w');
 
         if (!$fp) {
-            return report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $this->error(), 2);
+            return $this->report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $this->error(), 2);
         }
 
         fputs($fp, $text);
@@ -2210,7 +2209,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 unlink($ftp_current);
             }
-            return report($GLOBALS['lng']['extract_file_false'], 2);
+            return $this->report($GLOBALS['lng']['extract_file_false'], 2);
         }
 
         if (Config::$mode == 'FTP') {
