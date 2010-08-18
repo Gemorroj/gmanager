@@ -955,7 +955,6 @@ class Gmanager extends Config
             $r = fgets($fp);
         }
         $r = '';
-
         while (!feof($fp)) {
             $r .= fread($fp, 1024);
         }
@@ -1747,23 +1746,20 @@ class Gmanager extends Config
      */
     public function lookRarFile ($current = '', $f = '', $str = false)
     {
-        $r_current = str_replace('%2F', '/', rawurlencode($current));
-        $r_f = str_replace('%2F', '/', rawurlencode($f));
-    
         $rar = rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
         $entry = rar_entry_get($rar, $f);
-    
+
         // создаем временный файл
         $tmp = Config::$temp . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
         $entry->extract(true, $tmp); // запишет сюда данные
-    
+
         $ext = file_get_contents($tmp);
         unlink($tmp);
-    
+
         if (Config::$mode == 'FTP') {
             $this->ftpArchiveEnd('');
         }
-    
+
         if (!$ext) {
             return $this->report($GLOBALS['lng']['archive_error'], 2);
         } else {
@@ -2437,9 +2433,9 @@ class Gmanager extends Config
 
         $zip = new PclZip(Config::$mode == 'FTP' ? $ftp_name : $name);
         if ($comment != '') {
-            $r = $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp, PCLZIP_OPT_COMMENT, $comment);
+            $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp, PCLZIP_OPT_COMMENT, $comment);
         } else {
-            $r  = $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp);
+            $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp);
         }
 
         $err = false;
@@ -2788,10 +2784,7 @@ class Gmanager extends Config
         */
 
         if (Config::$sysType == 'WIN') {
-            $win = true;
             $cmd = iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $cmd);
-        } else {
-            $win = false;
         }
 
         if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
@@ -2910,12 +2903,12 @@ class Gmanager extends Config
 
 
     /**
-     * gzencode
+     * gzdecode
      * 
      * @param string $data
      * @return string
      */
-    public function gzencode ($data)
+    public function gzdecode ($data)
     {
         if (function_exists('gzdecode')) {
             return gzencode($data);

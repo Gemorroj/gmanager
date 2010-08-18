@@ -1,5 +1,5 @@
 body{background-color:#f7f7f7;color:#000000;font-size:12px;margin:0;padding:1px;border:3px solid #ebebeb;font-family:"Times New Roman","serif";}
-form{margin:0px;}
+form{margin:0;}
 textarea{resize:both;}
 input[type="text"],input[type="file"]{resize:horizontal;}
 textarea,select[multiple="true"],input[type="text"],input[type="file"]{width:85%;margin:2pt 1%;background-color:#f0f0f0;color:#000000;font-family:"Courier New","serif";border:1px solid #000000;}
