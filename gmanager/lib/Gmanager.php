@@ -2911,7 +2911,7 @@ class Gmanager extends Config
     public function gzdecode ($data)
     {
         if (function_exists('gzdecode')) {
-            return gzencode($data);
+            return gzdecode($data);
         } else {
             file_put_contents(Config::$temp . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp', $data);
             $gz = implode('', gzfile(Config::$temp . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp'));
