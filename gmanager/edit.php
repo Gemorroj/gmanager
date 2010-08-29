@@ -66,7 +66,7 @@ if ($_GET['charset']) {
 
 $Gmanager->sendHeader();
 
-echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->head();
+echo str_replace('%title%', (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', Config::$hCurrent) : Config::$hCurrent), Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->head();
 
 $archive = $Gmanager->isArchive($Gmanager->getType(basename(Config::$hCurrent)));
 

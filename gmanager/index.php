@@ -32,7 +32,7 @@ $ia = isset($_GET['add_archive']);
 
 $Gmanager->sendHeader();
 
-echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->head() . $Gmanager->langJS();
+echo str_replace('%title%', (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', Config::$hCurrent) : Config::$hCurrent), Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->head() . $Gmanager->langJS();
 
 
 if (Config::$addressBar) {
@@ -40,7 +40,7 @@ if (Config::$addressBar) {
     if ($ia) {
         echo '<input type="hidden" name="add_archive" value="' . htmlspecialchars($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
-    echo '<input type="text" name="c" value="' . Config::$hCurrent . '"/> <input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
+    echo '<input type="text" name="c" value="' . (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', Config::$hCurrent) : Config::$hCurrent) . '"/> <input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
 }
 
 if ($idown = isset($_GET['down'])) {

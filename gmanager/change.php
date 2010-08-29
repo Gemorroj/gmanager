@@ -62,7 +62,7 @@ if ($_SERVER['QUERY_STRING'] == 'phpinfo') {
     exit;
 }
 
-echo str_replace('%title%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars(rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . $Gmanager->head() . $Gmanager->langJS();
+echo str_replace('%title%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? $GLOBALS['lng']['chmod'] : (isset($_POST['full_del']) ? $GLOBALS['lng']['del'] : (isset($_POST['full_rename']) ? $GLOBALS['lng']['change'] : (isset($_POST['fname']) ? $GLOBALS['lng']['rename'] : (isset($_POST['create_archive']) ? $GLOBALS['lng']['create_archive'] : htmlspecialchars(Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', rawurldecode($_SERVER['QUERY_STRING'])) : rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_change'] . '<br/></div>' . $Gmanager->head() . $Gmanager->langJS();
 
 
 switch ($_GET['go']) {
@@ -90,7 +90,7 @@ switch ($_GET['go']) {
                 }
             }
 
-            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . $GLOBALS['lng']['overwrite_existing_files'] . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . $GLOBALS['lng']['change_del'] . '</label><br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->lookChmod(Config::$current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>';
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '" method="post"><div>' . $GLOBALS['lng']['change_func'] . '<br/><input type="text" name="name" value="' . (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', $realpath) : $realpath) . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . $GLOBALS['lng']['overwrite_existing_files'] . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . $GLOBALS['lng']['change_del'] . '</label><br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->lookChmod(Config::$current) . '"/>' . $GLOBALS['lng']['change_chmod'] . '<br/><input type="submit" value="' . $GLOBALS['lng']['ch'] . '"/></div></form></div><div>' . $GLOBALS['lng']['sz'] . ': ' . $size . '<br/>' . $md5 . '</div>';
         }
         break;
 
