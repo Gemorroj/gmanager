@@ -211,6 +211,7 @@ $GLOBALS['lng'] = array(
 'beautifier'                    =>  'Форматування',
 'beautify'                      =>  'Форматувати',
 'hex'                           =>  'HEX',
+'empty_search'                  =>  'За Вашим запитом нічого не знайдено',
 );
 
 ?>

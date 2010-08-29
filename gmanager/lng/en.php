@@ -211,6 +211,7 @@ $GLOBALS['lng'] = array(
 'beautifier'                    =>  'Beautifier',
 'beautify'                      =>  'Beautify',
 'hex'                           =>  'HEX',
+'empty_search'                  =>  'Your search did not precise',
 );
 
 ?>

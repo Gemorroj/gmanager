@@ -115,7 +115,7 @@ if ($archive == 'ZIP') {
         $f = 1;
     }
 } else {
-    $Gmanager->look(Config::$current, $itype, $idown);
+    echo $Gmanager->look(Config::$current, $itype, $idown);
 }
 
 if ($Gmanager->file_exists(Config::$current) || $Gmanager->is_link(Config::$current)) {

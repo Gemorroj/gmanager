@@ -161,13 +161,12 @@ class Gmanager extends Config
      * @param string $current
      * @param string $itype
      * @param string $down
-     * @return void
+     * @return string
      */
     public function look ($current = '', $itype = '', $down = '')
-    {        
+    {
         if (!$this->is_dir($current) || !$this->is_readable($current)) {
-            echo '<tr><td class="red" colspan="' . (array_sum(Config::$index) + 1) . '">' . $GLOBALS['lng']['permission_denided'] . '</td></tr>';
-            return;
+            return ListData::getDenyData();
         }
 
         $html = $key = $type = $isize = $uid = $gid = $chmod = $name = $time = '';
@@ -436,10 +435,10 @@ class Gmanager extends Config
                 }
             }
         } else {
-            $html .= '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . $GLOBALS['lng']['dir_empty'] . '</th></tr>';
+            return ListData::getEmptyData();
         }
 
-        echo $html . $this->go($pg, $all, '&amp;c=' . $current . $out . $add);
+        return $html . $this->go($pg, $all, '&amp;c=' . $current . $out . $add);
     }
 
 
@@ -3072,7 +3071,6 @@ class Gmanager extends Config
         }
 
         natcasesort($page);
-
 
         $line = false;
         foreach ($page as $var) {
