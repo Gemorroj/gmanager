@@ -2458,7 +2458,7 @@ class Gmanager extends Config
             }
             return $this->report($GLOBALS['lng']['create_archive_true'], 0);
         } else {
-            return $this->report($GLOBALS['lng']['create_archive_false'] . '<br/>' . $zip->errorInfo(true), 2);
+            return $this->report($GLOBALS['lng']['create_archive_false'] . '<br/>' . htmlspecialchars($zip->errorInfo(true), ENT_NOQUOTES), 2);
         }
     }
 
