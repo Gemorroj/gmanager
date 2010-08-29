@@ -2438,22 +2438,27 @@ class Gmanager extends Config
             $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp);
         }
 
-        $err = false;
-        if (Config::$mode == 'FTP') {
+        if ($zip->errorCode()) {
+            $err = true;
+        } else {
+            $err = false;
+        }
+
+        if (!$err && Config::$mode == 'FTP') {
             if (!$this->file_put_contents($name, file_get_contents($ftp_name))) {
-                $err = $this->error();
+                $zip->error_string = $this->error();
             }
             unlink($ftp_name);
             $this->clean($temp);
         }
 
-        if ($this->is_file($name) || ($err === false && Config::$mode == 'FTP')) {
+        if ($err === false && $this->is_file($name)) {
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
             return $this->report($GLOBALS['lng']['create_archive_true'], 0);
         } else {
-            return $this->report($GLOBALS['lng']['create_archive_false'] . ($err ? '<br/>' . $err . '<br/>' . $zip->errorInfo(true): ''), 2);
+            return $this->report($GLOBALS['lng']['create_archive_false'] . '<br/>' . $zip->errorInfo(true), 2);
         }
     }
 
