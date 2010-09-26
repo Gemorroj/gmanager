@@ -1,6 +1,6 @@
 function number(e){var key=(e.charCode===undefined?e.keyCode:e.charCode);if(e.ctrlKey||e.altKey||key<32){return true;}key=String.fromCharCode(key);return /[\d]/.test(key);}
 function check(form,name,checked){for(var i=0;i<form[name].length;i++){form[name][i].checked=checked;}}
-function checkForm(form,name){for(var i=0;i<form[name].length;i++){if(form[name][i].checked){return true;}}alert(document.getElementById("chF").innerHTML);return false;}
+function checkForm(form,name){if(form[name]===undefined){return false;}else if(form[name] instanceof HTMLInputElement){if(!form[name].checked){alert(document.getElementById("chF").innerHTML);}return form[name].checked;}for(var i=0;i<form[name].length;i++){if(form[name][i].checked){return true;}}alert(document.getElementById("chF").innerHTML);return false;}
 function delNotify(){return confirm(document.getElementById("delN").innerHTML);}
 function paste(ptn){o=document.forms["post"]["sql"];if(ptn!=""&&o)insAtCaret(o,decodeURIComponent(ptn));}
 function insAtCaret(o,s){o.focus();if(document.selection!==undefined){r=document.selection.createRange();if(r.parentElement()!=o){return;}r.text=s;r.select();}else if(o.selectionStart!==undefined){st=o.selectionStart;o.value=o.value.substr(0,st)+s+o.value.substr(o.selectionEnd,o.value.length);st+=s.length;o.setSelectionRange(st,st);}else{o.value+=s;}o.focus();}

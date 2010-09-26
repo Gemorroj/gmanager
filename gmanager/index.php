@@ -24,15 +24,19 @@ if (Config::$current == '.') {
 }
 
 
-$type = $Gmanager->getType(basename(Config::$hCurrent));
-$archive = $Gmanager->isArchive($type);
+if ($Gmanager->is_dir(Config::$current)) {
+    $archive = false;
+} else {
+    $archive = $Gmanager->isArchive($Gmanager->getType(basename(Config::$current)));
+}
+
 $f = 0;
 $if = isset($_GET['f']);
 $ia = isset($_GET['add_archive']);
 
 $Gmanager->sendHeader();
 
-echo str_replace('%title%', (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', Config::$hCurrent) : Config::$hCurrent), Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->head() . $Gmanager->langJS();
+echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_index'] . '<br/></div>' . $Gmanager->head() . $Gmanager->langJS();
 
 
 if (Config::$addressBar) {
@@ -40,7 +44,7 @@ if (Config::$addressBar) {
     if ($ia) {
         echo '<input type="hidden" name="add_archive" value="' . htmlspecialchars($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
-    echo '<input type="text" name="c" value="' . (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', Config::$hCurrent) : Config::$hCurrent) . '"/> <input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
+    echo '<input type="text" name="c" value="' . Config::$hCurrent . '"/> <input type="submit" value="' . $GLOBALS['lng']['go'] . '"/></div></form></div>';
 }
 
 if ($idown = isset($_GET['down'])) {
@@ -136,7 +140,7 @@ if (!$if && !$f && !$ia) {
     echo '</table><div class="ch"><input onclick="return checkForm(document.forms[1],\'check[]\');" type="submit" name="full_chmod" value="' .$GLOBALS['lng']['chmod'] . '"/> <input onclick="return (checkForm(document.forms[1],\'check[]\') &amp;&amp; delNotify());" type="submit" name="full_del" value="' . $GLOBALS['lng']['del'] . '"/> <input onclick="return checkForm(document.forms[1],\'check[]\');" type="submit" name="full_rename" value="' . $GLOBALS['lng']['change'] . '"/> <input onclick="return checkForm(document.forms[1],\'check[]\');" type="submit" name="fname" value="' . $GLOBALS['lng']['rename'] . '"/> <input onclick="return checkForm(document.forms[1],\'check[]\');" type="submit" name="create_archive" value="' . $GLOBALS['lng']['create_archive'] . '"/></div></div></form>' . $found . $tm . Config::$foot;
 } else if ($f) {
     echo '</table><div class="ch"><input onclick="return checkForm(document.forms[1],\'check[]\');" type="submit" name="full_extract" value="' . $GLOBALS['lng']['extract_file'] . '"/> <input type="submit" name="mega_full_extract" value="' . $GLOBALS['lng']['extract_archive'] . '"/>';
-    if ($type != 'RAR') {
+    if ($archive != 'RAR') {
         echo ' <input type="submit" name="add_archive" value="' . $GLOBALS['lng']['add_archive'] . '"/> <input onclick="return (checkForm(document.forms[1],\'check[]\') &amp;&amp; delNotify());" type="submit" name="del_archive" value="' . $GLOBALS['lng']['del'] . '"/>';
     }
     echo '</div></div></form>' . $found . $tm . Config::$foot;

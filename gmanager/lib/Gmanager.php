@@ -89,7 +89,7 @@ class Gmanager extends Config
     public function head ()
     {
         if (Config::$mode != 'FTP') {
-            $realpath = realpath(Config::$current);
+            $realpath = $this->realpath(Config::$current);
             $realpath = $realpath ? $realpath : Config::$current;
         } else {
             $realpath = Config::$current;
@@ -232,6 +232,7 @@ class Gmanager extends Config
             $uid  = $stat['owner'];
             $gid  = $stat['group'];
 
+
             if ($this->is_link($file)) {
                 $type = 'LINK';
                 $tmp = $this->readlink($file);
@@ -276,7 +277,7 @@ class Gmanager extends Config
                 $type = 'DIR';
                 if (Config::$index['name']) {
                     if (Config::$realname == 1) {
-                        $realpath = realpath($file);
+                        $realpath = $this->realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
                     } else if (Config::$realname == 2) {
                         $name = $basename;
@@ -327,7 +328,7 @@ class Gmanager extends Config
 
                 if (Config::$index['name']) {
                     if (Config::$realname == 1) {
-                        $realpath = realpath($file);
+                        $realpath = $this->realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
                     } else if (Config::$realname == 2) {
                         $name = $basename;
@@ -681,7 +682,7 @@ class Gmanager extends Config
         $this->chmod($d, 0777);
 
         foreach ($this->iterator($d) as $f) {
-            $realpath = realpath($d . '/' . $f);
+            $realpath = $this->realpath($d . '/' . $f);
             $f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
             $this->chmod($f, 0777);
 
@@ -800,7 +801,7 @@ class Gmanager extends Config
     {
         $tmp = $tmp2 = $err = '';
         $i = 0;
-        $g = explode(DIRECTORY_SEPARATOR, getcwd());
+        $g = explode(DIRECTORY_SEPARATOR, $this->getcwd());
 
         foreach (explode('/', $dir) as $d) {
             $tmp .= $d . '/';
@@ -1107,9 +1108,10 @@ class Gmanager extends Config
      */
     public function renameZipFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        $tmp = Config::$temp . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
-        $folder = '';
+        $tmp        = Config::$temp . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
+        $zip        = $this->_pclZip($current);
+        $folder     = '';
+        $sysName    = IOWrapper::set($name);
 
         foreach ($zip->extract(PCLZIP_OPT_PATH, $tmp) as $f) {
             if ($f['status'] != 'ok') {
@@ -1125,12 +1127,12 @@ class Gmanager extends Config
             }
         }
 
-        if (file_exists($tmp . '/' . $name)) {
+        if (file_exists($tmp . '/' . $sysName)) {
             if ($overwrite) {
                 if ($folder) {
-                    $this->clean($tmp . '/' . $name);
+                    $this->clean($tmp . '/' . $sysName);
                 } else {
-                    unlink($tmp . '/' . $name);
+                    unlink($tmp . '/' . $sysName);
                 }
             } else {
                 $this->clean($tmp);
@@ -1143,23 +1145,24 @@ class Gmanager extends Config
         }
 
         if ($folder) {
-            @mkdir($tmp . '/' . $name, 0755, true);
-        } else if (!is_dir($tmp . '/' . dirname($name))) {
-            @mkdir($tmp . '/' . dirname($name), 0755, true);
+            @mkdir($tmp . '/' . $sysName, 0755, true);
+        } else if (!is_dir($tmp . '/' . dirname($sysName))) {
+            @mkdir($tmp . '/' . dirname($sysName), 0755, true);
         }
+
 
         if ($folder) {
             // переделать на ftp
             if ($del) {
-                $result = $this->moveFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
+                $result = $this->moveFiles($tmp . '/' . $arch_name, $tmp . '/' . $name);
             } else {
-                $result = $this->copyFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
+                $result = $this->copyFiles($tmp . '/' . $arch_name, $tmp . '/' . $name);
             }
         } else {
             if ($del) {
-                $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+                $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $sysName);
             } else {
-                $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+                $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $sysName);
             }
         }
 
@@ -1183,7 +1186,7 @@ class Gmanager extends Config
             }
         }
 
-        $result = $zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, $tmp);
+        $result = $zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, iconv_substr($tmp, iconv_strlen(dirname(dirname($tmp)))));
 
         $this->clean($tmp);
         if (Config::$mode == 'FTP') {
@@ -1233,8 +1236,9 @@ class Gmanager extends Config
      */
     public function renameTarFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        $tmp = Config::$temp . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $tmp        = Config::$temp . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
+        $tgz        = $this->_archiveTar($current);
+        $sysName    = IOWrapper::set($name);
 
         $folder = '';
         foreach($tgz->listContent() as $f) {
@@ -1252,12 +1256,12 @@ class Gmanager extends Config
             return $this->report($GLOBALS['lng']['extract_false'], 1);
         }
 
-        if (file_exists($tmp . '/' . $name)) {
+        if (file_exists($tmp . '/' . $sysName)) {
             if ($overwrite) {
                 if ($folder) {
-                    $this->clean($tmp . '/' . $name);
+                    $this->clean($tmp . '/' . $sysName);
                 } else {
-                    unlink($tmp . '/' . $name);
+                    unlink($tmp . '/' . $sysName);
                 }
             } else {
                 $this->clean($tmp);
@@ -1270,9 +1274,9 @@ class Gmanager extends Config
         }
 
         if ($folder) {
-            @mkdir($tmp . '/' . $name, 0755, true);
+            @mkdir($tmp . '/' . $sysName, 0755, true);
         } else {
-            @mkdir($tmp . '/' . dirname($name), 0755, true);
+            @mkdir($tmp . '/' . dirname($sysName), 0755, true);
         }
 
         if ($folder) {
@@ -1284,9 +1288,9 @@ class Gmanager extends Config
             }
         } else {
             if ($del) {
-                $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $name);
+                $result = rename($tmp . '/' . $arch_name, $tmp . '/' . $sysName);
             } else {
-                $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $name);
+                $result = copy($tmp . '/' . $arch_name, $tmp . '/' . $sysName);
             }
         }
 
@@ -1360,9 +1364,10 @@ class Gmanager extends Config
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $zip = $this->_pclZip($current);
+        $list = $zip->listContent();
 
-        if (!$list = $zip->listContent()) {
+        if (!$list) {
             if (Config::$mode == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
@@ -1376,7 +1381,6 @@ class Gmanager extends Config
 
             $s = sizeof($list);
             for ($i = 0; $i < $s; ++$i) {
-
                 $r_name = str_replace('%2F', '/', rawurlencode($list[$i]['filename']));
 
                 if ($list[$i]['folder']) {
@@ -1456,8 +1460,7 @@ class Gmanager extends Config
     public function listRarArchive ($current = '', $down = '')
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
-
-        $rar = rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $rar = $this->_rarOpen($current);
 
         if (!$list = rar_list($rar)) {
             if (Config::$mode == 'FTP') {
@@ -1544,7 +1547,7 @@ class Gmanager extends Config
      */
     public function listTarArchive ($current = '', $down = '')
     {
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $tgz = $this->_archiveTar($current);
 
         if (!$list = $tgz->listContent()) {
             if (Config::$mode == 'FTP') {
@@ -1630,7 +1633,7 @@ class Gmanager extends Config
      */
     public function editZipFile ($current = '', $f = '')
     {
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $zip = $this->_pclZip($current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::$mode == 'FTP') {
@@ -1667,7 +1670,7 @@ class Gmanager extends Config
         fputs($fp, $text);
         fclose($fp);
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $zip = $this->_pclZip($current);
         $comment = $zip->properties();
         $comment = $comment['comment'];
 
@@ -1714,7 +1717,7 @@ class Gmanager extends Config
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $r_f = str_replace('%2F', '/', rawurlencode($f));
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $zip = $this->_pclZip($current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::$mode == 'FTP') {
@@ -1745,7 +1748,7 @@ class Gmanager extends Config
      */
     public function lookRarFile ($current = '', $f = '', $str = false)
     {
-        $rar = rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $rar = $this->_rarOpen($current);
         $entry = rar_entry_get($rar, $f);
 
         // создаем временный файл
@@ -1781,7 +1784,7 @@ class Gmanager extends Config
      */
     public function lookTarFile ($current = '', $f = '', $str = false)
     {
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $tgz = $this->_archiveTar($current);
         $ext = $tgz->extractInString($f);
 
         if (!$ext) {
@@ -1823,17 +1826,7 @@ class Gmanager extends Config
      */
     public function extractZipArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
     {
-        if (Config::$mode == 'FTP') {
-            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
-            $ftp_current = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerZipFtp' . $_SERVER['REQUEST_TIME'] . '/';
-            mkdir($ftp_name, 0777);
-            file_put_contents($ftp_current, $this->file_get_contents($current));
-        }
-
-        self::$pclzipF = $chmod[0]; // CHMOD to files
-        self::$pclzipD = $chmod[1]; // CHMOD to folders
-
+        $sysName = IOWrapper::set($name);
 
         function pclzip_cb_post_extract ($p_event, &$p_header) {
             global $Gmanager;
@@ -1846,11 +1839,27 @@ class Gmanager extends Config
             return 1;
         }
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
+
+        self::$pclzipF = $chmod[0]; // CHMOD to files
+        self::$pclzipD = $chmod[1]; // CHMOD to folders
+
+
+        if (Config::$mode == 'FTP') {
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+            $ftp_current = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::$temp . '/GmanagerZipFtp' . $_SERVER['REQUEST_TIME'];
+            mkdir($ftp_name, 0777);
+            file_put_contents($ftp_current, $this->file_get_contents($current));
+        }
+
+
+        $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
+
+
         if ($overwrite) {
-            $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $name, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract', PCLZIP_OPT_REPLACE_NEWER);
+            $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $sysName, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract', PCLZIP_OPT_REPLACE_NEWER);
         } else {
-            $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $name, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract');
+            $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $sysName, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract');
         }
 
         $err = '';
@@ -1869,14 +1878,14 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->createDir($name, self::$pclzipD);
-            $this->ftpMoveFiles($ftp_name, $name, self::$pclzipF, self::$pclzipD, $overwrite);
+            $this->createDir($sysName, self::$pclzipD);
+            $this->ftpMoveFiles($ftp_name, $sysName, self::$pclzipF, self::$pclzipD, $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($name)) {
+        if (Config::$mode == 'FTP' || $this->is_dir($sysName)) {
             if ($chmod) {
-                $this->rechmod($name, $chmod[1]);
+                $this->rechmod($sysName, $chmod[1]);
             }
             return $this->report($GLOBALS['lng']['extract_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
@@ -1896,15 +1905,17 @@ class Gmanager extends Config
      */
     public function extractRarArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
     {
+        $sysName = IOWrapper::set($name);
+
         if (Config::$mode == 'FTP') {
-            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
             $ftp_current = Config::$temp . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '/';
+            $ftp_name = Config::$temp . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
             file_put_contents($ftp_current, $this->file_get_contents($current));
         }
 
-        $rar = rar_open(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $rar = $this->_rarOpen(Config::$mode == 'FTP' ? $ftp_current : $current);
         $err = '';
         foreach (rar_list($rar) as $f) {
             $n = $f->getName();
@@ -1913,7 +1924,7 @@ class Gmanager extends Config
                 $err .= $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
             } else {
                 $entry = rar_entry_get($rar, $n);
-                if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $name)) {
+                if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
                     if (Config::$mode == 'FTP') {
                         unlink($ftp_current);
                         rmdir($ftp_name);
@@ -1930,8 +1941,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->createDir($name, $chmod[1]);
-            $this->ftpMoveFiles($ftp_name, $name, $chmod[0], $chmod[1], $overwrite);
+            $this->createDir($sysName, $chmod[1]);
+            $this->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             unlink($ftp_current);
         }
 
@@ -1955,20 +1966,22 @@ class Gmanager extends Config
      */
     public function extractTarArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
     {
+        $sysName = IOWrapper::set($name);
+
         if (Config::$mode == 'FTP') {
-            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
             $ftp_current = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
+            $ftp_name = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
             file_put_contents($ftp_current, $this->file_get_contents($current));
         }
 
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar(Config::$mode == 'FTP' ? $ftp_current : $current);
         $extract = $tgz->listContent();
         $err = '';
 
         if ($overwrite) {
-            $res = $tgz->extract(Config::$mode == 'FTP' ? $ftp_name : $name);
+            $res = $tgz->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName);
         } else {
             $list = array();
             foreach ($extract as $f) {
@@ -1982,7 +1995,7 @@ class Gmanager extends Config
                 return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
             }
     
-            $res = $tgz->extractList($list, Config::$mode == 'FTP' ? $ftp_name : $name);
+            $res = $tgz->extractList($list, Config::$mode == 'FTP' ? $ftp_name : $sysName);
         }
 
         if (!$res) {
@@ -2002,8 +2015,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->createDir($name, $chmod[1]);
-            $this->ftpMoveFiles($ftp_name, $name, $chmod[0], $chmod[1], $overwrite);
+            $this->createDir($sysName, $chmod[1]);
+            $this->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             unlink($ftp_current);
         }
 
@@ -2047,15 +2060,17 @@ class Gmanager extends Config
             return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         }
 
+        $sysName = IOWrapper::set($name);
+
         if (Config::$mode == 'FTP') {
-            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
             $ftp_current = Config::$temp . '/GmanagerFtpZipArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $ftp_name = Config::$temp . '/GmanagerFtpZipFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
             file_put_contents($ftp_current, $this->file_get_contents($current));
         }
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
-        $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $name, PCLZIP_OPT_BY_NAME, $ext, PCLZIP_OPT_REPLACE_NEWER);
+        $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $sysName, PCLZIP_OPT_BY_NAME, $ext, PCLZIP_OPT_REPLACE_NEWER);
 
         foreach ($res as $status) {
             if ($status['status'] != 'ok') {
@@ -2071,8 +2086,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->createDir($name);
-            $this->ftpMoveFiles($ftp_name, $name, $overwrite);
+            $this->createDir($sysName);
+            $this->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             unlink($ftp_current);
         }
 
@@ -2119,18 +2134,20 @@ class Gmanager extends Config
             return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         }
 
+        $sysName = IOWrapper::set($name);
+
         if (Config::$mode == 'FTP') {
-            $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
             $ftp_current = Config::$temp . '/GmanagerFtpRarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $ftp_name = Config::$temp . '/GmanagerFtpRarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
             file_put_contents($ftp_current, $this->file_get_contents($current));
         }
 
-        $rar = rar_open(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $rar = $this->_rarOpen(Config::$mode == 'FTP' ? $ftp_current : $current);
 
         foreach ($ext as $var) {
             $entry = rar_entry_get($rar, $var);
-            if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $name)) {
+            if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
                 if (Config::$mode == 'FTP') {
                     unlink($ftp_current);
                 }
@@ -2143,8 +2160,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->createDir($name);
-            $this->ftpMoveFiles($ftp_name, $name, $overwrite);
+            $this->createDir($sysName);
+            $this->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             unlink($ftp_current);
         }
 
@@ -2191,16 +2208,18 @@ class Gmanager extends Config
             return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         }
 
+        $sysName = IOWrapper::set($name);
+
         if (Config::$mode == 'FTP') {
-               $name = ($name[0] == '/' ? $name : dirname($current . '/') . '/' . $name);
+               $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
                $ftp_current = Config::$temp . '/GmanagerFtpTarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
                $ftp_name = Config::$temp . '/GmanagerFtpTarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
                file_put_contents($ftp_current, $this->file_get_contents($current));
         }
 
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar(Config::$mode == 'FTP' ? $ftp_current : $current);
 
-        if (!$tgz->extractList($ext, Config::$mode == 'FTP' ? $ftp_name : $name)) {
+        if (!$tgz->extractList($ext, Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
             if (Config::$mode == 'FTP') {
                 unlink($ftp_current);
             }
@@ -2208,8 +2227,8 @@ class Gmanager extends Config
         }
 
         if (Config::$mode == 'FTP') {
-            $this->createDir($name);
-            $this->ftpMoveFiles($ftp_name, $name, $overwrite);
+            $this->createDir($sysName);
+            $this->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             unlink($ftp_current);
         }
 
@@ -2233,7 +2252,7 @@ class Gmanager extends Config
      */
     public function delZipArchive ($current = '', $f = '')
     {
-        $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $zip = $this->_pclZip($current);
         //    $comment = $zip->properties();
         //    $comment = $comment['comment'];
         //  TODO: сохранение комментариев
@@ -2269,7 +2288,7 @@ class Gmanager extends Config
      */
     public function delTarArchive ($current = '', $f = '')
     {
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($current) : $current);
+        $tgz = $this->_archiveTar($current);
 
         $list = $tgz->listContent();
 
@@ -2313,30 +2332,35 @@ class Gmanager extends Config
     public function addZipArchive ($current = '', $ext = array(), $dir = '')
     {
         if (Config::$mode == 'FTP') {
-            $ftp_current = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '/';
-            mkdir($ftp_name, 0777);
+            $tmpCurrent = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            file_put_contents($tmpCurrent, $this->file_get_contents($current));
+        } else {
+            $tmpCurrent = $current;
+        }
+        $tmpFolder = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+        mkdir($tmpFolder, 0777);
 
-            file_put_contents($ftp_current, $this->file_get_contents($current));
-            $tmp = array();
-            foreach ($ext as $v) {
-                $b = basename($v);
-                $tmp[] = $ftp_name . $b;
-                file_put_contents($ftp_name . $b, $this->file_get_contents($v));
+
+        $tmp = array();
+        foreach ($ext as $v) {
+            $b = IOWrapper::set(basename($v));
+            $tmp[] = $tmpFolder . '/' . $b;
+            if ($this->is_dir($v)) {
+                mkdir($tmpFolder . '/' . $b, 0777, true);
+            } else {
+                file_put_contents($tmpFolder . '/' . $b, $this->file_get_contents($v));
             }
-            $ext = $tmp;
-            unset($tmp);
         }
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
-        $add = $zip->add($ext, PCLZIP_OPT_ADD_PATH, $dir, PCLZIP_OPT_REMOVE_ALL_PATH);
-        // TODO: добавление пустых директорий
+
+        $zip = $this->_pclZip($tmpCurrent);
+        $add = $zip->add($tmp, PCLZIP_OPT_ADD_PATH, IOWrapper::set($dir), PCLZIP_OPT_REMOVE_PATH, iconv_substr($tmpFolder, iconv_strlen(dirname(dirname($tmpFolder))) - 1));
 
         if (Config::$mode == 'FTP') {
-            $this->file_put_contents($current, file_get_contents($ftp_current));
-            unlink($ftp_current);
-            $this->clean($ftp_name);
+            $this->file_put_contents($current, file_get_contents($tmpCurrent));
+            unlink($tmpCurrent);
         }
+        $this->clean($tmpFolder);
 
         if ($add) {
             return $this->report($GLOBALS['lng']['add_archive_true'], 0);
@@ -2364,7 +2388,7 @@ class Gmanager extends Config
             file_put_contents($ftp_current, $this->file_get_contents($current));
             $tmp = array();
             foreach ($ext as $v) {
-                $b = basename($v);
+                $b = IOWrapper::set(basename($v));
                 $tmp[] = $ftp_name . $b;
                 file_put_contents($ftp_name . $b, $this->file_get_contents($v));
             }
@@ -2372,7 +2396,7 @@ class Gmanager extends Config
             unset($tmp);
         }
 
-        $tgz = new Archive_Tar(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar(Config::$mode == 'FTP' ? $ftp_current : $current);
 
         foreach ($ext as $v) {
             $add = $tgz->addModify($v, $dir, dirname($v));
@@ -2416,7 +2440,7 @@ class Gmanager extends Config
              $temp = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
              mkdir($temp, 0755, true);
              foreach ($ext as $f) {
-                 $ftp[] = $tmp = $temp . '/' . basename($f);
+                 $ftp[] = $tmp = $temp . '/' . IOWrapper::get(basename($f));
                  if ($this->is_dir($f)) {
                     mkdir($tmp, 0755, true);
                     $this->ftpCopyFiles($f, $tmp);
@@ -2428,13 +2452,15 @@ class Gmanager extends Config
             unset($ftp);
         } else {
             $temp = Config::$current;
+            $ext = array_map(array('IOWrapper', 'set'), $ext);
         }
 
-        $zip = new PclZip(Config::$mode == 'FTP' ? $ftp_name : $name);
+        //TODO:пустые директории
+        $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_name : $name);
         if ($comment != '') {
-            $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp, PCLZIP_OPT_COMMENT, $comment);
+            $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, IOWrapper::set($temp), PCLZIP_OPT_COMMENT, $comment);
         } else {
-            $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, $temp);
+            $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, IOWrapper::set($temp));
         }
 
         if ($zip->errorCode()) {
@@ -2470,7 +2496,7 @@ class Gmanager extends Config
      */
     public function gz ($c = '')
     {
-        $data = Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : $c;
+        $data = Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c);
 
         $fo = fopen($data, 'rb');
         fseek($fo, -4, SEEK_END);
@@ -2509,13 +2535,13 @@ class Gmanager extends Config
     {
         $this->createDir($name, $chmod[1]);
 
-        $tmp = (Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : $c);
+        $tmp = (Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c));
 
         $fo = fopen($tmp, 'rb');
         fseek($fo, 10, SEEK_SET);
-        $gz = strtok(fread($fo, 1024), chr(0));
+        $gz = IOWrapper::get(strtok(fread($fo, 1024), chr(0)));
         if ($gz == '') {
-            $gz = basename($c, '.gz');
+            $gz = IOWrapper::get(basename($c, '.gz'));
         }
         fclose($fo);
 
@@ -2557,7 +2583,7 @@ class Gmanager extends Config
     {
         $tmp = $this->isArchive($this->getType(basename($archive)));
         if ($tmp == 'ZIP') {
-            $zip = new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($archive) : $archive);
+            $zip = $this->_pclZip($archive);
             $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
             if (Config::$mode == 'FTP') {
@@ -2566,13 +2592,13 @@ class Gmanager extends Config
 
             return $ext[0]['content'];
         } else if ($tmp == 'TAR') {
-            $tgz = new Archive_Tar($archive);
+            $tgz = $this->_archiveTar($archive);
             return $tgz->extractInString($f);
         } else if ($tmp == 'BZ2' && extension_loaded('bz2')) {
-            $tgz = new Archive_Tar($archive);
+            $tgz = $this->_archiveTar($archive);
             return $tgz->extractInString($f);
         } else if ($tmp == 'RAR' && extension_loaded('rar')) {
-            $rar = rar_open($archive);
+            $rar = $this->_rarOpen($archive);
             $entry = rar_entry_get($rar, $f);
 
             // создаем временный файл
@@ -3262,9 +3288,6 @@ class Gmanager extends Config
      */
     public function strLink ($str = '', $sub = false)
     {
-        if (Config::$sysType == 'WIN') {
-            $str = @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', $str);
-        }
         if (!$sub) {
             return $str;
         }
@@ -3541,12 +3564,11 @@ class Gmanager extends Config
      * id2name
      * 
      * @param int    $id
-     * @param string $os
      * @return string
      */
-    public static function id2name ($id = 0, $os = 'UNIX')
+    public static function id2name ($id = 0)
     {
-        if ($os == 'WIN') {
+        if (Config::$sysType == 'WIN') {
             return '';
         } else {
             if (function_exists('posix_getpwuid') && $name = @posix_getpwuid($id)) {
@@ -3707,11 +3729,67 @@ class Gmanager extends Config
                     }
                     break;
             }
-            
-            
         }
 
         return true;
+    }
+
+
+    /**
+     * PclZip
+     * 
+     * @param string $file
+     * @return object
+     */
+    private function _pclZip($file)
+    {
+        return new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
+    }
+
+
+    /**
+     * Archive_Tar
+     * 
+     * @param string $file
+     * @return object
+     */
+    private function _archiveTar($file)
+    {
+        return new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
+    }
+
+
+    /**
+     * rar_open
+     * 
+     * @param string $file
+     * @return object
+     */
+    private function _rarOpen($file)
+    {
+        return rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
+    }
+
+
+    /**
+     * phpinfo
+     * 
+     * @param int $what
+     * @return void
+     */
+    public function phpinfo($what = -1)
+    {
+        header('Content-Type: text/html; charset=UTF-8');
+
+        if (Config::$sysType == 'WIN' && ob_start()) {
+            phpinfo($what);
+            $phpinfo = iconv(Config::$altencoding, 'UTF-8', ob_get_contents());
+            ob_end_clean();
+            echo $phpinfo;
+        } else {
+            phpinfo($what);
+        }
+        exit;
     }
 }
 

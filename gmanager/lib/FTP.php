@@ -57,7 +57,7 @@ class FTP
     {
         if (!is_int($chmod)) {
             $strlen = strlen($chmod);
-            
+
             if (($strlen != 3 && $strlen != 4) || !is_numeric($chmod)) {
                 return false;
             } else if ($strlen == 3) {
@@ -79,7 +79,7 @@ class FTP
     {
         ftp_chdir($this->_res, '/');
         if (!$this->is_dir($dir)) {
-            if (!@ftp_mkdir($this->_res, $dir)) {
+            if (!@ftp_mkdir($this->_res, IOWrapper::set($dir))) {
                 return false;
             }
         }
@@ -106,7 +106,7 @@ class FTP
         if ($file[0] != '/') {
             $file = '/' . $file;
         }
-        return ftp_chmod($this->_res, $this->_chmoder($chmod), $file);
+        return ftp_chmod($this->_res, $this->_chmoder($chmod), IOWrapper::set($file));
     }
 
 
@@ -121,7 +121,7 @@ class FTP
         ftp_chdir($this->_res, '/');
         $tmp = fopen('php://temp', 'r+');
 
-        if (ftp_fget($this->_res, $tmp, $file, FTP_BINARY, 0)) {
+        if (ftp_fget($this->_res, $tmp, IOWrapper::set($file), FTP_BINARY, 0)) {
             rewind($tmp);
             return stream_get_contents($tmp);
         } else {
@@ -143,13 +143,13 @@ class FTP
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 
-        $tmp = iconv_substr($file, 0, strrpos($file, '/'));
+        $tmp = iconv_substr($file, 0, iconv_strrpos($file, '/'));
         if ($tmp === false) {
             $tmp = substr($file, 0, strrpos($file, '/'));
         }
 
-        ftp_chdir($this->_res, $tmp);
-        $result = ftp_put($this->_res, basename($file), $php_temp, FTP_BINARY);
+        ftp_chdir($this->_res, IOWrapper::set($tmp));
+        $result = ftp_put($this->_res, basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
 
         unlink($php_temp);
         return intval($result);
@@ -318,7 +318,7 @@ class FTP
     {
         //$file = self::_change_symbol($file);
         ftp_chdir($this->_res, '/');
-        return ftp_delete($this->_res, $file);
+        return ftp_delete($this->_res, IOWrapper::set($file));
     }
 
 
@@ -334,7 +334,7 @@ class FTP
         //$from = self::_change_symbol($from);
         //$to = self::_change_symbol($to);
         ftp_chdir($this->_res, '/');
-        return ftp_rename($this->_res, $from, $to);
+        return ftp_rename($this->_res, IOWrapper::set($from), IOWrapper::set($to));
     }
 
 
@@ -373,7 +373,7 @@ class FTP
     {
         //$dir = self::_change_symbol($dir);
         ftp_chdir($this->_res, '/');
-        return @ftp_rmdir($this->_res, $dir);
+        return @ftp_rmdir($this->_res, IOWrapper::set($dir));
     }
 
 
@@ -475,11 +475,23 @@ class FTP
      */
     public function getcwd ()
     {
-        $str = ftp_pwd($this->_res);
+        $str = IOWrapper::get(ftp_pwd($this->_res));
         if ($str == '.') {
             $str = '/';
         }
         return $str;
+    }
+
+
+    /**
+     * realpath
+     * 
+     * @param string $path
+     * @return string
+     */
+    public function realpath ($path)
+    {
+        return IOWrapper::get(realpath(IOWrapper::set($path)));
     }
 
 
@@ -491,13 +503,14 @@ class FTP
      */
     private function _rawlist ($dir = '/')
     {
-        ftp_chdir($this->_res, '/');
         $raw_dir = self::$_dir = str_replace('\\', '/', $dir);
+
+        ftp_chdir($this->_res, '/');
         if (preg_match('/^[A-Z]+?:[\\*|\/*]+(.*)/', $dir, $match)) {
             $raw_dir = $match[1] ? '/' . $match[1] : '/';
         }
 
-        foreach ((array)ftp_rawlist($this->_res, '/' . $raw_dir) as $var) {
+        foreach ((array)ftp_rawlist($this->_res, '/' . IOWrapper::set($raw_dir)) as $var) {
             if (substr($var, -3) == ' ..') {
                 continue;
             } else {
@@ -521,14 +534,14 @@ class FTP
      */
     private function _rawlistCallback ($data)
     {
-        $data[10] = trim($data[10]);
+        $data[10] = IOWrapper::get(trim($data[10]));
 
         self::$_rawlist[self::$_dir][basename($data[10])] = array(
             'chmod' => $data[1] == 'd' && Config::$sysType == 'WIN' ? 0777 : (Config::$sysType == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
-            'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Gmanager::id2name($data[3], Config::$sysType)) : $data[3],
+            'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Gmanager::id2name($data[3])) : $data[3],
             'gid'   => $data[4],
-            'group' => is_numeric($data[4]) ? (isset(self::$_id[$data[4]]) ? self::$_id[$data[4]] : self::$_id[$data[4]] = Gmanager::id2name($data[4], Config::$sysType)) : $data[4],
+            'group' => is_numeric($data[4]) ? (isset(self::$_id[$data[4]]) ? self::$_id[$data[4]] : self::$_id[$data[4]] = Gmanager::id2name($data[4])) : $data[4],
             'size'  => $data[5],
             'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
             'file'  => $data[10],

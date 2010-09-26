@@ -66,7 +66,7 @@ if ($_GET['charset']) {
 
 $Gmanager->sendHeader();
 
-echo str_replace('%title%', (Config::$sysType == 'WIN' ? @iconv(Config::$altencoding, 'UTF-8//TRANSLIT', Config::$hCurrent) : Config::$hCurrent), Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->head();
+echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">' . $GLOBALS['lng']['title_edit'] . '<br/></div>' . $Gmanager->head();
 
 $archive = $Gmanager->isArchive($Gmanager->getType(basename(Config::$hCurrent)));
 
@@ -97,7 +97,7 @@ switch ($_GET['go']) {
         } else {
             $content['text'] = htmlspecialchars($Gmanager->file_get_contents(Config::$current), ENT_COMPAT);
             $content['size'] = $Gmanager->formatSize($Gmanager->size(Config::$current));
-            $content['lines'] = substr_count($content['text'], "\n");
+            $content['lines'] = substr_count($content['text'], "\n") + 1;
             $f = '';
         }
 
@@ -112,10 +112,10 @@ switch ($_GET['go']) {
         }
 
 
-        $r = realpath(Config::$current);
-        $l = iconv_strlen($_SERVER['DOCUMENT_ROOT']);
+        $r = $Gmanager->realpath(Config::$current);
+        $l = iconv_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT']));
         if (!$path = @iconv_substr($r, $l)) {
-            $path = iconv(Config::$altencoding, 'UTF-8', substr($r, $l));
+            $path = iconv(Config::$altencoding, 'UTF-8', iconv_substr($r, $l));
         }
 
         if (Config::$mode == 'HTTP' && $path) {
@@ -207,7 +207,7 @@ switch ($_GET['go']) {
 
     case 'validator':
         /*
-        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr(realpath(Config::$current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
+        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr($Gmanager->realpath(Config::$current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
         */
         echo $Gmanager->validator(Config::$current, $charset);
         break;
