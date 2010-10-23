@@ -166,280 +166,34 @@ class Gmanager extends Config
     public function look ($current = '', $itype = '', $down = '')
     {
         if (!$this->is_dir($current) || !$this->is_readable($current)) {
-            return ListData::getDenyData();
+            return ListData::getListDenyData();
         }
 
-        $html = $key = $type = $isize = $uid = $gid = $chmod = $name = $time = '';
-        $page = $page0 = $page1 = $page2 = array();
-        $i = 0;
-
-        if (Config::$target) {
-            $t = ' target="_blank"';
-        } else {
-            $t = '';
-        }
-
-        if (isset($_GET['add_archive'])) {
-            $add = '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($_GET['add_archive']));
-        } else {
-            $add = '';
-        }
-
-        if ($itype == 'time') {
-            $out = '&amp;time';
-            $key = & $time;
-        } else if ($itype == 'type') {
-            $out = '&amp;type';
-            $key = & $type;
-        } else if ($itype == 'size') {
-            $out = '&amp;size';
-            $key = & $isize;
-        } else if ($itype == 'chmod') {
-            $out = '&amp;chmod';
-            $key = & $chmod;
-        } else if ($itype == 'uid') {
-            $out = '&amp;uid';
-            $key = & $uid;
-        } else if ($itype == 'gid') {
-            $out = '&amp;gid';
-            $key = & $gid;
-        } else {
-            $out = '';
-            $key = & $name;
-        }
-
-        $out .= $down ? '&amp;down' : '&amp;up';
-
-
-        foreach ($this->iterator($current) as $file) {
-            $i++;
-            $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $uid = $pgid = $gid = $name = $size = $isize = $chmod = '';
-
-            /*
-            if (substr($file, -1) == '/') {
-                $file = iconv_substr($file, 0, iconv_strlen($file)-1);    
-            }
-            */
-
-            if ($current != '.') {
-                $file = $current . $file;
-            }
-
-            $basename = basename($file);
-            $r_file = str_replace('%2F', '/', rawurlencode($file));
-            $stat = $this->stat($file);
-            $time = $stat['mtime'];
-            $uid  = $stat['owner'];
-            $gid  = $stat['group'];
-
-
-            if ($this->is_link($file)) {
-                $type = 'LINK';
-                $tmp = $this->readlink($file);
-                $r_file = str_replace('%2F', '/', rawurlencode($tmp[1]));
-
-                if (Config::$index['name']) {
-                    $name = htmlspecialchars($this->strLink($tmp[0], true), ENT_NOQUOTES);
-                    $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
-                }
-                if (Config::$index['down']) {
-                    $pdown = '<td> </td>';
-                }
-                if (Config::$index['type']) {
-                    $ptype = '<td>LINK</td>';
-                }
-                if (Config::$index['size']) {
-                    $isize = $stat['size'];
-                    $size = $this->formatSize($isize);
-                    $psize = '<td>' . $size . '</td>';
-                }
-                if (Config::$index['change']) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
-                }
-                if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
-                }
-                if (Config::$index['chmod']) {
-                    $chmod = $this->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
-                }
-                if (Config::$index['date']) {
-                    $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
-                }
-                if (Config::$index['uid']) {
-                    $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
-                }
-                if (Config::$index['gid']) {
-                    $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
-                }
-                $page0[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid . $pgid;
-            } else if ($this->is_dir($file)) {
-                $type = 'DIR';
-                if (Config::$index['name']) {
-                    if (Config::$realname == 1) {
-                        $realpath = $this->realpath($file);
-                        $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-                    } else if (Config::$realname == 2) {
-                        $name = $basename;
-                    } else {
-                        $name = $file;
-                    }
-                    $name = htmlspecialchars($this->strLink($name, true), ENT_NOQUOTES);
-                    $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
-                }
-                if (Config::$index['down']) {
-                    $pdown = '<td> </td>';
-                }
-                if (Config::$index['type']) {
-                    $ptype = '<td>DIR</td>';
-                }
-                if (Config::$index['size']) {
-                    if (Config::$dir_size) {
-                        $isize = $this->size($file, true);
-                        $size = $this->formatSize($isize);
-                    } else {
-                        $isize = $size = $GLOBALS['lng']['unknown'];
-                    }
-                        $psize = '<td>' . $size . '</td>';
-                }
-                if (Config::$index['change']) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
-                }
-                if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
-                }
-                if (Config::$index['chmod']) {
-                    $chmod = $this->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
-                }
-                if (Config::$index['date']) {
-                    $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
-                }
-                if (Config::$index['uid']) {
-                    $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
-                }
-                if (Config::$index['gid']) {
-                    $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
-                }
-                $page1[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
+        $add  = (isset($_GET['add_archive']) ? $_GET['add_archive'] : '');
+        $pg   = (isset($_GET['pg']) ? $_GET['pg'] : 1);
+        $html = ListData::getListData($this, $current, $itype, $down, $pg, $add);
+        if ($html) {
+            if ($itype == 'time') {
+                $out = '&amp;time';
+            } else if ($itype == 'type') {
+                $out = '&amp;type';
+            } else if ($itype == 'size') {
+                $out = '&amp;size';
+            } else if ($itype == 'chmod') {
+                $out = '&amp;chmod';
+            } else if ($itype == 'uid') {
+                $out = '&amp;uid';
+            } else if ($itype == 'gid') {
+                $out = '&amp;gid';
             } else {
-                $type = htmlspecialchars($this->getType($basename), ENT_NOQUOTES);
-                $archive = $this->isArchive($type);
-
-                if (Config::$index['name']) {
-                    if (Config::$realname == 1) {
-                        $realpath = $this->realpath($file);
-                        $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-                    } else if (Config::$realname == 2) {
-                        $name = $basename;
-                    } else {
-                        $name = $file;
-                    }
-                    $name = htmlspecialchars($this->strLink($name, true), ENT_NOQUOTES);
-
-                    if ($archive) {
-                        $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . $GLOBALS['lng']['extract_archive'] . '</a></td>';
-                    } else {
-                        if ($type == 'SQL') {
-                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . $GLOBALS['lng']['tables'] . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></td>';
-                        } else {
-                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a></td>';
-                        }
-                    }
-                }
-                if (Config::$index['down']) {
-                    $pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
-                }
-                if (Config::$index['type']) {
-                    $ptype = '<td>' . $type . '</td>';
-                }
-                if (Config::$index['size']) {
-                    $isize = $stat['size'];
-                    $size = $this->formatSize($stat['size']);
-                    $psize = '<td>' . $size . '</td>';
-                }
-                if (Config::$index['change']) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
-                }
-                if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
-                }
-                if (Config::$index['chmod']) {
-                    $chmod = $this->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
-                }
-                if (Config::$index['date']) {
-                    $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
-                }
-                if (Config::$index['uid']) {
-                    $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
-                }
-                if (Config::$index['gid']) {
-                    $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
-                }
-                $page2[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
+                $out = '';
             }
-        }
+            $out .= $down ? '&amp;down' : '&amp;up';
 
-
-        $p = array_merge($page0, $page1, $page2);
-
-        $a = array_keys($page0);
-        $b = array_keys($page1);
-        $c = array_keys($page2);
-        unset($page0, $page1, $page2);
-
-        natcasesort($a);
-        natcasesort($b);
-        natcasesort($c);
-        if ($down) {
-            $a = array_reverse($a, false);
-            $b = array_reverse($b, false);
-            $c = array_reverse($c, false);
-        }
-
-        foreach (array_merge($a, $b, $c) as $var) {
-            foreach ($p[$var] as $f) {
-                $page[] = $f;
-            }
-        }
-        unset($p, $a, $b, $c);
-
-        $all = ceil(sizeof($page) / Config::$limit);
-        $pg = isset($_GET['pg']) ? intval($_GET['pg']) : 1;
-        if ($pg < 1) {
-            $pg = 1;
-        }
-        $page = array_slice($page, ($pg * Config::$limit) - Config::$limit, Config::$limit);
-
-        if ($page) {
-            $i = 1;
-            $line = false;
-
-            if (Config::$index['n']) {
-                foreach ($page as $var) {
-                    $line = !$line;
-                    if ($line) {
-                        $html .= '<tr class="border">' . $var . '<td>' . ($i++) . '</td></tr>';
-                    } else {
-                        $html .= '<tr class="border2">' . $var . '<td>' . ($i++) . '</td></tr>';
-                    }
-                }
-            } else {
-                foreach ($page as $var) {
-                    $line = !$line;
-                    if ($line) {
-                        $html .= '<tr class="border">' . $var . '</tr>';
-                    } else {
-                        $html .= '<tr class="border2">' . $var . '</tr>';
-                    }
-                }
-            }
+            return $html . Paginator::get($pg, ListData::$getListCountPages, '&amp;c=' . $current . $out . $add);
         } else {
-            return ListData::getEmptyData();
+            return ListData::getListEmptyData();
         }
-
-        return $html . $this->go($pg, $all, '&amp;c=' . $current . $out . $add);
     }
 
 
@@ -2965,146 +2719,12 @@ class Gmanager extends Config
      */
     public function search ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
     {
-        static $count = 0;
-        static $t;
-        static $out;
-
-        if (!$count) {
-            if (Config::$target) {
-                $t = ' target="_blank"';
-            } else {
-                $t = '';
-            }
-
-            if ($h) {
-                $s = implode('', array_map('chr', str_split($s, 4)));
-            }
-
-            // Fix for PHP < 6.0
-            $s = $r ? $s : strtolower(@iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $s));
+        $html = ListData::getListSearchData($this, $c, $s, $w, $r, $h, $limit, $archive);
+        if ($html) {
+            return $html;
+        } else {
+            return ListData::getListEmptySearchData();
         }
-
-        $count++;
-
-
-        $c = str_replace('//', '/', $c . '/');
-
-        $i = 0;
-        $page = array();
-
-        foreach ($this->iterator($c) as $f) {
-            if ($this->is_dir($c . $f)) {
-                $this->search($c . $f . '/', $s, $w, $r, false, $limit, $archive);
-                continue;
-            }
-
-            //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
-            $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
-            $type = htmlspecialchars($this->getType(basename($f)), ENT_NOQUOTES);
-            $arch = $this->isArchive($type);
-            $stat = $this->stat($c . $f);
-            $name = htmlspecialchars($this->strLink($c . $f, true), ENT_NOQUOTES);
-
-            $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pgid = $pn = $in = null;
-
-            if ($w) {
-                if ($stat['size'] > $limit || ($arch && !$archive) || ($arch && $archive && $type != 'GZ')) {
-                    continue;
-                }
-
-                $fl = $this->file_get_contents($c . $f);
-                if ($type == 'GZ') {
-                    $gz = null;
-                    if (!$gz = @gzinflate($fl)) {
-                        if (!$gz = @gzuncompress($fl)) {
-                            // Fix for PHP < 6.0
-                            $gz = $this->gzdecode($fl);
-                        }
-                    }
-                    $fl = & $gz;
-                }
-                // Fix for PHP < 6.0
-                if (!$r) {
-                    if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {
-                        $fl = strtolower(@iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $fl));
-                    } else {
-                        $fl = strtolower($fl);
-                    }
-                }
-                if (!$in = substr_count($fl, $s)) {
-                    continue;
-                }
-                $in = ' (' . $in . ')';
-            } else {
-                if ($r) {
-                    $fs = $f;
-                } else {
-                    // Fix for PHP < 6.0
-                    if (@iconv('UTF-8', 'UTF-8', $f) == $f) {
-                        $fs = strtolower(@iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $f));
-                    } else {
-                        $fs = strtolower($f);
-                    }
-                }
-                if (strpos($fs, $s) === false) {
-                    continue;
-                }
-            }
-
-            $i++;
-
-
-            if (Config::$index['name']) {
-                if ($arch) {
-                    $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
-                } else {
-                    $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a>' . $in . '</td>';
-                }
-            }
-            if (Config::$index['down']) {
-                $pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
-            }
-            if (Config::$index['type']) {
-                $ptype = '<td>' . $type . '</td>';
-            }
-            if (Config::$index['size']) {
-                $psize = '<td>' . $this->formatSize($stat['size']) . '</td>';
-            }
-            if (Config::$index['change']) {
-                $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
-            }
-            if (Config::$index['del']) {
-                $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
-            }
-            if (Config::$index['chmod']) {
-                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $this->lookChmod($c . $f) . '</a></td>';
-            }
-            if (Config::$index['date']) {
-                $pdate = '<td>' . strftime(Config::$date_format, $stat['mtime']) . '</td>';
-            }
-            if (Config::$index['uid']) {
-                $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
-            }
-            if (Config::$index['gid']) {
-                $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
-            }
-            if (Config::$index['n']) {
-                $pn = '<td>' . $i . '</td>';
-            }
-
-            $page[$f] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid . $pn;
-
-        }
-
-        natcasesort($page);
-
-        $line = false;
-        foreach ($page as $var) {
-            $line = !$line;
-            $out .= $line ? '<tr class="border">' . $var . '</tr>' : '<tr class="border2">' . $var . '</tr>';
-        }
-
-        return $out;
     }
 
 
@@ -3228,54 +2848,6 @@ class Gmanager extends Config
     {
         $SQL = new SQL_MySQL($this);
         return $SQL->query($host, $name, $pass, $db, $charset, $data);
-    }
-
-
-    /**
-     * go
-     * 
-     * @param int    $pg
-     * @param int    $all
-     * @param string $text
-     * @return string
-     */
-    public function go ($pg = 0, $all = 0, $text = '')
-    {
-        $go = '';
-
-        $page1 = $pg - 2;
-        $page2 = $pg - 1;
-        $page3 = $pg + 1;
-        $page4 = $pg + 2;
-
-        if ($page1 > 0) {
-            $go .= '<a href="' . $_SERVER['PHP_SELF'] . '?pg=' . $page1 . $text . '">' . $page1 . '</a> ';
-        }
-
-        if ($page2 > 0) {
-            $go .= '<a href="' . $_SERVER['PHP_SELF'] . '?pg=' . $page2 . $text . '">' . $page2 . '</a> ';
-        }
-
-        $go .= $pg . ' ';
-
-        if ($page3 <= $all) {
-            $go .= '<a href="' . $_SERVER['PHP_SELF'] . '?pg=' . $page3 . $text . '">' . $page3 . '</a> ';
-        }
-        if ($page4 <= $all) {
-            $go .= '<a href="' . $_SERVER['PHP_SELF'] . '?pg=' . $page4 . $text . '">' . $page4 . '</a> ';
-        }
-
-        if ($all > 3 && $all > $page4) {
-            $go .= '... <a href="' . $_SERVER['PHP_SELF'] . '?pg=' . $all . $text . '">' . $all . '</a>';
-        }
-
-        if ($page1 > 1) {
-            $go = '<a href="' . $_SERVER['PHP_SELF'] . '?pg=1' . $text . '">1</a> ... ' . $go;
-        }
-
-        if ($go != $pg . ' ') {
-            return '<tr><td class="border" colspan="' . (array_sum(Config::$index) + 1) . '">&#160;' . $go . '</td></tr>';
-        }
     }
 
 
