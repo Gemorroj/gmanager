@@ -98,7 +98,7 @@ class FTP
     public function chmod ($file, $chmod = 0755)
     {
         if (Config::$sysType == 'WIN') {
-            //trigger_error($GLOBALS['lng']['win_chmod']);
+            //trigger_error(Language::get('win_chmod'));
             return true;
         }
 

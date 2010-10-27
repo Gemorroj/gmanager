@@ -71,7 +71,7 @@ class HTTP
     {
         /*
         if (Config::$sysType == 'WIN') {
-            trigger_error($GLOBALS['lng']['win_chmod']);
+            trigger_error(Language::get('win_chmod'));
             return false;
         }
         */

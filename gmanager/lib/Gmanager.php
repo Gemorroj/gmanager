@@ -102,16 +102,16 @@ class Gmanager extends Config
 
         if ($this->is_dir(Config::$current) || $this->is_link(Config::$current)) {
             if (Config::$current == '.') {
-                return '<div class="border">' . $GLOBALS['lng']['dir'] . ' <a href="index.php">' . htmlspecialchars($this->strLink($this->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($this->getcwd()) . ')<br/></div>';
+                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars($this->strLink($this->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($this->getcwd()) . ')<br/></div>';
             } else {
-                return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+                return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
             }
         } else if ($this->is_file(Config::$current) && $archive) {
             $up = dirname($d);
-            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         } else {
             $up = dirname($d);
-            return '<div class="border">' . $GLOBALS['lng']['back'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . $GLOBALS['lng']['dir'] . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . $GLOBALS['lng']['file'] . ' <a href="edit.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="edit.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         }
     }
 
@@ -123,7 +123,7 @@ class Gmanager extends Config
      */
     public function langJS ()
     {
-        return '<div style="display:none;"><span id="chF">' . $GLOBALS['lng']['check_form'] . '</span><span id="delN">' . $GLOBALS['lng']['del_notify'] . '</span></div>';
+        return '<div style="display:none;"><span id="chF">' . Language::get('check_form') . '</span><span id="delN">' . Language::get('del_notify') . '</span></div>';
     }
 
 
@@ -169,8 +169,8 @@ class Gmanager extends Config
             return ListData::getListDenyData();
         }
 
-        $add  = (isset($_GET['add_archive']) && $_GET['add_archive'] ? $_GET['add_archive'] : '');
-        $pg   = (isset($_GET['pg']) && $_GET['pg'] > 1 ? $_GET['pg'] : 1);
+        $add  = (isset($_GET['add_archive']) ? $_GET['add_archive'] : '');
+        $pg   = (isset($_GET['pg']) ? $_GET['pg'] : 1);
         $html = ListData::getListData($this, $current, $itype, $down, $pg, $add);
         if ($html) {
             if ($itype == 'time') {
@@ -251,17 +251,17 @@ class Gmanager extends Config
                     $this->chmod($dest, $ch);
                     $this->copyFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                 } else {
-                    $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']) . ' (' . $this->error() . ')';
+                    $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_files_false')) . ' (' . $this->error() . ')';
                 }
 
             } else {
 
                 if ($overwrite || !$this->file_exists($dest . '/' . $file)) {
                     if (!$this->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
-                        $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']) . ' (' . $this->error() . ')';
+                        $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_file_false')) . ' (' . $this->error() . ')';
                     }
                 } else {
-                    $error[] = $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($dest . '/' . $file, ENT_NOQUOTES) . ')';
+                    $error[] = Language::get('overwrite_false') . ' (' . htmlspecialchars($dest . '/' . $file, ENT_NOQUOTES) . ')';
                 }
 
             }
@@ -270,7 +270,7 @@ class Gmanager extends Config
         if ($error) {
             return $this->report(implode('<br/>', $error), 2);
         } else {
-            return $this->report(str_replace('%title%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+            return $this->report(str_replace('%title%', htmlspecialchars($dest, ENT_NOQUOTES), Language::get('copy_files_true')), 0);
         }
     }
 
@@ -305,7 +305,7 @@ class Gmanager extends Config
                     $this->moveFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                     $this->rmdir($d . '/' . $file);
                 } else {
-                    $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']) . ' (' . $this->error() . ')';
+                    $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_files_false')) . ' (' . $this->error() . ')';
                 }
 
             } else {
@@ -314,10 +314,10 @@ class Gmanager extends Config
                     if ($this->rename($d . '/' . $file, $dest . '/' . $file)) {
                         $this->chmod($dest . '/' . $file, $ch);
                     } else {
-                        $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']) . ' (' . $this->error() . ')';
+                        $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_file_false')) . ' (' . $this->error() . ')';
                     }
                 } else {
-                    $error[] = $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($dest . '/' . $file, ENT_NOQUOTES) . ')';
+                    $error[] = Language::get('overwrite_false') . ' (' . htmlspecialchars($dest . '/' . $file, ENT_NOQUOTES) . ')';
                 }
 
             }
@@ -327,7 +327,7 @@ class Gmanager extends Config
             return $this->report(implode('<br/>', $error), 2);
         } else {
             $this->rmdir($d);
-            return $this->report(str_replace('%title%', htmlspecialchars($dest, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+            return $this->report(str_replace('%title%', htmlspecialchars($dest, ENT_NOQUOTES), Language::get('move_files_true')), 0);
         }
     }
 
@@ -344,14 +344,14 @@ class Gmanager extends Config
     public function copyFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
         if (!$overwrite && $this->file_exists($dest)) {
-            return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', 1);
+            return $this->report(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', 1);
         }
 
         if ($source == $dest) {
             if ($chmod) {
                 $this->rechmod($dest, $chmod);
             }
-            return $this->report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), 0);
+            return $this->report(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), 0);
         }
 
         $d = dirname($dest);
@@ -363,9 +363,9 @@ class Gmanager extends Config
             }
             $this->rechmod($dest, $chmod);
 
-            return $this->report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_true'])), 0);
+            return $this->report(htmlspecialchars(str_replace('%file%', $source, Language::get('copy_file_true'))), 0);
         } else {
-            return $this->report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['copy_file_false'])) . '<br/>' . $this->error(), 2);
+            return $this->report(htmlspecialchars(str_replace('%file%', $source, Language::get('copy_file_false'))) . '<br/>' . $this->error(), 2);
         }
     }
 
@@ -382,14 +382,14 @@ class Gmanager extends Config
     public function moveFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
         if (!$overwrite && $this->file_exists($dest)) {
-            return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', 1);
+            return $this->report(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', 1);
         }
 
         if ($source == $dest) {
             if ($chmod) {
                 $this->rechmod($dest, $chmod);
             }
-            return $this->report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), 0);
+            return $this->report(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), 0);
         }
 
         $d = dirname($dest);
@@ -401,9 +401,9 @@ class Gmanager extends Config
             }
             $this->rechmod($dest, $chmod);
 
-            return $this->report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_true'])), 0);
+            return $this->report(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), 0);
         } else {
-            return $this->report(htmlspecialchars(str_replace('%file%', $source, $GLOBALS['lng']['move_file_false'])) . '<br/>' . $this->error(), 2);
+            return $this->report(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_false'))) . '<br/>' . $this->error(), 2);
         }
     }
 
@@ -417,9 +417,9 @@ class Gmanager extends Config
     public function delFile ($f = '')
     {
         if ($this->unlink($f)) {
-            return $this->report($GLOBALS['lng']['del_file_true'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), 0);
+            return $this->report(Language::get('del_file_true') . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), 0);
         } else {
-            return $this->report($GLOBALS['lng']['del_file_false'] . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
+            return $this->report(Language::get('del_file_false') . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
         }
     }
 
@@ -454,9 +454,9 @@ class Gmanager extends Config
             $err .= $this->error() . '<br/>';
         }
         if ($err) {
-            return $this->report($GLOBALS['lng']['del_dir_false'] . '<br/>' . $err, 1);
+            return $this->report(Language::get('del_dir_false') . '<br/>' . $err, 1);
         }
-        return $this->report($GLOBALS['lng']['del_dir_true'] . ' -&gt; ' . htmlspecialchars($d, ENT_NOQUOTES), 0);
+        return $this->report(Language::get('del_dir_true') . ' -&gt; ' . htmlspecialchars($d, ENT_NOQUOTES), 0);
     }
 
 
@@ -499,7 +499,7 @@ class Gmanager extends Config
      */
     public function formatSize ($size = false, $int = 2) {
         if ($size === false) {
-            return $GLOBALS['lng']['unknown'];
+            return Language::get('unknown');
         } else if ($size < 1024) {
             return $size . ' Byte';
         } else if ($size < 1048576) {
@@ -537,9 +537,9 @@ class Gmanager extends Config
         $this->createDir(dirname($file));
 
         if ($this->file_put_contents($file, $text)) {
-            return $this->report($GLOBALS['lng']['fputs_file_true'], 0) . $this->rechmod($file, $chmod);
+            return $this->report(Language::get('fputs_file_true'), 0) . $this->rechmod($file, $chmod);
         } else {
-            return $this->report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $this->error(), 2);
+            return $this->report(Language::get('fputs_file_false') . '<br/>' . $this->error(), 2);
         }
     }
 
@@ -574,9 +574,9 @@ class Gmanager extends Config
         }
 
         if ($err) {
-            return $this->report($GLOBALS['lng']['create_dir_false'] . '<br/>' . $err, 2);
+            return $this->report(Language::get('create_dir_false') . '<br/>' . $err, 2);
         } else {
-            return $this->report($GLOBALS['lng']['create_dir_true'], 0);
+            return $this->report(Language::get('create_dir_true'), 0);
         }
     }
 
@@ -593,13 +593,13 @@ class Gmanager extends Config
         $len = strlen($chmod);
 
         if (($len != 3 && $len != 4) || !is_numeric($chmod)) {
-            return $this->report($GLOBALS['lng']['chmod_mode_false'], 2);
+            return $this->report(Language::get('chmod_mode_false'), 2);
         }
 
         if ($this->chmod($current, $chmod)) {
-            return $this->report($GLOBALS['lng']['chmod_true'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . (is_int($chmod) ? decoct($chmod) : $chmod), 0);
+            return $this->report(Language::get('chmod_true') . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . (is_int($chmod) ? decoct($chmod) : $chmod), 0);
         } else {
-            return $this->report($GLOBALS['lng']['chmod_false'] . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
+            return $this->report(Language::get('chmod_false') . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
         }
     }
 
@@ -645,7 +645,7 @@ class Gmanager extends Config
     public function syntax ($current = '', $charset = array())
     {
         if (!$this->is_file($current)) {
-            return $this->report($GLOBALS['lng']['not_found'], 2);
+            return $this->report(Language::get('not_found'), 2);
         }
 
         exec(escapeshellcmd(Config::$php) . ' -c -f -l ' . escapeshellarg($current), $rt, $v);
@@ -653,7 +653,7 @@ class Gmanager extends Config
         $size = sizeof($rt);
 
         if (!$size) {
-            return $this->report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $error, 2);
+            return $this->report(Language::get('syntax_not_check') . '<br/>' . $error, 2);
         }
 
         $erl = false;
@@ -662,10 +662,10 @@ class Gmanager extends Config
                 $erl = preg_replace('/.*\s(\d*)$/', '$1', $st, 1);
                 $pg = $st;
             } else {
-                $pg = $GLOBALS['lng']['syntax_unknown'];
+                $pg = Language::get('syntax_unknown');
             }
         } else {
-            $pg = $GLOBALS['lng']['syntax_true'];
+            $pg = Language::get('syntax_true');
         }
 
         $fl = trim($this->file_get_contents($current));
@@ -691,7 +691,7 @@ class Gmanager extends Config
         }
         $fp = fsockopen('wapinet.ru', 80, $er1, $er2, 10);
         if (!$fp) {
-            return $this->report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $this->error(), 1);
+            return $this->report(Language::get('syntax_not_check') . '<br/>' . $this->error(), 1);
         }
 
         $f = rawurlencode(trim($this->file_get_contents($current)));
@@ -733,7 +733,7 @@ class Gmanager extends Config
         $fp = fopen($tmp, 'w');
 
         if (!$fp) {
-            return $this->report($GLOBALS['lng']['syntax_not_check'] . '<br/>' . $this->error(), 1);
+            return $this->report(Language::get('syntax_not_check') . '<br/>' . $this->error(), 1);
         }
 
         fputs($fp, $content['text']);
@@ -772,7 +772,7 @@ class Gmanager extends Config
     public function validator ($current = '', $charset = array())
     {
         if (!extension_loaded('xml')) {
-            return $this->report($GLOBALS['lng']['disable_function'] . ' (xml)', 1);
+            return $this->report(Language::get('disable_function') . ' (xml)', 1);
         }
 
         $fl = $this->file_get_contents($current);
@@ -789,7 +789,7 @@ class Gmanager extends Config
             return $this->report('Error [Line ' . $line . ', Column ' . $column . ']: ' . $err, 1) . $this->code($fl, $line);
         } else {
             xml_parser_free($xml_parser);
-            return $this->report($GLOBALS['lng']['validator_true'], 0) . $this->code($fl);
+            return $this->report(Language::get('validator_true'), 0) . $this->code($fl);
         }
     }
 
@@ -873,7 +873,7 @@ class Gmanager extends Config
                 if (Config::$mode == 'FTP') {
                     $this->ftpArchiveEnd();
                 }
-                return $this->report($GLOBALS['lng']['extract_false'], 1);
+                return $this->report(Language::get('extract_false'), 1);
                 break;
             }
             if ($arch_name == $f['stored_filename']) {
@@ -893,7 +893,7 @@ class Gmanager extends Config
                 if (Config::$mode == 'FTP') {
                     $this->ftpArchiveEnd();
                 }
-                return $this->report($GLOBALS['lng']['overwrite_false'], 1);
+                return $this->report(Language::get('overwrite_false'), 1);
                 break;
             }
         }
@@ -927,15 +927,15 @@ class Gmanager extends Config
             }
             if ($folder) {
                 if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), 1);
                 } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), 1);
                 }
             } else {
                 if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), 1);
                 } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), 1);
                 }
             }
         }
@@ -950,29 +950,29 @@ class Gmanager extends Config
         if ($result) {
             if ($folder) {
                 if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_true')), 0);
                 } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_true')), 0);
                 }
             } else {
                 if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_true']), 0);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_true')), 0);
                 } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_true']), 0);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_true')), 0);
                 }
             }
         } else {
             if ($folder) {
                 if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), 1);
                 } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), 1);
                 }
             } else {
                 if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), 1);
                 } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), 1);
                 }
             }
         }
@@ -1007,7 +1007,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 $this->ftpArchiveEnd();
             }
-            return $this->report($GLOBALS['lng']['extract_false'], 1);
+            return $this->report(Language::get('extract_false'), 1);
         }
 
         if (file_exists($tmp . '/' . $sysName)) {
@@ -1022,7 +1022,7 @@ class Gmanager extends Config
                 if (Config::$mode == 'FTP') {
                     $this->ftpArchiveEnd();
                 }
-                return $this->report($GLOBALS['lng']['overwrite_false'], 1);
+                return $this->report(Language::get('overwrite_false'), 1);
                 break;
             }
         }
@@ -1055,15 +1055,15 @@ class Gmanager extends Config
             }
             if ($folder) {
                 if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), 1);
                 } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), 1);
                 }
             } else {
                 if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), 1);
                 } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), 1);
                 }
             }
         }
@@ -1078,29 +1078,29 @@ class Gmanager extends Config
         if ($result) {
             if ($folder) {
                 if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_true']), 0);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_true')), 0);
                 } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_true']), 0);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_true')), 0);
                 }
             } else {
                 if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_true']), 0);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_true')), 0);
                 } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_true']), 0);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_true')), 0);
                 }
             }
         } else {
             if ($folder) {
                 if ($del) {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), 1);
                 } else {
-                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_files_false']), 1);
+                    return $this->report(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), 1);
                 }
             } else {
                 if ($del) {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['move_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), 1);
                 } else {
-                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), $GLOBALS['lng']['copy_file_false']), 1);
+                    return $this->report(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), 1);
                 }
             }
         }
@@ -1125,7 +1125,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report($GLOBALS['lng']['archive_error'] . '<br/>' . $zip->errorInfo(true), 2) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), 2) . '</td></tr>';
         } else {
             $l = '';
 
@@ -1146,7 +1146,7 @@ class Gmanager extends Config
                     $type = htmlspecialchars($this->getType($list[$i]['filename']), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars($this->strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
                     $size = $this->formatSize($list[$i]['size']);
-                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
+                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -1163,10 +1163,10 @@ class Gmanager extends Config
                     $l .= '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
-                    $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
+                    $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
@@ -1196,7 +1196,7 @@ class Gmanager extends Config
                 if (iconv('UTF-8', 'UTF-8', $prop['comment']) != $prop['comment']) {
                     $prop['comment'] = iconv(Config::$altencoding, 'UTF-8//TRANSLIT', $prop['comment']);
                 }
-                $l .= '<tr class="border"><td>' . $GLOBALS['lng']['comment_archive'] . '</td><td colspan="' . (array_sum(Config::$index) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
+                $l .= '<tr class="border"><td>' . Language::get('comment_archive') . '</td><td colspan="' . (array_sum(Config::$index) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
             }
 
             return $l;
@@ -1220,7 +1220,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report($GLOBALS['lng']['archive_error'], 2) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report(Language::get('archive_error'), 2) . '</td></tr>';
         } else {
             $l = '';
 
@@ -1242,7 +1242,7 @@ class Gmanager extends Config
                     $type = htmlspecialchars($this->getType($list[$i]->getName()), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars($this->strLink($list[$i]->getName(), true), ENT_NOQUOTES) . '</a>';
                     $size = $this->formatSize($list[$i]->getUnpackedSize());
-                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
+                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -1262,7 +1262,7 @@ class Gmanager extends Config
                     $l .= '<td> </td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td>' . $GLOBALS['lng']['dl'] . '</td>';
+                    $l .= '<td>' . Language::get('dl') . '</td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
@@ -1307,7 +1307,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report($GLOBALS['lng']['archive_error'], 2) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . $this->report(Language::get('archive_error'), 2) . '</td></tr>';
         } else {
             $r_current = str_replace('%2F', '/', rawurlencode($current));
             $l = '';
@@ -1329,7 +1329,7 @@ class Gmanager extends Config
                     $type = htmlspecialchars($this->getType($list[$i]['filename']), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars($this->strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
                     $size = $this->formatSize($list[$i]['size']);
-                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['get'] . '</a>';
+                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
                 if (Config::$index['name']) {
@@ -1345,10 +1345,10 @@ class Gmanager extends Config
                     $l .= '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
-                    $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
+                    $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
@@ -1395,7 +1395,7 @@ class Gmanager extends Config
         }
 
         if (!$ext) {
-            return array('text' => $GLOBALS['lng']['archive_error'], 'size' => 0, 'lines' => 0);
+            return array('text' => Language::get('archive_error'), 'size' => 0, 'lines' => 0);
         } else {
             return array('text' => trim($ext[0]['content']), 'size' => $this->formatSize($ext[0]['size']), 'lines' => sizeof(explode("\n", $ext[0]['content'])));
         }
@@ -1418,7 +1418,7 @@ class Gmanager extends Config
         $fp = fopen($tmp, 'w');
 
         if (!$fp) {
-            return $this->report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $this->error(), 2);
+            return $this->report(Language::get('fputs_file_false') . '<br/>' . $this->error(), 2);
         }
 
         fputs($fp, $text);
@@ -1433,7 +1433,7 @@ class Gmanager extends Config
                 $this->ftpArchiveEnd('');
             }
             unlink($tmp);
-            return $this->report($GLOBALS['lng']['fputs_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
+            return $this->report(Language::get('fputs_file_false') . '<br/>' . $zip->errorInfo(true), 2);
         }
 
 
@@ -1451,9 +1451,9 @@ class Gmanager extends Config
         }
 
         if ($fl) {
-            return $this->report($GLOBALS['lng']['fputs_file_true'], 0);
+            return $this->report(Language::get('fputs_file_true'), 0);
         } else {
-            return $this->report($GLOBALS['lng']['fputs_file_false'], 2);
+            return $this->report(Language::get('fputs_file_false'), 2);
         }
     }
 
@@ -1479,14 +1479,14 @@ class Gmanager extends Config
         }
 
         if (!$ext) {
-            return $this->report($GLOBALS['lng']['archive_error'], 2);
+            return $this->report(Language::get('archive_error'), 2);
         } else if ($ext[0]['status'] == 'unsupported_encryption') {
-            return $this->report($GLOBALS['lng']['archive_error_encrypt'], 2);
+            return $this->report(Language::get('archive_error_encrypt'), 2);
         } else {
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return $this->report($GLOBALS['lng']['archive_size'] . ': ' . $this->formatSize($ext[0]['compressed_size']) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($ext[0]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . $GLOBALS['lng']['edit'] . '</a>', 0) . $this->code(trim($ext[0]['content']));
+                return $this->report(Language::get('archive_size') . ': ' . $this->formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', 0) . $this->code(trim($ext[0]['content']));
             }
         }
     }
@@ -1517,12 +1517,12 @@ class Gmanager extends Config
         }
 
         if (!$ext) {
-            return $this->report($GLOBALS['lng']['archive_error'], 2);
+            return $this->report(Language::get('archive_error'), 2);
         } else {
             if ($str) {
                 return $ext;
             } else {
-                return $this->report($GLOBALS['lng']['archive_size'] . ': ' . $this->formatSize($entry->getPackedSize()) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($entry->getUnpackedSize()) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, strtotime($entry->getFileTime()))) . $this->code(trim($ext));
+                return $this->report(Language::get('archive_size') . ': ' . $this->formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, strtotime($entry->getFileTime()))) . $this->code(trim($ext));
             }
         }
     }
@@ -1545,7 +1545,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return $this->report($GLOBALS['lng']['archive_error'], 2);
+            return $this->report(Language::get('archive_error'), 2);
         } else {
             $list = $tgz->listContent();
 
@@ -1561,7 +1561,7 @@ class Gmanager extends Config
                     if ($str) {
                         return $ext;
                     } else {
-                        return $this->report($GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($list[$i]['size']) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $list[$i]['mtime']), 0) . $this->code(trim($ext));
+                        return $this->report(Language::get('real_size') . ': ' . $this->formatSize($list[$i]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $list[$i]['mtime']), 0) . $this->code(trim($ext));
                     }
                 }
             }
@@ -1619,7 +1619,7 @@ class Gmanager extends Config
         $err = '';
         foreach ($res as $status) {
             if ($status['status'] != 'ok') {
-                $err .= str_replace('%file%', htmlspecialchars($status['stored_filename'], ENT_NOQUOTES), $GLOBALS['lng']['extract_file_false_ext']) . ' (' . $status['status'] . ')<br/>';
+                $err .= str_replace('%file%', htmlspecialchars($status['stored_filename'], ENT_NOQUOTES), Language::get('extract_file_false_ext')) . ' (' . $status['status'] . ')<br/>';
             }
         }
 
@@ -1628,7 +1628,7 @@ class Gmanager extends Config
                 unlink($ftp_current);
                 rmdir($ftp_name);
             }
-            return $this->report($GLOBALS['lng']['extract_false'] . '<br/>' . $zip->errorInfo(true), 2);
+            return $this->report(Language::get('extract_false') . '<br/>' . $zip->errorInfo(true), 2);
         }
 
         if (Config::$mode == 'FTP') {
@@ -1641,9 +1641,9 @@ class Gmanager extends Config
             if ($chmod) {
                 $this->rechmod($sysName, $chmod[1]);
             }
-            return $this->report($GLOBALS['lng']['extract_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_true'), 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
-            return $this->report($GLOBALS['lng']['extract_false'], 2);
+            return $this->report(Language::get('extract_false'), 2);
         }
     }
 
@@ -1675,7 +1675,7 @@ class Gmanager extends Config
             $n = $f->getName();
 
             if (!$overwrite && $this->file_exists($name . '/' . $n)) {
-                $err .= $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
+                $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
             } else {
                 $entry = rar_entry_get($rar, $n);
                 if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
@@ -1683,7 +1683,7 @@ class Gmanager extends Config
                         unlink($ftp_current);
                         rmdir($ftp_name);
                     }
-                    $err .= str_replace('%file%', htmlspecialchars($n, ENT_NOQUOTES), $GLOBALS['lng']['extract_file_false_ext']) . '<br/>';
+                    $err .= str_replace('%file%', htmlspecialchars($n, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
                 }
             }
 
@@ -1702,9 +1702,9 @@ class Gmanager extends Config
 
         if (Config::$mode == 'FTP' || $this->is_dir($name)) {
             $this->rechmod($name, $chmod[1]);
-            return $this->report($GLOBALS['lng']['extract_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_true'), 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
-            return $this->report($GLOBALS['lng']['extract_false'], 2);
+            return $this->report(Language::get('extract_false'), 2);
         }
     }
 
@@ -1740,13 +1740,13 @@ class Gmanager extends Config
             $list = array();
             foreach ($extract as $f) {
                 if ($this->file_exists($name . '/' . $f['filename'])) {
-                    $err .= $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($f['filename'], ENT_NOQUOTES) . ')<br/>';
+                    $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f['filename'], ENT_NOQUOTES) . ')<br/>';
                 } else {
                     $list[] = $f['filename'];
                 }
             }
             if (!$list) {
-                return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+                return $this->report(Language::get('extract_false'), 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
             }
     
             $res = $tgz->extractList($list, Config::$mode == 'FTP' ? $ftp_name : $sysName);
@@ -1757,7 +1757,7 @@ class Gmanager extends Config
                 unlink($ftp_current);
                 rmdir($ftp_name);
             }
-            return $this->report($GLOBALS['lng']['extract_false'], 2);
+            return $this->report(Language::get('extract_false'), 2);
         }
 
         foreach ($extract as $f) {
@@ -1776,9 +1776,9 @@ class Gmanager extends Config
 
         if (Config::$mode == 'FTP' || $this->is_dir($name)) {
             $this->rechmod($name, $chmod[1]);
-            return $this->report($GLOBALS['lng']['extract_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_true'), 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
-            return $this->report($GLOBALS['lng']['extract_false'], 2);
+            return $this->report(Language::get('extract_false'), 2);
         }
     }
 
@@ -1802,7 +1802,7 @@ class Gmanager extends Config
             $ext = array();
             foreach ($fl as $f) {
                 if ($this->file_exists($name . '/' . $f)) {
-                    $err .= $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
+                    $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
                 } else {
                     $ext[] = $f;
                 }
@@ -1811,7 +1811,7 @@ class Gmanager extends Config
         }
 
         if (!$ext) {
-            return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_false'), 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         }
 
         $sysName = IOWrapper::set($name);
@@ -1828,7 +1828,7 @@ class Gmanager extends Config
 
         foreach ($res as $status) {
             if ($status['status'] != 'ok') {
-                $err .= str_replace('%file%', htmlspecialchars($status['stored_filename'], ENT_NOQUOTES), $GLOBALS['lng']['extract_file_false_ext']) . ' (' . $status['status'] . ')<br/>';
+                $err .= str_replace('%file%', htmlspecialchars($status['stored_filename'], ENT_NOQUOTES), Language::get('extract_file_false_ext')) . ' (' . $status['status'] . ')<br/>';
             }
         }
 
@@ -1836,7 +1836,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 unlink($ftp_current);
             }
-            return $this->report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
+            return $this->report(Language::get('extract_file_false') . '<br/>' . $zip->errorInfo(true), 2);
         }
 
         if (Config::$mode == 'FTP') {
@@ -1849,9 +1849,9 @@ class Gmanager extends Config
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
-            return $this->report($GLOBALS['lng']['extract_file_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_file_true'), 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
-            return $this->report($GLOBALS['lng']['extract_file_false'], 2);
+            return $this->report(Language::get('extract_file_false'), 2);
         }
     }
 
@@ -1876,7 +1876,7 @@ class Gmanager extends Config
                     unlink($name . '/' . $f);
                     $tmp[] = $f;
                 } else {
-                    $err .= $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
+                    $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
                 }
             } else {
                 $tmp[] = $f;
@@ -1885,7 +1885,7 @@ class Gmanager extends Config
         $ext = & $tmp;
 
         if (!$ext) {
-            return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_false'), 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         }
 
         $sysName = IOWrapper::set($name);
@@ -1905,11 +1905,11 @@ class Gmanager extends Config
                 if (Config::$mode == 'FTP') {
                     unlink($ftp_current);
                 }
-                $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), $GLOBALS['lng']['extract_file_false_ext']) . '<br/>';
+                $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
             } else if (!$this->file_exists((Config::$mode == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
                 // fix bug in rar extension
                 // method extract alredy returned "true"
-                $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), $GLOBALS['lng']['extract_file_false_ext']) . '<br/>';
+                $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
             }
         }
 
@@ -1923,9 +1923,9 @@ class Gmanager extends Config
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
-            return $this->report($GLOBALS['lng']['extract_file_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_file_true'), 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
-            return $this->report($GLOBALS['lng']['extract_file_false'], 2);
+            return $this->report(Language::get('extract_file_false'), 2);
         }
     }
 
@@ -1950,7 +1950,7 @@ class Gmanager extends Config
                     unlink($name . '/' . $f);
                     $tmp[] = $f;
                 } else {
-                    $err .= $GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
+                    $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
                 }
             } else {
                 $tmp[] = $f;
@@ -1959,7 +1959,7 @@ class Gmanager extends Config
         $ext = & $tmp;
 
         if (!$ext) {
-            return $this->report($GLOBALS['lng']['extract_false'], 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_false'), 1) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         }
 
         $sysName = IOWrapper::set($name);
@@ -1977,7 +1977,7 @@ class Gmanager extends Config
             if (Config::$mode == 'FTP') {
                 unlink($ftp_current);
             }
-            return $this->report($GLOBALS['lng']['extract_file_false'], 2);
+            return $this->report(Language::get('extract_file_false'), 2);
         }
 
         if (Config::$mode == 'FTP') {
@@ -1990,9 +1990,9 @@ class Gmanager extends Config
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
-            return $this->report($GLOBALS['lng']['extract_file_true'], 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
+            return $this->report(Language::get('extract_file_true'), 0) . ($err ? $this->report(rtrim($err, '<br/>'), 1) : '');
         } else {
-            return $this->report($GLOBALS['lng']['extract_file_false'], 2);
+            return $this->report(Language::get('extract_file_false'), 2);
         }
     }
 
@@ -2026,9 +2026,9 @@ class Gmanager extends Config
         }
 
         if ($list != 0) {
-            return $this->report($GLOBALS['lng']['del_file_true'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 0);
+            return $this->report(Language::get('del_file_true') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 0);
         } else {
-            return $this->report($GLOBALS['lng']['del_file_false'] . '<br/>' . $zip->errorInfo(true), 2);
+            return $this->report(Language::get('del_file_false') . '<br/>' . $zip->errorInfo(true), 2);
         }
     }
 
@@ -2068,9 +2068,9 @@ class Gmanager extends Config
         }
 
         if ($list) {
-            return $this->report($GLOBALS['lng']['del_file_true'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 0);
+            return $this->report(Language::get('del_file_true') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 0);
         } else {
-            return $this->report($GLOBALS['lng']['del_file_false'] . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 2);
+            return $this->report(Language::get('del_file_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', 2);
         }
     }
 
@@ -2117,9 +2117,9 @@ class Gmanager extends Config
         $this->clean($tmpFolder);
 
         if ($add) {
-            return $this->report($GLOBALS['lng']['add_archive_true'], 0);
+            return $this->report(Language::get('add_archive_true'), 0);
         } else {
-            return $this->report($GLOBALS['lng']['add_archive_false'] . '<br/>' . $zip->errorInfo(true), 2);
+            return $this->report(Language::get('add_archive_false') . '<br/>' . $zip->errorInfo(true), 2);
         }
     }
 
@@ -2163,9 +2163,9 @@ class Gmanager extends Config
         }
 
         if ($add) {
-            return $this->report($GLOBALS['lng']['add_archive_true'], 0);
+            return $this->report(Language::get('add_archive_true'), 0);
         } else {
-            return $this->report($GLOBALS['lng']['add_archive_false'], 2);
+            return $this->report(Language::get('add_archive_false'), 2);
         }
     }
 
@@ -2183,7 +2183,7 @@ class Gmanager extends Config
     public function createZipArchive ($name = '', $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         if (!$overwrite && $this->file_exists($name)) {
-            return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', 1);
+            return $this->report(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', 1);
         }
 
         $this->createDir(iconv_substr($name, 0, strrpos($name, '/')));
@@ -2235,9 +2235,9 @@ class Gmanager extends Config
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
-            return $this->report($GLOBALS['lng']['create_archive_true'], 0);
+            return $this->report(Language::get('create_archive_true'), 0);
         } else {
-            return $this->report($GLOBALS['lng']['create_archive_false'] . '<br/>' . htmlspecialchars($zip->errorInfo(true), ENT_NOQUOTES), 2);
+            return $this->report(Language::get('create_archive_false') . '<br/>' . htmlspecialchars($zip->errorInfo(true), ENT_NOQUOTES), 2);
         }
     }
 
@@ -2269,9 +2269,9 @@ class Gmanager extends Config
         }
 
         if ($ext) {
-            return $this->report($GLOBALS['lng']['name'] . ': ' . htmlspecialchars($gz, ENT_NOQUOTES) . '<br/>' . $GLOBALS['lng']['archive_size'] . ': ' . $this->formatSize($this->size($c)) . '<br/>' . $GLOBALS['lng']['real_size'] . ': ' . $this->formatSize($len) . '<br/>' . $GLOBALS['lng']['archive_date'] . ': ' . strftime(Config::$date_format, $this->filemtime($c)), 0) . $this->code(trim($ext));
+            return $this->report(Language::get('name') . ': ' . htmlspecialchars($gz, ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . $this->formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($len) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $this->filemtime($c)), 0) . $this->code(trim($ext));
         } else {
-            return $this->report($GLOBALS['lng']['archive_error'], 2);
+            return $this->report(Language::get('archive_error'), 2);
         }
     }
 
@@ -2302,10 +2302,10 @@ class Gmanager extends Config
         $data = null;
         if ($overwrite || !$this->file_exists($name . '/' . $gz)) {
             if (!$this->file_put_contents($name . '/' . $gz, implode('', gzfile($tmp)))) {
-                $data = $this->report($GLOBALS['lng']['extract_file_false'] . '<br/>' . $this->error(), 2);
+                $data = $this->report(Language::get('extract_file_false') . '<br/>' . $this->error(), 2);
             }
         } else {
-            $data = $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($name . '/' . $gz, ENT_NOQUOTES) . ')', 1);
+            $data = $this->report(Language::get('overwrite_false') . ' (' . htmlspecialchars($name . '/' . $gz, ENT_NOQUOTES) . ')', 1);
         }
 
         if (Config::$mode == 'FTP') {
@@ -2319,9 +2319,9 @@ class Gmanager extends Config
             if ($chmod[0]) {
                 $this->rechmod($name, $chmod[0]);
             }
-            return $this->report($GLOBALS['lng']['extract_file_true'], 0);
+            return $this->report(Language::get('extract_file_true'), 0);
         } else {
-            return $this->report($GLOBALS['lng']['extract_file_false'], 2);
+            return $this->report(Language::get('extract_file_false'), 2);
         }
     }
 
@@ -2389,11 +2389,11 @@ class Gmanager extends Config
                 $this->rechmod($dir . $name, $chmod);
             }
             unlink($tmp);
-            return $this->report($GLOBALS['lng']['upload_true'] . ' -&gt; ' . htmlspecialchars($fname . ' -> ' .$dir . $name, ENT_NOQUOTES), 0);
+            return $this->report(Language::get('upload_true') . ' -&gt; ' . htmlspecialchars($fname . ' -> ' .$dir . $name, ENT_NOQUOTES), 0);
         } else {
             $error = $this->error();
             unlink($tmp);
-            return $this->report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($fname . ' x ' .$dir . $name, ENT_NOQUOTES) . '<br/>' . $error, 2);
+            return $this->report(Language::get('upload_false') . ' -&gt; ' . htmlspecialchars($fname . ' x ' .$dir . $name, ENT_NOQUOTES) . '<br/>' . $error, 2);
         }
     }
 
@@ -2470,9 +2470,9 @@ class Gmanager extends Config
             }
 
             if ($r) {
-                $out .= $this->report($GLOBALS['lng']['upload_true'] . ' -&gt; ' . htmlspecialchars($v[0] . ' -> ' . $v[1], ENT_NOQUOTES), 0);
+                $out .= $this->report(Language::get('upload_true') . ' -&gt; ' . htmlspecialchars($v[0] . ' -> ' . $v[1], ENT_NOQUOTES), 0);
             } else {
-                $out .= $this->report($GLOBALS['lng']['upload_false'] . ' -&gt; ' . htmlspecialchars($v[0] . ' x ' . $v[1], ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
+                $out .= $this->report(Language::get('upload_false') . ' -&gt; ' . htmlspecialchars($v[0] . ' x ' . $v[1], ENT_NOQUOTES) . '<br/>' . $this->error(), 2);
             }
         }
 
@@ -2492,9 +2492,9 @@ class Gmanager extends Config
     public function sendMail ($theme = '', $mess = '', $to = '', $from = '')
     {
         if (mail($to, '=?UTF-8?B?' . base64_encode($theme) . '?=', wordwrap($mess, 70), 'From: ' . $from . "\r\nContent-type: text/plain; charset=UTF-8\r\nX-Mailer: Gmanager " . Config::$version)) {
-            return $this->report($GLOBALS['lng']['send_mail_true'], 0);
+            return $this->report(Language::get('send_mail_true'), 0);
         } else {
-            return $this->report($GLOBALS['lng']['send_mail_false'] . '<br/>' . $this->error(), 2);
+            return $this->report(Language::get('send_mail_false') . '<br/>' . $this->error(), 2);
         }
     }
 
@@ -2531,9 +2531,9 @@ class Gmanager extends Config
             if ($rows < 3) {
                 $rows = 3;
             }
-            return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' ' . $info['ram'] . '<br/></div>';
+            return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
         } else {
-            echo '<div class="input">' . $GLOBALS['lng']['result'] . '<pre class="code"><code>';
+            echo '<div class="input">' . Language::get('result') . '<pre class="code"><code>';
 
             $info['time'] = microtime(true);
             $info['ram'] = memory_get_usage(false);
@@ -2544,7 +2544,7 @@ class Gmanager extends Config
             $info['ram'] = $this->formatSize(memory_get_usage(false) - $info['ram'], 6);
 
             echo '</code></pre>';
-            echo str_replace('%time%', $info['time'], $GLOBALS['lng']['microtime']) . '<br/>' . $GLOBALS['lng']['memory_get_usage'] . ' ' . $info['ram'] . '<br/></div>';
+            echo str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
         }
     }
 
@@ -2589,9 +2589,9 @@ class Gmanager extends Config
                 $buf = iconv(Config::$consencoding, 'UTF-8//TRANSLIT', $buf);
             }
         } else {
-            return '<div class="red">' . $GLOBALS['lng']['cmd_error'] . '<br/></div>';
+            return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
         }
-        return '<div class="input">' . $GLOBALS['lng']['result'] . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
     }
 
 
@@ -2607,7 +2607,7 @@ class Gmanager extends Config
     public function replace ($current = '', $from = '', $to = '', $regexp = false)
     {
         if (!$from) {
-            return $this->report($GLOBALS['lng']['replace_false_str'], 1);
+            return $this->report(Language::get('replace_false_str'), 1);
         }
         $c = $this->file_get_contents($current);
 
@@ -2615,33 +2615,33 @@ class Gmanager extends Config
             preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
             $all = sizeof($all[0]);
             if (!$all) {
-                return $this->report($GLOBALS['lng']['replace_false_str'], 1);
+                return $this->report(Language::get('replace_false_str'), 1);
             }
             $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
             if ($str) {
                 if (!$this->file_put_contents($current, $str)) {
-                    return $this->report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $this->error(), 2);
+                    return $this->report(Language::get('replace_false_file') . '<br/>' . $this->error(), 2);
                 }
             } else {
-                return $this->report($GLOBALS['lng']['regexp_error'], 1);
+                return $this->report(Language::get('regexp_error'), 1);
             }
         } else {
             $all = substr_count($c, $from);
             if (!$all) {
-                return $this->report($GLOBALS['lng']['replace_false_str'], 1);
+                return $this->report(Language::get('replace_false_str'), 1);
             }
 
             if (!$this->file_put_contents($current, str_replace($from, $to, $c))) {
-                return $this->report($GLOBALS['lng']['replace_false_file'] . '<br/>' . $this->error(), 2);
+                return $this->report(Language::get('replace_false_file') . '<br/>' . $this->error(), 2);
             }
 
             $str = true;
         }
 
         if ($str) {
-            return $this->report($GLOBALS['lng']['replace_true'] . $all, 0);
+            return $this->report(Language::get('replace_true') . $all, 0);
         } else {
-            return $this->report($GLOBALS['lng']['replace_false_file'], 1);
+            return $this->report(Language::get('replace_false_file'), 1);
         }
     }
 
@@ -2659,7 +2659,7 @@ class Gmanager extends Config
     public function zipReplace ($current = '', $f = '', $from = '', $to = '', $regexp = false)
     {
         if (!$from) {
-            return $this->report($GLOBALS['lng']['replace_false_str'], 1);
+            return $this->report(Language::get('replace_false_str'), 1);
         }
 
         $c = $this->editZipFile($current, $f);
@@ -2668,17 +2668,17 @@ class Gmanager extends Config
         if ($regexp) {
             preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
             if (!sizeof($all[0])) {
-                return $this->report($GLOBALS['lng']['replace_false_str'], 1);
+                return $this->report(Language::get('replace_false_str'), 1);
             }
             $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
             if ($str) {
                 return $this->editZipFileOk($current, $f, $str);
             } else {
-                return $this->report($GLOBALS['lng']['regexp_error'], 1);
+                return $this->report(Language::get('regexp_error'), 1);
             }
         } else {
             if (!substr_count($c, $from)) {
-                return $this->report($GLOBALS['lng']['replace_false_str'], 1);
+                return $this->report(Language::get('replace_false_str'), 1);
             }
 
             return $this->editZipFileOk($current, $f, str_replace($from, $to, $c));
@@ -2785,7 +2785,7 @@ class Gmanager extends Config
         }
 
         if (!$overwrite && $$this->file_exists($info['dirname'] . '/' . $tmp)) {
-            return $this->report($GLOBALS['lng']['overwrite_false'] . ' (' . htmlspecialchars($info['dirname'] . '/' . $tmp, ENT_NOQUOTES) . ')', 1);
+            return $this->report(Language::get('overwrite_false') . ' (' . htmlspecialchars($info['dirname'] . '/' . $tmp, ENT_NOQUOTES) . ')', 1);
         }
 
         if ($this->rename($f, $info['dirname'] . '/' . $tmp)) {
@@ -2956,7 +2956,7 @@ class Gmanager extends Config
         if ($err) {
             return $err['message'] . ' (' . $err['file'] . ': ' . $err['line'] . ')';
         } else {
-            return $GLOBALS['lng']['unknown_error'];
+            return Language::get('unknown_error');
         }
     }
 
@@ -2971,7 +2971,7 @@ class Gmanager extends Config
     public function report ($text = '', $error = 0)
     {
         if ($error == 2) {
-            return '<div class="red">' . $text . '<br/></div><div><form action="change.php?go=send_mail&amp;c=' . Config::$rCurrent . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . Config::$version . ' Error"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . $GLOBALS['lng']['send_report'] . '"/></div></form></div>';
+            return '<div class="red">' . $text . '<br/></div><div><form action="change.php?go=send_mail&amp;c=' . Config::$rCurrent . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . Config::$version . ' Error"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . Language::get('send_report') . '"/></div></form></div>';
         } else if ($error == 1) {
             return '<div class="red">' . $text . '<br/></div>';
         }

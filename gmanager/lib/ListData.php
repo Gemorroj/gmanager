@@ -102,10 +102,10 @@ class ListData
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
+                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $Gmanager->lookChmod($file);
@@ -146,15 +146,15 @@ class ListData
                         $isize = $Gmanager->size($file, true);
                         $size = $Gmanager->formatSize($isize);
                     } else {
-                        $isize = $size = $GLOBALS['lng']['unknown'];
+                        $isize = $size = Language::get('unknown');
                     }
                         $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . $GLOBALS['lng']['ch'] . '</a></td>';
+                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $Gmanager->lookChmod($file);
@@ -186,17 +186,17 @@ class ListData
                     $name = htmlspecialchars($Gmanager->strLink($name, true), ENT_NOQUOTES);
 
                     if ($archive) {
-                        $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . $GLOBALS['lng']['extract_archive'] . '</a></td>';
+                        $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . Language::get('extract_archive') . '</a></td>';
                     } else {
                         if ($type == 'SQL') {
-                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . $GLOBALS['lng']['tables'] . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . $GLOBALS['lng']['create_sql_installer'] . '</a></td>';
+                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . Language::get('tables') . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . Language::get('create_sql_installer') . '</a></td>';
                         } else {
                             $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a></td>';
                         }
                     }
                 }
                 if (Config::$index['down']) {
-                    $pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+                    $pdown = '<td><a href="change.php?get=' . $r_file . '">' . Language::get('get') . '</a></td>';
                 }
                 if (Config::$index['type']) {
                     $ptype = '<td>' . $type . '</td>';
@@ -207,10 +207,10 @@ class ListData
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::$index['change']) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
+                    $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $Gmanager->lookChmod($file);
@@ -346,7 +346,7 @@ class ListData
                 }
             }
             if (Config::$index['down']) {
-                $pdown = '<td><a href="change.php?get=' . $r_file . '">' . $GLOBALS['lng']['get'] . '</a></td>';
+                $pdown = '<td><a href="change.php?get=' . $r_file . '">' . Language::get('get') . '</a></td>';
             }
             if (Config::$index['type']) {
                 $ptype = '<td>' . $type . '</td>';
@@ -355,10 +355,10 @@ class ListData
                 $psize = '<td>' . $Gmanager->formatSize($stat['size']) . '</td>';
             }
             if (Config::$index['change']) {
-                $pchange = '<td><a href="change.php?' . $r_file . '">' . $GLOBALS['lng']['ch'] . '</a></td>';
+                $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
             }
             if (Config::$index['del']) {
-                $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . $GLOBALS['lng']['dl'] . '</a></td>';
+                $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
             }
             if (Config::$index['chmod']) {
                 $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $Gmanager->lookChmod($c . $f) . '</a></td>';
@@ -478,7 +478,7 @@ class ListData
      */
     public static function getListEmptyData ()
     {
-        return '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . $GLOBALS['lng']['dir_empty'] . '</th></tr>';
+        return '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . Language::get('dir_empty') . '</th></tr>';
     }
 
 
@@ -489,7 +489,7 @@ class ListData
      */
     public static function getListEmptySearchData ()
     {
-        return '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . $GLOBALS['lng']['empty_search'] . '</th></tr>';
+        return '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . Language::get('empty_search') . '</th></tr>';
     }
 
 
@@ -500,7 +500,7 @@ class ListData
      */
     public static function getListDenyData ()
     {
-        return '<tr><td class="red" colspan="' . (array_sum(Config::$index) + 1) . '">' . $GLOBALS['lng']['permission_denided'] . '</td></tr>';
+        return '<tr><td class="red" colspan="' . (array_sum(Config::$index) + 1) . '">' . Language::get('permission_denided') . '</td></tr>';
     }
 }
 

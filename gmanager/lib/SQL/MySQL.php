@@ -43,7 +43,7 @@ class SQL_MySQL
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
         if (!$this->_resource = mysql_connect($host, $name, $pass)) {
-            return $this->_Gmanager->report($GLOBALS['lng']['mysql_connect_false'], 1);
+            return $this->_Gmanager->report(Language::get('mysql_connect_false'), 1);
         }
         if ($charset) {
             mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
@@ -51,7 +51,7 @@ class SQL_MySQL
 
         if ($db) {
             if (!mysql_select_db($db, $this->_resource)) {
-                return $this->_Gmanager->report($GLOBALS['lng']['mysql_select_db_false'], 1);
+                return $this->_Gmanager->report(Language::get('mysql_select_db_false'), 1);
             }
         }
 
@@ -189,15 +189,15 @@ class SQL_MySQL
              . 'if (!$_POST) {' . "\n"
              . '    echo \'<form action="\' . $_SERVER[\'PHP_SELF\'] . \'" method="post">' . "\n"
              . '    <div>' . "\n"
-             . '    ' . $GLOBALS['lng']['mysql_user'] . '<br/>' . "\n"
+             . '    ' . Language::get('mysql_user') . '<br/>' . "\n"
              . '    <input type="text" name="name" value="' . htmlspecialchars($name) . '"/><br/>' . "\n"
-             . '    ' . $GLOBALS['lng']['mysql_pass'] . '<br/>' . "\n"
+             . '    ' . Language::get('mysql_pass') . '<br/>' . "\n"
              . '    <input type="text" name="pass" value="' . htmlspecialchars($pass) . '"/><br/>' . "\n"
-             . '    ' . $GLOBALS['lng']['mysql_host'] . '<br/>' . "\n"
+             . '    ' . Language::get('mysql_host') . '<br/>' . "\n"
              . '    <input type="text" name="host" value="' . htmlspecialchars($host) . '"/><br/>' . "\n"
-             . '    ' . $GLOBALS['lng']['mysql_db'] . '<br/>' . "\n"
+             . '    ' . Language::get('mysql_db') . '<br/>' . "\n"
              . '    <input type="text" name="db" value="' . htmlspecialchars($db) . '"/><br/>' . "\n"
-             . '    <input type="submit" value="' . $GLOBALS['lng']['install'] . '"/>' . "\n"
+             . '    <input type="submit" value="' . Language::get('install') . '"/>' . "\n"
              . '    </div>' . "\n"
              . '    </form>' . "\n"
              . '    </div></body></html>\';' . "\n"
@@ -291,9 +291,9 @@ class SQL_MySQL
             }
 
             if ($false) {
-                return $this->_Gmanager->report($GLOBALS['lng']['mysql_backup_false'] . '<pre>' . trim($false) . '</pre>', 1);
+                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', 1);
             } else {
-                return $this->_Gmanager->report($GLOBALS['lng']['mysql_backup_true'], 0);
+                return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
             }
         } else {
             $q = mysql_query('SHOW TABLES;', $this->_resource);
@@ -341,7 +341,7 @@ class SQL_MySQL
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report($GLOBALS['lng']['mysql_query_false'], 2) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
+                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
             } else {
                 if (is_resource($r) && $row = mysql_num_rows($r)) {
                     $rows += $row;
@@ -370,7 +370,7 @@ class SQL_MySQL
         }
 
         mysql_close($this->_resource);
-        return $this->_Gmanager->report($GLOBALS['lng']['mysql_true'] . $i . '<br/>' . $GLOBALS['lng']['mysql_rows'] . $rows . '<br/>' . str_replace('%time%', round($time, 6), $GLOBALS['lng']['microtime']), 0) . $out;
+        return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
     }
 }
 
