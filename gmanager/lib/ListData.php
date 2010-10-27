@@ -34,12 +34,12 @@ class ListData
      */
     private static function _getListArray (Gmanager $Gmanager, $current = '', $itype = '', $down = '', $addArchive = '')
     {
-        $html = $key = $type = $isize = $uid = $gid = $chmod = $name = $time = '';
-        $page = $page0 = $page1 = $page2 = array();
-        $i = 0;
+        $html   = $key = $type = $isize = $uid = $gid = $chmod = $name = $time = '';
+        $page   = $page0 = $page1 = $page2 = array();
+        $i      = 0;
 
-        $t = (Config::$target ? ' target="_blank"' : '');
-        $add = ($addArchive ? '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($addArchive)) : '');
+        $t      = (Config::$target ? ' target="_blank"' : '');
+        $add    = ($addArchive ? '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($addArchive)) : '');
 
 
         if ($itype == 'time') {
@@ -398,7 +398,7 @@ class ListData
     public static function getListData(Gmanager $Gmanager, $current = '', $itype = '', $down = '', $pg = 1, $addArchive = '')
     {
         $html = '';
-        $data = self::_getListArray($Gmanager, $current, $itype, $down, $pg, $addArchive);
+        $data = self::_getListArray($Gmanager, $current, $itype, $down, $addArchive);
 
         if ($data) {
             self::$getListCountPages = ceil(sizeof($data) / Config::$limit);

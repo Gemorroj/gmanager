@@ -169,8 +169,8 @@ class Gmanager extends Config
             return ListData::getListDenyData();
         }
 
-        $add  = (isset($_GET['add_archive']) ? $_GET['add_archive'] : '');
-        $pg   = (isset($_GET['pg']) ? $_GET['pg'] : 1);
+        $add  = (isset($_GET['add_archive']) && $_GET['add_archive'] ? $_GET['add_archive'] : '');
+        $pg   = (isset($_GET['pg']) && $_GET['pg'] > 1 ? $_GET['pg'] : 1);
         $html = ListData::getListData($this, $current, $itype, $down, $pg, $add);
         if ($html) {
             if ($itype == 'time') {
