@@ -22,6 +22,12 @@ class Gmanager extends Config
     private static $_php_errormsg;
 
 
+    /**
+     * __constructor
+     * 
+     * @param void
+     * @return void
+     */
     public function __construct ()
     {
         parent::__construct();
@@ -57,6 +63,7 @@ class Gmanager extends Config
     /**
      * sendHeader
      * 
+     * @param void
      * @return void
      */
     public function sendHeader ()
@@ -84,6 +91,7 @@ class Gmanager extends Config
     /**
      * head
      * 
+     * @param void
      * @return string
      */
     public function head ()
@@ -119,6 +127,7 @@ class Gmanager extends Config
     /**
      * langJS
      * 
+     * @param void
      * @return string
      */
     public function langJS ()
@@ -1116,6 +1125,7 @@ class Gmanager extends Config
      */
     public function listZipArchive ($current = '', $down = '')
     {
+        //TODO: refactoring to ListData
         $r_current = str_replace('%2F', '/', rawurlencode($current));
 
         $zip = $this->_pclZip($current);
@@ -2209,7 +2219,7 @@ class Gmanager extends Config
             $ext = array_map(array('IOWrapper', 'set'), $ext);
         }
 
-        //TODO:пустые директории
+        //TODO:empty directories
         $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_name : $name);
         if ($comment != '') {
             $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, IOWrapper::set($temp), PCLZIP_OPT_COMMENT, $comment);
@@ -2809,8 +2819,12 @@ class Gmanager extends Config
      */
     public function sqlInstaller ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
     {
-        $SQL = new SQL_MySQL($this);
-        return $SQL->installer($host, $name, $pass, $db, $charset, $sql);
+        $SQL = SQL::main($this);
+        if (!$SQL) {
+            return $this->report(Language::get('mysql_connect_false'), 1);
+        } else {
+            return $SQL->installer($host, $name, $pass, $db, $charset, $sql);
+        }
     }
 
 
@@ -2828,8 +2842,12 @@ class Gmanager extends Config
      */
     public function sqlBackup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '', $tables = array())
     {
-        $SQL = new SQL_MySQL($this);
-        return $SQL->backup($host, $name, $pass, $db, $charset, $data, $tables);
+        $SQL = SQL::main($this);
+        if (!$SQL) {
+            return $this->report(Language::get('mysql_connect_false'), 1);
+        } else {
+            return $SQL->backup($host, $name, $pass, $db, $charset, $data, $tables);
+        }
     }
 
 
@@ -2846,8 +2864,12 @@ class Gmanager extends Config
      */
     public function sqlQuery ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
-        $SQL = new SQL_MySQL($this);
-        return $SQL->query($host, $name, $pass, $db, $charset, $data);
+        $SQL = SQL::main($this);
+        if (!$SQL) {
+            return $this->report(Language::get('mysql_connect_false'), 1);
+        } else {
+            return $SQL->query($host, $name, $pass, $db, $charset, $data);
+        }
     }
 
 
