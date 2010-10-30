@@ -157,11 +157,10 @@ class SQL_MySQL
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @param string $data
      * @param array  $tables
      * @return mixed
      */
-    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '', $tables = array())
+    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
         if (is_resource($connect)) {

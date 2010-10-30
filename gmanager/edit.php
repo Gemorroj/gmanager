@@ -71,8 +71,64 @@ echo str_replace('%title%', Config::$hCurrent, Config::$top) . '<div class="w2">
 $archive = $Gmanager->isArchive($Gmanager->getType(basename(Config::$hCurrent)));
 
 switch ($_GET['go']) {
-    default:
+    case 'save':
+        if (Config::$line_editor['on']) {
+            $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
+            if ($archive == 'ZIP') {
+                $tmp = explode("\n", $Gmanager->lookZipFile(Config::$current, $_GET['f'], true));
+            } else {
+                $tmp = explode("\n", $Gmanager->file_get_contents(Config::$current));
+            }
+
+
+            $all = sizeof($tmp);
+            for ($i = 0; $i <= $all; ++$i) {
+                if (isset($fill[$i])) {
+                    if (isset($_POST['line'][$i])) {
+                        $tmp[$i] = (is_array($_POST['line'][$i]) ? implode("\n", $_POST['line'][$i]) : $_POST['line'][$i] . "\n");
+                    } else {
+                        unset($tmp[$i]);
+                    }
+                }
+            }
+            $_POST['text'] = implode("\n", $tmp);
+        }
+
+        if ($_POST['charset'] != 'utf-8') {
+            $_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
+        }
+
+        if ($archive == 'ZIP') {
+            echo $Gmanager->editZipFileOk(Config::$current, $_GET['f'], $_POST['text']);
+        } else {
+            echo $Gmanager->createFile(Config::$current, $_POST['text'], $_POST['chmod']);
+        }
+        break;
+
+
+    case 'syntax':
+        if ($archive == 'ZIP') {
+            echo $Gmanager->zipSyntax(Config::$current, $_GET['f'], $charset);
+        } else {
+            if (Config::$syntax) {
+                echo $Gmanager->syntax2(Config::$current, $charset);
+            } else {
+                echo $Gmanager->syntax(Config::$current, $charset);
+            }
+        }
+        break;
+
+
+    case 'validator':
+        /*
+        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr($Gmanager->realpath(Config::$current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
+        */
+        echo $Gmanager->validator(Config::$current, $charset);
+        break;
+
+
     case 'replace':
+    default:
         $to = $from = '';
 
         if (!$Gmanager->is_file(Config::$current)) {
@@ -154,62 +210,6 @@ switch ($_GET['go']) {
         }
 
         echo '<div class="rb">' . Language::get('charset') . '<form action="edit.php?" style="padding:0;margin:0;"><div><input type="hidden" name="c" value="' . Config::$rCurrent . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>' . (Config::$line_editor['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '<select name="charset"><option value="">' . Language::get('charset_no') . '</option><optgroup label="UTF-8"><option value="utf-8 -&gt; windows-1251"' . ($_GET['charset'] == 'utf-8 -> windows-1251' ? ' selected="selected"' : '') . '>utf-8 -&gt; windows-1251</option><option value="utf-8 -&gt; iso-8859-1"' . ($_GET['charset'] == 'utf-8 -> iso-8859-1' ? ' selected="selected"' : '') . '>utf-8 -&gt; iso-8859-1</option><option value="utf-8 -&gt; cp866"' . ($_GET['charset'] == 'utf-8 -> cp866' ? ' selected="selected"' : '') . '>utf-8 -&gt; cp866</option><option value="utf-8 -&gt; koi8-r"' . ($_GET['charset'] == 'utf-8 -> koi8-r' ? ' selected="selected"' : '') . '>utf-8 -&gt; koi8-r</option></optgroup><optgroup label="Windows-1251"><option value="windows-1251 -&gt; utf-8"' . ($_GET['charset'] == 'windows-1251 -> utf-8' ? ' selected="selected"' : '') . '>windows-1251 -&gt; utf-8</option><option value="windows-1251 -&gt; iso-8859-1"' . ($_GET['charset'] == 'windows-1251 -> iso-8859-1' ? ' selected="selected"' : '') . '>windows-1251 -&gt; iso-8859-1</option><option value="windows-1251 -&gt; cp866"' . ($_GET['charset'] == 'windows-1251 -> cp866' ? ' selected="selected"' : '') . '>windows-1251 -&gt; cp866</option><option value="windows-1251 -&gt; koi8-r"' . ($_GET['charset'] == 'windows-1251 -> koi8-r' ? ' selected="selected"' : '') . '>windows-1251 -&gt; koi8-r</option></optgroup><optgroup label="ISO-8859-1"><option value="iso-8859-1 -&gt; utf-8"' . ($_GET['charset'] == 'iso-8859-1 -> utf-8' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; utf-8</option><option value="iso-8859-1 -&gt; windows-1251"' . ($_GET['charset'] == 'iso-8859-1 -> windows-1251' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; windows-1251</option><option value="iso-8859-1 -&gt; cp866"' . ($_GET['charset'] == 'iso-8859-1 -> cp866' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; cp866</option><option value="iso-8859-1 -&gt; koi8-r"' . ($_GET['charset'] == 'iso-8859-1 -> koi8-r' ? ' selected="selected"' : '') . '>iso-8859-1 -&gt; koi8-r</option></optgroup><optgroup label="CP866"><option value="cp866 -&gt; utf-8"' . ($_GET['charset'] == 'cp866 -> utf-8' ? ' selected="selected"' : '') . '>cp866 -&gt; utf-8</option><option value="cp866 -&gt; windows-1251"' . ($_GET['charset'] == 'cp866 -> windows-1251' ? ' selected="selected"' : '') . '>cp866 -&gt; windows-1251</option><option value="cp866 -&gt; iso-8859-1"' . ($_GET['charset'] == 'cp866 -> iso-8859-1' ? ' selected="selected"' : '') . '>cp866 -&gt; iso-8859-1</option><option value="cp866 -&gt; koi8-r"' . ($_GET['charset'] == 'cp866 -> koi8-r' ? ' selected="selected"' : '') . '>cp866 -&gt; koi8-r</option></optgroup><optgroup label="KOI8-R"><option value="koi8-r -&gt; utf-8"' . ($_GET['charset'] == 'koi8-r -> utf-8' ? ' selected="selected"' : '') . '>koi8-r -&gt; utf-8</option><option value="koi8-r -&gt; windows-1251"' . ($_GET['charset'] == 'koi8-r -> windows-1251' ? ' selected="selected"' : '') . '>koi8-r -&gt; windows-1251</option><option value="koi8-r -&gt; iso-8859-1"' . ($_GET['charset'] == 'koi8-r -> iso-8859-1' ? ' selected="selected"' : '') . '>koi8-r -&gt; iso-8859-1</option><option value="koi8-r -&gt; cp866"' . ($_GET['charset'] == 'koi8-r -> cp866' ? ' selected="selected"' : '') . '>koi8-r -&gt; cp866</option></optgroup></select> <input type="submit" value="' . Language::get('ch') . '"/></div></form></div><div class="rb">' . Language::get('beautifier') . ' (alpha)<form action="edit.php?" style="padding:0;margin:0;"><div><input type="hidden" name="beautify" value="1"/><input type="hidden" name="c" value="' . Config::$rCurrent . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/><input type="hidden" name="f" value="' . rawurlencode($_GET['f']) . '"/>' . (Config::$line_editor['on'] ? '<input type="hidden" name="start" value="' . ($start + 1) . '"/><input type="hidden" name="end" value="' . $end . '"/>' : '') . '<input type="submit" value="' . Language::get('beautify') . '" /></div></form></div>';
-        break;
-
-
-    case 'save':
-        if (Config::$line_editor['on']) {
-            $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
-            if ($archive == 'ZIP') {
-                $tmp = explode("\n", $Gmanager->lookZipFile(Config::$current, $_GET['f'], true));
-            } else {
-                $tmp = explode("\n", $Gmanager->file_get_contents(Config::$current));
-            }
-
-
-            $all = sizeof($tmp);
-            for ($i = 0; $i <= $all; ++$i) {
-                if (isset($fill[$i])) {
-                    if (isset($_POST['line'][$i])) {
-                        $tmp[$i] = (is_array($_POST['line'][$i]) ? implode("\n", $_POST['line'][$i]) : $_POST['line'][$i] . "\n");
-                    } else {
-                        unset($tmp[$i]);
-                    }
-                }
-            }
-            $_POST['text'] = implode("\n", $tmp);
-        }
-
-        if ($_POST['charset'] != 'utf-8') {
-            $_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
-        }
-
-        if ($archive == 'ZIP') {
-            echo $Gmanager->editZipFileOk(Config::$current, $_GET['f'], $_POST['text']);
-        } else {
-            echo $Gmanager->createFile(Config::$current, $_POST['text'], $_POST['chmod']);
-        }
-        break;
-
-
-    case 'syntax':
-        if ($archive == 'ZIP') {
-            echo $Gmanager->zipSyntax(Config::$current, $_GET['f'], $charset);
-        } else {
-            if (Config::$syntax) {
-                echo $Gmanager->syntax2(Config::$current, $charset);
-            } else {
-                echo $Gmanager->syntax(Config::$current, $charset);
-            }
-        }
-        break;
-
-
-    case 'validator':
-        /*
-        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr($Gmanager->realpath(Config::$current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
-        */
-        echo $Gmanager->validator(Config::$current, $charset);
         break;
 }
 

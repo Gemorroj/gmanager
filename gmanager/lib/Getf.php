@@ -58,47 +58,52 @@ class Getf
         // Ставим MIME в зависимости от расширения
         if (!$mime) {
             switch (strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
-                default:
-                    $mime = 'application/octet-stream';
-                    break;
-
                 case 'jar':
                     $mime = 'application/java-archive';
                     break;
+
 
                 case 'jad':
                     $mime = 'text/vnd.sun.j2me.app-descriptor';
                     break;
 
+
                 case 'cab':
                     $mime = 'application/vnd.ms-cab-compressed';
                     break;
+
 
                 case 'sis':
                     $mime = 'application/vnd.symbian.install';
                     break;
 
+
                 case 'zip':
                     $mime = 'application/x-zip';
                     break;
+
 
                 case 'rar':
                     $mime = 'application/x-rar-compressed';
                     break;
 
+
                 case '7z':
                     $mime = 'application/x-7z-compressed';
                     break;
+
 
                 case 'gz':
                 case 'tgz':
                     $mime = 'application/x-gzip';
                     break;
 
+
                 case 'bz':
                 case 'bz2':
                     $mime = 'application/x-bzip';
                     break;
+
 
                 case 'jpg':
                 case 'jpe':
@@ -106,17 +111,21 @@ class Getf
                     $mime = 'image/jpeg';
                     break;
 
+
                 case 'gif':
                     $mime = 'image/gif';
                     break;
+
 
                 case 'png':
                     $mime = 'image/png';
                     break;
 
+
                 case 'bmp':
                     $mime = 'image/bmp';
                     break;
+
 
                 case 'txt':
                 case 'dat':
@@ -142,41 +151,51 @@ class Getf
                     $mime = 'text/plain';
                     break;
 
+
                 case 'mmf':
                     $mime = 'application/x-smaf';
                     break;
+
 
                 case 'mid':
                     $mime = 'audio/mid';
                     break;
 
+
                 case 'mp3':
                     $mime = 'audio/mpeg';
                     break;
+
 
                 case 'amr':
                     $mime = 'audio/amr';
                     break;
 
+
                 case 'wav':
                     $mime = 'audio/x-wav';
                     break;
+
 
                 case 'mp4':
                     $mime = 'video/mp4';
                     break;
 
+
                 case 'wmv':
                     $mime = 'video/x-ms-wmv';
                     break;
+
 
                 case '3gp':
                     $mime = 'video/3gpp';
                     break;
 
+
                 case 'avi':
                     $mime = 'video/x-msvideo';
                     break;
+
 
                 case 'mpg':
                 case 'mpe':
@@ -184,9 +203,11 @@ class Getf
                     $mime = 'video/mpeg';
                     break;
 
+
                 case 'pdf':
                     $mime = 'application/pdf';
                     break;
+
 
                 case 'doc':
                 case 'docx':
@@ -194,24 +215,34 @@ class Getf
                     $mime = 'application/msword';
                     break;
 
+
                 case 'swf':
                     $mime = 'application/x-shockwave-flash';
                     break;
+
 
                 case 'xls':
                     $mime = 'application/vnd.ms-excel';
                     break;
 
+
                 case 'xlsx':
                     $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
                     break;
+
 
                 case 'svg':
                     $mime = 'image/svg+xml';
                     break;
 
+
                 case 'ico':
                     $mime = 'image/x-icon';
+                    break;
+
+
+                default:
+                    $mime = 'application/octet-stream';
                     break;
             }
         }

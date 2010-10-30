@@ -57,34 +57,6 @@ echo str_replace('%title%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars
 
 
 switch ($_GET['go']) {
-    default:
-        if (!$Gmanager->file_exists(Config::$current)) {
-            echo $Gmanager->report(Language::get('not_found'), 1);
-            break;
-        }
-
-        $archive = $Gmanager->isArchive($Gmanager->getType(Config::$current));
-        if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR' || $archive == 'BZ2')) {
-            $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
-            $h_file = htmlspecialchars($_GET['f']);
-            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
-        } else {
-            if ($Gmanager->is_dir(Config::$current)) {
-                $size = $Gmanager->formatSize($Gmanager->size(Config::$current, true));
-                $md5 = '';
-            } else if ($Gmanager->is_file(Config::$current) || $Gmanager->is_link(Config::$current)) {
-                $size = $Gmanager->formatSize($Gmanager->size(Config::$current));
-                if (Config::$mode == 'FTP') {
-                    $md5 = Language::get('md5') . ': ' . md5($Gmanager->file_get_contents(Config::$current));
-                } else {
-                    $md5 = Language::get('md5') . ': ' . md5_file(Config::$current);
-                }
-            }
-
-            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->lookChmod(Config::$current) . '"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div><div>' . Language::get('sz') . ': ' . $size . '<br/>' . $md5 . '</div>';
-        }
-        break;
-
     case 1:
         $x = isset($_POST['check']) ? sizeof($_POST['check']) : 0;
         if (isset($_POST['fname'])) {
@@ -243,6 +215,7 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'del':
         if ($Gmanager->is_dir(Config::$current)) {
             echo $Gmanager->delDir(Config::$current);
@@ -250,6 +223,7 @@ switch ($_GET['go']) {
             echo $Gmanager->delFile(Config::$current);
         }
         break;
+
 
     case 'chmod':
         if (!isset($_POST['chmod'])) {
@@ -259,6 +233,7 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'create_dir':
         if (!isset($_POST['name'])) {
             echo '<div class="input"><form action="change.php?go=create_dir&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="dir"/><br/><input onkeypress="return number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('cr') . '"/></div></form></div>';
@@ -266,6 +241,7 @@ switch ($_GET['go']) {
             echo $Gmanager->createDir(Config::$current . $_POST['name'], $_POST['chmod']);
         }
         break;
+
 
     case 'create_file':
         include 'pattern.dat';
@@ -291,6 +267,7 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'rename':
         if (isset($_POST['name']) && $_POST['name'] != '') {
             $archive = $Gmanager->isArchive($Gmanager->getType(Config::$current));
@@ -312,13 +289,16 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'del_zip_archive':
         echo $Gmanager->delZipArchive($_GET['c'], $_GET['f']);
         break;
 
+
     case 'del_tar_archive':
         echo $Gmanager->delTarArchive($_GET['c'], $_GET['f']);
         break;
+
 
     case 'upload':
         if ((((!isset($_POST['url']) || $_POST['url'] == 'http://' || $_POST['url'] == '') && (!isset($_FILES['f']) || $_FILES['f']['error'][0])) && !isset($_POST['f'])) || !isset($_POST['name']) || !isset($_POST['chmod'])) {
@@ -341,12 +321,14 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'mod':
         $safe = strtolower(ini_get('safe_mode'));
         $php_user = $Gmanager->getPHPUser();
 
         echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . Config::$rCurrent . '">' . Language::get('search') . '</a></li><li><a href="change.php?go=eval&amp;c=' . Config::$rCurrent . '">' . Language::get('eval') . '</a></li><li><a href="change.php?go=cmd&amp;c=' . Config::$rCurrent . '">' . Language::get('cmd') . '</a></li><li><a href="change.php?go=sql&amp;c=' . Config::$rCurrent . '">' . Language::get('sql') . '</a></li><li><a href="change.php?go=tables&amp;c=' . Config::$rCurrent . '">' . Language::get('tables') . '</a></li><li><a href="change.php?go=installer&amp;c=' . Config::$rCurrent . '">' . Language::get('create_sql_installer') . '</a></li><li><a href="change.php?go=scan&amp;c=' . Config::$rCurrent . '">' . Language::get('scan') . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . Config::$rCurrent . '">' . Language::get('send_mail') . '</a></li><li><a href="change.php?phpinfo">' . Language::get('phpinfo') . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . Config::$rCurrent . '">' . Language::get('new_version') . '</a></li></ul>' . ($php_user['name'] ? '<span style="color:#000;">&#187;</span> ' . Language::get('php_user') . htmlspecialchars($php_user['name'], ENT_NOQUOTES) . '<br/>' : '') . '<span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'on' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(php_uname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . Language::get('disk_total_space') . ' ' . $Gmanager->formatSize(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . Language::get('disk_free_space') . ' ' . $Gmanager->formatSize(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
-    break;
+        break;
+
 
     case 'new_version':
         $new = $Gmanager->getData('http://wapinet.ru/gmanager/gmanager.txt');
@@ -360,6 +342,7 @@ switch ($_GET['go']) {
             echo $Gmanager->report(Language::get('not_connect'), 2);
         }
         break;
+
 
     case 'scan':
         if (!isset($_POST['url']) || $_POST['url'] == 'http://') {
@@ -375,6 +358,7 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'send_mail':
         if (!isset($_POST['from']) || !isset($_POST['theme']) || !isset($_POST['mess']) || !isset($_POST['to'])) {
             echo '<div class="input"><form action="change.php?go=send_mail&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('mail_to') . '<br/><input type="text" name="to" value="' . (isset($_POST['to']) ? htmlspecialchars($_POST['to'], ENT_COMPAT) : '@') . '"/><br/>' . Language::get('mail_from') . '<br/><input type="text" name="from" value="admin@' . $_SERVER['HTTP_HOST'] . '"/><br/>' . Language::get('mail_theme') . '<br/><input type="text" name="theme" value="' . (isset($_POST['theme']) ? htmlspecialchars($_POST['theme'], ENT_COMPAT) : 'Hello') . '"/><br/>' . Language::get('mail_mess') . '<br/><textarea name="mess" rows="8" cols="48">' . (isset($_POST['mess']) ? htmlspecialchars($_POST['mess'], ENT_NOQUOTES) : '') . '</textarea><br/><input type="submit" value="' . Language::get('send_mail') . '"/></div></form></div>';
@@ -382,6 +366,7 @@ switch ($_GET['go']) {
             echo $Gmanager->sendMail($_POST['theme'], $_POST['mess'], $_POST['to'], $_POST['from']);
         }
         break;
+
 
     case 'eval':
         if (isset($_POST['eval'])) {
@@ -392,6 +377,7 @@ switch ($_GET['go']) {
         }
         echo '<div class="input"><form action="change.php?go=eval&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('php_code') . '<br/><textarea name="eval" rows="10" cols="48">' . $v . '</textarea><br/><input type="submit" value="' . Language::get('eval_go') . '"/></div></form></div>';
         break;
+
 
     case 'search':
         if (isset($_POST['search']) && $_POST['search'] != '') {
@@ -407,14 +393,15 @@ switch ($_GET['go']) {
         echo '<div class="input"><form action="change.php?go=search&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('where_search') . '<br/><input type="text" name="where" value="' . (isset($_POST['where']) ? htmlspecialchars($_POST['where'], ENT_COMPAT) : $realpath) . '"/><br/>' . Language::get('what_search') . '<br/><input type="text" name="search" value="' . $v . '"/><br/><fieldset><legend><input type="checkbox" name="in" id="in"' . (isset($_POST['in']) ? ' checked="checked"' : '') . '/> <label for="in">' . Language::get('in_text') . '</label></legend><input type="text" name="size" value="' . (isset($_POST['size']) ? htmlspecialchars($_POST['size']) : 8) . '" style="-wap-input-format:\'*N\';width:28pt;" size="4" onkeypress="return number(event)"/> ' . Language::get('search_limit') . '<br/><input type="checkbox" name="archive" id="archive"' . (isset($_POST['archive']) ? ' checked="checked"' : '') . '/><label for="archive">' . Language::get('search_archives') . ' (GZ)</label><br/></fieldset><input type="checkbox" name="register" id="register"' . (isset($_POST['register']) ? ' checked="checked"' : '') . '/><label for="register">' . Language::get('register') . '</label><br/><input type="checkbox" name="hex" id="hex"' . (isset($_POST['hex']) ? ' checked="checked"' : '') . '/><label for="hex">' . Language::get('hex') . '</label><br/><input type="submit" value="' . Language::get('eval_go') . '"/></div></form></div>';
         break;
 
+
     case 'sql':
         $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
         if (isset($_POST['name']) && isset($_POST['host'])) {
             if (isset($_POST['backup'])) {
                 if (isset($_POST['file']) && $_POST['file']) {
-                    echo $Gmanager->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql'], array('tables' => @array_map('rawurldecode', @$_POST['tables']), 'data' => @array_map('rawurldecode', @$_POST['data']), 'file' => $_POST['file']));
+                    echo $Gmanager->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array('tables' => @array_map('rawurldecode', @$_POST['tables']), 'data' => @array_map('rawurldecode', @$_POST['data']), 'file' => $_POST['file']));
                 } else {
-                    $tables = $Gmanager->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql'], array());
+                    $tables = $Gmanager->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array());
                     echo '<div class="input"><form action="change.php?go=sql&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('mysql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('mysql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Config::$hCurrent . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/></div></form></div>';
                 }
             } else {
@@ -438,6 +425,7 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'tables':
         if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=tables&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('mysql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('mysql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('mysql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('mysql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
@@ -445,6 +433,7 @@ switch ($_GET['go']) {
             echo $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
         }
         break;
+
 
     case 'installer':
         if (substr(Config::$hCurrent, -1) != '/') {
@@ -464,6 +453,7 @@ switch ($_GET['go']) {
         }
         break;
 
+
     case 'cmd':
         if (isset($_POST['cmd'])) {
             echo $Gmanager->showCmd($_POST['cmd']);
@@ -472,7 +462,35 @@ switch ($_GET['go']) {
             $v = '';
         }
         echo '<div class="input"><form action="change.php?go=cmd&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('cmd_code') . '<br/><input type="text" name="cmd" value="' . $v . '" style="width:98%"/><br/><input type="submit" value="' . Language::get('cmd_go') . '"/></div></form></div>';
+        break;
 
+
+    default:
+        if (!$Gmanager->file_exists(Config::$current)) {
+            echo $Gmanager->report(Language::get('not_found'), 1);
+            break;
+        }
+
+        $archive = $Gmanager->isArchive($Gmanager->getType(Config::$current));
+        if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR' || $archive == 'BZ2')) {
+            $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
+            $h_file = htmlspecialchars($_GET['f']);
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
+        } else {
+            if ($Gmanager->is_dir(Config::$current)) {
+                $size = $Gmanager->formatSize($Gmanager->size(Config::$current, true));
+                $md5 = '';
+            } else if ($Gmanager->is_file(Config::$current) || $Gmanager->is_link(Config::$current)) {
+                $size = $Gmanager->formatSize($Gmanager->size(Config::$current));
+                if (Config::$mode == 'FTP') {
+                    $md5 = Language::get('md5') . ': ' . md5($Gmanager->file_get_contents(Config::$current));
+                } else {
+                    $md5 = Language::get('md5') . ': ' . md5_file(Config::$current);
+                }
+            }
+
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input onkeypress="return number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . $Gmanager->lookChmod(Config::$current) . '"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div><div>' . Language::get('sz') . ': ' . $size . '<br/>' . $md5 . '</div>';
+        }
         break;
 }
 

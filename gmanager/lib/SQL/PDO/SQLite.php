@@ -13,7 +13,7 @@
  */
 
 
-class SQL_MySQLi
+class SQL_PDO_SQLite
 {
     private $_resource;
     private $_Gmanager;
@@ -31,23 +31,17 @@ class SQL_MySQLi
 
 
     /**
-     * MySQLi connector
+     * PDO SQLite connector
      * 
-     * @param string $host
-     * @param string $name
-     * @param string $pass
      * @param string $db
-     * @param string $charset
      * @return object or string
      */
-    private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
+    private function _connect ($db = '')
     {
-        $this->_resource = new mysqli($host, $name, $pass, $db);
-        if (!$this->_resource || $this->_resource->connect_error) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), 1);
-        }
-        if ($charset) {
-            $this->_resource->set_charset($charset);
+        try {
+            $this->_resource = new PDO('sqlite:' . $db);
+        } catch (Exception $e) {
+            return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), 1);
         }
 
         return $this->_resource;
@@ -57,22 +51,18 @@ class SQL_MySQLi
     /**
      * Installer
      * 
-     * @param string $host
-     * @param string $name
-     * @param string $pass
      * @param string $db
-     * @param string $charset
      * @param string $sql
      * @return string
      */
-    public function installer ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
+    public function installer ($db = '', $sql = '')
     {
         if (!$sql || !$query = SQL::parser($sql)) {
             return '';
         }
 
         $out = '<?php' . "\n"
-             . '// MySQLi Installer' . "\n"
+             . '// PDO SQLite Installer' . "\n"
              . '// Created in Gmanager ' . Config::$version . "\n"
              . '// http://wapinet.ru/gmanager/' . "\n\n"
 
@@ -103,12 +93,6 @@ class SQL_MySQLi
              . 'if (!$_POST) {' . "\n"
              . '    echo \'<form action="\' . $_SERVER[\'PHP_SELF\'] . \'" method="post">' . "\n"
              . '    <div>' . "\n"
-             . '    ' . Language::get('mysql_user') . '<br/>' . "\n"
-             . '    <input type="text" name="name" value="' . htmlspecialchars($name) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_pass') . '<br/>' . "\n"
-             . '    <input type="text" name="pass" value="' . htmlspecialchars($pass) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_host') . '<br/>' . "\n"
-             . '    <input type="text" name="host" value="' . htmlspecialchars($host) . '"/><br/>' . "\n"
              . '    ' . Language::get('mysql_db') . '<br/>' . "\n"
              . '    <input type="text" name="db" value="' . htmlspecialchars($db) . '"/><br/>' . "\n"
              . '    <input type="submit" value="' . Language::get('install') . '"/>' . "\n"
@@ -118,22 +102,20 @@ class SQL_MySQLi
              . '    exit;' . "\n"
              . '}' . "\n\n"
 
-             . '$connect = new mysqli($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\'], $_POST[\'db\']);' . "\n"
-             . 'if (!$connect || $connect->connect_error) {' . "\n"
-             . '     exit(\'Can not connect to MySQL</div></body></html>\');' . "\n"
-             . '}' . "\n"
-             . '$connect->set_charset(\'' . str_ireplace('utf-8', 'utf8', $charset) . '\');' . "\n\n";
+             . 'try {' . "\n"
+             . '    $connect = new PDO(\'sqlite:\' . $_POST[\'db\']));' . "\n"
+             . '} catch (Exception $e) {' . "\n"
+             . '    exit(\'Can not connect to SQLite</div></body></html>\');' . "\n"
+             . '}' . "\n\n";
 
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"
-                  . '$connect->query($sql);' . "\n"
-                  . 'if ($err = $connect->error) {' . "\n"
-                  . '    $error[] = $err . "\n SQL:\n" . $sql;' . "\n"
+                  . 'if (!$connect->query($sql)) {' . "\n"
+                  . '    $error[] = $connect->errorInfo() . "\n SQL:\n" . $sql;' . "\n"
                   . '}' . "\n\n";
         }
 
-        $out .= '$connect->close();' . "\n\n"
-              . 'if ($error) {' . "\n"
+        $out .= 'if ($error) {' . "\n"
               . '    echo \'Error:<pre>\' . htmlspecialchars(print_r($error, true), ENT_NOQUOTES) . \'</pre>\';' . "\n"
               . '} else {' . "\n"
               . '    echo \'Ok\';' . "\n"
@@ -149,17 +131,13 @@ class SQL_MySQLi
     /**
      * Backup
      * 
-     * @param string $host
-     * @param string $name
-     * @param string $pass
      * @param string $db
-     * @param string $charset
      * @param array  $tables
      * @return mixed
      */
-    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
+    function backup ($db = '', $tables = array())
     {
-        $connect = $this->_connect($host, $name, $pass, $db, $charset);
+        $connect = $this->_connect($db);
         if (is_object($connect)) {
             $this->_resource = $connect;
         } else {
@@ -172,10 +150,10 @@ class SQL_MySQLi
                 foreach ($tables['tables'] as $f) {
                     $q = $this->_resource->query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        $tmp = $q->fetch_row();
+                        $tmp = $q->fetch(PDO::FETCH_BOTH);
                         $true .= $tmp[1] . ";\n\n";
                     } else {
-                        $false .=  $this->_resource->error . "\n";
+                        $false .=  $this->_resource->errorInfo() . "\n";
                     }
                 }
             }
@@ -183,9 +161,9 @@ class SQL_MySQLi
                 foreach ($tables['data'] as $f) {
                     $q = $this->_resource->query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        if ($q->num_rows) {
+                        if ($q->fetchColumn()) {
                             $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
-                            while ($row = $q->fetch_row()) {
+                            while ($row = $q->fetch(PDO::FETCH_BOTH)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
                                     $true .= $v === null ? 'NULL,' : "'" . str_replace("'", "''", $v) . "',";
@@ -195,7 +173,7 @@ class SQL_MySQLi
                             $true = rtrim($true, ',') . ";\n\n";
                         }
                     } else {
-                        $false .= $this->_resource->error . "\n";
+                        $false .= $this->_resource->errorInfo() . "\n";
                     }
                 }
             }
@@ -215,7 +193,7 @@ class SQL_MySQLi
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
             if ($q) {
-                while($row = $q->fetch_row()) {
+                while($row = $q->fetch(PDO::FETCH_BOTH)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
@@ -258,15 +236,15 @@ class SQL_MySQLi
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->error . '</code></div>';
+                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->errorInfo() . '</code></div>';
             } else {
-                if (is_object($r) && $row = $r->num_rows) {
+                if (is_object($r) && $row = $r->rowCount()) {
                     $rows += $row;
-                    while ($row = $r->fetch_assoc()) {
+                    while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
                         $result[] = $row;
                     }
                 } else if ($r === true) {
-                    $rows += $this->_resource->affected_rows;
+                    $rows += $this->_resource->rowCount();
                 }
             }
             $i++;
@@ -286,7 +264,6 @@ class SQL_MySQLi
             }
         }
 
-        $this->_resource->close();
         return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
     }
 }

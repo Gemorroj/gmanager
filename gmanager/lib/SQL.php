@@ -58,11 +58,13 @@ class SQL
                         break;
                     }
 
+
                 case '#':
                     while ($char != "\r" && $char != "\n" && $position < $strlen - 1) {
                         $char = $str[++$position];
                     }
                     break;
+
 
                 case '`':
                 case "'":
@@ -94,6 +96,7 @@ class SQL
                     $query .= $quote;
                     break;
 
+
                 case ';':
                     $query = trim($query);
                     if ($query) {
@@ -101,6 +104,7 @@ class SQL
                     }
                     $query = '';
                     break;
+
 
                 default:
                     $query .= $char;

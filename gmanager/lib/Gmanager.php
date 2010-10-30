@@ -2836,17 +2836,16 @@ class Gmanager extends Config
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @param string $data
      * @param array  $tables
      * @return mixed
      */
-    public function sqlBackup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '', $tables = array())
+    public function sqlBackup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
         $SQL = SQL::main($this);
         if (!$SQL) {
             return $this->report(Language::get('mysql_connect_false'), 1);
         } else {
-            return $SQL->backup($host, $name, $pass, $db, $charset, $data, $tables);
+            return $SQL->backup($host, $name, $pass, $db, $charset, $tables);
         }
     }
 
@@ -3240,28 +3239,34 @@ class Gmanager extends Config
                     exit;
                     break;
 
+
                 case E_WARNING:
                 case E_USER_WARNING:
                     echo 'WARNING: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
+
 
                 case E_NOTICE:
                 case E_USER_NOTICE:
                     echo 'NOTICE: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
 
+
                 case E_STRICT:
                     echo 'STRICT: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
+
 
                 case E_RECOVERABLE_ERROR:
                     echo 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
 
+
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                     echo 'DEPRECATED: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
+
 
                 default:
                     echo 'Error type: [' . $errno . '], ' . $errstr . ' on line ' . $errline . "\n";
@@ -3278,6 +3283,7 @@ class Gmanager extends Config
                     exit;
                     break;
 
+
                 case E_WARNING:
                 case E_USER_WARNING:
                     self::$_php_errormsg = 'WARNING: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
@@ -3285,6 +3291,7 @@ class Gmanager extends Config
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
+
 
                 case E_NOTICE:
                 case E_USER_NOTICE:
@@ -3294,12 +3301,14 @@ class Gmanager extends Config
                     }
                     break;
 
+
                 case E_STRICT:
                     self::$_php_errormsg = 'STRICT: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
                     if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
+
 
                 case E_RECOVERABLE_ERROR:
                     self::$_php_errormsg = 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
@@ -3308,6 +3317,7 @@ class Gmanager extends Config
                     }
                     break;
 
+
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                     self::$_php_errormsg = 'DEPRECATED: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
@@ -3315,6 +3325,7 @@ class Gmanager extends Config
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
                     break;
+
 
                 default:
                     self::$_php_errormsg = 'Error type: [' . $errno . '], ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
