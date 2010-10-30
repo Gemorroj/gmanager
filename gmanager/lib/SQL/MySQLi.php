@@ -31,19 +31,19 @@ class SQL_MySQLi
 
 
     /**
-     * MySQL connector
+     * MySQLi connector
      * 
      * @param string $host
      * @param string $name
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return resource or string
+     * @return object or string
      */
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
         $this->_resource = new mysqli($host, $name, $pass, $db);
-        if ($this->_resource->connect_error) {
+        if (!$this->_resource || $this->_resource->connect_error) {
             return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), 1);
         }
         if ($charset) {
@@ -118,7 +118,10 @@ class SQL_MySQLi
              . '    exit;' . "\n"
              . '}' . "\n\n"
 
-             . '$connect = new mysqli($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\'], $_POST[\'db\']) or die (\'Can not connect to MySQL</div></body></html>\');' . "\n"
+             . '$connect = new mysqli($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\'], $_POST[\'db\']);' . "\n"
+             . 'if (!$connect || $connect->connect_error) {' . "\n"
+             . '     exit(\'Can not connect to MySQL</div></body></html>\');' . "\n"
+             . '}' . "\n"
              . '$connect->set_charset(\'' . str_ireplace('utf-8', 'utf8', $charset) . '\');' . "\n\n";
 
         foreach ($query as $q) {
@@ -135,7 +138,7 @@ class SQL_MySQLi
               . '} else {' . "\n"
               . '    echo \'Ok\';' . "\n"
               . '}' . "\n\n"
-    
+
               . 'echo \'</div></body></html>\'' . "\n"
               . '?>';
 

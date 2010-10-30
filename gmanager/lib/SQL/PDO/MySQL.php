@@ -13,7 +13,7 @@
  */
 
 
-class SQL_MySQL
+class SQL_PDO_MySQL
 {
     private $_resource;
     private $_Gmanager;
@@ -31,28 +31,21 @@ class SQL_MySQL
 
 
     /**
-     * MySQL connector
+     * PDO MySQL connector
      * 
      * @param string $host
      * @param string $name
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return resource or string
+     * @return object or string
      */
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
-        if (!$this->_resource = mysql_connect($host, $name, $pass)) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false'), 1);
-        }
-        if ($charset) {
-            mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
-        }
-
-        if ($db) {
-            if (!mysql_select_db($db, $this->_resource)) {
-                return $this->_Gmanager->report(Language::get('mysql_select_db_false'), 1);
-            }
+        try {
+            $this->_resource = new PDO('mysql:dbname=' . $db . ';host=' . $host, $name, $pass, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $charset));
+        } catch (Exception $e) {
+            return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), 1);
         }
 
         return $this->_resource;
@@ -77,7 +70,7 @@ class SQL_MySQL
         }
 
         $out = '<?php' . "\n"
-             . '// MySQL Installer' . "\n"
+             . '// PDO MySQL Installer' . "\n"
              . '// Created in Gmanager ' . Config::$version . "\n"
              . '// http://wapinet.ru/gmanager/' . "\n\n"
 
@@ -123,20 +116,20 @@ class SQL_MySQL
              . '    exit;' . "\n"
              . '}' . "\n\n"
 
-             . '$connect = mysql_connect($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\']) or die (\'Can not connect to MySQL</div></body></html>\');' . "\n"
-             . 'mysql_select_db($_POST[\'db\'], $connect) or die (\'Error select the database</div></body></html>\');' . "\n"
-             . 'mysql_query(\'SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`\', $connect);' . "\n\n";
+             . 'try {' . "\n"
+             . '    $connect = new PDO(\'mysql:dbname=\' . $_POST[\'db\'] . \';host=\' . $_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\'], array(PDO::MYSQL_ATTR_INIT_COMMAND => \'SET NAMES ' . str_ireplace('utf-8', 'utf8', $charset) . '\'));' . "\n"
+             . '} catch (Exception $e) {' . "\n"
+             . '    exit(\'Can not connect to MySQL</div></body></html>\');' . "\n"
+             . '}' . "\n\n";
 
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"
-                  . 'mysql_query($sql, $connect);' . "\n"
-                  . 'if ($err = mysql_error($connect)) {' . "\n"
-                  . '    $error[] = $err . "\n SQL:\n" . $sql;' . "\n"
+                  . 'if (!$connect->query($sql)) {' . "\n"
+                  . '    $error[] = $connect->errorInfo() . "\n SQL:\n" . $sql;' . "\n"
                   . '}' . "\n\n";
         }
 
-        $out .= 'mysql_close();' . "\n\n"
-              . 'if ($error) {' . "\n"
+        $out .= 'if ($error) {' . "\n"
               . '    echo \'Error:<pre>\' . htmlspecialchars(print_r($error, true), ENT_NOQUOTES) . \'</pre>\';' . "\n"
               . '} else {' . "\n"
               . '    echo \'Ok\';' . "\n"
@@ -164,7 +157,7 @@ class SQL_MySQL
     function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '', $tables = array())
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
-        if (is_resource($connect)) {
+        if (is_object($connect)) {
             $this->_resource = $connect;
         } else {
             return $connect;
@@ -174,21 +167,22 @@ class SQL_MySQL
         if ($tables) {
             if ($tables['tables']) {
                 foreach ($tables['tables'] as $f) {
-                    $q = mysql_query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;', $this->_resource);
+                    $q = $this->_resource->query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        $true .= mysql_result($q, 0, 1) . ";\n\n";
+                        $tmp = $q->fetch(PDO::FETCH_BOTH);
+                        $true .= $tmp[1] . ";\n\n";
                     } else {
-                        $false .= mysql_error($this->_resource) . "\n";
+                        $false .=  $this->_resource->errorInfo() . "\n";
                     }
                 }
             }
             if ($tables['data']) {
                 foreach ($tables['data'] as $f) {
-                    $q = mysql_query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;', $this->_resource);
+                    $q = $this->_resource->query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        if (mysql_num_rows($q)) {
+                        if ($q->fetchColumn()) {
                             $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
-                            while ($row = mysql_fetch_row($q)) {
+                            while ($row = $q->fetch(PDO::FETCH_BOTH)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
                                     $true .= $v === null ? 'NULL,' : "'" . str_replace("'", "''", $v) . "',";
@@ -198,7 +192,7 @@ class SQL_MySQL
                             $true = rtrim($true, ',') . ";\n\n";
                         }
                     } else {
-                        $false .= mysql_error($this->_resource) . "\n";
+                        $false .= $this->_resource->errorInfo() . "\n";
                     }
                 }
             }
@@ -216,9 +210,9 @@ class SQL_MySQL
                 return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
             }
         } else {
-            $q = mysql_query('SHOW TABLES;', $this->_resource);
+            $q = $this->_resource->query('SHOW TABLES;');
             if ($q) {
-                while($row = mysql_fetch_row($q)) {
+                while($row = $q->fetch(PDO::FETCH_BOTH)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
@@ -243,7 +237,7 @@ class SQL_MySQL
     function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
-        if (is_resource($connect)) {
+        if (is_object($connect)) {
             $this->_resource = $connect;
         } else {
             return $connect;
@@ -257,19 +251,19 @@ class SQL_MySQL
             $q = rtrim($q, ';');
 
             $start = microtime(true);
-            $r = mysql_query($q . ';', $this->_resource);
+            $r = $this->_resource->query($q . ';');
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
+                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->errorInfo() . '</code></div>';
             } else {
-                if (is_resource($r) && $row = mysql_num_rows($r)) {
+                if (is_object($r) && $row = $r->rowCount()) {
                     $rows += $row;
-                    while ($row = mysql_fetch_assoc($r)) {
+                    while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
                         $result[] = $row;
                     }
                 } else if ($r === true) {
-                    $rows += mysql_affected_rows($this->_resource);
+                    $rows += $this->_resource->rowCount();
                 }
             }
             $i++;
@@ -289,7 +283,6 @@ class SQL_MySQL
             }
         }
 
-        mysql_close($this->_resource);
         return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
     }
 }

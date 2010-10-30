@@ -23,7 +23,9 @@ class SQL
      */
     public static function main (Gmanager $data)
     {
-        if (extension_loaded('mysqli')) {
+        if (extension_loaded('pdo_mysql')) {
+            return new SQL_PDO_MySQL($data);
+        } else if (extension_loaded('mysqli')) {
             return new SQL_MySQLi($data);
         } else if (extension_loaded('mysql')) {
             return new SQL_MySQL($data);
