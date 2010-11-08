@@ -155,8 +155,11 @@ class SQL_PDO_SQLite
                 foreach ($tables['tables'] as $f) {
                     $q = $this->_resource->query('PRAGMA table_info(`' . str_replace('`', '``', $f) . '`);');
                     if ($q) {
-                        $tmp = $q->fetch(PDO::FETCH_BOTH);
-                        $true .= $tmp[1] . ";\n\n";
+                        $true .= 'CREATE TABLE `' . str_replace('`', '``', $f) . '` (' . "\n";
+                        foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $v) {
+                            $true .= $v['name'] . ' ' . $v['type'] . ($v['notnull'] ? ' NOT NULL' : '') . ' DEFAULT ' . (($v['dflt_value'] === null || $v['dflt_value'] == 'NULL') ? 'NULL' : '"' . $v['dflt_value'] . '"') . ($v['pk'] ? ' PRIMARY KEY' : '') . ",\n";
+                        }
+                        $true = trim($true, ",\n") . "\n" . ');' . "\n\n";
                     } else {
                         $tmp = $this->_resource->errorInfo();
                         $false .= $tmp[2] . "\n";
