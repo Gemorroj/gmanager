@@ -78,7 +78,7 @@ class SQL_PDO_SQLite
              . '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n"
              . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">' . "\n"
              . '<head>' . "\n"
-             . '<title>SQL Installer</title>' . "\n"
+             . '<title>PDO SQLite Installer</title>' . "\n"
              . '<style type="text/css">' . "\n"
              . 'body {' . "\n"
              . '    background-color: #cccccc;' . "\n"
@@ -111,7 +111,8 @@ class SQL_PDO_SQLite
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"
                   . 'if (!$connect->query($sql)) {' . "\n"
-                  . '    $error[] = $connect->errorInfo() . "\n SQL:\n" . $sql;' . "\n"
+                  . '    $tmp = $connect->errorInfo();' . "\n"
+                  . '    $error[] = $tmp[2] . "\n SQL:\n" . $sql;' . "\n"
                   . '}' . "\n\n";
         }
 
@@ -148,12 +149,13 @@ class SQL_PDO_SQLite
         if ($tables) {
             if ($tables['tables']) {
                 foreach ($tables['tables'] as $f) {
-                    $q = $this->_resource->query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
+                    $q = $this->_resource->query('PRAGMA table_info(`' . str_replace('`', '``', $f) . '`);');
                     if ($q) {
                         $tmp = $q->fetch(PDO::FETCH_BOTH);
                         $true .= $tmp[1] . ";\n\n";
                     } else {
-                        $false .=  $this->_resource->errorInfo() . "\n";
+                        $tmp = $this->_resource->errorInfo();
+                        $false .= $tmp[2] . "\n";
                     }
                 }
             }
@@ -173,7 +175,8 @@ class SQL_PDO_SQLite
                             $true = rtrim($true, ',') . ";\n\n";
                         }
                     } else {
-                        $false .= $this->_resource->errorInfo() . "\n";
+                        $tmp = $this->_resource->errorInfo();
+                        $false .= $tmp[2] . "\n";
                     }
                 }
             }
@@ -186,12 +189,12 @@ class SQL_PDO_SQLite
             }
 
             if ($false) {
-                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', 1);
+                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', 1);
             } else {
                 return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
             }
         } else {
-            $q = $this->_resource->query('SHOW TABLES;');
+            $q = $this->_resource->query('SELECT name FROM sqlite_master WHERE type="table" ORDER BY name;');
             if ($q) {
                 while($row = $q->fetch(PDO::FETCH_BOTH)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
@@ -217,7 +220,7 @@ class SQL_PDO_SQLite
      */
     function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
-        $connect = $this->_connect($host, $name, $pass, $db, $charset);
+        $connect = $this->_connect($db);
         if (is_object($connect)) {
             $this->_resource = $connect;
         } else {
@@ -236,9 +239,10 @@ class SQL_PDO_SQLite
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->errorInfo() . '</code></div>';
+                $tmp = $this->_resource->errorInfo();
+                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
-                if (is_object($r) && $row = $r->rowCount()) {
+                if (is_object($r) && $row = $r->columnCount()) {
                     $rows += $row;
                     while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
                         $result[] = $row;

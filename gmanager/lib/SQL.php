@@ -23,15 +23,35 @@ class SQL
      */
     public static function main (Gmanager $data)
     {
-        if (extension_loaded('pdo_mysql')) {
-            return new SQL_PDO_MySQL($data);
-        } else if (extension_loaded('mysqli')) {
-            return new SQL_MySQLi($data);
-        } else if (extension_loaded('mysql')) {
-            return new SQL_MySQL($data);
-        } else {
-            return false;
+        switch (Config::$sqlDriver) {
+            case 'mysql':
+                if (extension_loaded('pdo_mysql')) {
+                    return new SQL_PDO_MySQL($data);
+                } else if (extension_loaded('mysqli')) {
+                    return new SQL_MySQLi($data);
+                } else if (extension_loaded('mysql')) {
+                    return new SQL_MySQL($data);
+                }
+                break;
+
+
+            case 'postgresql':
+                if (extension_loaded('pdo_pgsql')) {
+                    return new SQL_PDO_PostgreSQL($data);
+                } else if (extension_loaded('pgsql')) {
+                    return new SQL_PostgreSQL($data);
+                }
+                break;
+
+
+            case 'sqlite':
+                if (extension_loaded('pdo_sqlite')) {
+                    return new SQL_PDO_SQLite($data);
+                }
+                break;
         }
+
+        return false;
     }
 
 

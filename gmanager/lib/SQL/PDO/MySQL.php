@@ -43,7 +43,7 @@ class SQL_PDO_MySQL
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
         try {
-            $this->_resource = new PDO('mysql:dbname=' . $db . ';host=' . $host, $name, $pass, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $charset));
+            $this->_resource = new PDO('mysql:' . ($db ? 'dbname=' . $db . ';' : '') . 'host=' . $host, $name, $pass, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $charset));
         } catch (Exception $e) {
             return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), 1);
         }
@@ -86,7 +86,7 @@ class SQL_PDO_MySQL
              . '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n"
              . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">' . "\n"
              . '<head>' . "\n"
-             . '<title>SQL Installer</title>' . "\n"
+             . '<title>PDO MySQL Installer</title>' . "\n"
              . '<style type="text/css">' . "\n"
              . 'body {' . "\n"
              . '    background-color: #cccccc;' . "\n"
@@ -125,7 +125,8 @@ class SQL_PDO_MySQL
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"
                   . 'if (!$connect->query($sql)) {' . "\n"
-                  . '    $error[] = $connect->errorInfo() . "\n SQL:\n" . $sql;' . "\n"
+                  . '    $tmp = $connect->errorInfo();' . "\n"
+                  . '    $error[] = $tmp[2] . "\n SQL:\n" . $sql;' . "\n"
                   . '}' . "\n\n";
         }
 
@@ -171,7 +172,8 @@ class SQL_PDO_MySQL
                         $tmp = $q->fetch(PDO::FETCH_BOTH);
                         $true .= $tmp[1] . ";\n\n";
                     } else {
-                        $false .=  $this->_resource->errorInfo() . "\n";
+                        $tmp = $this->_resource->errorInfo();
+                        $false .= $tmp[2] . "\n";
                     }
                 }
             }
@@ -191,7 +193,8 @@ class SQL_PDO_MySQL
                             $true = rtrim($true, ',') . ";\n\n";
                         }
                     } else {
-                        $false .= $this->_resource->errorInfo() . "\n";
+                        $tmp = $this->_resource->errorInfo();
+                        $false .= $tmp[2] . "\n";
                     }
                 }
             }
@@ -204,7 +207,7 @@ class SQL_PDO_MySQL
             }
 
             if ($false) {
-                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', 1);
+                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', 1);
             } else {
                 return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
             }
@@ -254,7 +257,8 @@ class SQL_PDO_MySQL
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->errorInfo() . '</code></div>';
+                $tmp = $this->_resource->errorInfo();
+                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
                 if (is_object($r) && $row = $r->rowCount()) {
                     $rows += $row;

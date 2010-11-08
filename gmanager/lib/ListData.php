@@ -189,7 +189,7 @@ class ListData
                         $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . Language::get('extract_archive') . '</a></td>';
                     } else {
                         if ($type == 'SQL') {
-                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="change.php?go=tables&amp;c=' . $r_file . '">' . Language::get('tables') . '</a><br/><a class="submit" href="change.php?go=installer&amp;c=' . $r_file . '">' . Language::get('create_sql_installer') . '</a></td>';
+                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="change.php?go=mysql_tables&amp;c=' . $r_file . '">' . Language::get('tables') . '</a><br/><a class="submit" href="change.php?go=mysql_installer&amp;c=' . $r_file . '">' . Language::get('create_sql_installer') . '</a></td>';
                         } else {
                             $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a></td>';
                         }

@@ -13,7 +13,7 @@
  */
 
 
-class SQL_MySQLi
+class SQL_PostgreSQL
 {
     private $_resource;
     private $_Gmanager;
@@ -31,23 +31,19 @@ class SQL_MySQLi
 
 
     /**
-     * MySQLi connector
+     * PostgreSQL connector
      * 
      * @param string $host
      * @param string $name
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return object or string
+     * @return resource or string
      */
-    private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
+    private function _connect ($host = 'localhost', $name = 'postgres', $pass = 'postgres', $db = '', $charset = 'utf8')
     {
-        $this->_resource = new mysqli($host, $name, $pass, $db);
-        if (!$this->_resource || $this->_resource->connect_error) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), 1);
-        }
-        if ($charset) {
-            $this->_resource->set_charset($charset);
+        if (!$this->_resource = pg_connect(($db ? 'dbname=' . $db . ' ' : '') . 'host=' . $host . ' user=' . $name . ' password=' . $pass . ' options=\'--client_encoding=' . $charset . '\'')) {
+            return $this->_Gmanager->report(Language::get('mysql_connect_false'), 1);
         }
 
         return $this->_resource;
@@ -72,7 +68,7 @@ class SQL_MySQLi
         }
 
         $out = '<?php' . "\n"
-             . '// MySQLi Installer' . "\n"
+             . '// PostgreSQL Installer' . "\n"
              . '// Created in Gmanager ' . Config::$version . "\n"
              . '// http://wapinet.ru/gmanager/' . "\n\n"
 
@@ -88,7 +84,7 @@ class SQL_MySQLi
              . '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n"
              . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">' . "\n"
              . '<head>' . "\n"
-             . '<title>MySQLi Installer</title>' . "\n"
+             . '<title>PostgreSQL Installer</title>' . "\n"
              . '<style type="text/css">' . "\n"
              . 'body {' . "\n"
              . '    background-color: #cccccc;' . "\n"
@@ -118,21 +114,17 @@ class SQL_MySQLi
              . '    exit;' . "\n"
              . '}' . "\n\n"
 
-             . '$connect = new mysqli($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\'], $_POST[\'db\']);' . "\n"
-             . 'if (!$connect || $connect->connect_error) {' . "\n"
-             . '     exit(\'Can not connect to MySQL</div></body></html>\');' . "\n"
-             . '}' . "\n"
-             . '$connect->set_charset(\'' . str_ireplace('utf-8', 'utf8', $charset) . '\');' . "\n\n";
+             . '$connect = pg_connect(\'host=\' . $_POST[\'host\'] . \' user=\' . $_POST[\'name\'] . \' password=\' $_POST[\'pass\'] . \' options=\'--client_encoding=' . $charset . '\') or die (\'Can not connect to PostgreSQL</div></body></html>\');' . "\n\n";
 
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"
-                  . '$connect->query($sql);' . "\n"
-                  . 'if ($err = $connect->error) {' . "\n"
+                  . 'pg_query($connect, $sql);' . "\n"
+                  . 'if ($err = pg_errormessage($connect)) {' . "\n"
                   . '    $error[] = $err . "\n SQL:\n" . $sql;' . "\n"
                   . '}' . "\n\n";
         }
 
-        $out .= '$connect->close();' . "\n\n"
+        $out .= 'pg_close($connect);' . "\n\n"
               . 'if ($error) {' . "\n"
               . '    echo \'Error:<pre>\' . htmlspecialchars(print_r($error, true), ENT_NOQUOTES) . \'</pre>\';' . "\n"
               . '} else {' . "\n"
@@ -160,7 +152,7 @@ class SQL_MySQLi
     function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
-        if (is_object($connect)) {
+        if (is_resource($connect)) {
             $this->_resource = $connect;
         } else {
             return $connect;
@@ -170,22 +162,22 @@ class SQL_MySQLi
         if ($tables) {
             if ($tables['tables']) {
                 foreach ($tables['tables'] as $f) {
-                    $q = $this->_resource->query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
+                    //TODO:доделать выборку
+                    $q = pg_query($this->_resource, 'SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        $tmp = $q->fetch_row();
-                        $true .= $tmp[1] . ";\n\n";
+                        $true .= pg_result_seek($q, 1) . ";\n\n";
                     } else {
-                        $false .=  $this->_resource->error . "\n";
+                        $false .= pg_errormessage($this->_resource) . "\n";
                     }
                 }
             }
             if ($tables['data']) {
                 foreach ($tables['data'] as $f) {
-                    $q = $this->_resource->query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
+                    $q = pg_query($this->_resource, 'SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        if ($q->num_rows) {
+                        if (pg_num_rows($q) > 0) {
                             $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
-                            while ($row = $q->fetch_row()) {
+                            while ($row = pg_fetch_row($q)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
                                     $true .= $v === null ? 'NULL,' : "'" . str_replace("'", "''", $v) . "',";
@@ -195,7 +187,7 @@ class SQL_MySQLi
                             $true = rtrim($true, ',') . ";\n\n";
                         }
                     } else {
-                        $false .= $this->_resource->error . "\n";
+                        $false .= pg_errormessage($this->_resource) . "\n";
                     }
                 }
             }
@@ -213,9 +205,9 @@ class SQL_MySQLi
                 return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
             }
         } else {
-            $q = $this->_resource->query('SHOW TABLES;');
+            $q = pg_query($this->_resource, 'SELECT * FROM information_schema.tables;');
             if ($q) {
-                while($row = $q->fetch_row()) {
+                while($row = pg_fetch_row($q)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
@@ -240,7 +232,7 @@ class SQL_MySQLi
     function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
-        if (is_object($connect)) {
+        if (is_resource($connect)) {
             $this->_resource = $connect;
         } else {
             return $connect;
@@ -254,19 +246,19 @@ class SQL_MySQLi
             $q = rtrim($q, ';');
 
             $start = microtime(true);
-            $r = $this->_resource->query($q . ';');
+            $r = pg_query($this->_resource, $q . ';');
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->error . '</code></div>';
+                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . pg_errormessage($this->_resource) . '</code></div>';
             } else {
-                if (is_object($r) && $row = $r->num_rows) {
+                if (is_resource($r) && pg_num_rows($r) > 0 && $row = pg_num_rows($r)) {
                     $rows += $row;
-                    while ($row = $r->fetch_assoc()) {
+                    while ($row = pg_fetch_assoc($r)) {
                         $result[] = $row;
                     }
                 } else if ($r === true) {
-                    $rows += $this->_resource->affected_rows;
+                    $rows += pg_affected_rows($this->_resource);
                 }
             }
             $i++;
@@ -286,7 +278,7 @@ class SQL_MySQLi
             }
         }
 
-        $this->_resource->close();
+        pg_close($this->_resource);
         return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
     }
 }

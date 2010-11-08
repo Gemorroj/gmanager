@@ -3166,7 +3166,7 @@ class Gmanager extends Config
         } else {
             if (function_exists('posix_getpwuid') && $name = @posix_getpwuid($id)) {
                 return $name['name'];
-            } else if ($name = @exec('perl -e \'($login, $pass, $uid, $gid) = getpwuid(' . @escapeshellcmd($id) . ');print "$login";\'')) {
+            } else if ($name = @exec('perl -e \'($login, $pass, $uid, $gid) = getpwuid(' . @escapeshellcmd($id) . ');print $login;\'')) {
                 return $name;
             } else {
                 return $id;

@@ -165,6 +165,7 @@ class Config extends HTTP // Протокол, через который буд�
     public static $hCurrent;
     public static $rCurrent;
     public static $sysType;
+    public static $sqlDriver;
 
 
     public function __construct ()
