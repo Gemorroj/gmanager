@@ -132,11 +132,15 @@ class SQL_PDO_SQLite
     /**
      * Backup
      * 
+     * @param string $host
+     * @param string $name
+     * @param string $pass
      * @param string $db
+     * @param string $charset
      * @param array  $tables
      * @return mixed
      */
-    function backup ($db = '', $tables = array())
+    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
         $connect = $this->_connect($db);
         if (is_object($connect)) {
