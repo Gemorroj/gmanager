@@ -2920,6 +2920,8 @@ class Gmanager extends Config
             $path .= '#' . $u['fragment'];
         }
 
+        $path = str_replace(' ', '%20', $path);
+
         $fp = fsockopen($host, $port, $errno, $errstr, 10);
         if (!$fp) {
             return false;
