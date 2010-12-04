@@ -239,3 +239,8 @@ a:active{
 .pedit input[type="text"]{
     width: 99.5%;
 }
+
+.pedit_r{
+    width: 36px;
+    white-space: nowrap;
+}

@@ -190,11 +190,11 @@ switch ($_GET['go']) {
             foreach (array_slice(explode("\n", $content['text']), $start, $end) as $var) {
                 $j++;
                 $i++;
-                $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . $var . '"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="edit(0,this.parentNode);">[-]</a></td></tr>';
+                $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . $var . '"/></td><td class="pedit_r"><a href="javascript:void(0);" onclick="edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="edit(0,this.parentNode);">[-]</a></td></tr>';
             }
             if ($end > $i) {
                 $j++;
-                $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td style="width:35px;"><a href="javascript:void(0);" onclick="edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="edit(0,this.parentNode);">[-]</a></td></tr>';
+                $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td class="pedit_r"><a href="javascript:void(0);" onclick="edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="edit(0,this.parentNode);">[-]</a></td></tr>';
             }
 
             $edit .= '</table><input onkeypress="return number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="line_edit" type="submit" value="' . Language::get('look') . '"/><br/>';

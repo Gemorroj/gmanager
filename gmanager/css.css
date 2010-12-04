@@ -21,6 +21,7 @@ th{background:#777;border-radius:5pt}
 .input textarea,.input select,.input input[type="checkbox"],.input input[type="radio"]{margin:2pt 1%}
 .pedit{background:#ebebeb;border-radius:3pt;color:#c00;font-weight:bold}
 .pedit input[type="text"]{width:99.5%}
+.pedit_r{width:36px;white-space:nowrap}
 .rb{background:#ebebeb;border-bottom:1px solid #cccccc;border-radius:3pt;border-top:1px solid #ffffff;color:#c00;padding:1px 4pt 1px 0;text-align:right}
 .red{color:#f00}
 .submit{background:#fff;border:1px solid #0077a0;color:#000;font-weight:bold;margin:0;padding:0 1px 0 1px}
