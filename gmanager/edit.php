@@ -16,15 +16,11 @@
 define('GMANAGER_START', microtime(true));
 
 
-$_GET['f'] = isset($_GET['f']) ? $_GET['f'] : '';
-$_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
-$_GET['c'] = isset($_GET['c']) ? $_GET['c'] : '';
-if (!isset($_GET['charset'])) {
-    $_GET['charset'] = '';
-}
-if (!isset($_GET['beautify'])) {
-    $_GET['beautify'] = '';
-}
+$_GET['f']          = isset($_GET['f']) ? $_GET['f'] : '';
+$_GET['go']         = isset($_GET['go']) ? $_GET['go'] : '';
+$_GET['c']          = isset($_GET['c']) ? $_GET['c'] : '';
+$_GET['charset']    = isset($_GET['charset']) ? $_GET['charset'] : '';
+$_GET['beautify']   = isset($_GET['beautify']) ? $_GET['beautify'] : '';
 
 if ($_GET['charset'] || $_GET['beautify']) {
     $_GET['c'] = rawurldecode($_GET['c']);
@@ -120,9 +116,6 @@ switch ($_GET['go']) {
 
 
     case 'validator':
-        /*
-        echo $Gmanager->validator('http://' . $_SERVER['HTTP_HOST'] . str_replace('\\', '/', substr($Gmanager->realpath(Config::$current), strlen($_SERVER['DOCUMENT_ROOT']))), $charset);
-        */
         echo $Gmanager->validator(Config::$current, $charset);
         break;
 
