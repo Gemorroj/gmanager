@@ -171,7 +171,7 @@ class SQL_PDO_PostgreSQL
                 foreach ($tables['tables'] as $f) {
                     $q = $this->_resource->query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        $tmp = $q->fetch(PDO::FETCH_BOTH);
+                        $tmp = $q->fetch(PDO::FETCH_NUM);
                         $true .= $tmp[1] . ";\n\n";
                     } else {
                         $tmp = $this->_resource->errorInfo();
@@ -183,9 +183,9 @@ class SQL_PDO_PostgreSQL
                 foreach ($tables['data'] as $f) {
                     $q = $this->_resource->query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        if ($q->fetchColumn()) {
+                        if ($q->columnCount()) {
                             $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
-                            while ($row = $q->fetch(PDO::FETCH_BOTH)) {
+                            while ($row = $q->fetch(PDO::FETCH_NUM)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
                                     $true .= $v === null ? 'NULL,' : "'" . str_replace("'", "''", $v) . "',";
@@ -216,7 +216,7 @@ class SQL_PDO_PostgreSQL
         } else {
             $q = $this->_resource->query('SELECT * FROM information_schema.tables;');
             if ($q) {
-                while($row = $q->fetch(PDO::FETCH_BOTH)) {
+                while($row = $q->fetch(PDO::FETCH_NUM)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;

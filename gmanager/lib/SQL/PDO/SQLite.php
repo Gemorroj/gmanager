@@ -157,7 +157,7 @@ class SQL_PDO_SQLite
                     if ($q) {
                         $true .= 'CREATE TABLE `' . str_replace('`', '``', $f) . '` (' . "\n";
                         foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $v) {
-                            $true .= $v['name'] . ' ' . $v['type'] . ($v['notnull'] ? ' NOT NULL' : '') . ' DEFAULT ' . (($v['dflt_value'] === null || $v['dflt_value'] == 'NULL') ? 'NULL' : '"' . $v['dflt_value'] . '"') . ($v['pk'] ? ' PRIMARY KEY' : '') . ",\n";
+                            $true .= '    ' . $v['name'] . ' ' . $v['type'] . ($v['notnull'] ? ' NOT NULL' : '') . ' DEFAULT ' . (($v['dflt_value'] === null || $v['dflt_value'] == 'NULL') ? 'NULL' : '"' . $v['dflt_value'] . '"') . ($v['pk'] ? ' PRIMARY KEY' : '') . ",\n";
                         }
                         $true = trim($true, ",\n") . "\n" . ');' . "\n\n";
                     } else {
@@ -170,9 +170,9 @@ class SQL_PDO_SQLite
                 foreach ($tables['data'] as $f) {
                     $q = $this->_resource->query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
                     if ($q) {
-                        if ($q->fetchColumn()) {
+                        if ($q->columnCount()) {
                             $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
-                            while ($row = $q->fetch(PDO::FETCH_BOTH)) {
+                            while ($row = $q->fetch(PDO::FETCH_NUM)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
                                     $true .= $v === null ? 'NULL,' : "'" . str_replace("'", "''", $v) . "',";
@@ -201,9 +201,9 @@ class SQL_PDO_SQLite
                 return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
             }
         } else {
-            $q = $this->_resource->query('SELECT name FROM sqlite_master WHERE type="table" ORDER BY name;');
+            $q = $this->_resource->query('SELECT name FROM sqlite_master WHERE type = "table" ORDER BY name;');
             if ($q) {
-                while($row = $q->fetch(PDO::FETCH_BOTH)) {
+                while($row = $q->fetch(PDO::FETCH_NUM)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
