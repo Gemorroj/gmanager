@@ -127,3 +127,73 @@ function edit(t, n)
         tb.removeChild(tr);
     }
 }
+
+
+function formatCode(e, t)
+{
+    var pos = getCaretPosition(t);
+    var arr = {};
+    var str = {};
+    var comp = "";
+    var i = 0;
+
+    if (((e.keyCode === undefined ? e.charCode : e.keyCode) === 13) && !(/opera mini|opera mobi/i.test(window.navigator.userAgent.toLowerCase()))) {
+        arr = t.value.substring(0, pos).split("\n");
+        str = arr[arr.length - 1].split("");
+
+        for (i = 0; i < str.length; i++) {
+            if (str[i] === " ") {
+                comp += " ";
+            } else {
+                break;
+            }
+        }
+
+        if (t.value.slice(pos - 1, pos) === "{") {
+            comp += "    ";
+        }
+
+        t.value = t.value.substring(0, pos) + "\n" + comp + t.value.substring(pos, t.value.length);
+        setCaretPosition(t, pos + comp.length + 1);
+        return false;
+    }
+    return true;
+}
+
+
+function getCaretPosition(t)
+{
+    var sel = null;
+    var clone = null;
+    if (t.selectionStart !== undefined) {
+        return t.selectionStart;
+    } else if (document.selection) {
+        sel = document.selection.createRange();
+        clone = sel.duplicate();
+        sel.collapse(true);
+        clone.moveToElementText(t);
+        clone.setEndPoint("EndToEnd", sel);
+        return clone.text.length;
+    }
+
+    return 0;
+}
+
+
+function setCaretPosition(t, n)
+{
+    var r = null;
+    if (document.all === undefined || window.opera !== undefined) {
+        if (window.opera !== undefined) {
+            t.setSelectionRange(n + 1, n + 1);
+        } else {
+            t.setSelectionRange(n, n);
+        }
+    } else {
+        r = t.createTextRange();
+        r.collapse(true);
+        r.moveStart("character", t.value.substring(0, n).replace(/\n/g, "").length + 1);
+        r.moveEnd("character", 0);
+        r.select();
+    }
+}
