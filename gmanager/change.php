@@ -375,7 +375,8 @@ switch ($_GET['go']) {
         } else {
             $v = '';
         }
-        echo '<div class="input"><form action="change.php?go=eval&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('php_code') . '<br/><textarea name="eval" rows="10" cols="48">' . $v . '</textarea><br/><input type="submit" value="' . Language::get('eval_go') . '"/></div></form></div>';
+
+        echo '<div class="input"><form action="change.php?go=eval&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('php_code') . '<br/><textarea onkeypress="return formatCode(event,this);" name="eval" rows="10" cols="48">' . $v . '</textarea><br/><input type="submit" value="' . Language::get('eval_go') . '"/></div></form></div>';
         break;
 
 
