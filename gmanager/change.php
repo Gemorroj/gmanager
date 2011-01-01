@@ -551,7 +551,7 @@ switch ($_GET['go']) {
                 if (Config::$mode == 'FTP') {
                     $md5 = Language::get('md5') . ': ' . md5($Gmanager->file_get_contents(Config::$current));
                 } else {
-                    $md5 = Language::get('md5') . ': ' . md5_file(Config::$current);
+                    $md5 = Language::get('md5') . ': ' . md5_file(IOWrapper::set(Config::$current));
                 }
             }
 
