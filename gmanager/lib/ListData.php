@@ -105,7 +105,7 @@ class ListData
                     $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $Gmanager->lookChmod($file);
@@ -154,7 +154,7 @@ class ListData
                     $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $Gmanager->lookChmod($file);
@@ -210,7 +210,7 @@ class ListData
                     $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $chmod = $Gmanager->lookChmod($file);
@@ -358,7 +358,7 @@ class ListData
                 $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
             }
             if (Config::$index['del']) {
-                $pdel = '<td><a onclick="return delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
+                $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
             }
             if (Config::$index['chmod']) {
                 $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $Gmanager->lookChmod($c . $f) . '</a></td>';

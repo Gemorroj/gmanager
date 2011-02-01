@@ -1176,7 +1176,7 @@ class Gmanager extends Config
                     $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
+                    $l .= '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
@@ -1358,7 +1358,7 @@ class Gmanager extends Config
                     $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::$index['del']) {
-                    $l .= '<td><a onclick="return delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
+                    $l .= '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::$index['chmod']) {
                     $l .= '<td> </td>';
