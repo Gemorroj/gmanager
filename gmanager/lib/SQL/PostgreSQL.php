@@ -43,7 +43,7 @@ class SQL_PostgreSQL
     private function _connect ($host = 'localhost', $name = 'postgres', $pass = 'postgres', $db = '', $charset = 'utf8')
     {
         if (!$this->_resource = pg_connect(($db ? 'dbname=' . $db . ' ' : '') . 'host=' . $host . ' user=' . $name . ' password=' . $pass . ' options=\'--client_encoding=' . $charset . '\'')) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false'), 1);
+            return Errors::message(Language::get('mysql_connect_false'), Errors::MESSAGE_FAIL);
         }
 
         return $this->_resource;
@@ -195,14 +195,14 @@ class SQL_PostgreSQL
             if ($true) {
                 $this->_Gmanager->mkdir(dirname($tables['file']));
                 if (!$this->_Gmanager->file_put_contents($tables['file'], $true)) {
-                    $false .= $this->_Gmanager->error() . "\n";
+                    $false .= Errors::get() . "\n";
                 }
             }
 
             if ($false) {
-                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', 1);
+                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
+                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = pg_query($this->_resource, 'SELECT * FROM information_schema.tables;');
@@ -250,7 +250,7 @@ class SQL_PostgreSQL
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . pg_errormessage($this->_resource) . '</code></div>';
+                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . pg_errormessage($this->_resource) . '</code></div>';
             } else {
                 if (is_resource($r) && pg_num_rows($r) > 0 && $row = pg_num_rows($r)) {
                     $rows += $row;
@@ -279,7 +279,7 @@ class SQL_PostgreSQL
         }
 
         pg_close($this->_resource);
-        return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
+        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

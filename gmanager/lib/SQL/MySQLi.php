@@ -44,7 +44,7 @@ class SQL_MySQLi
     {
         $this->_resource = new mysqli($host, $name, $pass, $db);
         if (!$this->_resource || $this->_resource->connect_error) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), 1);
+            return Errors::message(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), Errors::MESSAGE_FAIL);
         }
         if ($charset) {
             $this->_resource->set_charset($charset);
@@ -203,14 +203,14 @@ class SQL_MySQLi
             if ($true) {
                 $this->_Gmanager->mkdir(dirname($tables['file']));
                 if (!$this->_Gmanager->file_put_contents($tables['file'], $true)) {
-                    $false .= $this->_Gmanager->error() . "\n";
+                    $false .= Errors::get() . "\n";
                 }
             }
 
             if ($false) {
-                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', 1);
+                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
+                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
@@ -258,7 +258,7 @@ class SQL_MySQLi
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . $this->_resource->error . '</code></div>';
+                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . $this->_resource->error . '</code></div>';
             } else {
                 if (is_object($r) && $row = $r->num_rows) {
                     $rows += $row;
@@ -287,7 +287,7 @@ class SQL_MySQLi
         }
 
         $this->_resource->close();
-        return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
+        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

@@ -125,7 +125,7 @@ switch ($_GET['go']) {
         $to = $from = '';
 
         if (!$Gmanager->is_file(Config::$current)) {
-            echo $Gmanager->report(Language::get('not_found'), 1);
+            echo Errors::message(Language::get('not_found'), Errors::MESSAGE_FAIL);
             break;
         }
 

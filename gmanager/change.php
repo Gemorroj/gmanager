@@ -83,9 +83,6 @@ switch ($_GET['go']) {
                     echo $Gmanager->delFile($_POST['check'][$i]);
                 }
             }
-
-            // echo $Gmanager->report('<br/>' . Language::get('full_del_file_dir_true'), 0);
-
         } else if (isset($_POST['full_chmod'])) {
             if (!isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Config::$rCurrent . '" method="post"><div><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0644"/>' . Language::get('change_chmod') . ' ' . Language::get('of files') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0755"/>' . Language::get('change_chmod') . ' ' . Language::get('of folders') . '<br/><input name="full_chmod" type="hidden" value="1"/>';
@@ -285,7 +282,7 @@ switch ($_GET['go']) {
                 }
             }
         } else {
-            echo $Gmanager->report(Language::get('filename_empty'), 1);
+            echo Errors::message(Language::get('filename_empty'), Errors::MESSAGE_FAIL);
         }
         break;
 
@@ -334,12 +331,12 @@ switch ($_GET['go']) {
         $new = $Gmanager->getData('http://wapinet.ru/gmanager/gmanager.txt');
         if ($new['body']) {
             if (version_compare($new['body'], Config::$version, '<=')) {
-                echo $Gmanager->report(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::$version . '<br/>' . Language::get('new_version_false'), 0);
+                echo Errors::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::$version . '<br/>' . Language::get('new_version_false'), Errors::MESSAGE_OK);
             } else {
-                echo $Gmanager->report(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::$version . '<br/>' . Language::get('new_version_true') . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . Language::get('get') . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', 1);
+                echo Errors::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::$version . '<br/>' . Language::get('new_version_true') . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . Language::get('get') . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', Errors::MESSAGE_FAIL);
             }
         } else {
-            echo $Gmanager->report(Language::get('not_connect'), 2);
+            echo Errors::message(Language::get('not_connect'), Errors::MESSAGE_EMAIL);
         }
         break;
 
@@ -353,7 +350,7 @@ switch ($_GET['go']) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
                 echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/></div>' . $Gmanager->code($url, 0, true);
             } else {
-                echo $Gmanager->report(Language::get('not_connect'), 2);
+                echo Errors::message(Language::get('not_connect'), Errors::MESSAGE_EMAIL);
             }
         }
         break;
@@ -514,7 +511,7 @@ switch ($_GET['go']) {
             if ($sql = $Gmanager->sqlInstaller(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']))) {
                 echo $Gmanager->createFile(trim($_POST['file']), $sql, $_POST['chmod']);
             } else {
-                echo $Gmanager->report(Language::get('sql_parser_error'), 2);
+                echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
             }
         }
         break;
@@ -533,7 +530,7 @@ switch ($_GET['go']) {
 
     default:
         if (!$Gmanager->file_exists(Config::$current)) {
-            echo $Gmanager->report(Language::get('not_found'), 1);
+            echo Errors::message(Language::get('not_found'), Errors::MESSAGE_FAIL);
             break;
         }
 

@@ -63,7 +63,7 @@ class SQL
      */
     public static function parser ($str)
     {
-        //TODO: NOT supported '' or ""
+        //TODO: supported '' or ""
         $queries  = array();
         $position = 0;
         $query    = '';

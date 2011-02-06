@@ -45,7 +45,7 @@ class SQL_PDO_MySQL
         try {
             $this->_resource = new PDO('mysql:' . ($db ? 'dbname=' . $db . ';' : '') . 'host=' . $host, $name, $pass, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $charset));
         } catch (Exception $e) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), 1);
+            return Errors::message(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Errors::MESSAGE_FAIL);
         }
 
         return $this->_resource;
@@ -202,14 +202,14 @@ class SQL_PDO_MySQL
             if ($true) {
                 $this->_Gmanager->mkdir(dirname($tables['file']));
                 if (!$this->_Gmanager->file_put_contents($tables['file'], $true)) {
-                    $false .= $this->_Gmanager->error() . "\n";
+                    $false .= Errors::get() . "\n";
                 }
             }
 
             if ($false) {
-                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', 1);
+                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
+                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
@@ -258,7 +258,7 @@ class SQL_PDO_MySQL
 
             if (!$r) {
                 $tmp = $this->_resource->errorInfo();
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
+                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
                 if (is_object($r) && $row = $r->rowCount()) {
                     $rows += $row;
@@ -286,7 +286,7 @@ class SQL_PDO_MySQL
             }
         }
 
-        return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
+        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

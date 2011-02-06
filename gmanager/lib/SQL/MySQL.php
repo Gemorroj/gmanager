@@ -43,7 +43,7 @@ class SQL_MySQL
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
         if (!$this->_resource = mysql_connect($host, $name, $pass)) {
-            return $this->_Gmanager->report(Language::get('mysql_connect_false'), 1);
+            return Errors::message(Language::get('mysql_connect_false'), Errors::MESSAGE_FAIL);
         }
         if ($charset) {
             mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
@@ -51,7 +51,7 @@ class SQL_MySQL
 
         if ($db) {
             if (!mysql_select_db($db, $this->_resource)) {
-                return $this->_Gmanager->report(Language::get('mysql_select_db_false'), 1);
+                return Errors::message(Language::get('mysql_select_db_false'), Errors::MESSAGE_FAIL);
             }
         }
 
@@ -205,14 +205,14 @@ class SQL_MySQL
             if ($true) {
                 $this->_Gmanager->mkdir(dirname($tables['file']));
                 if (!$this->_Gmanager->file_put_contents($tables['file'], $true)) {
-                    $false .= $this->_Gmanager->error() . "\n";
+                    $false .= Errors::get() . "\n";
                 }
             }
 
             if ($false) {
-                return $this->_Gmanager->report(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', 1);
+                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return $this->_Gmanager->report(Language::get('mysql_backup_true'), 0);
+                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = mysql_query('SHOW TABLES;', $this->_resource);
@@ -260,7 +260,7 @@ class SQL_MySQL
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return $this->_Gmanager->report(Language::get('mysql_query_false'), 2) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
+                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
             } else {
                 if (is_resource($r) && $row = mysql_num_rows($r)) {
                     $rows += $row;
@@ -289,7 +289,7 @@ class SQL_MySQL
         }
 
         mysql_close($this->_resource);
-        return $this->_Gmanager->report(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), 0) . $out;
+        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

@@ -69,12 +69,10 @@ class HTTP
      */
     public function chmod ($file, $chmod = 0755)
     {
-        /*
         if (Config::$sysType == 'WIN') {
-            trigger_error(Language::get('win_chmod'));
-            return false;
+            //trigger_error(Language::get('win_chmod'));
+            return true;
         }
-        */
 
         return @chmod(IOWrapper::set($file), $this->_chmoder($chmod));
     }

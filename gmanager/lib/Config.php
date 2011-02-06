@@ -224,6 +224,6 @@ function __autoload ($class)
 
 ini_set('error_prepend_string', '<div class="red">');
 ini_set('error_append_string', '</div><div class="rb"><br/></div>' . Config::$foot);
-set_error_handler('Gmanager::error_handler');
+set_error_handler('Errors::errorHandler');
 
 ?>
