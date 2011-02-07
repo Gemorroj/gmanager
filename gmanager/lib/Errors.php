@@ -33,6 +33,13 @@ class Errors
      */
     public static function errorHandler ($errno, $errstr, $errfile, $errline)
     {
+        if (!defined('E_DEPRECATED')) {
+            define('E_DEPRECATED', 8192);
+        }
+        if (!defined('E_USER_DEPRECATED')) {
+            define('E_USER_DEPRECATED', 16384);
+        }
+
         if (preg_match('/Gmanager\.php\((\d+)\) : eval\(\)\'d code/', $errfile)) {
             switch ($errno) {
                 case E_USER_ERROR:
@@ -61,6 +68,11 @@ class Errors
 
                 case E_RECOVERABLE_ERROR:
                     echo 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . "\n";
+                    break;
+
+
+                case E_PARSE:
+                    echo 'PARSE ERROR: ' . $errstr . ' on line ' . $errline . "\n";
                     break;
 
 
@@ -114,6 +126,14 @@ class Errors
 
                 case E_RECOVERABLE_ERROR:
                     self::$_php_errormsg = 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
+                    if (Config::$errors && is_writable(Config::$errors)) {
+                        file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    }
+                    break;
+
+
+                case E_PARSE:
+                    self::$_php_errormsg = 'PARSE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
                     if (Config::$errors && is_writable(Config::$errors)) {
                         file_put_contents(Config::$errors, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     }
