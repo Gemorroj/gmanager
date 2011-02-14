@@ -260,11 +260,11 @@ class SQL_PDO_MySQL
                 $tmp = $this->_resource->errorInfo();
                 return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
-                if (is_object($r) && $row = $r->rowCount()) {
-                    $rows += $row;
+                if (is_object($r)) {
                     while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
                         $result[] = $row;
                     }
+                    $rows += sizeof($result);
                 } else if ($r === true) {
                     $rows += $this->_resource->rowCount();
                 }
