@@ -132,7 +132,7 @@ class SQL_PDO_SQLite
     /**
      * Backup
      * 
-     * @param string $host
+     * @param string $host (not used)
      * @param string $name
      * @param string $pass
      * @param string $db
@@ -217,7 +217,7 @@ class SQL_PDO_SQLite
     /**
      * Query
      * 
-     * @param string $host
+     * @param string $host (not used)
      * @param string $name
      * @param string $pass
      * @param string $db

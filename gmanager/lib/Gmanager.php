@@ -207,13 +207,12 @@ class Gmanager extends Config
 
     /**
      * copyD
-     * 
-     * @param string $dest
+     *
      * @param string $source
      * @param string $to
      * @return void
      */
-    public function copyD ($dest = '', $source = '', $to = '')
+    public function copyD ($source = '', $to = '')
     {
         $ex = explode('/', $source);
         $tmp1 = $tmp2 = '';
@@ -362,8 +361,7 @@ class Gmanager extends Config
             return Errors::message(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), Errors::MESSAGE_OK);
         }
 
-        $d = dirname($dest);
-        $this->copyD($d, dirname($source), $d);
+        $this->copyD(dirname($source), dirname($dest));
 
         if ($this->copy($source, $dest)) {
             if (!$chmod) {
@@ -400,8 +398,7 @@ class Gmanager extends Config
             return Errors::message(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), Errors::MESSAGE_OK);
         }
 
-        $d = dirname($dest);
-        $this->copyD($d, dirname($source), $d);
+        $this->copyD(dirname($source), dirname($dest));
 
         if ($this->rename($source, $dest)) {
             if (!$chmod) {
@@ -626,7 +623,7 @@ class Gmanager extends Config
     public function frename ($current = '', $name = '', $chmod = '', $del = false, $to = '', $overwrite = false)
     {
         if ($this->is_dir($current)) {
-            $this->copyD($name, $current, $to);
+            $this->copyD($current, $to);
 
             if ($del) {
                 return $this->moveFiles($current, $name, $this->staticName($current, $name), $overwrite);
@@ -902,7 +899,6 @@ class Gmanager extends Config
                     $this->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('overwrite_false'), Errors::MESSAGE_FAIL);
-                break;
             }
         }
 
@@ -1031,7 +1027,6 @@ class Gmanager extends Config
                     $this->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('overwrite_false'), Errors::MESSAGE_FAIL);
-                break;
             }
         }
 
@@ -2566,10 +2561,9 @@ class Gmanager extends Config
      */
     public function showCmd ($cmd = '')
     {
-        $buf = '';
-
         /*
             $h = popen($cmd, 'r');
+            $buf = '';
             while (!feof($h)) {
                 $buf .= fgets($h, 4096);
             }

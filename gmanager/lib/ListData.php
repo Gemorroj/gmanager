@@ -34,7 +34,7 @@ class ListData
      */
     private static function _getListArray (Gmanager $Gmanager, $current = '', $itype = '', $down = '', $addArchive = '')
     {
-        $html   = $key = $type = $isize = $uid = $gid = $chmod = $name = $time = '';
+        $type   = $isize = $uid = $gid = $chmod = $name = $time = '';
         $page   = $page0 = $page1 = $page2 = array();
         $i      = 0;
 
