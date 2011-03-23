@@ -241,14 +241,9 @@ switch ($_GET['go']) {
 
 
     case 'create_file':
-        include 'pattern.dat';
         if (!isset($_POST['name'])) {
-            echo '<div class="input"><form action="change.php?go=create_file&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="file.php"/><br/><select name="ptn">';
-            $all = sizeof($pattern);
-            for ($i = 0; $i < $all; ++$i) {
-                echo '<option value="' . $i . '">' . $pattern[$i][0] . '</option>';
-            }
-            echo '</select>' . Language::get('pattern') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('cr') . '"/></div></form></div>';
+            $Patterns = new Patterns;
+            echo '<div class="input"><form action="change.php?go=create_file&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="file.php"/><br/><select name="ptn"><option value="">' . Language::get('empty') . '</option>' . $Patterns->set(array(Patterns::Htaccess, Patterns::HTML, Patterns::PHP, Patterns::WML, Patterns::XHTML))->getOptions() . '</select>' . Language::get('pattern') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('cr') . '"/></div></form></div>';
         } else {
             if ($Gmanager->file_exists(Config::$current . $_POST['name']) && !isset($_POST['a'])) {
                 echo '<div class="red">' . Language::get('warning') . '<br/></div><form action="change.php?go=create_file&amp;c=' . Config::$rCurrent . '" method="post"><div><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/><input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/><input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/><input type="hidden" name="a" value="1"/><input type="submit" value="' . Language::get('ch') . '"/></div></form>';
@@ -259,7 +254,7 @@ switch ($_GET['go']) {
                     $realpath = Config::$hCurrent . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 }
 
-                echo '<div class="border">' . Language::get('file') . ' <strong><a href="edit.php?' . Config::$rCurrent . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . $Gmanager->createFile(Config::$current . $_POST['name'], $pattern[intval($_POST['ptn'])][1], $_POST['chmod']);
+                echo '<div class="border">' . Language::get('file') . ' <strong><a href="edit.php?' . Config::$rCurrent . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . $Gmanager->createFile(Config::$current . $_POST['name'], rawurldecode($_POST['ptn']), $_POST['chmod']);
             }
         }
         break;
@@ -404,20 +399,14 @@ switch ($_GET['go']) {
                     echo '<div class="input"><form action="change.php?go=mysql&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('mysql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('mysql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Config::$hCurrent . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/></div></form></div>';
                 }
             } else {
-                include 'pattern.dat';
-                $tmp = '<select id="ptn" onchange="Gmanager.paste(this.value);">';
-                $all = sizeof($sql_ptn);
-                for ($i = 0; $i < $all; ++$i) {
-                    $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
-                }
-                $tmp .= '</select>';
+                $Patterns = new Patterns;
 
                 if (!$_POST['sql'] && !$_POST['db']) {
                     $_POST['sql'] = 'SHOW DATABASES';
                 } else if (!$_POST['sql']) {
                     $_POST['sql'] = 'SHOW TABLES';
                 }
-                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=mysql&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('sql_query') . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/>' : '') . '</div></form></div>';
+                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=mysql&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::MySQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/>' : '') . '</div></form></div>';
             }
         } else {
             echo '<div class="input"><form action="change.php?go=mysql&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('mysql_user') . '<br/><input type="text" name="name" value=""/><br/>' . Language::get('mysql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('mysql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('mysql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('sql_query') . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . Language::get('sql') . '"/></div></form></div>';
@@ -437,20 +426,14 @@ switch ($_GET['go']) {
                     echo '<div class="input"><form action="change.php?go=postgresql&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('mysql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('mysql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Config::$hCurrent . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/></div></form></div>';
                 }
             } else {
-                include 'pattern.dat';
-                $tmp = '<select id="ptn" onchange="Gmanager.paste(this.value);">';
-                $all = sizeof($sql_ptn);
-                for ($i = 0; $i < $all; ++$i) {
-                    $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
-                }
-                $tmp .= '</select>';
+                $Patterns = new Patterns;
 
                 if (!$_POST['sql'] && !$_POST['db']) {
                     $_POST['sql'] = 'SELECT oid, * from pg_database';
                 } else if (!$_POST['sql']) {
                     $_POST['sql'] = 'SELECT * FROM information_schema.tables';
                 }
-                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=postgresql&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('sql_query') . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/>' : '') . '</div></form></div>';
+                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=postgresql&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::PostgreSQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/>' : '') . '</div></form></div>';
             }
         } else {
             echo '<div class="input"><form action="change.php?go=postgresql&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('mysql_user') . '<br/><input type="text" name="name" value=""/><br/>' . Language::get('mysql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('mysql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('mysql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('sql_query') . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . Language::get('sql') . '"/></div></form></div>';
@@ -470,18 +453,12 @@ switch ($_GET['go']) {
                     echo '<div class="input"><form action="change.php?go=sqlite&amp;c=' . Config::$rCurrent . '" method="post"><div>' . Language::get('mysql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('mysql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Config::$hCurrent . 'backup_' . htmlspecialchars(basename($_POST['db'])) . '.sql"/><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/></div></form></div>';
                 }
             } else {
-                include 'pattern.dat';
-                $tmp = '<select id="ptn" onchange="Gmanager.paste(this.value);">';
-                $all = sizeof($sql_ptn);
-                for ($i = 0; $i < $all; ++$i) {
-                    $tmp .= '<option value="' . htmlspecialchars($sql_ptn[$i][1], ENT_COMPAT) . '">' . $sql_ptn[$i][0] . '</option>';
-                }
-                $tmp .= '</select>';
+                $Patterns = new Patterns;
 
                 if (!$_POST['sql']) {
                     $_POST['sql'] = 'SELECT name FROM sqlite_master WHERE type = "table" ORDER BY name';
                 }
-                echo '<div>&#160;' . $_POST['db'] . '<br/></div>' . $Gmanager->sqlQuery('', '', '', $Gmanager->realpath($_POST['db']), $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sqlite&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('sql_query') . ' ' . $tmp . '<br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/> <input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/></div></form></div>';
+                echo '<div>&#160;' . $_POST['db'] . '<br/></div>' . $Gmanager->sqlQuery('', '', '', $Gmanager->realpath($_POST['db']), $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sqlite&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::SQLite))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/> <input type="submit" name="backup" value="' . Language::get('mysql_backup') . '"/></div></form></div>';
             }
         } else {
             echo '<div class="input"><form action="change.php?go=sqlite&amp;c=' . Config::$rCurrent . '" method="post" id="post"><div>' . Language::get('mysql_db') . '<br/><input type="text" name="db" value="' . Config::$hCurrent . '"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('sql_query') . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . Language::get('sql') . '"/></div></form></div>';

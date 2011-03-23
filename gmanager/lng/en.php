@@ -212,6 +212,7 @@ $language = array(
     'beautify'                      =>  'Beautify',
     'hex'                           =>  'HEX',
     'empty_search'                  =>  'Your search did not precise',
+    'empty'                         =>  'Empty',
 );
 
 ?>
