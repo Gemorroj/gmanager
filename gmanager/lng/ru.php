@@ -14,7 +14,7 @@
  */
 
 
-$language = array(
+return array(
     'title_index'                   =>  'Содержимое Папки',
     'title_edit'                    =>  'Редактор',
     'title_change'                  =>  'Дополнительно',
@@ -174,9 +174,9 @@ $language = array(
     'mysql_pass'                    =>  'Пароль',
     'mysql_host'                    =>  'Хост',
     'mysql_db'                      =>  'База',
-    'mysql_connect_false'           =>  'Не Удалось Соединиться с MySQL',
-    'mysql_select_db_false'         =>  'Не Удалось Соединиться с Базой',
-    'mysql_query_false'             =>  'Ошибка При Выполнении Операций с Базой',
+    'mysql_connect_false'           =>  'Не Удалось Соединиться с СУБД',
+    'mysql_select_db_false'         =>  'Не Удалось Соединиться с Базой Данных',
+    'mysql_query_false'             =>  'Ошибка При Выполнении Операций с Базой Данных',
     'mysql_true'                    =>  'Выполнено Запросов: ',
     'mysql_rows'                    =>  'Затронуто строк: ',
     'microtime'                     =>  'Операция Заняла: %time% сек.',

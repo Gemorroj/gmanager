@@ -14,7 +14,7 @@
  */
 
 
-$language = array(
+return array(
     'title_index'                   =>  'Index of Directory',
     'title_edit'                    =>  'Editor',
     'title_change'                  =>  'More',
@@ -174,7 +174,7 @@ $language = array(
     'mysql_pass'                    =>  'DB Password',
     'mysql_host'                    =>  'Host',
     'mysql_db'                      =>  'Database',
-    'mysql_connect_false'           =>  'Could not connect with MySQL',
+    'mysql_connect_false'           =>  'Could not connect with DBMS',
     'mysql_select_db_false'         =>  'Unable to connect to database',
     'mysql_query_false'             =>  'Error executing database operation',
     'mysql_true'                    =>  'Number of Queries: ',

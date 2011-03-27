@@ -14,7 +14,7 @@
  */
 
 
-$language = array(
+return array(
     'title_index'                   =>  'Зміст Папки',
     'title_edit'                    =>  'Редактор',
     'title_change'                  =>  'Додатково',
@@ -174,9 +174,9 @@ $language = array(
     'mysql_pass'                    =>  'Пароль',
     'mysql_host'                    =>  'Хост',
     'mysql_db'                      =>  'База',
-    'mysql_connect_false'           =>  'Не Вдалося З`єднатися з MySQL',
-    'mysql_select_db_false'         =>  'Не Вдалося З`єднатися з Базою',
-    'mysql_query_false'             =>  'Помилка При Виконанні Операцій з Базою',
+    'mysql_connect_false'           =>  'Не Вдалося З`єднатися з СУБД',
+    'mysql_select_db_false'         =>  'Не Вдалося З`єднатися з Базою Даних',
+    'mysql_query_false'             =>  'Помилка При Виконанні Операцій з Базою Даних',
     'mysql_true'                    =>  'Виконано Запитів: ',
     'mysql_rows'                    =>  'Порушено рядків: ',
     'microtime'                     =>  'Операція Зайняла: %time% сек.',

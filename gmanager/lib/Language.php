@@ -20,12 +20,12 @@ class Language
     /**
      * setLanguage
      * 
+     * @param string $lng
      * @return void
      */
-    public static function setLanguage ()
+    public static function setLanguage ($lng = 'en')
     {
-        require_once dirname(__FILE__) . '/../lng/' . Config::$language . '.php';
-        self::$_lng = & $language;
+        self::$_lng = require_once dirname(__FILE__) . '/../lng/' . $lng . '.php';
     }
 
 

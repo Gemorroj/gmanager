@@ -173,7 +173,7 @@ class Config extends HTTP // Протокол, через который буд�
         // Авторизация
         Auth::main();
         // Локализация
-        Language::setLanguage();
+        Language::setLanguage(self::$language);
 
         self::$mode = get_parent_class();
 
