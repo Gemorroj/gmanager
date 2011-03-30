@@ -54,6 +54,18 @@ class Getf
             }
         }
 
+        // Хэш
+        $etag = md5($f);
+        $etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
+
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
+            if ($_SERVER['HTTP_IF_NONE_MATCH'] == '"' . $etag . '"') {
+                header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified');
+                //header('Date: ' . gmdate('r'));
+                exit;
+            }
+        }
+
 
         // Ставим MIME в зависимости от расширения
         if (!$mime) {
@@ -244,19 +256,6 @@ class Getf
                 default:
                     $mime = 'application/octet-stream';
                     break;
-            }
-        }
-
-
-        // Хэш
-        $etag = md5($f);
-        $etag = substr($etag, 0, 4) . '-' . substr($etag, 5, 5) . '-' . substr($etag, 10, 8);
-
-        if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
-            if ($_SERVER['HTTP_IF_NONE_MATCH'] == '"' . $etag . '"') {
-                header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified');
-                //header('Date: ' . gmdate('r'));
-                exit;
             }
         }
 
