@@ -498,7 +498,7 @@ class Gmanager extends Config
     /**
      * formatSize
      * 
-     * @param mixed $size
+     * @param int   $size
      * @param int   $int
      * @return string
      */
