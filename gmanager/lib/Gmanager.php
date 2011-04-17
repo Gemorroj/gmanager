@@ -2247,6 +2247,60 @@ class Gmanager extends Config
 
 
     /**
+     * getGzInfo
+     * 
+     * @param string $file
+     * @return array
+     */
+    public function getGzInfo ($file)
+    {
+        $fo = fopen($file, 'rb');
+        fseek($fo, -4, SEEK_END);
+        $length = end(@unpack('V', fread($fo, 4)));
+
+        rewind($fo);
+        $name = '';
+        $i = 0;
+        $null = chr(0);
+        while (($tmp = fread($fo, 1)) !== '') {
+            if ($tmp == $null) {
+                $i++;
+            } else if ($i == 2) {
+                $name .= $tmp;
+            }
+            if ($i > 2) {
+                break;
+            }
+        }
+
+        if ($name == '') {
+            $name = basename($file, '.gz');
+        }
+        fclose($fo);
+
+
+        return array('name' => IOWrapper::get($name), 'length' => $length);
+    }
+
+
+    /**
+     * getGzContent
+     * 
+     * @param string $file
+     * @return string
+     */
+    public function getGzContent ($file)
+    {
+        ob_start();
+        readgzfile($file);
+        $data = ob_get_contents();
+        ob_end_clean();
+
+        return $data;
+    }
+
+
+    /**
      * gz
      * 
      * @param string $c
@@ -2256,24 +2310,15 @@ class Gmanager extends Config
     {
         $data = Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c);
 
-        $fo = fopen($data, 'rb');
-        fseek($fo, -4, SEEK_END);
-        $len = end(@unpack('V', fread($fo, 4)));
-        fseek($fo, 10, SEEK_SET);
-        $gz = strtok(fread($fo, 1024), chr(0));
-        if ($gz == '') {
-            $gz = basename($c, '.gz');
-        }
-        fclose($fo);
-
-        $ext = implode('', gzfile($data));
+        $info = $this->getGzInfo($data);
+        $ext = $this->getGzContent($data);
 
         if (Config::$mode == 'FTP') {
             $this->ftpArchiveEnd();
         }
 
         if ($ext) {
-            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($gz, ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . $this->formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($len) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $this->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
+            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . $this->formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $this->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
         } else {
             return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
         }
@@ -2295,21 +2340,15 @@ class Gmanager extends Config
 
         $tmp = (Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c));
 
-        $fo = fopen($tmp, 'rb');
-        fseek($fo, 10, SEEK_SET);
-        $gz = IOWrapper::get(strtok(fread($fo, 1024), chr(0)));
-        if ($gz == '') {
-            $gz = IOWrapper::get(basename($c, '.gz'));
-        }
-        fclose($fo);
+        $info = $this->getGzInfo($tmp);
 
         $data = null;
-        if ($overwrite || !$this->file_exists($name . '/' . $gz)) {
-            if (!$this->file_put_contents($name . '/' . $gz, implode('', gzfile($tmp)))) {
+        if ($overwrite || !$this->file_exists($name . '/' . $info['name'])) {
+            if (!$this->file_put_contents($name . '/' . $info['name'], $this->getGzContent($tmp))) {
                 $data = Errors::message(Language::get('extract_file_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
             }
         } else {
-            $data = Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name . '/' . $gz, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
+            $data = Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name . '/' . $info['name'], ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
         if (Config::$mode == 'FTP') {
@@ -2319,9 +2358,9 @@ class Gmanager extends Config
             return $data;
         }
 
-        if ($this->is_file($name . '/' . $gz)) {
+        if ($this->is_file($name . '/' . $info['name'])) {
             if ($chmod[0]) {
-                $this->rechmod($name, $chmod[0]);
+                $this->rechmod($name . '/' . $info['name'], $chmod[0]);
             }
             return Errors::message(Language::get('extract_file_true'), Errors::MESSAGE_OK);
         } else {
@@ -2685,25 +2724,6 @@ class Gmanager extends Config
             }
 
             return $this->editZipFileOk($current, $f, str_replace($from, $to, $c));
-        }
-    }
-
-
-    /**
-     * gzdecode
-     * 
-     * @param string $data
-     * @return string
-     */
-    public function gzdecode ($data)
-    {
-        if (function_exists('gzdecode')) {
-            return gzdecode($data);
-        } else {
-            file_put_contents(Config::$temp . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp', $data);
-            $gz = implode('', gzfile(Config::$temp . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp'));
-            unlink(Config::$temp . '/GmanagerArchiveSearch' . $_SERVER['REQUEST_TIME'] . '.tmp');
-            return $gz;
         }
     }
 
@@ -3093,15 +3113,15 @@ class Gmanager extends Config
      */
     public function isArchive ($type)
     {
-        if ($type == 'ZIP' || $type == 'JAR' || $type == 'AAR' || $type == 'WAR') {
+        if ($type === 'ZIP' || $type === 'JAR' || $type === 'AAR' || $type === 'WAR') {
             return 'ZIP';
-        } else if ($type == 'TAR' || $type == 'TGZ' || $type == 'TGZ2' || $type == 'TAR.GZ' || $type == 'TAR.GZ2') {
+        } else if ($type === 'TAR' || $type === 'TGZ' || $type === 'TGZ2' || $type === 'TAR.GZ' || $type === 'TAR.GZ2') {
             return 'TAR';
-        } else if ($type == 'GZ' || $type == 'GZ2') {
+        } else if ($type === 'GZ' || $type === 'GZ2') {
             return 'GZ';
-        } else if (($type == 'TBZ' || $type == 'TBZ2' || $type == 'TAR.BZ' || $type == 'TAR.BZ2' || $type == 'BZ' || $type == 'BZ2') && extension_loaded('rar')) {
+        } else if (($type === 'TBZ' || $type === 'TBZ2' || $type === 'TAR.BZ' || $type === 'TAR.BZ2' || $type === 'BZ' || $type === 'BZ2') && extension_loaded('rar')) {
             return 'BZ2';
-        } else if ($type == 'RAR' && extension_loaded('rar')) {
+        } else if ($type === 'RAR' && extension_loaded('rar')) {
             return 'RAR';
         }
 

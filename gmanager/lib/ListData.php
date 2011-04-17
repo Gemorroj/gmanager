@@ -297,17 +297,12 @@ class ListData
                     continue;
                 }
 
-                $fl = $Gmanager->file_get_contents($c . $f);
                 if ($type == 'GZ') {
-                    $gz = null;
-                    if (!$gz = @gzinflate($fl)) {
-                        if (!$gz = @gzuncompress($fl)) {
-                            // Fix for PHP < 6.0
-                            $gz = $Gmanager->gzdecode($fl);
-                        }
-                    }
-                    $fl = & $gz;
+                    $fl = $Gmanager->getGzContent($c . $f);
+                } else {
+                    $fl = $Gmanager->file_get_contents($c . $f);
                 }
+
                 // Fix for PHP < 6.0
                 if (!$r && !$h) {
                     if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {

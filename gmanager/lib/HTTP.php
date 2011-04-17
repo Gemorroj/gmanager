@@ -35,7 +35,7 @@ class HTTP
     {
         if (!is_int($chmod)) {
             $strlen = strlen($chmod);
-            
+
             if (($strlen != 3 && $strlen != 4) || !is_numeric($chmod)) {
                 return false;
             } else if ($strlen == 3) {
