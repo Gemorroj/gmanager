@@ -45,7 +45,7 @@ class SQL_PDO_MySQL
         try {
             $this->_resource = new PDO('mysql:' . ($db ? 'dbname=' . $db . ';' : '') . 'host=' . $host, $name, $pass, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $charset));
         } catch (Exception $e) {
-            return Errors::message(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Errors::MESSAGE_FAIL);
+            return Errors::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Errors::MESSAGE_FAIL);
         }
 
         return $this->_resource;
@@ -101,13 +101,13 @@ class SQL_PDO_MySQL
              . 'if (!$_POST) {' . "\n"
              . '    echo \'<form action="\' . $_SERVER[\'PHP_SELF\'] . \'" method="post">' . "\n"
              . '    <div>' . "\n"
-             . '    ' . Language::get('mysql_user') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_user') . '<br/>' . "\n"
              . '    <input type="text" name="name" value="' . htmlspecialchars($name) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_pass') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_pass') . '<br/>' . "\n"
              . '    <input type="text" name="pass" value="' . htmlspecialchars($pass) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_host') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_host') . '<br/>' . "\n"
              . '    <input type="text" name="host" value="' . htmlspecialchars($host) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_db') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_db') . '<br/>' . "\n"
              . '    <input type="text" name="db" value="' . htmlspecialchars($db) . '"/><br/>' . "\n"
              . '    <input type="submit" value="' . Language::get('install') . '"/>' . "\n"
              . '    </div>' . "\n"
@@ -207,9 +207,9 @@ class SQL_PDO_MySQL
             }
 
             if ($false) {
-                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', Errors::MESSAGE_FAIL);
+                return Errors::message(Language::get('sql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
+                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
@@ -258,7 +258,7 @@ class SQL_PDO_MySQL
 
             if (!$r) {
                 $tmp = $this->_resource->errorInfo();
-                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
+                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
                 if (is_object($r)) {
                     while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
@@ -286,7 +286,7 @@ class SQL_PDO_MySQL
             }
         }
 
-        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

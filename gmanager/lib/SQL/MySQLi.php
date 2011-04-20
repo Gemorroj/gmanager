@@ -44,7 +44,7 @@ class SQL_MySQLi
     {
         $this->_resource = new mysqli($host, $name, $pass, $db);
         if (!$this->_resource || $this->_resource->connect_error) {
-            return Errors::message(Language::get('mysql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), Errors::MESSAGE_FAIL);
+            return Errors::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), Errors::MESSAGE_FAIL);
         }
         if ($charset) {
             $this->_resource->set_charset($charset);
@@ -103,13 +103,13 @@ class SQL_MySQLi
              . 'if (!$_POST) {' . "\n"
              . '    echo \'<form action="\' . $_SERVER[\'PHP_SELF\'] . \'" method="post">' . "\n"
              . '    <div>' . "\n"
-             . '    ' . Language::get('mysql_user') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_user') . '<br/>' . "\n"
              . '    <input type="text" name="name" value="' . htmlspecialchars($name) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_pass') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_pass') . '<br/>' . "\n"
              . '    <input type="text" name="pass" value="' . htmlspecialchars($pass) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_host') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_host') . '<br/>' . "\n"
              . '    <input type="text" name="host" value="' . htmlspecialchars($host) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_db') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_db') . '<br/>' . "\n"
              . '    <input type="text" name="db" value="' . htmlspecialchars($db) . '"/><br/>' . "\n"
              . '    <input type="submit" value="' . Language::get('install') . '"/>' . "\n"
              . '    </div>' . "\n"
@@ -208,9 +208,9 @@ class SQL_MySQLi
             }
 
             if ($false) {
-                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
+                return Errors::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
+                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
@@ -258,7 +258,7 @@ class SQL_MySQLi
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . $this->_resource->error . '</code></div>';
+                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . $this->_resource->error . '</code></div>';
             } else {
                 if (is_object($r) && $row = $r->num_rows) {
                     $rows += $row;
@@ -287,7 +287,7 @@ class SQL_MySQLi
         }
 
         $this->_resource->close();
-        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

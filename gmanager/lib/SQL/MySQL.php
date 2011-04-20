@@ -43,7 +43,7 @@ class SQL_MySQL
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
         if (!$this->_resource = mysql_connect($host, $name, $pass)) {
-            return Errors::message(Language::get('mysql_connect_false'), Errors::MESSAGE_FAIL);
+            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         }
         if ($charset) {
             mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
@@ -51,7 +51,7 @@ class SQL_MySQL
 
         if ($db) {
             if (!mysql_select_db($db, $this->_resource)) {
-                return Errors::message(Language::get('mysql_select_db_false'), Errors::MESSAGE_FAIL);
+                return Errors::message(Language::get('sql_select_db_false'), Errors::MESSAGE_FAIL);
             }
         }
 
@@ -108,13 +108,13 @@ class SQL_MySQL
              . 'if (!$_POST) {' . "\n"
              . '    echo \'<form action="\' . $_SERVER[\'PHP_SELF\'] . \'" method="post">' . "\n"
              . '    <div>' . "\n"
-             . '    ' . Language::get('mysql_user') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_user') . '<br/>' . "\n"
              . '    <input type="text" name="name" value="' . htmlspecialchars($name) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_pass') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_pass') . '<br/>' . "\n"
              . '    <input type="text" name="pass" value="' . htmlspecialchars($pass) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_host') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_host') . '<br/>' . "\n"
              . '    <input type="text" name="host" value="' . htmlspecialchars($host) . '"/><br/>' . "\n"
-             . '    ' . Language::get('mysql_db') . '<br/>' . "\n"
+             . '    ' . Language::get('sql_db') . '<br/>' . "\n"
              . '    <input type="text" name="db" value="' . htmlspecialchars($db) . '"/><br/>' . "\n"
              . '    <input type="submit" value="' . Language::get('install') . '"/>' . "\n"
              . '    </div>' . "\n"
@@ -210,9 +210,9 @@ class SQL_MySQL
             }
 
             if ($false) {
-                return Errors::message(Language::get('mysql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
+                return Errors::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
             } else {
-                return Errors::message(Language::get('mysql_backup_true'), Errors::MESSAGE_OK);
+                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
             }
         } else {
             $q = mysql_query('SHOW TABLES;', $this->_resource);
@@ -260,7 +260,7 @@ class SQL_MySQL
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return Errors::message(Language::get('mysql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
+                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
             } else {
                 if (is_resource($r) && $row = mysql_num_rows($r)) {
                     $rows += $row;
@@ -289,7 +289,7 @@ class SQL_MySQL
         }
 
         mysql_close($this->_resource);
-        return Errors::message(Language::get('mysql_true') . $i . '<br/>' . Language::get('mysql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
     }
 }
 

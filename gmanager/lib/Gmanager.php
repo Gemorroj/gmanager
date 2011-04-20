@@ -2834,7 +2834,7 @@ class Gmanager extends Config
     {
         $SQL = SQL::main($this);
         if (!$SQL) {
-            return Errors::message(Language::get('mysql_connect_false'), Errors::MESSAGE_FAIL);
+            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         } else {
             return $SQL->installer($host, $name, $pass, $db, $charset, $sql);
         }
@@ -2856,7 +2856,7 @@ class Gmanager extends Config
     {
         $SQL = SQL::main($this);
         if (!$SQL) {
-            return Errors::message(Language::get('mysql_connect_false'), Errors::MESSAGE_FAIL);
+            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         } else {
             return $SQL->backup($host, $name, $pass, $db, $charset, $tables);
         }
@@ -2878,7 +2878,7 @@ class Gmanager extends Config
     {
         $SQL = SQL::main($this);
         if (!$SQL) {
-            return Errors::message(Language::get('mysql_connect_false'), Errors::MESSAGE_FAIL);
+            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         } else {
             return $SQL->query($host, $name, $pass, $db, $charset, $data);
         }
