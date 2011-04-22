@@ -493,10 +493,10 @@ switch ($_GET['go']) {
 
     case 'sql_tables_sqlite':
         if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
-            echo '<div class="input"><form action="change.php?go=sql_tables_sqlite&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=sql_tables_sqlite&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
             Config::$sqlDriver = 'sqlite';
-            echo $Gmanager->sqlQuery('', '', '', $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
+            echo $Gmanager->sqlQuery('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
         }
         break;
 

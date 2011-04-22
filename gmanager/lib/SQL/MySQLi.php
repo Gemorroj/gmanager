@@ -175,7 +175,7 @@ class SQL_MySQLi
                         $tmp = $q->fetch_row();
                         $true .= $tmp[1] . ";\n\n";
                     } else {
-                        $false .=  $this->_resource->error . "\n";
+                        $false .= $this->_resource->error . "\n";
                     }
                 }
             }

@@ -2832,12 +2832,11 @@ class Gmanager extends Config
      */
     public function sqlInstaller ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
     {
-        $SQL = SQL::main($this);
+        $SQL = SQL::main($this, true);
         if (!$SQL) {
-            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
-        } else {
-            return $SQL->installer($host, $name, $pass, $db, $charset, $sql);
+            return '';
         }
+        return $SQL->installer($host, $name, $pass, $db, $charset, $sql);
     }
 
 

@@ -19,33 +19,34 @@ class SQL
      * main
      * 
      * @param  object $data
+     * @param  bool $force
      * @return mixed (object or bool)
      */
-    public static function main (Gmanager $data)
+    public static function main (Gmanager $data, $force = false)
     {
         switch (Config::$sqlDriver) {
             case 'mysql':
-                if (extension_loaded('pdo_mysql')) {
+                if ($force || extension_loaded('pdo_mysql')) {
                     return new SQL_PDO_MySQL($data);
-                } else if (extension_loaded('mysqli')) {
+                } else if ($force || extension_loaded('mysqli')) {
                     return new SQL_MySQLi($data);
-                } else if (extension_loaded('mysql')) {
+                } else if ($force || extension_loaded('mysql')) {
                     return new SQL_MySQL($data);
                 }
                 break;
 
 
             case 'postgresql':
-                if (extension_loaded('pdo_pgsql')) {
+                if ($force || extension_loaded('pdo_pgsql')) {
                     return new SQL_PDO_PostgreSQL($data);
-                } else if (extension_loaded('pgsql')) {
+                } else if ($force || extension_loaded('pgsql')) {
                     return new SQL_PostgreSQL($data);
                 }
                 break;
 
 
             case 'sqlite':
-                if (extension_loaded('pdo_sqlite')) {
+                if ($force || extension_loaded('pdo_sqlite')) {
                     return new SQL_PDO_SQLite($data);
                 }
                 break;
