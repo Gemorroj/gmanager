@@ -213,6 +213,7 @@ return array(
     'hex'                           =>  'HEX',
     'empty_search'                  =>  'По Вашему запросу ничего не найдено',
     'empty'                         =>  'Пусто',
+    'select_database'               =>  'Выберите СУБД',
 );
 
 ?>

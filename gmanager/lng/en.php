@@ -213,6 +213,7 @@ return array(
     'hex'                           =>  'HEX',
     'empty_search'                  =>  'Your search did not precise',
     'empty'                         =>  'Empty',
+    'select_database'               =>  'Select Database',
 );
 
 ?>

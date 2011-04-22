@@ -467,26 +467,98 @@ switch ($_GET['go']) {
 
 
     case 'sql_tables':
+        echo '<div class="input">&#187; ' . Language::get('select_database') . '<br/><div class="red"><ul><li><a href="change.php?go=sql_tables_mysql&amp;c=' . Config::$rCurrent . '">MySQL</a></li><li><a href="change.php?go=sql_tables_postgresql&amp;c=' . Config::$rCurrent . '">PostgreSQL</a></li><li><a href="change.php?go=sql_tables_sqlite&amp;c=' . Config::$rCurrent . '">SQLite</a></li></ul></div></div>';
+        break;
+
+
+    case 'sql_tables_mysql':
         if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
-            echo '<div class="input"><form action="change.php?go=sql_tables&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=sql_tables_mysql&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
+            Config::$sqlDriver = 'mysql';
             echo $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
         }
         break;
 
 
+    case 'sql_tables_postgresql':
+        if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+            echo '<div class="input"><form action="change.php?go=sql_tables_postgresql&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
+        } else {
+            Config::$sqlDriver = 'postgresql';
+            echo $Gmanager->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
+        }
+        break;
+
+
+    case 'sql_tables_sqlite':
+        if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+            echo '<div class="input"><form action="change.php?go=sql_tables_sqlite&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
+        } else {
+            Config::$sqlDriver = 'sqlite';
+            echo $Gmanager->sqlQuery('', '', '', $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']));
+        }
+        break;
+
+
     case 'sql_installer':
+        echo '<div class="input">&#187; ' . Language::get('select_database') . '<br/><div class="red"><ul><li><a href="change.php?go=sql_installer_mysql&amp;c=' . Config::$rCurrent . '">MySQL</a></li><li><a href="change.php?go=sql_installer_postgresql&amp;c=' . Config::$rCurrent . '">PostgreSQL</a></li><li><a href="change.php?go=sql_installer_sqlite&amp;c=' . Config::$rCurrent . '">SQLite</a></li></ul></div></div>';
+        break;
+
+
+    case 'sql_installer_mysql':
         if (substr(Config::$hCurrent, -1) != '/') {
-            $d = str_replace('\\', '/', htmlspecialchars(dirname(Config::$current) . '/', ENT_COMPAT));
+            $d = str_replace('\\', '/', dirname(Config::$hCurrent) . '/');
         } else {
             $d = Config::$hCurrent;
         }
 
         if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
-            echo '<div class="input"><form action="change.php?go=sql_installer&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=sql_installer_mysql&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
         } else {
-            if ($sql = $Gmanager->sqlInstaller(trim($_POST['host']), trim($_POST['name']), trim($_POST['pass']), trim($_POST['db']), trim($_POST['charset']), !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']))) {
-                echo $Gmanager->createFile(trim($_POST['file']), $sql, $_POST['chmod']);
+            Config::$sqlDriver = 'mysql';
+            if ($sql = $Gmanager->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']))) {
+                echo $Gmanager->createFile($_POST['file'], $sql, $_POST['chmod']);
+            } else {
+                echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
+            }
+        }
+        break;
+
+
+    case 'sql_installer_postgresql':
+        if (substr(Config::$hCurrent, -1) != '/') {
+            $d = str_replace('\\', '/', dirname(Config::$hCurrent) . '/');
+        } else {
+            $d = Config::$hCurrent;
+        }
+
+        if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+            echo '<div class="input"><form action="change.php?go=sql_installer_postgresql&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
+        } else {
+            Config::$sqlDriver = 'postgresql';
+            if ($sql = $Gmanager->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']))) {
+                echo $Gmanager->createFile($_POST['file'], $sql, $_POST['chmod']);
+            } else {
+                echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
+            }
+        }
+        break;
+
+
+    case 'sql_installer_sqlite':
+        if (substr(Config::$hCurrent, -1) != '/') {
+            $d = str_replace('\\', '/', dirname(Config::$hCurrent) . '/');
+        } else {
+            $d = Config::$hCurrent;
+        }
+
+        if (!(isset($_POST['tables']) && $Gmanager->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+            echo '<div class="input"><form action="change.php?go=sql_installer_sqlite&amp;c=' . Config::$rCurrent . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Config::$hCurrent . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
+        } else {
+            Config::$sqlDriver = 'sqlite';
+            if ($sql = $Gmanager->sqlInstaller('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : $Gmanager->file_get_contents($_POST['tables']))) {
+                echo $Gmanager->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
                 echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
             }

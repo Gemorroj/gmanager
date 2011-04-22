@@ -51,11 +51,15 @@ class SQL_PDO_SQLite
     /**
      * Installer
      * 
+     * @param string $host (not used)
+     * @param string $name (not used)
+     * @param string $pass (not used)
      * @param string $db
+     * @param string $charset (not used)
      * @param string $sql
      * @return string
      */
-    public function installer ($db = '', $sql = '')
+    public function installer ($host = null, $name = null, $pass = null, $db = '', $charset = null, $sql = '')
     {
         if (!$sql || !$query = SQL::parser($sql)) {
             return '';
@@ -133,14 +137,14 @@ class SQL_PDO_SQLite
      * Backup
      * 
      * @param string $host (not used)
-     * @param string $name
-     * @param string $pass
+     * @param string $name (not used)
+     * @param string $pass (not used)
      * @param string $db
-     * @param string $charset
+     * @param string $charset (not used)
      * @param array  $tables
      * @return mixed
      */
-    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
+    function backup ($host = null, $name = null, $pass = null, $db = '', $charset = null, $tables = array())
     {
         $connect = $this->_connect($db);
         if (is_object($connect)) {
@@ -218,14 +222,14 @@ class SQL_PDO_SQLite
      * Query
      * 
      * @param string $host (not used)
-     * @param string $name
-     * @param string $pass
+     * @param string $name (not used)
+     * @param string $pass (not used)
      * @param string $db
-     * @param string $charset
+     * @param string $charset (not used)
      * @param string $data
      * @return string
      */
-    function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
+    function query ($host = null, $name = null, $pass = null, $db = '', $charset = null, $data = '')
     {
         $connect = $this->_connect($db);
         if (is_object($connect)) {
