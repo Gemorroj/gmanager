@@ -264,7 +264,7 @@ class HTTP extends Gmanager
      */
     public function filetype ($str)
     {
-        return filetype($str);
+        return filetype(IOWrapper::set($str));
     }
 
 

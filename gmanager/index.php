@@ -89,36 +89,40 @@ if (!$if) {
 }
 
 if ($archive == 'ZIP') {
+    Registry::set('archiveDriver', 'zip');
     if ($if) {
-        echo Registry::getGmanager()->lookZipFile(Registry::get('current'), $_GET['f']);
+        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
     } else {
-        echo Registry::getGmanager()->listZipArchive(Registry::get('current'), $idown);
+        echo Archive::main()->listArchive(Registry::get('current'), $idown);
         $f = 1;
     }
 } else if ($archive == 'TAR') {
+    Registry::set('archiveDriver', 'tar');
     if ($if) {
-        echo Registry::getGmanager()->lookTarFile(Registry::get('current'), $_GET['f']);
+        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
     } else {
-        echo Registry::getGmanager()->listTarArchive(Registry::get('current'), $idown);
+        echo Archive::main()->listArchive(Registry::get('current'), $idown);
+        $f = 1;
+    }
+} else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+    Registry::set('archiveDriver', 'tar');
+    if ($if) {
+        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
+    } else {
+        echo Archive::main()->listArchive(Registry::get('current'), $idown);
+        $f = 1;
+    }
+} else if ($archive == 'RAR' && extension_loaded('rar')) {
+    Registry::set('archiveDriver', 'rar');
+    if ($if) {
+        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
+    } else {
+        echo Archive::main()->listArchive(Registry::get('current'), $idown);
         $f = 1;
     }
 } else if ($archive == 'GZ') {
     echo Registry::getGmanager()->gz(Registry::get('current')) . '<div class="ch"><form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . Language::get('extract_archive') . '"/></div></form></div>';
     $if = true;
-} else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-    if ($if) {
-        echo Registry::getGmanager()->lookTarFile(Registry::get('current'), $_GET['f']);
-    } else {
-        echo Registry::getGmanager()->listTarArchive(Registry::get('current'), $idown);
-        $f = 1;
-    }
-} else if ($archive == 'RAR' && extension_loaded('rar')) {
-    if ($if) {
-        echo Registry::getGmanager()->lookRarFile(Registry::get('current'), $_GET['f']);
-    } else {
-        echo Registry::getGmanager()->listRarArchive(Registry::get('current'), $idown);
-        $f = 1;
-    }
 } else {
     echo Registry::getGmanager()->look(Registry::get('current'), $itype, $idown);
 }

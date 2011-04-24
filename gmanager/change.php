@@ -22,7 +22,22 @@ $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 
 if (isset($_GET['get']) && Registry::getGmanager()->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
-        $f = Registry::getGmanager()->getArchiveFile($_GET['get'], $_GET['f']);
+        $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(basename($_GET['get'])));
+        if ($archive == 'ZIP') {
+            Registry::set('archiveDriver', 'zip');
+            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+        } else if ($archive == 'TAR') {
+            Registry::set('archiveDriver', 'tar');
+            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+        } else if ($archive == 'BZ2') {
+            Registry::set('archiveDriver', 'tar');
+            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+        } else if ($archive == 'RAR') {
+            Registry::set('archiveDriver', 'rar');
+            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+        } else {
+            $f = '';
+        }
         $name = basename($_GET['f']);
     } else {
         $f = Registry::getGmanager()->file_get_contents($_GET['get']);
@@ -106,15 +121,19 @@ switch ($_GET['go']) {
                 $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(basename(Registry::get('hCurrent'))));
 
                 if ($archive == 'ZIP') {
-                    echo Registry::getGmanager()->extractZipArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    Registry::set('archiveDriver', 'zip');
+                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    echo Registry::getGmanager()->extractTarArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    Registry::set('archiveDriver', 'tar');
+                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+                    Registry::set('archiveDriver', 'tar');
+                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                } else if ($archive == 'RAR' && extension_loaded('rar')) {
+                    Registry::set('archiveDriver', 'rar');
+                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'GZ') {
                     echo Registry::getGmanager()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    echo Registry::getGmanager()->extractTarArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    echo Registry::getGmanager()->extractRarArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['full_extract'])) {
@@ -130,13 +149,17 @@ switch ($_GET['go']) {
                 $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(basename(Registry::get('hCurrent'))));
 
                 if ($archive == 'ZIP') {
-                    echo Registry::getGmanager()->extractZipFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveDriver', 'zip');
+                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    echo Registry::getGmanager()->extractTarFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveDriver', 'tar');
+                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    echo Registry::getGmanager()->extractTarFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveDriver', 'tar');
+                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    echo Registry::getGmanager()->extractRarFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveDriver', 'rar');
+                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['gz_extract'])) {
@@ -153,8 +176,9 @@ switch ($_GET['go']) {
                 }
                 echo '<input type="submit" value="' . Language::get('create_archive') . '"/></div></form></div>';
             } else {
+                Registry::set('archiveDriver', 'zip');
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
-                echo Registry::getGmanager()->createZipArchive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
+                echo Archive::main()->createArchive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['add_archive'])) {
             if (isset($_POST['dir'])) {
@@ -165,11 +189,14 @@ switch ($_GET['go']) {
                 $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(basename($_POST['add_archive'])));
 
                 if ($archive == 'ZIP') {
-                    echo Registry::getGmanager()->addZipArchive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                    Registry::set('archiveDriver', 'zip');
+                    echo Archive::main()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 } else if ($archive == 'TAR') {
-                    echo Registry::getGmanager()->addTarArchive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                    Registry::set('archiveDriver', 'tar');
+                    echo Archive::main()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    echo Registry::getGmanager()->addTarArchive($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                    Registry::set('archiveDriver', 'tar');
+                    echo Archive::main()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             } else {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('add_archive_dir') . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
@@ -196,16 +223,19 @@ switch ($_GET['go']) {
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
                 if ($archive == 'ZIP') {
+                    Registry::set('archiveDriver', 'zip');
                     foreach ($_POST['check'] as $ch) {
-                        echo Registry::getGmanager()->delZipArchive(Registry::get('current'), $ch);
+                        echo Archive::main()->delFile(Registry::get('current'), $ch);
                     }
                 } else if ($archive == 'TAR') {
+                    Registry::set('archiveDriver', 'tar');
                     foreach ($_POST['check'] as $ch) {
-                        echo Registry::getGmanager()->delTarArchive(Registry::get('current'), $ch);
+                        echo Archive::main()->delFile(Registry::get('current'), $ch);
                     }
                 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+                    Registry::set('archiveDriver', 'tar');
                     foreach ($_POST['check'] as $ch) {
-                        echo Registry::getGmanager()->delTarArchive(Registry::get('current'), $ch);
+                        Archive::main()->delFile(Registry::get('current'), $ch);
                     }
                 }
         }
@@ -264,11 +294,14 @@ switch ($_GET['go']) {
             $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Registry::get('current')));
             $if = isset($_GET['f']);
             if ($if && $archive == 'ZIP') {
-                echo Registry::getGmanager()->renameZipFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                Registry::set('archiveDriver', 'zip');
+                echo Archive::main()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'TAR') {
-                echo Registry::getGmanager()->renameTarFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                Registry::set('archiveDriver', 'tar');
+                echo Registry::getGmanager()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'BZ2' && extension_loaded('bz2')) {
-                echo Registry::getGmanager()->renameTarFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                Registry::set('archiveDriver', 'tar');
+                echo Registry::getGmanager()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else {
                 echo Registry::getGmanager()->frename(Registry::get('current'), $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 if (isset($_POST['chmod']) && $_POST['chmod']) {
@@ -282,12 +315,14 @@ switch ($_GET['go']) {
 
 
     case 'del_zip_archive':
-        echo Registry::getGmanager()->delZipArchive($_GET['c'], $_GET['f']);
+        Registry::set('archiveDriver', 'zip');
+        echo Archive::main()->delFile($_GET['c'], $_GET['f']);
         break;
 
 
     case 'del_tar_archive':
-        echo Registry::getGmanager()->delTarArchive($_GET['c'], $_GET['f']);
+        Registry::set('archiveDriver', 'tar');
+        echo Archive::main()->delFile($_GET['c'], $_GET['f']);
         break;
 
 

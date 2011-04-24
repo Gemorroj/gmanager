@@ -59,7 +59,8 @@ switch ($_GET['go']) {
         if (Registry::get('lineEditor')) {
             $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
             if ($archive == 'ZIP') {
-                $tmp = explode("\n", Registry::getGmanager()->lookZipFile(Registry::get('current'), $_GET['f'], true));
+                Registry::set('archiveDriver', 'zip');
+                $tmp = explode("\n", Archive::main()->lookFile(Registry::get('current'), $_GET['f'], true));
             } else {
                 $tmp = explode("\n", Registry::getGmanager()->file_get_contents(Registry::get('current')));
             }
@@ -83,7 +84,8 @@ switch ($_GET['go']) {
         }
 
         if ($archive == 'ZIP') {
-            echo Registry::getGmanager()->editZipFileOk(Registry::get('current'), $_GET['f'], $_POST['text']);
+            Registry::set('archiveDriver', 'zip');
+            echo Archive::main()->setEditFile(Registry::get('current'), $_GET['f'], $_POST['text']);
         } else {
             echo Registry::getGmanager()->createFile(Registry::get('current'), $_POST['text'], $_POST['chmod']);
         }
@@ -128,7 +130,8 @@ switch ($_GET['go']) {
         }
 
         if ($archive == 'ZIP') {
-            $content = Registry::getGmanager()->editZipFile(Registry::get('current'), $_GET['f']);
+            Registry::set('', 'zip');
+            $content = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
