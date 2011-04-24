@@ -1,33 +1,21 @@
 <?php
 /**
  * 
- * This software is distributed under the GNU LGPL v3.0 license.
+ * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2010 http://wapinet.ru
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @copyright 2008-2011 http://wapinet.ru
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.4 beta
+ * @version 0.8 beta
  * 
  * PHP version >= 5.2.1
  * 
  */
 
 
-class SQL_PDO_PostgreSQL
+class SQL_PDO_PostgreSQL implements SQL_Interface
 {
     private $_resource;
-    private $_Gmanager;
-
-
-    /**
-     * Constructor
-     * 
-     * @param object $data
-     */
-    public function __construct (Gmanager $data)
-    {
-        $this->_Gmanager = $data;
-    }
 
 
     /**
@@ -72,7 +60,7 @@ class SQL_PDO_PostgreSQL
 
         $out = '<?php' . "\n"
              . '// PDO PostgreSQL Installer' . "\n"
-             . '// Created in Gmanager ' . Config::$version . "\n"
+             . '// Created in Gmanager ' . Config::getVersion() . "\n"
              . '// http://wapinet.ru/gmanager/' . "\n\n"
 
              . 'error_reporting(0);' . "\n\n"
@@ -156,7 +144,7 @@ class SQL_PDO_PostgreSQL
      * @param array  $tables
      * @return mixed
      */
-    function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
+    public function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
         if (is_object($connect)) {
@@ -202,8 +190,8 @@ class SQL_PDO_PostgreSQL
             }
 
             if ($true) {
-                $this->_Gmanager->mkdir(dirname($tables['file']));
-                if (!$this->_Gmanager->file_put_contents($tables['file'], $true)) {
+                Registry::getGmanager()->mkdir(dirname($tables['file']));
+                if (!Registry::getGmanager()->file_put_contents($tables['file'], $true)) {
                     $false .= Errors::get() . "\n";
                 }
             }
@@ -238,7 +226,7 @@ class SQL_PDO_PostgreSQL
      * @param string $data
      * @return string
      */
-    function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
+    public function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
         if (is_object($connect)) {

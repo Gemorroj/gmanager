@@ -1,12 +1,12 @@
 <?php
 /**
  * 
- * This software is distributed under the GNU LGPL v3.0 license.
+ * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2010 http://wapinet.ru
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @copyright 2008-2011 http://wapinet.ru
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.4 beta
+ * @version 0.8 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -25,20 +25,19 @@ class ListData
     /**
      * getListArray
      * 
-     * @param object $Gmanager
      * @param string $current
      * @param string $itype
      * @param string $down
      * @param string $addArchive
      * @return array
      */
-    private static function _getListArray (Gmanager $Gmanager, $current = '', $itype = '', $down = '', $addArchive = '')
+    private static function _getListArray ($current = '', $itype = '', $down = '', $addArchive = '')
     {
         $type   = $isize = $uid = $gid = $chmod = $name = $time = '';
         $page   = $page0 = $page1 = $page2 = array();
         $i      = 0;
 
-        $t      = (Config::$target ? ' target="_blank"' : '');
+        $t      = (Config::get('Editor', 'target') ? ' target="_blank"' : '');
         $add    = ($addArchive ? '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($addArchive)) : '');
 
 
@@ -59,7 +58,7 @@ class ListData
         }
 
 
-        foreach ($Gmanager->iterator($current) as $file) {
+        foreach (Registry::getGmanager()->iterator($current) as $file) {
             $i++;
             $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $uid = $pgid = $gid = $name = $size = $isize = $chmod = '';
 
@@ -75,115 +74,115 @@ class ListData
 
             $basename = basename($file);
             $r_file = str_replace('%2F', '/', rawurlencode($file));
-            $stat = $Gmanager->stat($file);
+            $stat = Registry::getGmanager()->stat($file);
             $time = $stat['mtime'];
             $uid  = $stat['owner'];
             $gid  = $stat['group'];
 
 
-            if ($Gmanager->is_link($file)) {
+            if (Registry::getGmanager()->is_link($file)) {
                 $type = 'LINK';
-                $tmp = $Gmanager->readlink($file);
+                $tmp = Registry::getGmanager()->readlink($file);
                 $r_file = str_replace('%2F', '/', rawurlencode($tmp[1]));
 
-                if (Config::$index['name']) {
-                    $name = htmlspecialchars($Gmanager->strLink($tmp[0], true), ENT_NOQUOTES);
+                if (Config::get('Display', 'name')) {
+                    $name = htmlspecialchars(Registry::getGmanager()->strLink($tmp[0], true), ENT_NOQUOTES);
                     $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
                 }
-                if (Config::$index['down']) {
+                if (Config::get('Display', 'down')) {
                     $pdown = '<td> </td>';
                 }
-                if (Config::$index['type']) {
+                if (Config::get('Display', 'type')) {
                     $ptype = '<td>LINK</td>';
                 }
-                if (Config::$index['size']) {
+                if (Config::get('Display', 'size')) {
                     $isize = $stat['size'];
-                    $size = $Gmanager->formatSize($isize);
+                    $size = Registry::getGmanager()->formatSize($isize);
                     $psize = '<td>' . $size . '</td>';
                 }
-                if (Config::$index['change']) {
+                if (Config::get('Display', 'change')) {
                     $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
-                if (Config::$index['del']) {
+                if (Config::get('Display', 'del')) {
                     $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
-                if (Config::$index['chmod']) {
-                    $chmod = $Gmanager->lookChmod($file);
+                if (Config::get('Display', 'chmod')) {
+                    $chmod = Registry::getGmanager()->lookChmod($file);
                     $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
-                if (Config::$index['date']) {
-                    $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
+                if (Config::get('Display', 'date')) {
+                    $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
                 }
-                if (Config::$index['uid']) {
+                if (Config::get('Display', 'uid')) {
                     $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
                 }
-                if (Config::$index['gid']) {
+                if (Config::get('Display', 'gid')) {
                     $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
                 }
                 $page0[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid . $pgid;
-            } else if ($Gmanager->is_dir($file)) {
+            } else if (Registry::getGmanager()->is_dir($file)) {
                 $type = 'DIR';
-                if (Config::$index['name']) {
-                    if (Config::$realname == 1) {
-                        $realpath = $Gmanager->realpath($file);
+                if (Config::get('Display', 'name')) {
+                    if (Config::get('Gmanager', 'realName') == Config::REALNAME_FULL) {
+                        $realpath = Registry::getGmanager()->realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-                    } else if (Config::$realname == 2) {
+                    } else if (Config::get('Gmanager', 'realName') == Config::REALNAME_RELATIVE_HIDE) {
                         $name = $basename;
                     } else {
                         $name = $file;
                     }
-                    $name = htmlspecialchars($Gmanager->strLink($name, true), ENT_NOQUOTES);
+                    $name = htmlspecialchars(Registry::getGmanager()->strLink($name, true), ENT_NOQUOTES);
                     $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
                 }
-                if (Config::$index['down']) {
+                if (Config::get('Display', 'down')) {
                     $pdown = '<td> </td>';
                 }
-                if (Config::$index['type']) {
+                if (Config::get('Display', 'type')) {
                     $ptype = '<td>DIR</td>';
                 }
-                if (Config::$index['size']) {
-                    if (Config::$dir_size) {
-                        $isize = $Gmanager->size($file, true);
-                        $size = $Gmanager->formatSize($isize);
+                if (Config::get('Display', 'size')) {
+                    if (Config::get('Gmanager', 'dirSize')) {
+                        $isize = Registry::getGmanager()->size($file, true);
+                        $size = Registry::getGmanager()->formatSize($isize);
                     } else {
                         $isize = $size = Language::get('unknown');
                     }
                         $psize = '<td>' . $size . '</td>';
                 }
-                if (Config::$index['change']) {
+                if (Config::get('Display', 'change')) {
                     $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
-                if (Config::$index['del']) {
+                if (Config::get('Display', 'del')) {
                     $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
-                if (Config::$index['chmod']) {
-                    $chmod = $Gmanager->lookChmod($file);
+                if (Config::get('Display', 'chmod')) {
+                    $chmod = Registry::getGmanager()->lookChmod($file);
                     $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
-                if (Config::$index['date']) {
-                    $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
+                if (Config::get('Display', 'date')) {
+                    $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
                 }
-                if (Config::$index['uid']) {
+                if (Config::get('Display', 'uid')) {
                     $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
                 }
-                if (Config::$index['gid']) {
+                if (Config::get('Display', 'gid')) {
                     $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
                 }
                 $page1[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
             } else {
-                $type = htmlspecialchars($Gmanager->getType($basename), ENT_NOQUOTES);
-                $archive = $Gmanager->isArchive($type);
+                $type = htmlspecialchars(Registry::getGmanager()->getType($basename), ENT_NOQUOTES);
+                $archive = Registry::getGmanager()->isArchive($type);
 
-                if (Config::$index['name']) {
-                    if (Config::$realname == 1) {
-                        $realpath = $Gmanager->realpath($file);
+                if (Config::get('Display', 'name')) {
+                    if (Config::get('Gmanager', 'realName') == Config::REALNAME_FULL) {
+                        $realpath = Registry::getGmanager()->realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-                    } else if (Config::$realname == 2) {
+                    } else if (Config::get('Gmanager', 'realName') == Config::REALNAME_RELATIVE_HIDE) {
                         $name = $basename;
                     } else {
                         $name = $file;
                     }
-                    $name = htmlspecialchars($Gmanager->strLink($name, true), ENT_NOQUOTES);
+                    $name = htmlspecialchars(Registry::getGmanager()->strLink($name, true), ENT_NOQUOTES);
 
                     if ($archive) {
                         $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . Language::get('extract_archive') . '</a></td>';
@@ -195,34 +194,34 @@ class ListData
                         }
                     }
                 }
-                if (Config::$index['down']) {
+                if (Config::get('Display', 'down')) {
                     $pdown = '<td><a href="change.php?get=' . $r_file . '">' . Language::get('get') . '</a></td>';
                 }
-                if (Config::$index['type']) {
+                if (Config::get('Display', 'type')) {
                     $ptype = '<td>' . $type . '</td>';
                 }
-                if (Config::$index['size']) {
+                if (Config::get('Display', 'size')) {
                     $isize = $stat['size'];
-                    $size = $Gmanager->formatSize($stat['size']);
+                    $size = Registry::getGmanager()->formatSize($stat['size']);
                     $psize = '<td>' . $size . '</td>';
                 }
-                if (Config::$index['change']) {
+                if (Config::get('Display', 'change')) {
                     $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
                 }
-                if (Config::$index['del']) {
+                if (Config::get('Display', 'del')) {
                     $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
                 }
-                if (Config::$index['chmod']) {
-                    $chmod = $Gmanager->lookChmod($file);
+                if (Config::get('Display', 'chmod')) {
+                    $chmod = Registry::getGmanager()->lookChmod($file);
                     $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
-                if (Config::$index['date']) {
-                    $pdate = '<td>' . strftime(Config::$date_format, $time) . '</td>';
+                if (Config::get('Display', 'date')) {
+                    $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
                 }
-                if (Config::$index['uid']) {
+                if (Config::get('Display', 'uid')) {
                     $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
                 }
-                if (Config::$index['gid']) {
+                if (Config::get('Display', 'gid')) {
                     $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
                 }
                 $page2[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
@@ -260,7 +259,6 @@ class ListData
     /**
      * getListSearchArray
      * 
-     * @param object $Gmanager
      * @param string $c
      * @param string $s
      * @param bool   $w
@@ -271,24 +269,24 @@ class ListData
      * @param string $t
      * @return array
      */
-    private static function _getListSearchArray (Gmanager $Gmanager, $c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false, $t = '')
+    private static function _getListSearchArray ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false, $t = '')
     {
         static $count = 0;
         static $page  = array();
 
         $c = str_replace('//', '/', $c . '/');
 
-        foreach ($Gmanager->iterator($c) as $f) {
-            if ($Gmanager->is_dir($c . $f)) {
-                self::_getListSearchArray($Gmanager, $c . $f . '/', $s, $w, $r, false, $limit, $archive, $t);
+        foreach (Registry::getGmanager()->iterator($c) as $f) {
+            if (Registry::getGmanager()->is_dir($c . $f)) {
+                self::_getListSearchArray($c . $f . '/', $s, $w, $r, false, $limit, $archive, $t);
             }
 
             //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
             $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
-            $type = htmlspecialchars($Gmanager->getType(basename($f)), ENT_NOQUOTES);
-            $arch = $Gmanager->isArchive($type);
-            $stat = $Gmanager->stat($c . $f);
-            $name = htmlspecialchars($Gmanager->strLink($c . $f, true), ENT_NOQUOTES);
+            $type = htmlspecialchars(Registry::getGmanager()->getType(basename($f)), ENT_NOQUOTES);
+            $arch = Registry::getGmanager()->isArchive($type);
+            $stat = Registry::getGmanager()->stat($c . $f);
+            $name = htmlspecialchars(Registry::getGmanager()->strLink($c . $f, true), ENT_NOQUOTES);
 
             $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pgid = $pn = $in = null;
 
@@ -298,15 +296,15 @@ class ListData
                 }
 
                 if ($type == 'GZ') {
-                    $fl = $Gmanager->getGzContent($c . $f);
+                    $fl = Registry::getGmanager()->getGzContent($c . $f);
                 } else {
-                    $fl = $Gmanager->file_get_contents($c . $f);
+                    $fl = Registry::getGmanager()->file_get_contents($c . $f);
                 }
 
                 // Fix for PHP < 6.0
                 if (!$r && !$h) {
                     if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {
-                        $fl = strtolower(@iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $fl));
+                        $fl = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $fl));
                     } else {
                         $fl = strtolower($fl);
                     }
@@ -321,7 +319,7 @@ class ListData
                 } else {
                     // Fix for PHP < 6.0
                     if (@iconv('UTF-8', 'UTF-8', $f) == $f) {
-                        $fs = strtolower(@iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $f));
+                        $fs = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $f));
                     } else {
                         $fs = strtolower($f);
                     }
@@ -333,41 +331,41 @@ class ListData
 
             $count++;
 
-            if (Config::$index['name']) {
+            if (Config::get('Display', 'name')) {
                 if ($arch) {
                     $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
                 } else {
                     $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a>' . $in . '</td>';
                 }
             }
-            if (Config::$index['down']) {
+            if (Config::get('Display', 'down')) {
                 $pdown = '<td><a href="change.php?get=' . $r_file . '">' . Language::get('get') . '</a></td>';
             }
-            if (Config::$index['type']) {
+            if (Config::get('Display', 'type')) {
                 $ptype = '<td>' . $type . '</td>';
             }
-            if (Config::$index['size']) {
-                $psize = '<td>' . $Gmanager->formatSize($stat['size']) . '</td>';
+            if (Config::get('Display', 'size')) {
+                $psize = '<td>' . Registry::getGmanager()->formatSize($stat['size']) . '</td>';
             }
-            if (Config::$index['change']) {
+            if (Config::get('Display', 'change')) {
                 $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
             }
-            if (Config::$index['del']) {
+            if (Config::get('Display', 'del')) {
                 $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
             }
-            if (Config::$index['chmod']) {
-                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $Gmanager->lookChmod($c . $f) . '</a></td>';
+            if (Config::get('Display', 'chmod')) {
+                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . Registry::getGmanager()->lookChmod($c . $f) . '</a></td>';
             }
-            if (Config::$index['date']) {
-                $pdate = '<td>' . strftime(Config::$date_format, $stat['mtime']) . '</td>';
+            if (Config::get('Display', 'date')) {
+                $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $stat['mtime']) . '</td>';
             }
-            if (Config::$index['uid']) {
+            if (Config::get('Display', 'uid')) {
                 $puid = '<td>' . htmlspecialchars($stat['owner'], ENT_NOQUOTES) . '</td>';
             }
-            if (Config::$index['gid']) {
+            if (Config::get('Display', 'gid')) {
                 $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
             }
-            if (Config::$index['n']) {
+            if (Config::get('Display', 'n')) {
                 $pn = '<td>' . $count . '</td>';
             }
 
@@ -382,7 +380,6 @@ class ListData
     /**
      * getListData
      * 
-     * @param object $Gmanager
      * @param string $current
      * @param string $itype
      * @param string $down
@@ -390,20 +387,20 @@ class ListData
      * @param string $addArchive
      * @return string
      */
-    public static function getListData(Gmanager $Gmanager, $current = '', $itype = '', $down = '', $pg = 1, $addArchive = '')
+    public static function getListData($current = '', $itype = '', $down = '', $pg = 1, $addArchive = '')
     {
         $html = '';
-        $data = self::_getListArray($Gmanager, $current, $itype, $down, $addArchive);
+        $data = self::_getListArray($current, $itype, $down, $addArchive);
 
         if ($data) {
-            self::$getListCountPages = ceil(sizeof($data) / Config::$limit);
+            self::$getListCountPages = ceil(sizeof($data) / Registry::get('limit'));
             $pg   = $pg < 1 ? 1 : $pg;
-            $data = array_slice($data, ($pg * Config::$limit) - Config::$limit, Config::$limit);
+            $data = array_slice($data, ($pg * Registry::get('limit')) - Registry::get('limit'), Registry::get('limit'));
 
             $i    = 1;
             $line = false;
 
-            if (Config::$index['n']) {
+            if (Config::get('Display', 'n')) {
                 foreach ($data as $var) {
                     $line = !$line;
                     if ($line) {
@@ -431,7 +428,6 @@ class ListData
     /**
      * getListSearchData
      * 
-     * @param object $Gmanager
      * @param string $c
      * @param string $s
      * @param bool   $w
@@ -441,7 +437,7 @@ class ListData
      * @param bool   $archive
      * @return string
      */
-    public static function getListSearchData(Gmanager $Gmanager, $c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
+    public static function getListSearchData($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
     {
         $html = '';
 
@@ -449,10 +445,10 @@ class ListData
             $s = implode('', array_map('chr', str_split($s, 4)));
         } else if (!$r) {
             // Fix for PHP < 6.0
-            $s = strtolower(@iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $s));
+            $s = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $s));
         }
 
-        $data = self::_getListSearchArray($Gmanager, $c, $s, $w, $r, $h, $limit, $archive, (Config::$target ? ' target="_blank"' : ''));
+        $data = self::_getListSearchArray($c, $s, $w, $r, $h, $limit, $archive, (Config::get('Editor', 'target') ? ' target="_blank"' : ''));
 
         if ($data) {
             $line = false;
@@ -473,7 +469,7 @@ class ListData
      */
     public static function getListEmptyData ()
     {
-        return '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . Language::get('dir_empty') . '</th></tr>';
+        return '<tr class="border"><th colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('dir_empty') . '</th></tr>';
     }
 
 
@@ -484,7 +480,7 @@ class ListData
      */
     public static function getListEmptySearchData ()
     {
-        return '<tr class="border"><th colspan="' . (array_sum(Config::$index) + 1) . '">' . Language::get('empty_search') . '</th></tr>';
+        return '<tr class="border"><th colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('empty_search') . '</th></tr>';
     }
 
 
@@ -495,7 +491,7 @@ class ListData
      */
     public static function getListDenyData ()
     {
-        return '<tr><td class="red" colspan="' . (array_sum(Config::$index) + 1) . '">' . Language::get('permission_denided') . '</td></tr>';
+        return '<tr><td class="red" colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('permission_denided') . '</td></tr>';
     }
 }
 

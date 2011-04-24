@@ -1,12 +1,12 @@
 <?php
 /**
  * 
- * This software is distributed under the GNU LGPL v3.0 license.
+ * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2010 http://wapinet.ru
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @copyright 2008-2011 http://wapinet.ru
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.4 beta
+ * @version 0.8 beta
  * 
  * PHP version >= 5.2.1
  * 
@@ -18,36 +18,35 @@ class SQL
     /**
      * main
      * 
-     * @param  object $data
      * @param  bool $force
      * @return mixed (object or bool)
      */
-    public static function main (Gmanager $data, $force = false)
+    public static function main ($force = false)
     {
-        switch (Config::$sqlDriver) {
+        switch (Registry::get('sqlDriver')) {
             case 'mysql':
                 if ($force || extension_loaded('pdo_mysql')) {
-                    return new SQL_PDO_MySQL($data);
+                    return new SQL_PDO_MySQL;
                 } else if ($force || extension_loaded('mysqli')) {
-                    return new SQL_MySQLi($data);
+                    return new SQL_MySQLi;
                 } else if ($force || extension_loaded('mysql')) {
-                    return new SQL_MySQL($data);
+                    return new SQL_MySQL;
                 }
                 break;
 
 
             case 'postgresql':
                 if ($force || extension_loaded('pdo_pgsql')) {
-                    return new SQL_PDO_PostgreSQL($data);
+                    return new SQL_PDO_PostgreSQL;
                 } else if ($force || extension_loaded('pgsql')) {
-                    return new SQL_PostgreSQL($data);
+                    return new SQL_PostgreSQL;
                 }
                 break;
 
 
             case 'sqlite':
                 if ($force || extension_loaded('pdo_sqlite')) {
-                    return new SQL_PDO_SQLite($data);
+                    return new SQL_PDO_SQLite;
                 }
                 break;
         }

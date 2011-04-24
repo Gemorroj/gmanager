@@ -1,19 +1,19 @@
 <?php
 /**
  * 
- * This software is distributed under the GNU LGPL v3.0 license.
+ * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2010 http://wapinet.ru
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @copyright 2008-2011 http://wapinet.ru
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.4 beta
+ * @version 0.8 beta
  * 
  * PHP version >= 5.2.1
  * 
  */
 
 
-class HTTP
+class HTTP extends Gmanager
 {
     static private $_stat   = array();
     static private $_id     = array();
@@ -21,7 +21,7 @@ class HTTP
 
     public function __construct ()
     {
-        Config::$sysType = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
+        Registry::set('sysType', strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX');
     }
 
 
@@ -69,7 +69,7 @@ class HTTP
      */
     public function chmod ($file, $chmod = 0755)
     {
-        if (Config::$sysType == 'WIN') {
+        if (Registry::get('sysType') == 'WIN') {
             //trigger_error(Language::get('win_chmod'));
             return true;
         }
@@ -257,6 +257,18 @@ class HTTP
 
 
     /**
+     * filetype
+     * 
+     * @param string $str
+     * @return string
+     */
+    public function filetype ($str)
+    {
+        return filetype($str);
+    }
+
+
+    /**
      * readlink
      * 
      * @param string $link
@@ -264,7 +276,7 @@ class HTTP
      */
     public function readlink ($link)
     {
-        chdir(Config::$current);
+        chdir(Registry::get('current'));
         return array(basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
     }
 

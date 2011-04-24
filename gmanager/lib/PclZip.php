@@ -62,11 +62,9 @@
   //       Samples :
   // define( 'PCLZIP_TEMPORARY_DIR', '/temp/' );
   // define( 'PCLZIP_TEMPORARY_DIR', 'C:/Temp/' );
-  // if (!defined('PCLZIP_TEMPORARY_DIR')) {
-  //   define( 'PCLZIP_TEMPORARY_DIR', '' );
-  // }
-
-define('PCLZIP_TEMPORARY_DIR', Gmanager::$temp . '/');
+  if (!defined('PCLZIP_TEMPORARY_DIR')) {
+    define( 'PCLZIP_TEMPORARY_DIR', '' );
+  }
 
   // ----- Optional threshold ratio for use of temporary files
   //       Pclzip sense the size of the file to add/extract and decide to

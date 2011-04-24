@@ -1,19 +1,19 @@
 <?php
 /**
  * 
- * This software is distributed under the GNU LGPL v3.0 license.
+ * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2010 http://wapinet.ru
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @copyright 2008-2011 http://wapinet.ru
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.4 beta
+ * @version 0.8 beta
  * 
  * PHP version >= 5.2.1
  * 
  */
 
 
-class FTP
+class FTP extends Gmanager
 {
     private $_res               = null;
     //private $_url               = null;
@@ -27,7 +27,7 @@ class FTP
         $this->_res = ftp_connect($host, $port, 10);
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
-        Config::$sysType = strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX';
+        Registry::set('sysType', strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX');
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $pass . '@' . $host . ':' . $port;
@@ -97,7 +97,7 @@ class FTP
      */
     public function chmod ($file, $chmod = 0755)
     {
-        if (Config::$sysType == 'WIN') {
+        if (Registry::get('sysType') == 'WIN') {
             //trigger_error(Language::get('win_chmod'));
             return true;
         }
@@ -139,7 +139,7 @@ class FTP
      */
     public function file_put_contents ($file, $data = '')
     {
-        $php_temp = Config::$temp . '/GmanagerEditor' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $php_temp = Config::getTemp() . '/GmanagerEditor' . $_SERVER['REQUEST_TIME'] . '.tmp';
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 
@@ -287,6 +287,26 @@ class FTP
         //$str = self::_change_symbol($str);
         //return file_exists($this->_url . $str);
         return ($this->is_file($str) || $this->is_dir($str) || $this->is_link($str));
+    }
+
+
+    /**
+     * filetype
+     * 
+     * @param string $str
+     * @return string
+     */
+    public function filetype ($str)
+    {
+        if ($this->is_file($str)) {
+            return 'file';
+        } else if ($this->is_dir($str)) {
+            return 'dir';
+        } else if ($this->is_link($str)) {
+            return 'link';
+        }
+
+        return '';
     }
 
 
@@ -456,11 +476,11 @@ class FTP
         $t2 = end($t2);
         if ($t2[0] != PATH_SEPARATOR) {
             if ($t2 == '.') {
-                $t2 = substr(Config::$current, 0, -1);
+                $t2 = substr(Registry::get('current'), 0, -1);
             } else if ($t2 == '..') {
-                $t2 = substr(strrev(strstr(strrev(Config::$current), '/')), 0, -1);
+                $t2 = substr(strrev(strstr(strrev(Registry::get('current')), '/')), 0, -1);
             } else {
-                $t2 = (Config::$current != '.' ? Config::$current : '') . $t2;
+                $t2 = (Registry::get('current') != '.' ? Registry::get('current') : '') . $t2;
             }
         }
 
@@ -537,7 +557,7 @@ class FTP
         $data[10] = IOWrapper::get(trim($data[10]));
 
         self::$_rawlist[self::$_dir][basename($data[10])] = array(
-            'chmod' => $data[1] == 'd' && Config::$sysType == 'WIN' ? 0777 : (Config::$sysType == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
+            'chmod' => $data[1] == 'd' && Registry::get('sysType') == 'WIN' ? 0777 : (Registry::get('sysType') == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
             'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Gmanager::id2name($data[3])) : $data[3],
             'gid'   => $data[4],

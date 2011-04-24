@@ -1,32 +1,28 @@
-# РАЗРЕШАЕМ просматривать ВСE
-Allow from All
+# Allow all
+Allow from all
 
-# Защищаемся от неграмотных ModRewrite правил
+# Lock config
+<Files "config.ini">
+    Deny from all
+</Files>
+
+# Disable ModRewrite
 <IfModule mod_rewrite.c>
-RewriteEngine Off
+    RewriteEngine Off
 </IfModule>
 
-# Индексный Файл
+# Index file
 DirectoryIndex index.php
 
-# PHP 5
-#AddHandler application/x-httpd-php5 .php .php5 .phtml
-
-# PHP
-#AddHandler application/x-httpd-php .php .phtml
-
-# Магические Кавычки
+# Magic quotes
 php_flag magic_quotes_gpc Off
 php_flag magic_quotes_runtime Off
 php_flag magic_quotes_sybase Off
 
-# Глобальные переменные
+# Global vars
 php_flag register_globals Off
 
-# Устаревшие суперглобальные масивы
-php_flag register_long_arrays Off
-
-# Отладка
+# Debug
 php_value error_reporting -1
 php_flag display_errors On
 php_flag html_errors Off
@@ -34,28 +30,28 @@ php_flag log_errors Off
 php_flag ignore_repeated_errors Off
 php_flag ignore_repeated_source Off
 
-# Кодировка по умолчанию
+# Default charset
 php_value default_charset UTF-8
 AddDefaultCharset UTF-8
 
 <IfModule mod_charset.c>
-CharsetRecodeMultipartForms Off
-CharsetDisable On
+    CharsetRecodeMultipartForms Off
+    CharsetDisable On
 </IfModule>
 
-# Максимальный размер загружаемого файла
+# Upload max file size
 php_value upload_max_filesize 999M
 php_value post_max_size 999M
 php_value max_input_time -1
 
-# Компрессия
+# Compression
 php_flag zlib.output_compression On
 php_value zlib.output_compression_level 6
 
 # Mbstring
 php_value mbstring.func_overload 0
 
-# Подсветка PHP Кода
+# Highlight PHP code
 #php_value highlight.string #ff0000
 #php_value highlight.comment #909090
 #php_value highlight.keyword #000000

@@ -1,19 +1,19 @@
 <?php
 /**
  * 
- * This software is distributed under the GNU LGPL v3.0 license.
+ * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2010 http://wapinet.ru
- * @license http://www.gnu.org/licenses/lgpl-3.0.txt
+ * @copyright 2008-2011 http://wapinet.ru
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.7.4 beta
+ * @version 0.8 beta
  * 
  * PHP version >= 5.2.1
  * 
  */
 
 
-class Gmanager extends Config
+class Gmanager
 {
     public  static $pclzipTmp;
     public  static $pclzipF  = 0644;
@@ -22,40 +22,64 @@ class Gmanager extends Config
 
 
     /**
-     * __constructor
+     * main
      * 
-     * @param void
      * @return void
      */
-    public function __construct ()
+    public function main ()
     {
-        parent::__construct();
+        $c = isset($_POST['c']) ? $_POST['c'] : (isset($_GET['c']) ? rawurlencode($_GET['c']) : (isset($_GET['get']) ? rawurlencode($_GET['get']) : ''));
 
-        if ($_SERVER['QUERY_STRING']) {
-            $c = isset($_POST['c']) ? $_POST['c'] : (isset($_GET['c']) ? rawurlencode($_GET['c']) : '');
+        if ($c) {
+            Registry::set('current',  str_replace('\\', '/', rawurldecode($c)));
+            Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
 
-            if ($c) {
-                Config::$current = str_replace('\\', '/', trim(rawurldecode($c)));
-
-                if ($this->is_dir(Config::$current) || $this->is_link(Config::$current)) {
-                    if (substr(Config::$current, -1) != '/') {
-                        Config::$current .= '/';
-                    }
-                }
-            } else {
-                Config::$current = str_replace('\\', '/', trim(rawurldecode($_SERVER['QUERY_STRING'])));
-                if ($this->is_dir(Config::$current) || $this->is_link(Config::$current)) {
-                    if (substr(Config::$current, -1) != '/') {
-                        Config::$current .= '/';
-                    }
+            if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
+                if (substr(Registry::get('current'), -1) != '/') {
+                    Registry::set('current', Registry::get('current') . '/');
                 }
             }
-        } else if (substr(Config::$current, -1) != '/') {
-            Config::$current .= '/';
+        } else if (Registry::getGmanager()->file_exists(rawurldecode($_SERVER['QUERY_STRING']))) {
+            Registry::set('current',  str_replace('\\', '/', rawurldecode($_SERVER['QUERY_STRING'])));
+            Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
+
+            if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
+                if (substr(Registry::get('current'), -1) != '/') {
+                    Registry::set('current', Registry::get('current') . '/');
+                }
+            }
+        } else {
+            if (substr(Config::get('Gmanager', 'defaultDirectory'), -1) != '/') {
+                Registry::set('current', Config::get('Gmanager', 'defaultDirectory') . '/');
+            } else {
+                Registry::set('current', Config::get('Gmanager', 'defaultDirectory'));
+            }
+            Registry::set('currentType', 'dir');
         }
 
-        Config::$hCurrent = htmlspecialchars(Config::$current, ENT_COMPAT);
-        Config::$rCurrent = str_replace('%2F', '/', rawurlencode(Config::$current));
+        Registry::set('hCurrent', htmlspecialchars(Registry::get('current'), ENT_COMPAT));
+        Registry::set('rCurrent', str_replace('%2F', '/', rawurlencode(Registry::get('current'))));
+
+
+        // кол-во файлов на странице
+        $ip = isset($_POST['limit']);
+        $ig = isset($_GET['limit']);
+        Registry::set('limit', abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : (isset($_COOKIE['gmanager_limit']) ? $_COOKIE['gmanager_limit'] : Config::get('Gmanager', 'defaultLimit')))));
+
+        if ($ip || $ig) {
+            setcookie('gmanager_limit', Registry::get('limit'), 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
+        }
+
+        // построчный редактор
+        if (isset($_GET['lineEditor'])) {
+            $_GET['lineEditor'] ? Registry::set('lineEditor', true) : Registry::set('lineEditor', false);
+
+            setcookie('Gmanager_lineEditor', (int)Registry::get('lineEditor'), 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
+        } else if (isset($_COOKIE['Gmanager_lineEditor'])) {
+            Registry::set('lineEditor', (bool)$_COOKIE['Gmanager_lineEditor']);
+        } else {
+            Registry::set('lineEditor', Config::get('LineEditor', 'defaultEnable'));
+        }
     }
 
 
@@ -75,15 +99,6 @@ class Gmanager extends Config
 
         //header('Content-type: text/html; charset=UTF-8');
         header('Cache-control: no-cache');
-
-        // кол-во файлов на странице
-        $ip = isset($_POST['limit']);
-        $ig = isset($_GET['limit']);
-        Config::$limit = abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : (isset($_COOKIE['gmanager_limit']) ? $_COOKIE['gmanager_limit'] : Config::$limit)));
-
-        if ($ip || $ig) {
-            setcookie('gmanager_limit', Config::$limit, 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
-        }
     }
 
 
@@ -95,30 +110,30 @@ class Gmanager extends Config
      */
     public function head ()
     {
-        if (Config::$mode != 'FTP') {
-            $realpath = $this->realpath(Config::$current);
-            $realpath = $realpath ? $realpath : Config::$current;
+        if (Config::get('Gmanager', 'mode') != 'FTP') {
+            $realpath = Registry::getGmanager()->realpath(Registry::get('current'));
+            $realpath = $realpath ? $realpath : Registry::get('current');
         } else {
-            $realpath = Config::$current;
+            $realpath = Registry::get('current');
         }
-        $chmod = $this->lookChmod(Config::$current);
+        $chmod = $this->lookChmod(Registry::get('current'));
         $chmod = $chmod ? $chmod : (isset($_POST['chmod'][0]) ? htmlspecialchars($_POST['chmod'][0], ENT_NOQUOTES) : (isset($_POST['chmod']) ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0));
-    
-        $d = dirname(str_replace('\\', '/', $realpath));
-        $archive = $this->isArchive($this->getType(basename(Config::$current)));
 
-        if ($this->is_dir(Config::$current) || $this->is_link(Config::$current)) {
-            if (Config::$current == '.') {
-                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars($this->strLink($this->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($this->getcwd()) . ')<br/></div>';
+        $d = dirname(str_replace('\\', '/', $realpath));
+        $archive = $this->isArchive($this->getType(basename(Registry::get('current'))));
+
+        if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
+            if (Registry::get('current') == '.') {
+                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars($this->strLink(Registry::getGmanager()->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(Registry::getGmanager()->getcwd()) . ')<br/></div>';
             } else {
-                return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+                return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
             }
-        } else if ($this->is_file(Config::$current) && $archive) {
+        } else if (Registry::get('currentType') == 'file' && $archive) {
             $up = dirname($d);
-            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         } else {
             $up = dirname($d);
-            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="edit.php?' . Config::$rCurrent . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="edit.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         }
     }
 
@@ -173,13 +188,13 @@ class Gmanager extends Config
      */
     public function look ($current = '', $itype = '', $down = '')
     {
-        if (!$this->is_dir($current) || !$this->is_readable($current)) {
+        if (!Registry::getGmanager()->is_dir($current) || !Registry::getGmanager()->is_readable($current)) {
             return ListData::getListDenyData();
         }
 
         $add  = (isset($_GET['add_archive']) ? $_GET['add_archive'] : '');
         $pg   = (isset($_GET['pg']) ? $_GET['pg'] : 1);
-        $html = ListData::getListData($this, $current, $itype, $down, $pg, $add);
+        $html = ListData::getListData($current, $itype, $down, $pg, $add);
         if ($html) {
             if ($itype == 'time') {
                 $out = '&amp;time';
@@ -222,8 +237,8 @@ class Gmanager extends Config
             $tmp1 .= $var . '/';
             $tmp2 .= $ch[1] . '/';
 
-            if (!$this->is_dir($tmp1)) {
-                $this->mkdir($tmp1, $this->lookChmod($tmp2));
+            if (!Registry::getGmanager()->is_dir($tmp1)) {
+                Registry::getGmanager()->mkdir($tmp1, $this->lookChmod($tmp2));
             }
         }
     }
@@ -242,7 +257,7 @@ class Gmanager extends Config
     {
         $error = array();
 
-        foreach ($this->iterator($d) as $file) {
+        foreach (Registry::getGmanager()->iterator($d) as $file) {
             if ($file == $static) {
                 continue;
             }
@@ -252,10 +267,10 @@ class Gmanager extends Config
 
             $ch = $this->lookChmod($d . '/' . $file);
 
-            if ($this->is_dir($d . '/' . $file)) {
+            if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
 
-                if ($this->mkdir($dest . '/' . $file, $ch)) {
-                    $this->chmod($dest, $ch);
+                if (Registry::getGmanager()->mkdir($dest . '/' . $file, $ch)) {
+                    Registry::getGmanager()->chmod($dest, $ch);
                     $this->copyFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_files_false')) . ' (' . Errors::get() . ')';
@@ -263,8 +278,8 @@ class Gmanager extends Config
 
             } else {
 
-                if ($overwrite || !$this->file_exists($dest . '/' . $file)) {
-                    if (!$this->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
+                if ($overwrite || !Registry::getGmanager()->file_exists($dest . '/' . $file)) {
+                    if (!Registry::getGmanager()->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
                         $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_file_false')) . ' (' . Errors::get() . ')';
                     }
                 } else {
@@ -295,7 +310,7 @@ class Gmanager extends Config
     {
         $error = array();
 
-        foreach ($this->iterator($d) as $file) {
+        foreach (Registry::getGmanager()->iterator($d) as $file) {
             if ($file == $static) {
                 continue;
             }
@@ -305,21 +320,21 @@ class Gmanager extends Config
 
             $ch = $this->lookChmod($d . '/' . $file);
 
-            if ($this->is_dir($d . '/' . $file)) {
+            if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
 
-                if ($this->mkdir($dest . '/' . $file, $ch)) {
-                    $this->chmod($dest . '/' . $file, $ch);
+                if (Registry::getGmanager()->mkdir($dest . '/' . $file, $ch)) {
+                    Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
                     $this->moveFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
-                    $this->rmdir($d . '/' . $file);
+                    Registry::getGmanager()->rmdir($d . '/' . $file);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_files_false')) . ' (' . Errors::get() . ')';
                 }
 
             } else {
 
-                if ($overwrite || !$this->file_exists($dest . '/' . $file)) {
-                    if ($this->rename($d . '/' . $file, $dest . '/' . $file)) {
-                        $this->chmod($dest . '/' . $file, $ch);
+                if ($overwrite || !Registry::getGmanager()->file_exists($dest . '/' . $file)) {
+                    if (Registry::getGmanager()->rename($d . '/' . $file, $dest . '/' . $file)) {
+                        Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
                     } else {
                         $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_file_false')) . ' (' . Errors::get() . ')';
                     }
@@ -333,7 +348,7 @@ class Gmanager extends Config
         if ($error) {
             return Errors::message(implode('<br/>', $error), Errors::MESSAGE_EMAIL);
         } else {
-            $this->rmdir($d);
+            Registry::getGmanager()->rmdir($d);
             return Errors::message(str_replace('%title%', htmlspecialchars($dest, ENT_NOQUOTES), Language::get('move_files_true')), Errors::MESSAGE_OK);
         }
     }
@@ -350,7 +365,7 @@ class Gmanager extends Config
      */
     public function copyFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
-        if (!$overwrite && $this->file_exists($dest)) {
+        if (!$overwrite && Registry::getGmanager()->file_exists($dest)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
@@ -363,7 +378,7 @@ class Gmanager extends Config
 
         $this->copyD(dirname($source), dirname($dest));
 
-        if ($this->copy($source, $dest)) {
+        if (Registry::getGmanager()->copy($source, $dest)) {
             if (!$chmod) {
                 $chmod = $this->lookChmod($source);
             }
@@ -387,7 +402,7 @@ class Gmanager extends Config
      */
     public function moveFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
-        if (!$overwrite && $this->file_exists($dest)) {
+        if (!$overwrite && Registry::getGmanager()->file_exists($dest)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
@@ -400,7 +415,7 @@ class Gmanager extends Config
 
         $this->copyD(dirname($source), dirname($dest));
 
-        if ($this->rename($source, $dest)) {
+        if (Registry::getGmanager()->rename($source, $dest)) {
             if (!$chmod) {
                 $chmod = $this->lookChmod($source);
             }
@@ -421,7 +436,7 @@ class Gmanager extends Config
      */
     public function delFile ($f = '')
     {
-        if ($this->unlink($f)) {
+        if (Registry::getGmanager()->unlink($f)) {
             return Errors::message(Language::get('del_file_true') . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), Errors::MESSAGE_OK);
         } else {
             return Errors::message(Language::get('del_file_false') . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES) . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -438,24 +453,24 @@ class Gmanager extends Config
     public function delDir ($d = '')
     {
         $err = '';
-        $this->chmod($d, 0777);
+        Registry::getGmanager()->chmod($d, 0777);
 
-        foreach ($this->iterator($d) as $f) {
-            $realpath = $this->realpath($d . '/' . $f);
+        foreach (Registry::getGmanager()->iterator($d) as $f) {
+            $realpath = Registry::getGmanager()->realpath($d . '/' . $f);
             $f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
-            $this->chmod($f, 0777);
+            Registry::getGmanager()->chmod($f, 0777);
 
-            if ($this->is_dir($f) /*&& !$this->rmdir($f)*/) {
+            if (Registry::getGmanager()->is_dir($f) /*&& !Registry::getGmanager()->rmdir($f)*/) {
                 $this->delDir($f . '/');
-                $this->rmdir($f);
-            } else if ($this->file_exists($f)) {
-                if (!$this->unlink($f)) {
+                Registry::getGmanager()->rmdir($f);
+            } else if (Registry::getGmanager()->file_exists($f)) {
+                if (!Registry::getGmanager()->unlink($f)) {
                     $err .= $f . '<br/>';
                 }
             }
         }
 
-        if (!$this->rmdir($d)) {
+        if (!Registry::getGmanager()->rmdir($d)) {
             $err .= Errors::get() . '<br/>';
         }
         if ($err) {
@@ -479,11 +494,11 @@ class Gmanager extends Config
             $sz = 0;
             do {
                 $d = array_shift($ds);
-                foreach ($this->iterator($d) as $file) {
-                    if ($this->is_dir($d . '/' . $file)) {
+                foreach (Registry::getGmanager()->iterator($d) as $file) {
+                    if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
                         $ds[] = $d . '/' . $file;
                     } else {
-                        $sz += $this->filesize($d . '/' . $file);
+                        $sz += Registry::getGmanager()->filesize($d . '/' . $file);
                     }
                 }
             } while (sizeof($ds) > 0);
@@ -491,7 +506,7 @@ class Gmanager extends Config
             return $sz;
         }
 
-        return $this->filesize($source);
+        return Registry::getGmanager()->filesize($source);
     }
 
 
@@ -525,7 +540,7 @@ class Gmanager extends Config
      */
     public function lookChmod ($file = '')
     {
-        return substr(sprintf('%o', $this->fileperms($file)), -4);
+        return substr(sprintf('%o', Registry::getGmanager()->fileperms($file)), -4);
     }
 
 
@@ -541,7 +556,7 @@ class Gmanager extends Config
     {
         $this->createDir(dirname($file));
 
-        if ($this->file_put_contents($file, $text)) {
+        if (Registry::getGmanager()->file_put_contents($file, $text)) {
             return Errors::message(Language::get('fputs_file_true'), Errors::MESSAGE_OK) . $this->rechmod($file, $chmod);
         } else {
             return Errors::message(Language::get('fputs_file_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -560,7 +575,7 @@ class Gmanager extends Config
     {
         $tmp = $tmp2 = $err = '';
         $i = 0;
-        $g = explode(DIRECTORY_SEPARATOR, $this->getcwd());
+        $g = explode(DIRECTORY_SEPARATOR, Registry::getGmanager()->getcwd());
 
         foreach (explode('/', $dir) as $d) {
             $tmp .= $d . '/';
@@ -568,11 +583,11 @@ class Gmanager extends Config
                 $tmp2 .= $g[$i] . '/';
             }
 
-            if ($tmp == $tmp2 || $this->is_dir($tmp)) {
+            if ($tmp == $tmp2 || Registry::getGmanager()->is_dir($tmp)) {
                 $i++;
                 continue;
             }
-            if (!$this->mkdir($tmp, $chmod)) {
+            if (!Registry::getGmanager()->mkdir($tmp, $chmod)) {
                 $err .= Errors::get() . ' -&gt; ' . htmlspecialchars($tmp, ENT_NOQUOTES) . '<br/>';
             }
             $i++;
@@ -601,7 +616,7 @@ class Gmanager extends Config
             return Errors::message(Language::get('chmod_mode_false'), Errors::MESSAGE_EMAIL);
         }
 
-        if ($this->chmod($current, $chmod)) {
+        if (Registry::getGmanager()->chmod($current, $chmod)) {
             return Errors::message(Language::get('chmod_true') . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . (is_int($chmod) ? decoct($chmod) : $chmod), Errors::MESSAGE_OK);
         } else {
             return Errors::message(Language::get('chmod_false') . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -622,7 +637,7 @@ class Gmanager extends Config
      */
     public function frename ($current = '', $name = '', $chmod = '', $del = false, $to = '', $overwrite = false)
     {
-        if ($this->is_dir($current)) {
+        if (Registry::getGmanager()->is_dir($current)) {
             $this->copyD($current, $to);
 
             if ($del) {
@@ -649,11 +664,11 @@ class Gmanager extends Config
      */
     public function syntax ($current = '', $charset = array())
     {
-        if (!$this->is_file($current)) {
+        if (!Registry::getGmanager()->is_file($current)) {
             return Errors::message(Language::get('not_found'), Errors::MESSAGE_EMAIL);
         }
 
-        exec(escapeshellcmd(Config::$php) . ' -c -f -l ' . escapeshellarg($current), $rt, $v);
+        exec(escapeshellcmd(Config::get('PHP', 'path')) . ' -c -f -l ' . escapeshellarg($current), $rt, $v);
         $error = Errors::get();
         $size = sizeof($rt);
 
@@ -673,7 +688,7 @@ class Gmanager extends Config
             $pg = Language::get('syntax_true');
         }
 
-        $fl = trim($this->file_get_contents($current));
+        $fl = trim(Registry::getGmanager()->file_get_contents($current));
         if ($charset[0]) {
             $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
         }
@@ -683,13 +698,13 @@ class Gmanager extends Config
 
 
     /**
-     * syntax2
+     * syntaxWapinet
      * 
      * @param string $current
      * @param array  $charset
      * @return string
      */
-    public function syntax2 ($current = '', $charset = array())
+    public function syntaxWapinet ($current = '', $charset = array())
     {
         if (!$charset[0]) {
             $charset[0] = 'UTF-8';
@@ -699,14 +714,14 @@ class Gmanager extends Config
             return Errors::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Errors::MESSAGE_FAIL);
         }
 
-        $f = rawurlencode(trim($this->file_get_contents($current)));
+        $f = rawurlencode(trim(Registry::getGmanager()->file_get_contents($current)));
 
         fputs($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
             'Content-length: ' . (iconv_strlen($f) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
             'Connection: close' . "\r\n" .
-            'User-Agent: GManager ' . Config::$version . "\r\n\r\n" .
+            'User-Agent: GManager ' . Config::getVersion() . "\r\n\r\n" .
             'f=' . $f . "\r\n\r\n");
 
         $r = '';
@@ -734,7 +749,7 @@ class Gmanager extends Config
     {
         $content = $this->editZipFile($current, $f);
 
-        $tmp = Config::$temp . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $tmp = Config::getTemp() . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
         $fp = fopen($tmp, 'w');
 
         if (!$fp) {
@@ -744,8 +759,8 @@ class Gmanager extends Config
         fputs($fp, $content['text']);
         fclose($fp);
 
-        if (Config::$syntax) {
-            $pg = $this->syntax2($tmp, $charset);
+        if (Config::get('Gmanager', 'syntax') == Config::SYNTAX_WAPINET) {
+            $pg = $this->syntaxWapinet($tmp, $charset);
         } else {
             $pg = $this->syntax($tmp, $charset);
         }
@@ -780,7 +795,7 @@ class Gmanager extends Config
             return Errors::message(Language::get('disable_function') . ' (xml)', Errors::MESSAGE_FAIL);
         }
 
-        $fl = $this->file_get_contents($current);
+        $fl = Registry::getGmanager()->file_get_contents($current);
         if ($charset[0]) {
             $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
         }
@@ -867,7 +882,7 @@ class Gmanager extends Config
      */
     public function renameZipFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        $tmp        = Config::$temp . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
+        $tmp        = Config::getTemp() . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
         $zip        = $this->_pclZip($current);
         $folder     = '';
         $sysName    = IOWrapper::set($name);
@@ -875,7 +890,7 @@ class Gmanager extends Config
         foreach ($zip->extract(PCLZIP_OPT_PATH, $tmp) as $f) {
             if ($f['status'] != 'ok') {
                 $this->clean($tmp);
-                if (Config::$mode == 'FTP') {
+                if (Config::get('Gmanager', 'mode') == 'FTP') {
                     $this->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL);
@@ -895,7 +910,7 @@ class Gmanager extends Config
                 }
             } else {
                 $this->clean($tmp);
-                if (Config::$mode == 'FTP') {
+                if (Config::get('Gmanager', 'mode') == 'FTP') {
                     $this->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('overwrite_false'), Errors::MESSAGE_FAIL);
@@ -926,7 +941,7 @@ class Gmanager extends Config
 
         if (!$result) {
             $this->clean($tmp);
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd();
             }
             if ($folder) {
@@ -947,7 +962,7 @@ class Gmanager extends Config
         $result = $zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, iconv_substr($tmp, iconv_strlen(dirname(dirname($tmp)))));
 
         $this->clean($tmp);
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd($current);
         }
 
@@ -994,7 +1009,7 @@ class Gmanager extends Config
      */
     public function renameTarFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        $tmp        = Config::$temp . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
+        $tmp        = Config::getTemp() . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
         $tgz        = $this->_archiveTar($current);
         $sysName    = IOWrapper::set($name);
 
@@ -1008,7 +1023,7 @@ class Gmanager extends Config
 
         if (!$tgz->extract($tmp)) {
             $this->clean($tmp);
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd();
             }
             return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL);
@@ -1023,7 +1038,7 @@ class Gmanager extends Config
                 }
             } else {
                 $this->clean($tmp);
-                if (Config::$mode == 'FTP') {
+                if (Config::get('Gmanager', 'mode') == 'FTP') {
                     $this->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('overwrite_false'), Errors::MESSAGE_FAIL);
@@ -1053,7 +1068,7 @@ class Gmanager extends Config
 
         if (!$result) {
             $this->clean($tmp);
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd();
             }
             if ($folder) {
@@ -1074,7 +1089,7 @@ class Gmanager extends Config
         $result = $tgz->createModify($tmp, '.', $tmp);
 
         $this->clean($tmp);
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd($current);
         }
 
@@ -1126,10 +1141,10 @@ class Gmanager extends Config
         $list = $zip->listContent();
 
         if (!$list) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . Errors::message(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {
             $l = '';
 
@@ -1154,53 +1169,53 @@ class Gmanager extends Config
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
-                if (Config::$index['name']) {
+                if (Config::get('Display', 'name')) {
                     $l .= '<td>' . $name . '</td>';
                 }
-                if (Config::$index['down']) {
+                if (Config::get('Display', 'down')) {
                     $l .= '<td>' . $down . '</td>';
                 }
-                if (Config::$index['type']) {
+                if (Config::get('Display', 'type')) {
                     $l .= '<td>' . $type . '</td>';
                 }
-                if (Config::$index['size']) {
+                if (Config::get('Display', 'size')) {
                     $l .= '<td>' . $size . '</td>';
                 }
-                if (Config::$index['change']) {
+                if (Config::get('Display', 'change')) {
                     $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
-                if (Config::$index['del']) {
+                if (Config::get('Display', 'del')) {
                     $l .= '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
-                if (Config::$index['chmod']) {
+                if (Config::get('Display', 'chmod')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['date']) {
-                    $l .= '<td>' . strftime(Config::$date_format, $list[$i]['mtime']) . '</td>';
+                if (Config::get('Display', 'date')) {
+                    $l .= '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $list[$i]['mtime']) . '</td>';
                 }
-                if (Config::$index['uid']) {
+                if (Config::get('Display', 'uid')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['gid']) {
+                if (Config::get('Display', 'gid')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['n']) {
+                if (Config::get('Display', 'n')) {
                     $l .= '<td>' . ($i + 1) . '</td>';
                 }
 
                 $l .= '</tr>';
             }
 
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd();
             }
 
             $prop = $zip->properties();
             if (isset($prop['comment']) && $prop['comment'] != '') {
                 if (iconv('UTF-8', 'UTF-8', $prop['comment']) != $prop['comment']) {
-                    $prop['comment'] = iconv(Config::$altencoding, 'UTF-8//TRANSLIT', $prop['comment']);
+                    $prop['comment'] = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8//TRANSLIT', $prop['comment']);
                 }
-                $l .= '<tr class="border"><td>' . Language::get('comment_archive') . '</td><td colspan="' . (array_sum(Config::$index) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
+                $l .= '<tr class="border"><td>' . Language::get('comment_archive') . '</td><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
             }
 
             return $l;
@@ -1221,10 +1236,10 @@ class Gmanager extends Config
         $rar = $this->_rarOpen($current);
 
         if (!$list = rar_list($rar)) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {
             $l = '';
 
@@ -1250,44 +1265,44 @@ class Gmanager extends Config
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
-                if (Config::$index['name']) {
+                if (Config::get('Display', 'name')) {
                     $l .= '<td>' . $name . '</td>';
                 }
-                if (Config::$index['down']) {
+                if (Config::get('Display', 'down')) {
                     $l .= '<td>' . $down . '</td>';
                 }
-                if (Config::$index['type']) {
+                if (Config::get('Display', 'type')) {
                     $l .= '<td>' . $type . '</td>';
                 }
-                if (Config::$index['size']) {
+                if (Config::get('Display', 'size')) {
                     $l .= '<td>' . $size . '</td>';
                 }
-                if (Config::$index['change']) {
+                if (Config::get('Display', 'change')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['del']) {
+                if (Config::get('Display', 'del')) {
                     $l .= '<td>' . Language::get('dl') . '</td>';
                 }
-                if (Config::$index['chmod']) {
+                if (Config::get('Display', 'chmod')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['date']) {
-                    $l .= '<td>' . strftime(Config::$date_format, strtotime($list[$i]->getFileTime())) . '</td>';
+                if (Config::get('Display', 'date')) {
+                    $l .= '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($list[$i]->getFileTime())) . '</td>';
                 }
-                if (Config::$index['uid']) {
+                if (Config::get('Display', 'uid')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['gid']) {
+                if (Config::get('Display', 'gid')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['n']) {
+                if (Config::get('Display', 'n')) {
                     $l .= '<td>' . ($i + 1) . '</td>';
                 }
 
                 $l .= '</tr>';
             }
 
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd();
             }
 
@@ -1308,10 +1323,10 @@ class Gmanager extends Config
         $tgz = $this->_archiveTar($current);
 
         if (!$list = $tgz->listContent()) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::$index) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {
             $r_current = str_replace('%2F', '/', rawurlencode($current));
             $l = '';
@@ -1336,44 +1351,44 @@ class Gmanager extends Config
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
-                if (Config::$index['name']) {
+                if (Config::get('Display', 'name')) {
                     $l .= '<td>' . $name . '</td>';
                 }
-                if (Config::$index['down']) {
+                if (Config::get('Display', 'down')) {
                     $l .= '<td>' . $down . '</td>';
                 }
-                if (Config::$index['type']) {
+                if (Config::get('Display', 'type')) {
                     $l .= '<td>' . $type . '</td>';
                 }
-                if (Config::$index['size']) {
+                if (Config::get('Display', 'size')) {
                     $l .= '<td>' . $size . '</td>';
                 }
-                if (Config::$index['change']) {
+                if (Config::get('Display', 'change')) {
                     $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
-                if (Config::$index['del']) {
+                if (Config::get('Display', 'del')) {
                     $l .= '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
-                if (Config::$index['chmod']) {
+                if (Config::get('Display', 'chmod')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['date']) {
-                    $l .= '<td>' . strftime(Config::$date_format, $list[$i]['mtime']) . '</td>';
+                if (Config::get('Display', 'date')) {
+                    $l .= '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $list[$i]['mtime']) . '</td>';
                 }
-                if (Config::$index['uid']) {
+                if (Config::get('Display', 'uid')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['gid']) {
+                if (Config::get('Display', 'gid')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::$index['n']) {
+                if (Config::get('Display', 'n')) {
                     $l .= '<td>' . ($i + 1) . '</td>';
                 }
 
                 $l .= '</tr>';
             }
 
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd();
             }
 
@@ -1394,7 +1409,7 @@ class Gmanager extends Config
         $zip = $this->_pclZip($current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd('');
         }
 
@@ -1417,7 +1432,7 @@ class Gmanager extends Config
     public function editZipFileOk ($current = '', $f = '', $text = '')
     {
         self::$pclzipTmp = $f;
-        $tmp = Config::$temp . '/GmanagerArchivers' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $tmp = Config::getTemp() . '/GmanagerArchivers' . $_SERVER['REQUEST_TIME'] . '.tmp';
 
         $fp = fopen($tmp, 'w');
 
@@ -1433,7 +1448,7 @@ class Gmanager extends Config
         $comment = $comment['comment'];
 
         if ($zip->delete(PCLZIP_OPT_BY_NAME, $f) == 0) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
             unlink($tmp);
@@ -1450,7 +1465,7 @@ class Gmanager extends Config
         $fl = $zip->add($tmp, PCLZIP_CB_PRE_ADD, 'pclzip_pre_add', PCLZIP_OPT_COMMENT, $comment);
 
         unlink($tmp);
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd($current);
         }
 
@@ -1478,7 +1493,7 @@ class Gmanager extends Config
         $zip = $this->_pclZip($current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd('');
         }
 
@@ -1490,7 +1505,7 @@ class Gmanager extends Config
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . $this->formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . $this->code(trim($ext[0]['content']));
+                return Errors::message(Language::get('archive_size') . ': ' . $this->formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . $this->code(trim($ext[0]['content']));
             }
         }
     }
@@ -1510,13 +1525,13 @@ class Gmanager extends Config
         $entry = rar_entry_get($rar, $f);
 
         // создаем временный файл
-        $tmp = Config::$temp . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $tmp = Config::getTemp() . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
         $entry->extract(true, $tmp); // запишет сюда данные
 
         $ext = file_get_contents($tmp);
         unlink($tmp);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd('');
         }
 
@@ -1526,7 +1541,7 @@ class Gmanager extends Config
             if ($str) {
                 return $ext;
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . $this->formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . $this->code(trim($ext));
+                return Errors::message(Language::get('archive_size') . ': ' . $this->formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . $this->code(trim($ext));
             }
         }
     }
@@ -1546,14 +1561,14 @@ class Gmanager extends Config
         $ext = $tgz->extractInString($f);
 
         if (!$ext) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
             return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
         } else {
             $list = $tgz->listContent();
 
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
 
@@ -1565,7 +1580,7 @@ class Gmanager extends Config
                     if ($str) {
                         return $ext;
                     } else {
-                        return Errors::message(Language::get('real_size') . ': ' . $this->formatSize($list[$i]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $list[$i]['mtime']), Errors::MESSAGE_OK) . $this->code(trim($ext));
+                        return Errors::message(Language::get('real_size') . ': ' . $this->formatSize($list[$i]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $list[$i]['mtime']), Errors::MESSAGE_OK) . $this->code(trim($ext));
                     }
                 }
             }
@@ -1587,12 +1602,10 @@ class Gmanager extends Config
         $sysName = IOWrapper::set($name);
 
         function pclzip_cb_post_extract ($p_event, &$p_header) {
-            global $Gmanager;
-
-            if ($Gmanager->is_dir($p_header['filename'])) {
-                $Gmanager->rechmod($p_header['filename'], Gmanager::$pclzipD);
-            } else if (Config::$mode != 'FTP') {
-                $Gmanager->rechmod($p_header['filename'], Gmanager::$pclzipF);
+            if (Registry::getGmanager()->is_dir($p_header['filename'])) {
+                Registry::getGmanager()->rechmod($p_header['filename'], Gmanager::$pclzipD);
+            } else if (Config::get('Gmanager', 'mode') != 'FTP') {
+                Registry::getGmanager()->rechmod($p_header['filename'], Gmanager::$pclzipF);
             }
             return 1;
         }
@@ -1602,22 +1615,22 @@ class Gmanager extends Config
         self::$pclzipD = $chmod[1]; // CHMOD to folders
 
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerZipFtp' . $_SERVER['REQUEST_TIME'];
+            $ftp_current = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerZipFtp' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
-            file_put_contents($ftp_current, $this->file_get_contents($current));
+            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
 
-        $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $zip = $this->_pclZip(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
 
 
         if ($overwrite) {
-            $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $sysName, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract', PCLZIP_OPT_REPLACE_NEWER);
+            $res = $zip->extract(PCLZIP_OPT_PATH, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract', PCLZIP_OPT_REPLACE_NEWER);
         } else {
-            $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $sysName, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract');
+            $res = $zip->extract(PCLZIP_OPT_PATH, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName, PCLZIP_CB_POST_EXTRACT, 'pclzip_cb_post_extract');
         }
 
         $err = '';
@@ -1628,20 +1641,20 @@ class Gmanager extends Config
         }
 
         if (!$res) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 unlink($ftp_current);
                 rmdir($ftp_name);
             }
             return Errors::message(Language::get('extract_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->createDir($sysName, self::$pclzipD);
             $this->ftpMoveFiles($ftp_name, $sysName, self::$pclzipF, self::$pclzipD, $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($sysName)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($sysName)) {
             if ($chmod) {
                 $this->rechmod($sysName, $chmod[1]);
             }
@@ -1665,25 +1678,25 @@ class Gmanager extends Config
     {
         $sysName = IOWrapper::set($name);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::$temp . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'];
+            $ftp_current = Config::getTemp() . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
-            file_put_contents($ftp_current, $this->file_get_contents($current));
+            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $rar = $this->_rarOpen(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $rar = $this->_rarOpen(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
         $err = '';
         foreach (rar_list($rar) as $f) {
             $n = $f->getName();
 
-            if (!$overwrite && $this->file_exists($name . '/' . $n)) {
+            if (!$overwrite && Registry::getGmanager()->file_exists($name . '/' . $n)) {
                 $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
             } else {
                 $entry = rar_entry_get($rar, $n);
-                if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
-                    if (Config::$mode == 'FTP') {
+                if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
+                    if (Config::get('Gmanager', 'mode') == 'FTP') {
                         unlink($ftp_current);
                         rmdir($ftp_name);
                     }
@@ -1691,20 +1704,20 @@ class Gmanager extends Config
                 }
             }
 
-            if ($this->is_dir($name . '/' . $n)) {
+            if (Registry::getGmanager()->is_dir($name . '/' . $n)) {
                 $this->rechmod($name . '/' . $n, $chmod[1]);
             } else {
                 $this->rechmod($name . '/' . $n, $chmod[0]);
             }
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->createDir($sysName, $chmod[1]);
             $this->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
             $this->rechmod($name, $chmod[1]);
             return Errors::message(Language::get('extract_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         } else {
@@ -1726,24 +1739,24 @@ class Gmanager extends Config
     {
         $sysName = IOWrapper::set($name);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'];
+            $ftp_current = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
-            file_put_contents($ftp_current, $this->file_get_contents($current));
+            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $tgz = $this->_archiveTar(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
         $extract = $tgz->listContent();
         $err = '';
 
         if ($overwrite) {
-            $res = $tgz->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName);
+            $res = $tgz->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName);
         } else {
             $list = array();
             foreach ($extract as $f) {
-                if ($this->file_exists($name . '/' . $f['filename'])) {
+                if (Registry::getGmanager()->file_exists($name . '/' . $f['filename'])) {
                     $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f['filename'], ENT_NOQUOTES) . ')<br/>';
                 } else {
                     $list[] = $f['filename'];
@@ -1753,11 +1766,11 @@ class Gmanager extends Config
                 return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
             }
     
-            $res = $tgz->extractList($list, Config::$mode == 'FTP' ? $ftp_name : $sysName);
+            $res = $tgz->extractList($list, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName);
         }
 
         if (!$res) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 unlink($ftp_current);
                 rmdir($ftp_name);
             }
@@ -1765,20 +1778,20 @@ class Gmanager extends Config
         }
 
         foreach ($extract as $f) {
-            if ($this->is_dir($name . '/' . $f['filename'])) {
+            if (Registry::getGmanager()->is_dir($name . '/' . $f['filename'])) {
                 $this->rechmod($name . '/' . $f['filename'], $chmod[1]);
             } else {
                 $this->rechmod($name . '/' . $f['filename'], $chmod[0]);
             }
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->createDir($sysName, $chmod[1]);
             $this->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
             $this->rechmod($name, $chmod[1]);
             return Errors::message(Language::get('extract_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         } else {
@@ -1805,7 +1818,7 @@ class Gmanager extends Config
         } else {
             $ext = array();
             foreach ($fl as $f) {
-                if ($this->file_exists($name . '/' . $f)) {
+                if (Registry::getGmanager()->file_exists($name . '/' . $f)) {
                     $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
                 } else {
                     $ext[] = $f;
@@ -1820,15 +1833,15 @@ class Gmanager extends Config
 
         $sysName = IOWrapper::set($name);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::$temp . '/GmanagerFtpZipArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpZipFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            file_put_contents($ftp_current, $this->file_get_contents($current));
+            $ftp_current = Config::getTemp() . '/GmanagerFtpZipArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpZipFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_current : $current);
-        $res = $zip->extract(PCLZIP_OPT_PATH, Config::$mode == 'FTP' ? $ftp_name : $sysName, PCLZIP_OPT_BY_NAME, $ext, PCLZIP_OPT_REPLACE_NEWER);
+        $zip = $this->_pclZip(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
+        $res = $zip->extract(PCLZIP_OPT_PATH, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName, PCLZIP_OPT_BY_NAME, $ext, PCLZIP_OPT_REPLACE_NEWER);
 
         foreach ($res as $status) {
             if ($status['status'] != 'ok') {
@@ -1837,19 +1850,19 @@ class Gmanager extends Config
         }
 
         if (!$res) {
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 unlink($ftp_current);
             }
             return Errors::message(Language::get('extract_file_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->createDir($sysName);
             $this->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
@@ -1875,7 +1888,7 @@ class Gmanager extends Config
         $tmp = array();
         $err = '';
         foreach ($ext as $f) {
-            if ($this->file_exists($name . '/' . $f)) {
+            if (Registry::getGmanager()->file_exists($name . '/' . $f)) {
                 if ($overwrite) {
                     unlink($name . '/' . $f);
                     $tmp[] = $f;
@@ -1894,36 +1907,36 @@ class Gmanager extends Config
 
         $sysName = IOWrapper::set($name);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::$temp . '/GmanagerFtpRarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpRarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            file_put_contents($ftp_current, $this->file_get_contents($current));
+            $ftp_current = Config::getTemp() . '/GmanagerFtpRarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $rar = $this->_rarOpen(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $rar = $this->_rarOpen(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
 
         foreach ($ext as $var) {
             $entry = rar_entry_get($rar, $var);
-            if (!$entry->extract(Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
-                if (Config::$mode == 'FTP') {
+            if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
+                if (Config::get('Gmanager', 'mode') == 'FTP') {
                     unlink($ftp_current);
                 }
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
-            } else if (!$this->file_exists((Config::$mode == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
+            } else if (!Registry::getGmanager()->file_exists((Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
                 // fix bug in rar extension
                 // method extract alredy returned "true"
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
             }
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->createDir($sysName);
             $this->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
@@ -1949,7 +1962,7 @@ class Gmanager extends Config
         $tmp = array();
         $err = '';
         foreach ($ext as $f) {
-            if ($this->file_exists($name . '/' . $f)) {
+            if (Registry::getGmanager()->file_exists($name . '/' . $f)) {
                 if ($overwrite) {
                     unlink($name . '/' . $f);
                     $tmp[] = $f;
@@ -1968,29 +1981,29 @@ class Gmanager extends Config
 
         $sysName = IOWrapper::set($name);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
                $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-               $ftp_current = Config::$temp . '/GmanagerFtpTarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
-               $ftp_name = Config::$temp . '/GmanagerFtpTarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
-               file_put_contents($ftp_current, $this->file_get_contents($current));
+               $ftp_current = Config::getTemp() . '/GmanagerFtpTarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+               $ftp_name = Config::getTemp() . '/GmanagerFtpTarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
+               file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $tgz = $this->_archiveTar(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
 
-        if (!$tgz->extractList($ext, Config::$mode == 'FTP' ? $ftp_name : $sysName)) {
-            if (Config::$mode == 'FTP') {
+        if (!$tgz->extractList($ext, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 unlink($ftp_current);
             }
             return Errors::message(Language::get('extract_file_false'), Errors::MESSAGE_EMAIL);
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->createDir($sysName);
             $this->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             unlink($ftp_current);
         }
 
-        if (Config::$mode == 'FTP' || $this->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
@@ -2025,7 +2038,7 @@ class Gmanager extends Config
         $list = $zip->delete(PCLZIP_OPT_BY_INDEX, $index['index']);
 
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd($current);
         }
 
@@ -2060,14 +2073,14 @@ class Gmanager extends Config
             }
         }
 
-        $tmp_name = Config::$temp . '/GmanagerTar' . $_SERVER['REQUEST_TIME'] . '/';
+        $tmp_name = Config::getTemp() . '/GmanagerTar' . $_SERVER['REQUEST_TIME'] . '/';
         $tgz->extractList($new_tar, $tmp_name);
 
-        $this->unlink($current);
+        Registry::getGmanager()->unlink($current);
         $list = $tgz->createModify($tmp_name, '.', $tmp_name);
         $this->clean($tmp_name);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd($current);
         }
 
@@ -2089,13 +2102,13 @@ class Gmanager extends Config
      */
     public function addZipArchive ($current = '', $ext = array(), $dir = '')
     {
-        if (Config::$mode == 'FTP') {
-            $tmpCurrent = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            file_put_contents($tmpCurrent, $this->file_get_contents($current));
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
+            $tmpCurrent = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            file_put_contents($tmpCurrent, Registry::getGmanager()->file_get_contents($current));
         } else {
             $tmpCurrent = $current;
         }
-        $tmpFolder = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+        $tmpFolder = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
         mkdir($tmpFolder, 0777);
 
 
@@ -2103,10 +2116,10 @@ class Gmanager extends Config
         foreach ($ext as $v) {
             $b = IOWrapper::set(basename($v));
             $tmp[] = $tmpFolder . '/' . $b;
-            if ($this->is_dir($v)) {
+            if (Registry::getGmanager()->is_dir($v)) {
                 mkdir($tmpFolder . '/' . $b, 0777, true);
             } else {
-                file_put_contents($tmpFolder . '/' . $b, $this->file_get_contents($v));
+                file_put_contents($tmpFolder . '/' . $b, Registry::getGmanager()->file_get_contents($v));
             }
         }
 
@@ -2114,8 +2127,8 @@ class Gmanager extends Config
         $zip = $this->_pclZip($tmpCurrent);
         $add = $zip->add($tmp, PCLZIP_OPT_ADD_PATH, IOWrapper::set($dir), PCLZIP_OPT_REMOVE_PATH, iconv_substr($tmpFolder, iconv_strlen(dirname(dirname($tmpFolder))) - 1));
 
-        if (Config::$mode == 'FTP') {
-            $this->file_put_contents($current, file_get_contents($tmpCurrent));
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
+            Registry::getGmanager()->file_put_contents($current, file_get_contents($tmpCurrent));
             unlink($tmpCurrent);
         }
         $this->clean($tmpFolder);
@@ -2138,30 +2151,30 @@ class Gmanager extends Config
      */
     public function addTarArchive ($current = '', $ext = array(), $dir = '')
     {
-        if (Config::$mode == 'FTP') {
-            $ftp_current = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            $ftp_name = Config::$temp . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
+            $ftp_current = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
             mkdir($ftp_name, 0777);
 
-            file_put_contents($ftp_current, $this->file_get_contents($current));
+            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
             $tmp = array();
             foreach ($ext as $v) {
                 $b = IOWrapper::set(basename($v));
                 $tmp[] = $ftp_name . $b;
-                file_put_contents($ftp_name . $b, $this->file_get_contents($v));
+                file_put_contents($ftp_name . $b, Registry::getGmanager()->file_get_contents($v));
             }
             $ext = $tmp;
             unset($tmp);
         }
 
-        $tgz = $this->_archiveTar(Config::$mode == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
 
         foreach ($ext as $v) {
             $add = $tgz->addModify($v, $dir, dirname($v));
         }
 
-        if (Config::$mode == 'FTP') {
-            $this->file_put_contents($current, file_get_contents($ftp_current));
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
+            Registry::getGmanager()->file_put_contents($current, file_get_contents($ftp_current));
             unlink($ftp_current);
             $this->clean($ftp_name);
         }
@@ -2186,35 +2199,35 @@ class Gmanager extends Config
      */
     public function createZipArchive ($name = '', $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
-        if (!$overwrite && $this->file_exists($name)) {
+        if (!$overwrite && Registry::getGmanager()->file_exists($name)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
         $this->createDir(iconv_substr($name, 0, strrpos($name, '/')));
 
-        if (Config::$mode == 'FTP') {
-             $ftp_name = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
+             $ftp_name = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'] . '.tmp';
              $ftp = array();
-             $temp = Config::$temp . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+             $temp = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
              mkdir($temp, 0755, true);
              foreach ($ext as $f) {
                  $ftp[] = $tmp = $temp . '/' . IOWrapper::get(basename($f));
-                 if ($this->is_dir($f)) {
+                 if (Registry::getGmanager()->is_dir($f)) {
                     mkdir($tmp, 0755, true);
                     $this->ftpCopyFiles($f, $tmp);
                  } else {
-                    file_put_contents($tmp, $this->file_get_contents($f));
+                    file_put_contents($tmp, Registry::getGmanager()->file_get_contents($f));
                  }
             }
             $ext = $ftp;
             unset($ftp);
         } else {
-            $temp = Config::$current;
+            $temp = Registry::get('current');
             $ext = array_map(array('IOWrapper', 'set'), $ext);
         }
 
         //TODO:empty directories
-        $zip = $this->_pclZip(Config::$mode == 'FTP' ? $ftp_name : $name);
+        $zip = $this->_pclZip(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name);
         if ($comment != '') {
             $zip->create($ext, PCLZIP_OPT_REMOVE_PATH, IOWrapper::set($temp), PCLZIP_OPT_COMMENT, $comment);
         } else {
@@ -2227,15 +2240,15 @@ class Gmanager extends Config
             $err = false;
         }
 
-        if (!$err && Config::$mode == 'FTP') {
-            if (!$this->file_put_contents($name, file_get_contents($ftp_name))) {
+        if (!$err && Config::get('Gmanager', 'mode') == 'FTP') {
+            if (!Registry::getGmanager()->file_put_contents($name, file_get_contents($ftp_name))) {
                 $zip->error_string = Errors::get();
             }
             unlink($ftp_name);
             $this->clean($temp);
         }
 
-        if ($err === false && $this->is_file($name)) {
+        if ($err === false && Registry::getGmanager()->is_file($name)) {
             if ($chmod) {
                 $this->rechmod($name, $chmod);
             }
@@ -2308,17 +2321,17 @@ class Gmanager extends Config
      */
     public function gz ($c = '')
     {
-        $data = Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c);
+        $data = Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c);
 
         $info = $this->getGzInfo($data);
         $ext = $this->getGzContent($data);
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd();
         }
 
         if ($ext) {
-            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . $this->formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::$date_format, $this->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
+            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . $this->formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), Registry::getGmanager()->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
         } else {
             return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
         }
@@ -2338,27 +2351,27 @@ class Gmanager extends Config
     {
         $this->createDir($name, $chmod[1]);
 
-        $tmp = (Config::$mode == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c));
+        $tmp = (Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c));
 
         $info = $this->getGzInfo($tmp);
 
         $data = null;
-        if ($overwrite || !$this->file_exists($name . '/' . $info['name'])) {
-            if (!$this->file_put_contents($name . '/' . $info['name'], $this->getGzContent($tmp))) {
+        if ($overwrite || !Registry::getGmanager()->file_exists($name . '/' . $info['name'])) {
+            if (!Registry::getGmanager()->file_put_contents($name . '/' . $info['name'], $this->getGzContent($tmp))) {
                 $data = Errors::message(Language::get('extract_file_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
             }
         } else {
             $data = Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name . '/' . $info['name'], ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
-        if (Config::$mode == 'FTP') {
+        if (Config::get('Gmanager', 'mode') == 'FTP') {
             $this->ftpArchiveEnd();
         }
         if ($data) {
             return $data;
         }
 
-        if ($this->is_file($name . '/' . $info['name'])) {
+        if (Registry::getGmanager()->is_file($name . '/' . $info['name'])) {
             if ($chmod[0]) {
                 $this->rechmod($name . '/' . $info['name'], $chmod[0]);
             }
@@ -2383,7 +2396,7 @@ class Gmanager extends Config
             $zip = $this->_pclZip($archive);
             $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $this->ftpArchiveEnd('');
             }
 
@@ -2399,7 +2412,7 @@ class Gmanager extends Config
             $entry = rar_entry_get($rar, $f);
 
             // создаем временный файл
-            $tmp = Config::$temp . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $tmp = Config::getTemp() . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $entry->extract(true, $tmp); // запишет сюда данные
 
             $ext = file_get_contents($tmp);
@@ -2427,7 +2440,7 @@ class Gmanager extends Config
             $dir = dirname($dir) . '/';
         }
 
-        if ($this->file_put_contents($dir . $name, file_get_contents($tmp))) {
+        if (Registry::getGmanager()->file_put_contents($dir . $name, file_get_contents($tmp))) {
             if ($chmod) {
                 $this->rechmod($dir . $name, $chmod);
             }
@@ -2472,7 +2485,7 @@ class Gmanager extends Config
         } else {
             $last = substr($name, -1);
             $temp = false;
-            if ($last != '/' && $this->is_dir($name)) {
+            if ($last != '/' && Registry::getGmanager()->is_dir($name)) {
                 $name .= '/';
                 $temp = true;
             }
@@ -2499,17 +2512,17 @@ class Gmanager extends Config
         $out = '';
         foreach ($tmp as $v) {
             $dir = dirname($v[1]);
-            if (!$this->is_dir($dir)) {
-                $this->mkdir($dir, 0755);
+            if (!Registry::getGmanager()->is_dir($dir)) {
+                Registry::getGmanager()->mkdir($dir, 0755);
             }
 
-            if (Config::$mode == 'FTP') {
+            if (Config::get('Gmanager', 'mode') == 'FTP') {
                 $tmp = $this->getData($v[0], $headers);
-                $r = $this->file_put_contents($v[1], $tmp['body']);
-                $this->chmod($v[1], $chmod);
+                $r = Registry::getGmanager()->file_put_contents($v[1], $tmp['body']);
+                Registry::getGmanager()->chmod($v[1], $chmod);
             } else {
                 ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
-                $r = $this->copy($v[0], $v[1], $chmod);
+                $r = Registry::getGmanager()->copy($v[0], $v[1], $chmod);
             }
 
             if ($r) {
@@ -2534,7 +2547,7 @@ class Gmanager extends Config
      */
     public function sendMail ($theme = '', $mess = '', $to = '', $from = '')
     {
-        if (mail($to, '=?UTF-8?B?' . base64_encode($theme) . '?=', wordwrap($mess, 70), 'From: ' . $from . "\r\nContent-type: text/plain; charset=UTF-8\r\nX-Mailer: Gmanager " . Config::$version)) {
+        if (mail($to, '=?UTF-8?B?' . base64_encode($theme) . '?=', wordwrap($mess, 70), 'From: ' . $from . "\r\nContent-type: text/plain; charset=UTF-8\r\nX-Mailer: Gmanager " . Config::getVersion())) {
             return Errors::message(Language::get('send_mail_true'), Errors::MESSAGE_OK);
         } else {
             return Errors::message(Language::get('send_mail_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -2609,8 +2622,8 @@ class Gmanager extends Config
             pclose($h);
         */
 
-        if (Config::$sysType == 'WIN') {
-            $cmd = iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $cmd);
+        if (Registry::get('sysType') == 'WIN') {
+            $cmd = iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $cmd);
         }
 
         if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
@@ -2628,7 +2641,7 @@ class Gmanager extends Config
             }
 
             if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
-                $buf = iconv(Config::$consencoding, 'UTF-8//TRANSLIT', $buf);
+                $buf = iconv(Config::get('Gmanager', 'consoleEncoding'), 'UTF-8//TRANSLIT', $buf);
             }
         } else {
             return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
@@ -2651,7 +2664,7 @@ class Gmanager extends Config
         if (!$from) {
             return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
         }
-        $c = $this->file_get_contents($current);
+        $c = Registry::getGmanager()->file_get_contents($current);
 
         if ($regexp) {
             preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
@@ -2661,7 +2674,7 @@ class Gmanager extends Config
             }
             $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
             if ($str) {
-                if (!$this->file_put_contents($current, $str)) {
+                if (!Registry::getGmanager()->file_put_contents($current, $str)) {
                     return Errors::message(Language::get('replace_false_file') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
                 }
             } else {
@@ -2673,7 +2686,7 @@ class Gmanager extends Config
                 return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
             }
 
-            if (!$this->file_put_contents($current, str_replace($from, $to, $c))) {
+            if (!Registry::getGmanager()->file_put_contents($current, str_replace($from, $to, $c))) {
                 return Errors::message(Language::get('replace_false_file') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
             }
 
@@ -2742,7 +2755,7 @@ class Gmanager extends Config
      */
     public function search ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
     {
-        $html = ListData::getListSearchData($this, $c, $s, $w, $r, $h, $limit, $archive);
+        $html = ListData::getListSearchData($c, $s, $w, $r, $h, $limit, $archive);
         if ($html) {
             return $html;
         } else {
@@ -2786,7 +2799,7 @@ class Gmanager extends Config
         }
         if (preg_match_all('/\[rand=*(\d*),*(\d*)\]/U', $name, $arr, PREG_SET_ORDER)) {
             foreach ($arr as $var) {
-                $name = str_replace($var[0], iconv_substr(str_shuffle(Config::$rand), 0, mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
+                $name = str_replace($var[0], iconv_substr(str_shuffle(Config::get('Gmanager', 'rand')), 0, mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
             }
         }
         $name = str_replace('[f]', $info['extension'], $name);
@@ -2796,22 +2809,22 @@ class Gmanager extends Config
         if ($register == 1) {
             $tmp = strtolower($name);
             if (!iconv_strlen($tmp)) {
-                $tmp = iconv(Config::$altencoding, 'UTF-8//TRANSLIT', strtolower(iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $name)));
+                $tmp = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8//TRANSLIT', strtolower(iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $name)));
             }
         } else if ($register == 2) {
             $tmp = strtoupper($name);
             if (!iconv_strlen($tmp)) {
-                $tmp = iconv(Config::$altencoding, 'UTF-8//TRANSLIT', strtoupper(iconv('UTF-8', Config::$altencoding . '//TRANSLIT', $name)));
+                $tmp = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8//TRANSLIT', strtoupper(iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $name)));
             }
         } else {
             $tmp = $name;
         }
 
-        if (!$overwrite && $$this->file_exists($info['dirname'] . '/' . $tmp)) {
+        if (!$overwrite && Registry::getGmanager()->file_exists($info['dirname'] . '/' . $tmp)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($info['dirname'] . '/' . $tmp, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
-        if ($this->rename($f, $info['dirname'] . '/' . $tmp)) {
+        if (Registry::getGmanager()->rename($f, $info['dirname'] . '/' . $tmp)) {
             return Errors::message($info['basename'] . ' - ' . $tmp, Errors::MESSAGE_OK);
         } else {
             return Errors::message(Errors::get() . ' ' . $info['basename'] . ' -&gt; ' . $tmp, Errors::MESSAGE_EMAIL);
@@ -2832,7 +2845,7 @@ class Gmanager extends Config
      */
     public function sqlInstaller ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
     {
-        $SQL = SQL::main($this, true);
+        $SQL = SQL::main(true);
         if (!$SQL) {
             return '';
         }
@@ -2853,7 +2866,7 @@ class Gmanager extends Config
      */
     public function sqlBackup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
-        $SQL = SQL::main($this);
+        $SQL = SQL::main();
         if (!$SQL) {
             return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         } else {
@@ -2875,7 +2888,7 @@ class Gmanager extends Config
      */
     public function sqlQuery ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
-        $SQL = SQL::main($this);
+        $SQL = SQL::main();
         if (!$SQL) {
             return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         } else {
@@ -2899,8 +2912,8 @@ class Gmanager extends Config
 
         $len = @iconv_strlen($str);
 
-        if ($len > Config::$link) {
-            $s = intval(Config::$link / 2);
+        if ($len > Config::get('Gmanager', 'maxLinkSize')) {
+            $s = intval(Config::get('Gmanager', 'maxLinkSize') / 2);
             return iconv_substr($str, 0, $s) . ' ... ' . iconv_substr($str, ($len - $s));
         }
 
@@ -3012,12 +3025,12 @@ class Gmanager extends Config
             }
 
             if (is_dir($from . '/' . $f)) {
-                $this->mkdir($to . '/' . $f, $chmodd);
+                Registry::getGmanager()->mkdir($to . '/' . $f, $chmodd);
                 $this->ftpMoveFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
                 rmdir($from . '/' . $f);
             } else {
-                if ($overwrite || !$this->file_exists($to . '/' . $f)) {
-                    $this->file_put_contents($to . '/' . $f, file_get_contents($from . '/' . $f));
+                if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
+                    Registry::getGmanager()->file_put_contents($to . '/' . $f, file_get_contents($from . '/' . $f));
                 }
 
                 $this->rechmod($to . '/' . $f, $chmodf);
@@ -3041,17 +3054,17 @@ class Gmanager extends Config
      */
     public function ftpCopyFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
-        foreach ($this->iterator($from) as $f) {
+        foreach (Registry::getGmanager()->iterator($from) as $f) {
             if ($f == '.' || $f == '..') {
                 continue;
             }
 
-            if ($this->is_dir($from . '/' . $f)) {
+            if (Registry::getGmanager()->is_dir($from . '/' . $f)) {
                 mkdir($to . '/' . $f, $chmodd);
                 $this->ftpCopyFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
             } else {
                 if ($overwrite || !file_exists($to . '/' . $f)) {
-                    file_put_contents($to . '/' . $f, $this->file_get_contents($from . '/' . $f));
+                    file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
                 }
             }
         }
@@ -3066,8 +3079,8 @@ class Gmanager extends Config
      */
     public function ftpArchiveStart ($current = '')
     {
-        self::$_ftpArchive = Config::$temp . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
-        file_put_contents(self::$_ftpArchive, $this->file_get_contents($current));
+        self::$_ftpArchive = Config::getTemp() . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        file_put_contents(self::$_ftpArchive, Registry::getGmanager()->file_get_contents($current));
         return self::$_ftpArchive;
     }
 
@@ -3081,7 +3094,7 @@ class Gmanager extends Config
     public function ftpArchiveEnd ($current = '')
     {
         if ($current != '') {
-            $this->file_put_contents($current, file_get_contents(self::$_ftpArchive));
+            Registry::getGmanager()->file_put_contents($current, file_get_contents(self::$_ftpArchive));
         }
         unlink(self::$_ftpArchive);
     }
@@ -3136,7 +3149,7 @@ class Gmanager extends Config
      */
     public static function id2name ($id = 0)
     {
-        if (Config::$sysType == 'WIN') {
+        if (Registry::get('sysType') == 'WIN') {
             return '';
         } else {
             if (function_exists('posix_getpwuid') && $name = @posix_getpwuid($id)) {
@@ -3161,7 +3174,7 @@ class Gmanager extends Config
             return posix_getpwuid(posix_geteuid());
         }
 
-        return array();
+        return array('name' => '', 'passwd' => '', 'uid' => '', 'gid' => '', 'gecos' => '', 'dir' => '', 'shell' => '');
     }
 
 
@@ -3203,7 +3216,7 @@ class Gmanager extends Config
      */
     private function _pclZip($file)
     {
-        return new PclZip(Config::$mode == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
+        return new PclZip(Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
     }
 
 
@@ -3215,7 +3228,7 @@ class Gmanager extends Config
      */
     private function _archiveTar($file)
     {
-        return new Archive_Tar(Config::$mode == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
+        return new Archive_Tar(Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
     }
 
 
@@ -3227,7 +3240,7 @@ class Gmanager extends Config
      */
     private function _rarOpen($file)
     {
-        return rar_open(Config::$mode == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
+        return rar_open(Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($file) : IOWrapper::set($file));
     }
 
 
@@ -3241,9 +3254,9 @@ class Gmanager extends Config
     {
         header('Content-Type: text/html; charset=UTF-8');
 
-        if (Config::$sysType == 'WIN' && ob_start()) {
+        if (Registry::get('sysType') == 'WIN' && ob_start()) {
             phpinfo($what);
-            $phpinfo = iconv(Config::$altencoding, 'UTF-8', ob_get_contents());
+            $phpinfo = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8', ob_get_contents());
             ob_end_clean();
             echo $phpinfo;
         } else {
