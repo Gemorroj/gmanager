@@ -99,7 +99,7 @@ class Config
      */
     public static function getTemp ()
     {
-        return dirname(__FILE__) . '/../data';
+        return realpath(dirname(__FILE__) . '/../data');
     }
 
 

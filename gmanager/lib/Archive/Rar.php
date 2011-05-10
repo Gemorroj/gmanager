@@ -130,6 +130,7 @@ class Archive_Rar implements Archive_Interface
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             Registry::getGmanager()->createDir($sysName);
             Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
+            Registry::getGmanager()->ftpArchiveEnd();
             unlink($ftp_current);
         }
 
@@ -176,6 +177,7 @@ class Archive_Rar implements Archive_Interface
                 $entry = rar_entry_get($rar, $n);
                 if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
                     if (Config::get('Gmanager', 'mode') == 'FTP') {
+                        Registry::getGmanager()->ftpArchiveEnd();
                         unlink($ftp_current);
                         rmdir($ftp_name);
                     }
@@ -193,6 +195,7 @@ class Archive_Rar implements Archive_Interface
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             Registry::getGmanager()->createDir($sysName, $chmod[1]);
             Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
+            Registry::getGmanager()->ftpArchiveEnd();
             unlink($ftp_current);
         }
 
@@ -226,7 +229,7 @@ class Archive_Rar implements Archive_Interface
         unlink($tmp);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd('');
+            Registry::getGmanager()->ftpArchiveEnd();
         }
 
         if (!$ext) {
@@ -298,7 +301,7 @@ class Archive_Rar implements Archive_Interface
 
         if (!$list = rar_list($rar)) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd('');
+                Registry::getGmanager()->ftpArchiveEnd();
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {

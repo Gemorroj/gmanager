@@ -1660,14 +1660,15 @@ class Gmanager
      * ftpArchiveEnd
      * 
      * @param string $current
-     * @return void
+     * @return bool
      */
     public function ftpArchiveEnd ($current = '')
     {
         if ($current != '') {
-            Registry::getGmanager()->file_put_contents($current, file_get_contents(self::$_ftpArchive));
+            $result = Registry::getGmanager()->file_put_contents($current, file_get_contents(self::$_ftpArchive));
         }
         unlink(self::$_ftpArchive);
+        return (bool)$result;
     }
 
 
