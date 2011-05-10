@@ -130,7 +130,7 @@ switch ($_GET['go']) {
         }
 
         if ($archive == 'ZIP') {
-            Registry::set('', 'zip');
+            Registry::set('archiveDriver', 'zip');
             $content = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
             $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
             $f = '&amp;f=' . rawurlencode($_GET['f']);
