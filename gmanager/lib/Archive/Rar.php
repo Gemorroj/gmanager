@@ -106,18 +106,15 @@ class Archive_Rar implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::getTemp() . '/GmanagerFtpRarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
-            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $rar = $this->_rarOpen(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
+        $rar = $this->_rarOpen($current);
 
         foreach ($ext as $var) {
             $entry = rar_entry_get($rar, $var);
             if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
-                    unlink($ftp_current);
                 }
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
             } else if (!Registry::getGmanager()->file_exists((Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
@@ -131,7 +128,6 @@ class Archive_Rar implements Archive_Interface
             Registry::getGmanager()->createDir($sysName);
             Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             Registry::getGmanager()->ftpArchiveEnd();
-            unlink($ftp_current);
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
@@ -160,13 +156,11 @@ class Archive_Rar implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::getTemp() . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
-            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $rar = $this->_rarOpen(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
+        $rar = $this->_rarOpen($current);
         $err = '';
         foreach (rar_list($rar) as $f) {
             $n = $f->getName();
@@ -178,7 +172,6 @@ class Archive_Rar implements Archive_Interface
                 if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
                     if (Config::get('Gmanager', 'mode') == 'FTP') {
                         Registry::getGmanager()->ftpArchiveEnd();
-                        unlink($ftp_current);
                         rmdir($ftp_name);
                     }
                     $err .= str_replace('%file%', htmlspecialchars($n, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
@@ -196,7 +189,6 @@ class Archive_Rar implements Archive_Interface
             Registry::getGmanager()->createDir($sysName, $chmod[1]);
             Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             Registry::getGmanager()->ftpArchiveEnd();
-            unlink($ftp_current);
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {

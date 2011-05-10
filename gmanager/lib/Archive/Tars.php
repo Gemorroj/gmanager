@@ -54,11 +54,9 @@ class Archive_Tars implements Archive_Interface
     public function addFile ($current = '', $ext = array(), $dir = '')
     {
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $ftp_current = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
             mkdir($ftp_name, 0777);
 
-            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
             $tmp = array();
             foreach ($ext as $v) {
                 $b = IOWrapper::set(basename($v));
@@ -69,7 +67,7 @@ class Archive_Tars implements Archive_Interface
             unset($tmp);
         }
 
-        $tgz = $this->_archiveTar(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar($current);
 
         foreach ($ext as $v) {
             $add = $tgz->addModify($v, $dir, dirname($v));
@@ -79,7 +77,6 @@ class Archive_Tars implements Archive_Interface
             if (!Registry::getGmanager()->ftpArchiveEnd($current)) {
                 $zip->error_string = Errors::get();
             }
-            unlink($ftp_current);
             Registry::getGmanager()->clean($ftp_name);
         }
 
@@ -169,17 +166,14 @@ class Archive_Tars implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
                $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-               $ftp_current = Config::getTemp() . '/GmanagerFtpTarArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
                $ftp_name = Config::getTemp() . '/GmanagerFtpTarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
-               file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $tgz = $this->_archiveTar(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar($current);
 
         if (!$tgz->extractList($ext, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Registry::getGmanager()->ftpArchiveEnd();
-                unlink($ftp_current);
             }
             return Errors::message(Language::get('extract_file_false'), Errors::MESSAGE_EMAIL);
         }
@@ -188,7 +182,6 @@ class Archive_Tars implements Archive_Interface
             Registry::getGmanager()->createDir($sysName);
             Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             Registry::getGmanager()->ftpArchiveEnd();
-            unlink($ftp_current);
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
@@ -217,13 +210,11 @@ class Archive_Tars implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_current = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '.tmp';
             $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'];
             mkdir($ftp_name, 0777);
-            file_put_contents($ftp_current, Registry::getGmanager()->file_get_contents($current));
         }
 
-        $tgz = $this->_archiveTar(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_current : $current);
+        $tgz = $this->_archiveTar($current);
         $extract = $tgz->listContent();
         $err = '';
 
@@ -249,7 +240,6 @@ class Archive_Tars implements Archive_Interface
         if (!$res) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Registry::getGmanager()->ftpArchiveEnd();
-                unlink($ftp_current);
                 rmdir($ftp_name);
             }
             return Errors::message(Language::get('extract_false'), Errors::MESSAGE_EMAIL);
@@ -267,7 +257,6 @@ class Archive_Tars implements Archive_Interface
             Registry::getGmanager()->createDir($sysName, $chmod[1]);
             Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             Registry::getGmanager()->ftpArchiveEnd();
-            unlink($ftp_current);
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
