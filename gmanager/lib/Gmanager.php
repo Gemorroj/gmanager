@@ -594,7 +594,7 @@ class Gmanager
         if ($err) {
             return Errors::message(Language::get('create_dir_false') . '<br/>' . $err, Errors::MESSAGE_EMAIL);
         } else {
-            return Errors::message(Language::get('create_dir_true'), Errors::MESSAGE_EMAIL);
+            return Errors::message(Language::get('create_dir_true'), Errors::MESSAGE_OK);
         }
     }
 
