@@ -53,3 +53,5 @@ class Config_Ini implements Config_Interface
         return $this->_config[$section];
     }
 }
+
+?>
