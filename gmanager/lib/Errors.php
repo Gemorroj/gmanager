@@ -19,13 +19,23 @@ class Errors
     const MESSAGE_FAIL = 1;
     const MESSAGE_EMAIL = 2;
 
+    /**
+     * Error message
+     * 
+     * @var string
+     */
     private static $_php_errormsg;
 
 
     /**
      * Trace log file
+     * 
+     * @return string
      */
-    private static $_traceFile = '/GmanagerTrace.log';
+    private static function _getTraceFile ()
+    {
+        return dirname(__FILE__) . '/../data/GmanagerTrace.log';
+    }
 
 
     /**
@@ -93,7 +103,7 @@ class Errors
                     break;
             }
         } else {
-            if (!Config::get('Gmanager', 'trace') || !is_writable(self::$_traceFile)) {
+            if (!Config::get('Gmanager', 'trace') || !is_writable(self::_getTraceFile())) {
                 return true;
             }
 
@@ -101,7 +111,7 @@ class Errors
                 case E_USER_ERROR:
                     @ob_end_clean();
                     echo ini_get('error_prepend_string') . 'USER ERROR: ' . $errstr . '<br/>Fatal error on line ' . $errline . ' ' . $errfile . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')<br/>Aborting...' . ini_get('error_append_string');
-                    file_put_contents(self::$_traceFile, 'USER ERROR: ' . $errstr . '. Fatal error on line ' . $errline . ' ' . $errfile . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::_getTraceFile(), 'USER ERROR: ' . $errstr . '. Fatal error on line ' . $errline . ' ' . $errfile . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     exit;
                     break;
 
@@ -109,45 +119,45 @@ class Errors
                 case E_WARNING:
                 case E_USER_WARNING:
                     self::$_php_errormsg = 'WARNING: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
 
 
                 case E_NOTICE:
                 case E_USER_NOTICE:
                     self::$_php_errormsg = 'NOTICE: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
 
 
                 case E_STRICT:
                     self::$_php_errormsg = 'STRICT: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
 
 
                 case E_RECOVERABLE_ERROR:
                     self::$_php_errormsg = 'RECOVERABLE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
 
 
                 case E_PARSE:
                     self::$_php_errormsg = 'PARSE ERROR: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
 
 
                 case E_DEPRECATED:
                 case E_USER_DEPRECATED:
                     self::$_php_errormsg = 'DEPRECATED: ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
 
 
                 default:
                     self::$_php_errormsg = 'Error type: [' . $errno . '], ' . $errstr . ' on line ' . $errline . ' ' . $errfile;
-                    file_put_contents(self::$_traceFile, self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
+                    file_put_contents(self::$_getTraceFile(), self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
                     break;
             }
         }
