@@ -27,6 +27,7 @@ class FTP extends Gmanager
         $this->_res = ftp_connect($host, $port, 10);
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
+
         Registry::set('sysType', strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX');
 
         // URL
@@ -530,7 +531,7 @@ class FTP extends Gmanager
             $raw_dir = $match[1] ? '/' . $match[1] : '/';
         }
 
-        foreach ((array)ftp_rawlist($this->_res, '/' . IOWrapper::set($raw_dir)) as $var) {
+        foreach ((array)ftp_rawlist($this->_res, '-A /' . IOWrapper::set($raw_dir)) as $var) {
             if (substr($var, -3) == ' ..') {
                 continue;
             } else {
