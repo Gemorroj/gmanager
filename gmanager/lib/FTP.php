@@ -513,7 +513,12 @@ class FTP extends Gmanager
     public function realpath ($path)
     {
         //return IOWrapper::get(realpath(IOWrapper::set($path)));
-        return $path;
+
+        $str = preg_replace('/\/(?:\/*)/', '/', preg_replace('/\w+\/\.\.\//', '', str_replace('\\', '/', $path)));
+        if (iconv_substr($str, -1) === '/') {
+            return iconv_substr($str, 0, -1);
+        }
+        return $str;
     }
 
 
