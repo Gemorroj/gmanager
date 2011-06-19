@@ -656,17 +656,22 @@ class Gmanager
     /**
      * syntax
      * 
-     * @param string $current
+     * @param string $content
      * @param array  $charset
      * @return string
      */
-    public function syntax ($current = '', $charset = array())
+    public function syntax ($content = '', $charset = array())
     {
-        if (!Registry::getGmanager()->is_file($current)) {
-            return Errors::message(Language::get('not_found'), Errors::MESSAGE_EMAIL);
+        $tmp = Config::getTemp() . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $fp = fopen($tmp, 'w');
+        if (!$fp) {
+            return Errors::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Errors::MESSAGE_FAIL);
         }
+        fputs($fp, $content);
+        fclose($fp); 
 
-        exec(escapeshellcmd(Config::get('PHP', 'path')) . ' -c -f -l ' . escapeshellarg($current), $rt, $v);
+        exec(escapeshellcmd(Config::get('PHP', 'path')) . ' -c -f -l ' . escapeshellarg($tmp), $rt, $v);
+        unlink($tmp);
         $error = Errors::get();
         $size = sizeof($rt);
 
@@ -678,7 +683,7 @@ class Gmanager
         if ($v == 255 || $size > 2) {
             if ($st = trim(strip_tags($rt[1]))) {
                 $erl = preg_replace('/.*\s(\d*)$/', '$1', $st, 1);
-                $pg = $st;
+                $pg = str_replace($tmp, '...', $st);
             } else {
                 $pg = Language::get('syntax_unknown');
             }
@@ -686,23 +691,22 @@ class Gmanager
             $pg = Language::get('syntax_true');
         }
 
-        $fl = trim(Registry::getGmanager()->file_get_contents($current));
         if ($charset[0]) {
-            $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
+            $content = iconv($charset[0], $charset[1] . '//TRANSLIT', $content);
         }
 
-        return Errors::message($pg, $erl ? Errors::MESSAGE_FAIL : Errors::MESSAGE_OK) . $this->code($fl, $erl);
+        return Errors::message($pg, $erl ? Errors::MESSAGE_FAIL : Errors::MESSAGE_OK) . $this->code($content, $erl);
     }
 
 
     /**
      * syntaxWapinet
      * 
-     * @param string $current
+     * @param string $content
      * @param array  $charset
      * @return string
      */
-    public function syntaxWapinet ($current = '', $charset = array())
+    public function syntaxWapinet ($content = '', $charset = array())
     {
         if (!$charset[0]) {
             $charset[0] = 'UTF-8';
@@ -712,15 +716,15 @@ class Gmanager
             return Errors::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Errors::MESSAGE_FAIL);
         }
 
-        $f = rawurlencode(trim(Registry::getGmanager()->file_get_contents($current)));
+        $content = rawurlencode(trim($content));
 
         fputs($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
-            'Content-length: ' . (iconv_strlen($f) + 2) . "\r\n" .
+            'Content-length: ' . (iconv_strlen($content) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
             'Connection: close' . "\r\n" .
             'User-Agent: GManager ' . Config::getVersion() . "\r\n\r\n" .
-            'f=' . $f . "\r\n\r\n");
+            'f=' . $content . "\r\n\r\n");
 
         $r = '';
         while ($r != "\r\n") {
@@ -732,40 +736,6 @@ class Gmanager
         }
         fclose($fp);
         return trim($r);
-    }
-
-
-    /**
-     * zipSyntax
-     * 
-     * @param string $current
-     * @param string $f
-     * @param array  $charset
-     * @return string
-     */
-    public function zipSyntax ($current = '', $f = '', $charset = array())
-    {
-        Registry::set('archiveDriver', 'zip');
-        $content = Archive::main()->getEditFile($current, $f);
-
-        $tmp = Config::getTemp() . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
-        $fp = fopen($tmp, 'w');
-
-        if (!$fp) {
-            return Errors::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Errors::MESSAGE_FAIL);
-        }
-
-        fputs($fp, $content['text']);
-        fclose($fp);
-
-        if (Config::get('Gmanager', 'syntax') == Config::SYNTAX_WAPINET) {
-            $pg = $this->syntaxWapinet($tmp, $charset);
-        } else {
-            $pg = $this->syntax($tmp, $charset);
-        }
-        unlink($tmp);
-
-        return $pg;
     }
 
 

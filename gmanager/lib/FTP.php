@@ -512,7 +512,8 @@ class FTP extends Gmanager
      */
     public function realpath ($path)
     {
-        return IOWrapper::get(realpath(IOWrapper::set($path)));
+        //return IOWrapper::get(realpath(IOWrapper::set($path)));
+        return $path;
     }
 
 

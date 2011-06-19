@@ -94,13 +94,17 @@ switch ($_GET['go']) {
 
     case 'syntax':
         if ($archive == 'ZIP') {
-            echo Registry::getGmanager()->zipSyntax(Registry::get('current'), $_GET['f'], $charset);
+            Registry::set('archiveDriver', 'zip');
+            $content = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
+            $content = $content['text'];
         } else {
-            if (Config::get('Gmanager', 'syntax') == Config::SYNTAX_WAPINET) {
-                echo Registry::getGmanager()->syntaxWapinet(Registry::get('current'), $charset);
-            } else {
-                echo Registry::getGmanager()->syntax(Registry::get('current'), $charset);
-            }
+            $content = Registry::getGmanager()->file_get_contents(Registry::get('current'));            
+        }
+
+        if (Config::get('Gmanager', 'syntax') == Config::SYNTAX_WAPINET) {
+            echo Registry::getGmanager()->syntaxWapinet($content, $charset);
+        } else {
+            echo Registry::getGmanager()->syntax($content, $charset);
         }
         break;
 
