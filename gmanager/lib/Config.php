@@ -49,6 +49,7 @@ class Config
 
         ini_set('error_prepend_string', '<div class="red">');
         ini_set('error_append_string', '</div><div class="rb"><br/></div>' . Registry::get('foot'));
+        ini_set('error_log', Errors::getTraceFile());
         set_error_handler('Errors::errorHandler');
 
         if (self::get('Gmanager', 'mode') === 'FTP') {

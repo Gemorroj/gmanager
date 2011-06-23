@@ -1452,10 +1452,15 @@ class Gmanager
         }
 
         $len = @iconv_strlen($str);
+        $maxLen = Config::get('Gmanager', 'maxLinkSize');
 
-        if ($len > Config::get('Gmanager', 'maxLinkSize')) {
-            $s = intval(Config::get('Gmanager', 'maxLinkSize') / 2);
-            return iconv_substr($str, 0, $s) . ' ... ' . iconv_substr($str, ($len - $s));
+        if ($len > $maxLen) {
+            $start = ceil($maxLen / 2);
+            $end = $len - $start;
+            if ($maxLen % 2) {
+                $end += 1;
+            }
+            return iconv_substr($str, 0, $start) . ' ... ' . iconv_substr($str, $end);
         }
 
         return $str;
