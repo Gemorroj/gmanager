@@ -157,20 +157,21 @@ class Gmanager
     public function staticName ($current = '', $dest = '')
     {
         $substr = 'iconv_substr';
-        if (!$len = iconv_strlen($current)) {
+        if (!($len = iconv_strlen($current))) {
             $len = strlen($current);
             $substr = 'substr';
         }
 
         if ($substr($dest, 0, $len) == $current) {
             $static = $substr($dest, $len);
-    
+
             if (strpos($static, '/')) {
                 $static = strtok($static, '/');
             }
         } else {
             return '';
         }
+
         return $static;
     }
 
@@ -226,16 +227,37 @@ class Gmanager
      */
     public function copyD ($source = '', $to = '')
     {
-        $ex = explode('/', $source);
-        $tmp1 = $tmp2 = '';
+        $arrSource = explode('/', $source);
+        $tmpSet = $tmpSource = '';
+        $tmpAdd = array();
+        $i = 0;
 
         foreach (explode('/', $to) as $var) {
-            $ch = each($ex);
-            $tmp1 .= $var . '/';
-            $tmp2 .= $ch[1] . '/';
+            $instSource = isset($arrSource[$i]) ? $arrSource[$i] : null;
+            $i++;
 
-            if (!Registry::getGmanager()->is_dir($tmp1)) {
-                Registry::getGmanager()->mkdir($tmp1, $this->lookChmod($tmp2));
+            $tmpSet .= $var . '/';
+            if ($instSource !== null) {
+                $tmpSource .= $instSource . '/';
+
+                if ($var != $instSource) {
+                    $tmpAdd[] = array('dir' => $instSource, 'chmod' => $this->lookChmod($tmpSource));
+                }
+            }
+
+            if (!Registry::getGmanager()->is_dir($tmpSet)) {
+                Registry::getGmanager()->mkdir($tmpSet, $instSource !== null ? $this->lookChmod($tmpSource) : null);
+            }
+        }
+
+        if ($tmpAdd) {
+            $checkTo = $to;
+            foreach ($tmpAdd as $v) {
+                $checkTo .= '/' . $v['dir'];
+
+                if (!Registry::getGmanager()->is_dir($checkTo)) {
+                    Registry::getGmanager()->mkdir($checkTo, $v['chmod']);
+                }
             }
         }
     }
@@ -255,6 +277,7 @@ class Gmanager
         $error = array();
 
         foreach (Registry::getGmanager()->iterator($d) as $file) {
+
             if ($file == $static) {
                 continue;
             }
