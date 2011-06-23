@@ -49,8 +49,6 @@ class Errors
      */
     public static function errorHandler ($errno, $errstr, $errfile, $errline)
     {
-        echo 1;
-        exit;
         if (!defined('E_DEPRECATED')) {
             define('E_DEPRECATED', 8192);
         }
@@ -105,7 +103,7 @@ class Errors
                     break;
             }
         } else {
-            if (!Config::get('Gmanager', 'trace') || !is_writable(self::getTraceFile())) {
+            if (!Config::get('Gmanager', 'trace') || !is_writable(dirname(self::getTraceFile())) || (file_exists(self::getTraceFile()) && !is_writable(self::getTraceFile()))) {
                 return true;
             }
 
