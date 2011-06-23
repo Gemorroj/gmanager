@@ -31,7 +31,7 @@ class Auth
         }
         // CGI fix
 
-        if (@$_SERVER['PHP_AUTH_USER'] != Config::get('Auth', 'user') || @$_SERVER['PHP_AUTH_PW'] != Config::get('Auth', 'pass')) {
+        if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) || $_SERVER['PHP_AUTH_USER'] != Config::get('Auth', 'user') || $_SERVER['PHP_AUTH_PW'] != Config::get('Auth', 'pass')) {
             header('WWW-Authenticate: Basic realm="Authentification"');
             header($_SERVER['SERVER_PROTOCOL'] . ' 401 Unauthorized');
             header('Content-type: text/html; charset=UTF-8');
