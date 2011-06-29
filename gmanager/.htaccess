@@ -55,6 +55,5 @@ php_value mbstring.func_overload 0
 #php_value highlight.string #ff0000
 #php_value highlight.comment #909090
 #php_value highlight.keyword #000000
-#php_value highlight.bg #efefff
 #php_value highlight.default #0000ff
 #php_value highlight.html #000090
