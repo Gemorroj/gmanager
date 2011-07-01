@@ -36,7 +36,7 @@ class Archive
 
             case 'rar':
                 if (extension_loaded('rar')) {
-                    return new Rachive_Rar;
+                    return new Archive_Rar;
                 }
                 break;
         }
