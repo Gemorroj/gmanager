@@ -37,8 +37,7 @@ class Patterns
     public function set ($patterns = array())
     {
         foreach ($patterns as $pattern) {
-            $tmp = 'Patterns_' . $pattern;
-            $this->_patterns[$pattern] = $tmp::get();
+            $this->_patterns[$pattern] = call_user_func('Patterns_' . $pattern . '::get');
         }
 
         return $this;
