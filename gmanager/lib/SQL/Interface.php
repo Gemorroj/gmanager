@@ -15,9 +15,9 @@
 
 interface SQL_Interface
 {
-    public function installer ($host, $name, $pass, $db, $charset, $sql);
-    public function backup ($host, $name, $pass, $db, $charset, $tables = array());
-    public function query ($host, $name, $pass, $db, $charset, $data);
+    public function installer ($host = null, $name = null, $pass = null, $db = '', $charset = null, $sql = '');
+    public function backup ($host = null, $name = null, $pass = null, $db = '', $charset = null, $tables = array());
+    public function query ($host = null, $name = null, $pass = null, $db = '', $charset = null, $data = '');
 }
 
 ?>

@@ -37,7 +37,7 @@ class Archive_Tars implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function createArchive ($name = '', $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
     }
@@ -51,7 +51,7 @@ class Archive_Tars implements Archive_Interface
      * @param string $dir
      * @return string
      */
-    public function addFile ($current = '', $ext = array(), $dir = '')
+    public function addFile ($current, $ext = array(), $dir = '')
     {
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
@@ -95,7 +95,7 @@ class Archive_Tars implements Archive_Interface
      * @param string $f
      * @return string
      */
-    public function delFile ($current = '', $f = '')
+    public function delFile ($current, $f = '')
     {
         $tgz = $this->_archiveTar($current);
 
@@ -140,7 +140,7 @@ class Archive_Tars implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current = '', $name = '', $chmod = '', $ext = '', $overwrite = false)
+    public function extractFile ($current, $name = '', $chmod = '', $ext = '', $overwrite = false)
     {
         $tmp = array();
         $err = '';
@@ -204,7 +204,7 @@ class Archive_Tars implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function extractArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false)
     {
         $sysName = IOWrapper::set($name);
 
@@ -276,7 +276,7 @@ class Archive_Tars implements Archive_Interface
      * @param string $str
      * @return string
      */
-    public function lookFile ($current = '', $f = '', $str = false)
+    public function lookFile ($current, $f = '', $str = false)
     {
         $tgz = $this->_archiveTar($current);
         $ext = $tgz->extractInString($f);
@@ -316,7 +316,7 @@ class Archive_Tars implements Archive_Interface
      * @param string $f
      * @return array
      */
-    public function getEditFile ($current = '', $f = '')
+    public function getEditFile ($current, $f = '')
     {
         return array('text' => Language::get('not_supported'), 'size' => 0, 'lines' => 0);
     }
@@ -330,20 +330,20 @@ class Archive_Tars implements Archive_Interface
      * @param string $text
      * @return string
      */
-    public function setEditFile ($current = '', $f = '', $text = '')
+    public function setEditFile ($current, $f = '', $text = '')
     {
         return Errors::message(Language::get('not_supported'), Errors::MESSAGE_EMAIL);
     }
 
 
     /**
-     * listTarArchive
+     * listArchive
      * 
      * @param string $current
      * @param string $down
      * @return string
      */
-    public function listTarArchive ($current = '', $down = '')
+    public function listArchive ($current, $down = '')
     {
         $tgz = $this->_archiveTar($current);
 

@@ -37,7 +37,7 @@ class Archive_Zip implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function createArchive ($name = '', $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         if (!$overwrite && Registry::getGmanager()->file_exists($name)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
@@ -100,7 +100,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $dir
      * @return string
      */
-    public function addFile ($current = '', $ext = array(), $dir = '')
+    public function addFile ($current, $ext = array(), $dir = '')
     {
         $tmpFolder = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
         mkdir($tmpFolder, 0777);
@@ -143,7 +143,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $f
      * @return string
      */
-    public function delFile ($current = '', $f = '')
+    public function delFile ($current, $f = '')
     {
         $zip = $this->_pclZip($current);
         //    $comment = $zip->properties();
@@ -182,7 +182,7 @@ class Archive_Zip implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current = '', $name = '', $chmod = '', $fl = '', $overwrite = false)
+    public function extractFile ($current, $name = '', $chmod = '', $fl = '', $overwrite = false)
     {
         $err = '';
         if ($overwrite) {
@@ -252,7 +252,7 @@ class Archive_Zip implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function extractArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false)
     {
         $sysName = IOWrapper::set($name);
         Registry::set('extractArchiveDirectoryChmod', $chmod[1]);
@@ -325,7 +325,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $str
      * @return string
      */
-    public function lookFile ($current = '', $f = '', $str = false)
+    public function lookFile ($current, $f = '', $str = false)
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $r_f = str_replace('%2F', '/', rawurlencode($f));
@@ -358,7 +358,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $f
      * @return array
      */
-    public function getEditFile ($current = '', $f = '')
+    public function getEditFile ($current, $f = '')
     {
         $zip = $this->_pclZip($current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
@@ -383,7 +383,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $text
      * @return string
      */
-    public function setEditFile ($current = '', $f = '', $text = '')
+    public function setEditFile ($current, $f = '', $text = '')
     {
         Registry::set('setEditFile', $f);
 
@@ -439,7 +439,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $down
      * @return string
      */
-    public function listArchive ($current = '', $down = '')
+    public function listArchive ($current, $down = '')
     {
         //TODO: refactoring to ListData
         $r_current = str_replace('%2F', '/', rawurlencode($current));

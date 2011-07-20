@@ -37,7 +37,7 @@ class Archive_Rar implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function createArchive ($name = '', $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
     }
@@ -51,7 +51,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $dir
      * @return string
      */
-    public function addFile ($current = '', $ext = array(), $dir = '')
+    public function addFile ($current, $ext = array(), $dir = '')
     {
         return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
     }
@@ -64,7 +64,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $f
      * @return string
      */
-    public function delFile ($current = '', $f = '')
+    public function delFile ($current, $f = '')
     {
         return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
     }
@@ -80,7 +80,7 @@ class Archive_Rar implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current = '', $name = '', $chmod = '', $ext = '', $overwrite = false)
+    public function extractFile ($current, $name = '', $chmod = '', $ext = '', $overwrite = false)
     {
         $tmp = array();
         $err = '';
@@ -150,7 +150,7 @@ class Archive_Rar implements Archive_Interface
      * @param bool   $overwrite
      * @return string
      */
-    public function extractArchive ($current = '', $name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false)
     {
         $sysName = IOWrapper::set($name);
 
@@ -208,7 +208,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $str
      * @return string
      */
-    public function lookFile ($current = '', $f = '', $str = false)
+    public function lookFile ($current, $f = '', $str = false)
     {
         $rar = $this->_rarOpen($current);
         $entry = rar_entry_get($rar, $f);
@@ -243,7 +243,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $f
      * @return array
      */
-    public function getEditFile ($current = '', $f = '')
+    public function getEditFile ($current, $f = '')
     {
         return array('text' => Language::get('not_supported'), 'size' => 0, 'lines' => 0);
     }
@@ -257,7 +257,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $text
      * @return string
      */
-    public function setEditFile ($current = '', $f = '', $text = '')
+    public function setEditFile ($current, $f = '', $text = '')
     {
         return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
     }
@@ -286,7 +286,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $down
      * @return string
      */
-    public function listArchive ($current = '', $down = '')
+    public function listArchive ($current, $down = '')
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $rar = $this->_rarOpen($current);

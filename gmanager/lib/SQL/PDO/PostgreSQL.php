@@ -52,7 +52,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
      * @param string $sql
      * @return string
      */
-    public function installer ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
+    public function installer ($host = null, $name = null, $pass = null, $db = '', $charset = null, $sql = '')
     {
         if (!$sql || !$query = SQL::parser($sql)) {
             return '';
@@ -144,7 +144,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
      * @param array  $tables
      * @return mixed
      */
-    public function backup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
+    public function backup ($host = null, $name = null, $pass = null, $db = '', $charset = null, $tables = array())
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
         if (is_object($connect)) {
@@ -226,7 +226,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
      * @param string $data
      * @return string
      */
-    public function query ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
+    public function query ($host = null, $name = null, $pass = null, $db = '', $charset = null, $data = '')
     {
         $connect = $this->_connect($host, $name, $pass, $db, $charset);
         if (is_object($connect)) {
