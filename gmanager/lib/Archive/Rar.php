@@ -106,7 +106,7 @@ class Archive_Rar implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
         $rar = $this->_rarOpen($current);
@@ -156,7 +156,7 @@ class Archive_Rar implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . $_SERVER['REQUEST_TIME'];
+            $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
 
@@ -214,7 +214,7 @@ class Archive_Rar implements Archive_Interface
         $entry = rar_entry_get($rar, $f);
 
         // создаем временный файл
-        $tmp = Config::getTemp() . '/GmanagerRAR' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $tmp = Config::getTemp() . '/GmanagerRAR' . GMANAGER_REQUEST_TIME . '.tmp';
         $entry->extract(true, $tmp); // запишет сюда данные
 
         $ext = file_get_contents($tmp);

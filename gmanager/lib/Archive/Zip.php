@@ -46,7 +46,7 @@ class Archive_Zip implements Archive_Interface
         Registry::getGmanager()->createDir(iconv_substr($name, 0, strrpos($name, '/')));
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $temp = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+            $temp = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
             $ftp = array();
             mkdir($temp, 0755, true);
             foreach ($ext as $f) {
@@ -102,7 +102,7 @@ class Archive_Zip implements Archive_Interface
      */
     public function addFile ($current, $ext = array(), $dir = '')
     {
-        $tmpFolder = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+        $tmpFolder = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
         mkdir($tmpFolder, 0777);
 
         $tmp = array();
@@ -207,7 +207,7 @@ class Archive_Zip implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpZipFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpZipFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
         $zip = $this->_pclZip($current);
@@ -270,7 +270,7 @@ class Archive_Zip implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpZip' . $_SERVER['REQUEST_TIME'];
+            $ftp_name = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
 
@@ -387,7 +387,7 @@ class Archive_Zip implements Archive_Interface
     {
         Registry::set('setEditFile', $f);
 
-        $tmp = Config::getTemp() . '/GmanagerArchivers' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $tmp = Config::getTemp() . '/GmanagerArchivers' . GMANAGER_REQUEST_TIME . '.tmp';
 
         $fp = fopen($tmp, 'w');
 
@@ -542,7 +542,7 @@ class Archive_Zip implements Archive_Interface
      */
     public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        $tmp        = Config::getTemp() . '/GmanagerZip' . $_SERVER['REQUEST_TIME'];
+        $tmp        = Config::getTemp() . '/GmanagerZip' . GMANAGER_REQUEST_TIME;
         $zip        = $this->_pclZip($current);
         $folder     = '';
         $sysName    = IOWrapper::set($name);

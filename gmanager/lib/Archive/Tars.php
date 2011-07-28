@@ -54,7 +54,7 @@ class Archive_Tars implements Archive_Interface
     public function addFile ($current, $ext = array(), $dir = '')
     {
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'] . '/';
+            $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . GMANAGER_REQUEST_TIME . '/';
             mkdir($ftp_name, 0777);
 
             $tmp = array();
@@ -111,7 +111,7 @@ class Archive_Tars implements Archive_Interface
             }
         }
 
-        $tmp_name = Config::getTemp() . '/GmanagerTar' . $_SERVER['REQUEST_TIME'] . '/';
+        $tmp_name = Config::getTemp() . '/GmanagerTar' . GMANAGER_REQUEST_TIME . '/';
         $tgz->extractList($new_tar, $tmp_name);
 
         Registry::getGmanager()->unlink($current);
@@ -166,7 +166,7 @@ class Archive_Tars implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
                $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-               $ftp_name = Config::getTemp() . '/GmanagerFtpTarFile' . $_SERVER['REQUEST_TIME'] . '.tmp';
+               $ftp_name = Config::getTemp() . '/GmanagerFtpTarFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
         $tgz = $this->_archiveTar($current);
@@ -210,7 +210,7 @@ class Archive_Tars implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . $_SERVER['REQUEST_TIME'];
+            $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
 
@@ -433,7 +433,7 @@ class Archive_Tars implements Archive_Interface
      */
     public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        $tmp        = Config::getTemp() . '/GmanagerTar' . $_SERVER['REQUEST_TIME'];
+        $tmp        = Config::getTemp() . '/GmanagerTar' . GMANAGER_REQUEST_TIME;
         $tgz        = $this->_archiveTar($current);
         $sysName    = IOWrapper::set($name);
 

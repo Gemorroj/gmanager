@@ -64,14 +64,14 @@ class Gmanager
         Registry::set('limit', abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : (isset($_COOKIE['gmanager_limit']) ? $_COOKIE['gmanager_limit'] : Config::get('Gmanager', 'defaultLimit')))));
 
         if ($ip || $ig) {
-            setcookie('gmanager_limit', Registry::get('limit'), 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
+            setcookie('gmanager_limit', Registry::get('limit'), 2592000 + GMANAGER_REQUEST_TIME, str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
         }
 
         // построчный редактор
         if (isset($_GET['lineEditor'])) {
             $_GET['lineEditor'] ? Registry::set('lineEditor', true) : Registry::set('lineEditor', false);
 
-            setcookie('Gmanager_lineEditor', (int)Registry::get('lineEditor'), 2592000 + $_SERVER['REQUEST_TIME'], str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
+            setcookie('Gmanager_lineEditor', (int)Registry::get('lineEditor'), 2592000 + GMANAGER_REQUEST_TIME, str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
         } else if (isset($_COOKIE['Gmanager_lineEditor'])) {
             Registry::set('lineEditor', (bool)$_COOKIE['Gmanager_lineEditor']);
         } else {
@@ -685,7 +685,7 @@ class Gmanager
      */
     public function syntax ($content = '', $charset = array())
     {
-        $tmp = Config::getTemp() . '/GmanagerSyntax' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $tmp = Config::getTemp() . '/GmanagerSyntax' . GMANAGER_REQUEST_TIME . '.tmp';
         $fp = fopen($tmp, 'w');
         if (!$fp) {
             return Errors::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Errors::MESSAGE_FAIL);
@@ -1648,7 +1648,7 @@ class Gmanager
      */
     public function ftpArchiveStart ($current = '')
     {
-        self::$_ftpArchive = Config::getTemp() . '/GmanagerFtpArchive' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        self::$_ftpArchive = Config::getTemp() . '/GmanagerFtpArchive' . GMANAGER_REQUEST_TIME . '.tmp';
         file_put_contents(self::$_ftpArchive, Registry::getGmanager()->file_get_contents($current));
         return self::$_ftpArchive;
     }
@@ -1730,6 +1730,21 @@ class Gmanager
                 return $id;
             }
         }
+    }
+
+
+    /**
+     * getUname
+     * 
+     * @return string
+     */
+    public function getUname ()
+    {
+        $uname = php_uname();
+        if (Registry::get('sysType') == 'WIN') {
+            $uname = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8', $uname);
+        }
+        return $uname;
     }
 
 

@@ -140,7 +140,7 @@ class FTP extends Gmanager
      */
     public function file_put_contents ($file, $data = '')
     {
-        $php_temp = Config::getTemp() . '/GmanagerFtpTemp' . $_SERVER['REQUEST_TIME'] . '.tmp';
+        $php_temp = Config::getTemp() . '/GmanagerFtpTemp' . GMANAGER_REQUEST_TIME . '.tmp';
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 

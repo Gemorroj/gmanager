@@ -39,6 +39,7 @@ class Config
         Language::setLanguage(self::get('Gmanager', 'language'));
 
         define('PCLZIP_TEMPORARY_DIR', $this->getTemp() . '/');
+        define('GMANAGER_REQUEST_TIME', time());
 
         iconv_set_encoding('internal_encoding', 'UTF-8');
         setlocale(LC_ALL, self::get('PHP', 'locale'));
