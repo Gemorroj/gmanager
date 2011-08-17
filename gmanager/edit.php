@@ -133,13 +133,15 @@ switch ($_GET['go']) {
             }
         }
 
+        $quotes = defined('ENT_IGNORE') ? ENT_COMPAT | ENT_IGNORE : ENT_COMPAT;
+
         if ($archive == 'ZIP') {
             Registry::set('archiveDriver', 'zip');
             $content = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
-            $content['text'] = htmlspecialchars($content['text'], ENT_COMPAT);
+            $content['text'] = htmlspecialchars($content['text'], $quotes, 'UTF-8');
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
-            $content['text'] = htmlspecialchars(Registry::getGmanager()->file_get_contents(Registry::get('current')), ENT_COMPAT);
+            $content['text'] = htmlspecialchars(Registry::getGmanager()->file_get_contents(Registry::get('current')), $quotes, 'UTF-8');
             $content['size'] = Registry::getGmanager()->formatSize(Registry::getGmanager()->size(Registry::get('current')));
             $content['lines'] = substr_count($content['text'], "\n") + 1;
             $f = '';
