@@ -42,7 +42,7 @@
 require_once 'PEAR.php';
 
 define('ARCHIVE_TAR_ATT_SEPARATOR', 90001);
-define('ARCHIVE_TAR_END_BLOCK', pack('a512', ''));
+define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
 
 /**
 * Creates a (compressed) Tar archive
@@ -239,9 +239,9 @@ class Archive_Tar extends PEAR
     // }}}
 
     // {{{ extract()
-    function extract($p_path='')
+    function extract($p_path='', $p_preserve=false)
     {
-        return $this->extractModify($p_path, '');
+        return $this->extractModify($p_path, '', $p_preserve);
     }
     // }}}
 
@@ -461,24 +461,25 @@ class Archive_Tar extends PEAR
     * is returned. However the result can be a partial extraction that may
     * need to be manually cleaned.
     *
-    * @param string $p_path        The path of the directory where the
-    *                              files/dir need to by extracted.
-    * @param string $p_remove_path Part of the memorized path that can be
-    *                              removed if present at the beginning of
-    *                              the file/dir path.
+    * @param string  $p_path        The path of the directory where the
+    *                               files/dir need to by extracted.
+    * @param string  $p_remove_path Part of the memorized path that can be
+    *                               removed if present at the beginning of
+    *                               the file/dir path.
+    * @param boolean $p_preserve    Preserve user/group ownership of files
     *
     * @return boolean true on success, false on error.
     * @access public
     * @see    extractList()
     */
-    function extractModify($p_path, $p_remove_path)
+    function extractModify($p_path, $p_remove_path, $p_preserve=false)
     {
         $v_result = true;
         $v_list_detail = array();
 
         if ($v_result = $this->_openRead()) {
             $v_result = $this->_extractList($p_path, $v_list_detail,
-			                                "complete", 0, $p_remove_path);
+                "complete", 0, $p_remove_path, $p_preserve);
             $this->_close();
         }
 
@@ -517,20 +518,21 @@ class Archive_Tar extends PEAR
     * If indicated the $p_remove_path can be used in the same way as it is
     * used in extractModify() method.
     *
-    * @param array  $p_filelist    An array of filenames and directory names,
-    *                              or a single string with names separated
-    *                              by a single blank space.
-    * @param string $p_path        The path of the directory where the
-    *                              files/dir need to by extracted.
-    * @param string $p_remove_path Part of the memorized path that can be
-    *                              removed if present at the beginning of
-    *                              the file/dir path.
+    * @param array   $p_filelist    An array of filenames and directory names,
+    *                               or a single string with names separated
+    *                               by a single blank space.
+    * @param string  $p_path        The path of the directory where the
+    *                               files/dir need to by extracted.
+    * @param string  $p_remove_path Part of the memorized path that can be
+    *                               removed if present at the beginning of
+    *                               the file/dir path.
+    * @param boolean $p_preserve    Preserve user/group ownership of files
     *
     * @return true on success, false on error.
     * @access public
     * @see    extractModify()
     */
-    function extractList($p_filelist, $p_path='', $p_remove_path='')
+    function extractList($p_filelist, $p_path='', $p_remove_path='', $p_preserve=false)
     {
         $v_result = true;
         $v_list_detail = array();
@@ -546,7 +548,7 @@ class Archive_Tar extends PEAR
 
         if ($v_result = $this->_openRead()) {
             $v_result = $this->_extractList($p_path, $v_list_detail, "partial",
-			                                $v_list, $p_remove_path);
+                $v_list, $p_remove_path, $p_preserve);
             $this->_close();
         }
 
@@ -1341,10 +1343,14 @@ class Archive_Tar extends PEAR
         for ($i=156; $i<512; $i++)
            $v_checksum+=ord(substr($v_binary_data,$i,1));
 
-        $v_data = unpack("a100filename/a8mode/a8uid/a8gid/a12size/a12mtime/"
-		                 ."a8checksum/a1typeflag/a100link/a6magic/a2version/"
-						 ."a32uname/a32gname/a8devmajor/a8devminor",
-						 $v_binary_data);
+        $v_data = unpack("a100filename/a8mode/a8uid/a8gid/a12size/a12mtime/" .
+                         "a8checksum/a1typeflag/a100link/a6magic/a2version/" .
+                         "a32uname/a32gname/a8devmajor/a8devminor/a131prefix",
+                         $v_binary_data);
+                         
+        if (strlen($v_data["prefix"]) > 0) {
+            $v_data["filename"] = "$v_data[prefix]/$v_data[filename]";
+        }
 
         // ----- Extract the checksum
         $v_header['checksum'] = OctDec(trim($v_data['checksum']));
@@ -1500,7 +1506,7 @@ class Archive_Tar extends PEAR
 
     // {{{ _extractList()
     function _extractList($p_path, &$p_list_detail, $p_mode,
-	                      $p_file_list, $p_remove_path)
+                          $p_file_list, $p_remove_path, $p_preserve=false)
     {
     $v_result=true;
     $v_nb = 0;
@@ -1667,6 +1673,11 @@ class Archive_Tar extends PEAR
             }
 
             @fclose($v_dest_file);
+            
+            if ($p_preserve) {
+                @chown($v_header['filename'], $v_header['uid']);
+                @chgrp($v_header['filename'], $v_header['gid']);
+            }
 
             // ----- Change the file mode, mtime
             @touch($v_header['filename'], $v_header['mtime']);

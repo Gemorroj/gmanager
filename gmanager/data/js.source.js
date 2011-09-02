@@ -1,8 +1,8 @@
 var Gmanager = {
     _getKey: function (e) {
         if (e.which == null && (e.charCode != null || e.keyCode != null)) {
-			e.which = e.charCode != null ? e.charCode : e.keyCode;
-		}
+            e.which = e.charCode != null ? e.charCode : e.keyCode;
+        }
         return e.which;
     },
     _insAtCaret: function (o, s) {
