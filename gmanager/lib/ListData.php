@@ -277,8 +277,6 @@ class ListData
         $c = str_replace('//', '/', $c . '/');
 
         foreach (Registry::getGmanager()->iterator($c) as $f) {
-            var_dump($c . $f);
-            var_dump(Registry::getGmanager()->is_dir($c . $f));
             if (Registry::getGmanager()->is_dir($c . $f)) {
                 self::_getListSearchArray($c . $f . '/', $s, $w, $r, false, $limit, $archive, $t);
                 continue;
