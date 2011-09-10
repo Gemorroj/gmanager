@@ -18,7 +18,7 @@ class FTP extends Gmanager
     private $_res               = null;
     //private $_url               = null;
     static private $_id         = array();
-    static private $_rawlist    = null;
+    static private $_rawlist    = array();
     static private $_dir        = '/';
 
 
@@ -549,7 +549,7 @@ class FTP extends Gmanager
             }
         }
 
-        return self::$_rawlist[self::$_dir];
+        return isset(self::$_rawlist[self::$_dir]) ? self::$_rawlist[self::$_dir] : array();
     }
 
 

@@ -69,6 +69,7 @@ class Archive_Tars implements Archive_Interface
 
         $tgz = $this->_archiveTar($current);
 
+        $add = true;
         foreach ($ext as $v) {
             $add = $tgz->addModify($v, $dir, dirname($v));
         }
@@ -136,16 +137,16 @@ class Archive_Tars implements Archive_Interface
      * @param string $current
      * @param string $name
      * @param mixed  $chmod
-     * @param string $ext
+     * @param array $ext
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current, $name = '', $chmod = '', $ext = '', $overwrite = false)
+    public function extractFile ($current, $name = '', $chmod = '', $ext = array(), $overwrite = false)
     {
         $tmp = array();
         $err = '';
         foreach ($ext as $f) {
-            if (Registry::getGmanager()->file_exists($name . '/' . $f)) {
+            if (Registry::getGmanager()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
                 if ($overwrite) {
                     unlink($name . '/' . $f);
                     $tmp[] = $f;

@@ -337,7 +337,6 @@ class Gmanager
                 if (Registry::getGmanager()->mkdir($dest . '/' . $file, $ch)) {
                     Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
                     $this->moveFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
-                    Registry::getGmanager()->rmdir($d . '/' . $file);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_files_false')) . ' (' . Errors::get() . ')';
                 }
@@ -474,7 +473,6 @@ class Gmanager
 
             if (Registry::getGmanager()->is_dir($f) /*&& !Registry::getGmanager()->rmdir($f)*/) {
                 $this->delDir($f . '/');
-                Registry::getGmanager()->rmdir($f);
             } else if (Registry::getGmanager()->file_exists($f)) {
                 if (!Registry::getGmanager()->unlink($f)) {
                     $err .= $f . '<br/>';
@@ -1588,7 +1586,6 @@ class Gmanager
             if (is_dir($from . '/' . $f)) {
                 Registry::getGmanager()->mkdir($to . '/' . $f, $chmodd);
                 $this->ftpMoveFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
-                rmdir($from . '/' . $f);
             } else {
                 if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
                     Registry::getGmanager()->file_put_contents($to . '/' . $f, file_get_contents($from . '/' . $f));
@@ -1653,9 +1650,7 @@ class Gmanager
      */
     public function ftpArchiveEnd ($current = '')
     {
-        if ($current != '') {
-            $result = Registry::getGmanager()->file_put_contents($current, file_get_contents(self::$_ftpArchive));
-        }
+        $result = ($current != '') ? Registry::getGmanager()->file_put_contents($current, file_get_contents(self::$_ftpArchive)) : true;
         unlink(self::$_ftpArchive);
         return (bool)$result;
     }
@@ -1772,7 +1767,6 @@ class Gmanager
             }
 
             if (is_dir($dir . '/' . $f)) {
-                @rmdir($dir . '/' . $f);
                 $this->clean($dir . '/' . $f);
             } else {
                 unlink($dir . '/' . $f);

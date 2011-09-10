@@ -178,28 +178,28 @@ class Archive_Zip implements Archive_Interface
      * @param string $current
      * @param string $name
      * @param mixed  $chmod
-     * @param string $fl
+     * @param array $ext
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current, $name = '', $chmod = '', $fl = '', $overwrite = false)
+    public function extractFile ($current, $name = '', $chmod = '', $ext = array(), $overwrite = false)
     {
         $err = '';
         if ($overwrite) {
-            $ext = & $fl;
+            $fl = $ext;
         } else {
-            $ext = array();
-            foreach ($fl as $f) {
-                if (Registry::getGmanager()->file_exists($name . '/' . $f)) {
+            $fl = array();
+            foreach ($ext as $f) {
+                if (Registry::getGmanager()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
                     $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
                 } else {
-                    $ext[] = $f;
+                    $fl[] = $f;
                 }
             }
-            unset($fl);
         }
+        unset($ext);
 
-        if (!$ext) {
+        if (!$fl) {
             return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         }
 
@@ -211,7 +211,7 @@ class Archive_Zip implements Archive_Interface
         }
 
         $zip = $this->_pclZip($current);
-        $res = $zip->extract(PCLZIP_OPT_PATH, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName, PCLZIP_OPT_BY_NAME, $ext, PCLZIP_OPT_REPLACE_NEWER);
+        $res = $zip->extract(PCLZIP_OPT_PATH, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName, PCLZIP_OPT_BY_NAME, $fl, PCLZIP_OPT_REPLACE_NEWER);
 
         foreach ($res as $status) {
             if ($status['status'] != 'ok') {
