@@ -74,7 +74,9 @@ class Config
 
     /**
      * get
-     * 
+     *
+     * @param string $section
+     * @param string $property
      * @return string
      */
     public static function get ($section = 'Gmanager', $property)
@@ -85,8 +87,9 @@ class Config
 
     /**
      * get
-     * 
-     * @return string
+     *
+     * @param string $section
+     * @return array
      */
     public static function getSection ($section = 'Gmanager')
     {
@@ -130,7 +133,6 @@ set_include_path(
  * Autoloader
  *
  * @param string $class
- * @return void
  */
 function __autoload ($class)
 {

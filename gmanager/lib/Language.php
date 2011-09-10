@@ -21,7 +21,6 @@ class Language
      * setLanguage
      * 
      * @param string $lng
-     * @return void
      */
     public static function setLanguage ($lng = 'en')
     {

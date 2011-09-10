@@ -557,7 +557,6 @@ class FTP extends Gmanager
      * rawlistCallback
      * 
      * @param array $data
-     * @return void
      */
     private function _rawlistCallback ($data)
     {

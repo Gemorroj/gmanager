@@ -23,8 +23,7 @@ class Registry
      * set
      * 
      * @param string $key
-     * @param mixed $value
-     * @return void
+     * @param mixed $val
      */
     static public function set ($key, $val)
     {
@@ -48,7 +47,6 @@ class Registry
      * remove
      * 
      * @param string $key
-     * @return void
      */
     static public function remove ($key)
     {
@@ -71,10 +69,9 @@ class Registry
     /**
      * setGmanager
      * 
-     * @param object $Gmanager
-     * @return void
+     * @param Gmanager $Gmanager
      */
-    static public function setGmanager ($Gmanager)
+    static public function setGmanager (Gmanager $Gmanager)
     {
         self::$_Gmanager = $Gmanager;
     }
@@ -83,7 +80,7 @@ class Registry
     /**
      * getGmanager
      * 
-     * @return object
+     * @return Gmanager
      */
     static public function getGmanager ()
     {

@@ -76,7 +76,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $current
      * @param string $name
      * @param mixed  $chmod
-     * @param string $fl
+     * @param string $ext
      * @param bool   $overwrite
      * @return string
      */
@@ -208,7 +208,7 @@ class Archive_Rar implements Archive_Interface
      * @param string $str
      * @return string
      */
-    public function lookFile ($current, $f = '', $str = false)
+    public function lookFile ($current, $f = '', $str = null)
     {
         $rar = $this->_rarOpen($current);
         $entry = rar_entry_get($rar, $f);

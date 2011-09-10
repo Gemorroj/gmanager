@@ -19,7 +19,7 @@ interface Archive_Interface
     public function listArchive ($current, $down = '');
     public function getEditFile ($current, $f = '');
     public function setEditFile ($current, $f = '', $text = '');
-    public function lookFile ($current, $f = '', $str = false);
+    public function lookFile ($current, $f = '', $str = null);
     public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false);
     public function extractFile ($current, $name = '', $chmod = '', $ext = '', $overwrite = false);
     public function delFile ($current, $f = '');

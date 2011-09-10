@@ -22,7 +22,6 @@ class Getf
      * @param string $name      Output filename
      * @param bool   $attach
      * @param string $mime      Mime type
-     * @return void
      */
     public static function download ($f, $name, $attach = false, $mime = '')
     {
@@ -280,9 +279,9 @@ class Getf
         //header('Expires: Tue, 10 Apr 2038 01:00:00 GMT');
 
 
-        //header('Connection: Close');
-        header('Keep-Alive: timeout=10, max=60');
-        header('Connection: Keep-Alive');
+        header('Connection: Close');
+        //header('Keep-Alive: timeout=10, max=60');
+        //header('Connection: Keep-Alive');
 
         header('Accept-Ranges: bytes');
         header('Content-Length: ' . $sz);

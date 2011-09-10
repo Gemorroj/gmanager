@@ -20,8 +20,6 @@ class Gmanager
 
     /**
      * main
-     * 
-     * @return void
      */
     public function main ()
     {
@@ -82,9 +80,6 @@ class Gmanager
 
     /**
      * sendHeader
-     * 
-     * @param void
-     * @return void
      */
     public function sendHeader ()
     {
@@ -101,8 +96,7 @@ class Gmanager
 
     /**
      * head
-     * 
-     * @param void
+     *
      * @return string
      */
     public function head ()
@@ -137,8 +131,7 @@ class Gmanager
 
     /**
      * langJS
-     * 
-     * @param void
+     *
      * @return string
      */
     public function langJS ()
@@ -223,7 +216,6 @@ class Gmanager
      *
      * @param string $source
      * @param string $to
-     * @return void
      */
     public function copyD ($source = '', $to = '')
     {
@@ -533,8 +525,8 @@ class Gmanager
     /**
      * formatSize
      * 
-     * @param int   $size
-     * @param int   $int
+     * @param int|bool   $size
+     * @param int        $int
      * @return string
      */
     public function formatSize ($size = false, $int = 2)
@@ -1164,6 +1156,7 @@ class Gmanager
 
             echo '</code></pre>';
             echo str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
+            return '';
         }
     }
 
@@ -1583,7 +1576,6 @@ class Gmanager
      * @param int    $chmodf
      * @param int    $chmodd
      * @param bool   $overwrite
-     * @return void
      */
     public function ftpMoveFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
@@ -1619,7 +1611,6 @@ class Gmanager
      * @param int    $chmodf
      * @param int    $chmodd
      * @param bool   $overwrite
-     * @return void
      */
     public function ftpCopyFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
@@ -1701,7 +1692,7 @@ class Gmanager
             return 'TAR';
         } else if ($type === 'GZ' || $type === 'GZ2') {
             return 'GZ';
-        } else if (($type === 'TBZ' || $type === 'TBZ2' || $type === 'TAR.BZ' || $type === 'TAR.BZ2' || $type === 'BZ' || $type === 'BZ2') && extension_loaded('rar')) {
+        } else if (($type === 'TBZ' || $type === 'TBZ2' || $type === 'TAR.BZ' || $type === 'TAR.BZ2' || $type === 'BZ' || $type === 'BZ2') && extension_loaded('bz2')) {
             return 'BZ2';
         } else if ($type === 'RAR' && extension_loaded('rar')) {
             return 'RAR';
@@ -1766,8 +1757,7 @@ class Gmanager
     /**
      * clean
      * 
-     * @param string $name
-     * @return void
+     * @param string $dir
      */
     public function clean ($dir = '')
     {
@@ -1797,7 +1787,6 @@ class Gmanager
      * phpinfo
      * 
      * @param int $what
-     * @return void
      */
     public function phpinfo($what = -1)
     {

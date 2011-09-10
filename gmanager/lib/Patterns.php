@@ -32,7 +32,7 @@ class Patterns
      * Get patterns
      *
      * @param array $patterns
-     * @return $this
+     * @return Patterns
      */
     public function set ($patterns = array())
     {

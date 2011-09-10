@@ -75,7 +75,7 @@ class Archive_Tars implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             if (!Registry::getGmanager()->ftpArchiveEnd($current)) {
-                $zip->error_string = Errors::get();
+                $add = false;
             }
             Registry::getGmanager()->clean($ftp_name);
         }
@@ -136,7 +136,7 @@ class Archive_Tars implements Archive_Interface
      * @param string $current
      * @param string $name
      * @param mixed  $chmod
-     * @param string $fl
+     * @param string $ext
      * @param bool   $overwrite
      * @return string
      */
@@ -276,7 +276,7 @@ class Archive_Tars implements Archive_Interface
      * @param string $str
      * @return string
      */
-    public function lookFile ($current, $f = '', $str = false)
+    public function lookFile ($current, $f = '', $str = null)
     {
         $tgz = $this->_archiveTar($current);
         $ext = $tgz->extractInString($f);
@@ -427,6 +427,7 @@ class Archive_Tars implements Archive_Interface
      * 
      * @param string $current
      * @param string $name
+     * @param string $arch_name
      * @param bool   $del
      * @param bool   $overwrite
      * @return string

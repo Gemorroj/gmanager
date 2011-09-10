@@ -21,7 +21,6 @@ class Config_Ini implements Config_Interface
      * Constructor
      * 
      * @param string $config
-     * @return void
      */
     public function __construct ($config)
     {

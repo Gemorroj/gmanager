@@ -325,7 +325,7 @@ class Archive_Zip implements Archive_Interface
      * @param string $str
      * @return string
      */
-    public function lookFile ($current, $f = '', $str = false)
+    public function lookFile ($current, $f = '', $str = null)
     {
         $r_current = str_replace('%2F', '/', rawurlencode($current));
         $r_f = str_replace('%2F', '/', rawurlencode($f));

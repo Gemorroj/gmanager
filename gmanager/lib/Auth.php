@@ -17,8 +17,6 @@ class Auth
 {
     /**
      * Auth
-     * 
-     * @return void
      */
     public static function main ()
     {
