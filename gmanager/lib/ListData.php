@@ -277,8 +277,11 @@ class ListData
         $c = str_replace('//', '/', $c . '/');
 
         foreach (Registry::getGmanager()->iterator($c) as $f) {
+            var_dump($c . $f);
+            var_dump(Registry::getGmanager()->is_dir($c . $f));
             if (Registry::getGmanager()->is_dir($c . $f)) {
                 self::_getListSearchArray($c . $f . '/', $s, $w, $r, false, $limit, $archive, $t);
+                continue;
             }
 
             $type = htmlspecialchars(Registry::getGmanager()->getType(basename($f)), ENT_NOQUOTES);
@@ -296,7 +299,7 @@ class ListData
 
                 // Fix for PHP < 6.0
                 if (!$r && !$h) {
-                    if (@iconv('UTF-8', 'UTF-8', $fl) == $fl) {
+                    if (@iconv('UTF-8', 'UTF-8//IGNORE', $fl) == $fl) {
                         $fl = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $fl));
                     } else {
                         $fl = strtolower($fl);
@@ -311,7 +314,7 @@ class ListData
                     $fs = $f;
                 } else {
                     // Fix for PHP < 6.0
-                    if (@iconv('UTF-8', 'UTF-8', $f) == $f) {
+                    if (@iconv('UTF-8', 'UTF-8//IGNORE', $f) == $f) {
                         $fs = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $f));
                     } else {
                         $fs = strtolower($f);
@@ -442,7 +445,7 @@ class ListData
             $s = implode('', array_map('chr', str_split($s, 4)));
         } else if (!$r) {
             // Fix for PHP < 6.0
-            $s = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $s));
+            $s = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//IGNORE', $s));
         }
 
         $data = self::_getListSearchArray($c, $s, $w, $r, $h, $limit, $archive, (Config::get('Editor', 'target') ? ' target="_blank"' : ''));
