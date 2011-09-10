@@ -281,12 +281,9 @@ class ListData
                 self::_getListSearchArray($c . $f . '/', $s, $w, $r, false, $limit, $archive, $t);
             }
 
-            //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
-            $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
             $type = htmlspecialchars(Registry::getGmanager()->getType(basename($f)), ENT_NOQUOTES);
             $arch = Registry::getGmanager()->isArchive($type);
             $stat = Registry::getGmanager()->stat($c . $f);
-            $name = htmlspecialchars(Registry::getGmanager()->strLink($c . $f, true), ENT_NOQUOTES);
 
             $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pgid = $pn = $in = null;
 
@@ -295,11 +292,7 @@ class ListData
                     continue;
                 }
 
-                if ($type == 'GZ') {
-                    $fl = Registry::getGmanager()->getGzContent($c . $f);
-                } else {
-                    $fl = Registry::getGmanager()->file_get_contents($c . $f);
-                }
+                $fl = ($type == 'GZ') ? Registry::getGmanager()->getGzContent($c . $f) : Registry::getGmanager()->file_get_contents($c . $f);
 
                 // Fix for PHP < 6.0
                 if (!$r && !$h) {
@@ -309,7 +302,7 @@ class ListData
                         $fl = strtolower($fl);
                     }
                 }
-                if (!$in = substr_count($fl, $s)) {
+                if (($in = substr_count($fl, $s)) === 0) {
                     continue;
                 }
                 $in = ' (' . $in . ')';
@@ -331,7 +324,11 @@ class ListData
 
             $count++;
 
+            //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
+            $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
+
             if (Config::get('Display', 'name')) {
+                $name = htmlspecialchars(Registry::getGmanager()->strLink($c . $f, true), ENT_NOQUOTES);
                 if ($arch) {
                     $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
                 } else {
