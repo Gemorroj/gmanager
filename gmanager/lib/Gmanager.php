@@ -871,7 +871,7 @@ class Gmanager
         while (($tmp = fread($fo, 1)) !== '') {
             if ($tmp == $null) {
                 $i++;
-            } else if ($i == 2) {
+            } else if ($i == 1) {
                 $name .= $tmp;
             }
             if ($i > 2) {
