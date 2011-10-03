@@ -331,9 +331,11 @@ class HTTP extends Gmanager
         $from = IOWrapper::set($from);
         $to   = IOWrapper::set($to);
 
-        if ($result = @copy($from, $to)) {
+        $result = copy($from, $to);
+        if ($result) {
             $this->chmod($to, $chmod);
         }
+
         return $result;
     }
 

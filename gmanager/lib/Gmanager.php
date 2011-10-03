@@ -83,14 +83,9 @@ class Gmanager
      */
     public function sendHeader ()
     {
-        if (stripos(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
-            header('Content-type: text/html; charset=UTF-8');
-        } else {
-            header('Content-type: application/xhtml+xml; charset=UTF-8');
-        }
-
         //header('Content-type: text/html; charset=UTF-8');
-        header('Cache-control: no-cache');
+        header('Content-Type: ' . Config::getContentType() . '; charset=UTF-8');
+        header('Cache-Control: no-cache');
     }
 
 
@@ -1008,6 +1003,50 @@ class Gmanager
 
 
     /**
+     * _setIniHeaders
+     *
+     * @param array $headers
+     * @return string
+     */
+    private function _setIniHeaders ($headers)
+    {
+        $out = array(0);
+
+        foreach (explode("\n", trim($headers)) as $v) {
+            if (strripos($v, 'User-Agent:') === 0) {
+                $out[0] = trim(substr($v, 11));
+            } else {
+                $out[] = trim($v);
+            }
+        }
+
+        return ini_set('user_agent', implode("\r\n", $out));
+    }
+
+
+    /**
+     * _getUrlName
+     *
+     * @param string $url
+     * @return string
+     */
+    private function _getUrlName ($url)
+    {
+        $name = '';
+
+        $h = @get_headers($url, 1);
+        if (isset($h['Content-Disposition'])) {
+            preg_match('/.+;\s+filename=(?:")?([^"]+)/i', $h['Content-Disposition'], $arr);
+            if (isset($arr[1])) {
+                $name = basename($arr[1]);
+            }
+        }
+
+        return ($name != '' ? $name : rawurldecode(basename(parse_url($url, PHP_URL_PATH))));
+    }
+
+
+    /**
      * uploadUrl
      * 
      * @param string $url
@@ -1021,11 +1060,13 @@ class Gmanager
     public function uploadUrl ($url = '', $name = '', $chmod = 0644, $headers = '', $set_time_limit = false, $ignore_user_abort = false)
     {
         if ($set_time_limit !== false) {
-            set_time_limit($set_time_limit);
+            @set_time_limit($set_time_limit);
         }
         if ($ignore_user_abort) {
             ignore_user_abort(true);
         }
+
+        $this->_setIniHeaders($headers);
 
         $tmp = array();
         $url = trim($url);
@@ -1046,18 +1087,7 @@ class Gmanager
             if ($last != '/' && !$temp) {
                 $name = dirname($name) . '/' . basename($name);
             } else {
-                $h = @get_headers($url, 1);
-                $temp = false;
-                if (isset($h['Content-Disposition'])) {
-                    preg_match('/.+;\s+filename=(?:")?([^"]+)/i', $h['Content-Disposition'], $arr);
-                    if (isset($arr[1])) {
-                        $temp = true;
-                        $name = $name . basename($arr[1]);
-                    }
-                }
-                if (!$temp) {
-                    $name = $name . rawurldecode(basename(parse_url($url, PHP_URL_PATH)));
-                }
+                $name .= $this->_getUrlName($url);
             }
             $tmp[] = array($url, $name);
         }
@@ -1070,11 +1100,13 @@ class Gmanager
             }
 
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                $tmp = $this->getData($v[0], $headers);
-                $r = Registry::getGmanager()->file_put_contents($v[1], $tmp['body']);
-                Registry::getGmanager()->chmod($v[1], $chmod);
+                if ($tmp) {
+                    $r = Registry::getGmanager()->file_put_contents($v[1], $tmp['body']);
+                    Registry::getGmanager()->chmod($v[1], $chmod);
+                } else {
+                    $r = false;
+                }
             } else {
-                ini_set('user_agent', str_ireplace('User-Agent:', '', trim($headers)));
                 $r = Registry::getGmanager()->copy($v[0], $v[1], $chmod);
             }
 
@@ -1516,11 +1548,12 @@ class Gmanager
             if ($headers) {
                 $out .= trim($headers) . "\r\n";
             } else {
-                $out .= 'User-Agent: ' . $_SERVER['HTTP_USER_AGENT'] . "\r\n";
-                $out .= 'Accept: ' . $_SERVER['HTTP_ACCEPT'] . "\r\n";
-                $out .= 'Accept-Language: ' . $_SERVER['HTTP_ACCEPT_LANGUAGE'] . "\r\n";
-                $out .= 'Accept-Charset: ' . $_SERVER['HTTP_ACCEPT_CHARSET'] . "\r\n";
+                $out .= (isset($_SERVER['HTTP_USER_AGENT']) ? 'User-Agent: ' . $_SERVER['HTTP_USER_AGENT'] . "\r\n" : '');
+                $out .= (isset($_SERVER['HTTP_ACCEPT']) ? 'Accept: ' . $_SERVER['HTTP_ACCEPT'] . "\r\n" : '');
+                $out .= (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? 'Accept-Language: ' . $_SERVER['HTTP_ACCEPT_LANGUAGE'] . "\r\n" : '');
+                $out .= (isset($_SERVER['HTTP_ACCEPT_CHARSET']) ? 'Accept-Charset: ' . $_SERVER['HTTP_ACCEPT_CHARSET'] . "\r\n" : '');
                 //$out .= 'TE: deflate, gzip, chunked, identity, trailers' . "\r\n";
+                //$out .= 'Accept-Encoding: deflate, gzip, chunked, identity, trailers' . "\r\n";
                 $out .= 'Connection: Close' . "\r\n";
             }
 

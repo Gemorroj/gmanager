@@ -26,7 +26,7 @@ class Getf
     public static function download ($f, $name, $attach = false, $mime = '')
     {
         ob_implicit_flush(1);
-        set_time_limit(9999);
+        @set_time_limit(9999);
 
         ini_set('zlib.output_compression', 'Off');
         ini_set('output_handler', '');

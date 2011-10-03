@@ -153,7 +153,7 @@ class FTP extends Gmanager
         $result = ftp_put($this->_res, basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
 
         unlink($php_temp);
-        return intval($result);
+        return ($result ? 1 : 0);
     }
 
 
@@ -376,7 +376,8 @@ class FTP extends Gmanager
 
         $result = false;
         if (($r = $this->file_get_contents($from)) !== false) {
-            if ($result = $this->file_put_contents($to, $r)) {
+            $result = $this->file_put_contents($to, $r);
+            if ($result) {
                 $this->chmod($to, $chmod);
             }
         }
