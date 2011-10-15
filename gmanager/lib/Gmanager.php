@@ -52,7 +52,7 @@ class Gmanager
      */
     private function _setCurrent ()
     {
-        $c = isset($_POST['c']) ? rawurldecode($_POST['c']) : (isset($_GET['c']) ? $_GET['c'] : (isset($_GET['get']) ? $_GET['get'] : rawurldecode($_SERVER['QUERY_STRING'])));
+        $c = !empty($_POST['c']) ? rawurldecode($_POST['c']) : (!empty($_GET['c']) ? $_GET['c'] : (!empty($_GET['get']) ? $_GET['get'] : rawurldecode($_SERVER['QUERY_STRING'])));
 
         if ($c) {
             if ($c == '/') {
