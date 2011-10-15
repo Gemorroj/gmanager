@@ -18,7 +18,7 @@ class Archive
     /**
      * main
      *
-     * @return objec|bool
+     * @return object|bool
      */
     public static function main ()
     {

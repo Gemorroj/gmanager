@@ -26,7 +26,7 @@ class SQL_MySQL implements SQL_Interface
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return resource or string
+     * @return resource|string
      */
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {

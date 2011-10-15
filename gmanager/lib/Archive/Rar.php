@@ -19,7 +19,7 @@ class Archive_Rar implements Archive_Interface
      * _rarOpen
      * 
      * @param string $file
-     * @return object
+     * @return RarArchive
      */
     private function _rarOpen($file)
     {

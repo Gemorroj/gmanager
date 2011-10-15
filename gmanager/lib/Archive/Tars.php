@@ -19,7 +19,7 @@ class Archive_Tars implements Archive_Interface
      * _archiveTar
      * 
      * @param string $file
-     * @return object
+     * @return Archive_Tar
      */
     private function _archiveTar($file)
     {

@@ -19,7 +19,7 @@ class Archive_Zip implements Archive_Interface
      * _pclZip
      * 
      * @param string $file
-     * @return object
+     * @return PclZip
      */
     private function _pclZip($file)
     {

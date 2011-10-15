@@ -26,7 +26,7 @@ class SQL_PostgreSQL implements SQL_Interface
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return resource or string
+     * @return resource|string
      */
     private function _connect ($host = 'localhost', $name = 'postgres', $pass = 'postgres', $db = '', $charset = 'utf8')
     {

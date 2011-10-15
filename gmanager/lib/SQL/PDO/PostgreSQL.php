@@ -26,7 +26,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return object or string
+     * @return object|string
      */
     private function _connect ($host = 'localhost', $name = 'postgres', $pass = 'postgres', $db = '', $charset = 'utf8')
     {

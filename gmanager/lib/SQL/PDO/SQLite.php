@@ -22,7 +22,7 @@ class SQL_PDO_SQLite implements SQL_Interface
      * PDO SQLite connector
      * 
      * @param string $db
-     * @return object or string
+     * @return object|string
      */
     private function _connect ($db = '')
     {

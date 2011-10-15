@@ -19,7 +19,7 @@ class SQL
      * main
      * 
      * @param  bool $force
-     * @return objec|bool
+     * @return object|bool
      */
     public static function main ($force = false)
     {
