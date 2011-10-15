@@ -23,38 +23,7 @@ class Gmanager
      */
     public function main ()
     {
-        $c = isset($_POST['c']) ? $_POST['c'] : (isset($_GET['c']) ? rawurlencode($_GET['c']) : (isset($_GET['get']) ? rawurlencode($_GET['get']) : ''));
-
-        if ($c) {
-            Registry::set('current',  str_replace('\\', '/', rawurldecode($c)));
-            Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
-
-            if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
-                if (substr(Registry::get('current'), -1) != '/') {
-                    Registry::set('current', Registry::get('current') . '/');
-                }
-            }
-        } else if (Registry::getGmanager()->file_exists(rawurldecode($_SERVER['QUERY_STRING']))) {
-            Registry::set('current',  str_replace('\\', '/', rawurldecode($_SERVER['QUERY_STRING'])));
-            Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
-
-            if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
-                if (substr(Registry::get('current'), -1) != '/') {
-                    Registry::set('current', Registry::get('current') . '/');
-                }
-            }
-        } else {
-            if (substr(Config::get('Gmanager', 'defaultDirectory'), -1) != '/') {
-                Registry::set('current', Config::get('Gmanager', 'defaultDirectory') . '/');
-            } else {
-                Registry::set('current', Config::get('Gmanager', 'defaultDirectory'));
-            }
-            Registry::set('currentType', 'dir');
-        }
-
-        Registry::set('hCurrent', htmlspecialchars(Registry::get('current'), ENT_COMPAT));
-        Registry::set('rCurrent', str_replace('%2F', '/', rawurlencode(Registry::get('current'))));
-
+        $this->_setCurrent();
 
         // кол-во файлов на странице
         $ip = isset($_POST['limit']);
@@ -75,6 +44,40 @@ class Gmanager
         } else {
             Registry::set('lineEditor', Config::get('LineEditor', 'defaultEnable'));
         }
+    }
+
+
+    /**
+     * _setCurrent
+     */
+    private function _setCurrent ()
+    {
+        $c = isset($_POST['c']) ? rawurldecode($_POST['c']) : (isset($_GET['c']) ? $_GET['c'] : (isset($_GET['get']) ? $_GET['get'] : rawurldecode($_SERVER['QUERY_STRING'])));
+
+        if ($c) {
+            if ($c == '/') {
+                $c = '.';
+            }
+
+            Registry::set('current',  str_replace('\\', '/', $c));
+            Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
+
+            if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
+                if (substr(Registry::get('current'), -1) != '/') {
+                    Registry::set('current', Registry::get('current') . '/');
+                }
+            }
+        } else {
+            if (substr(Config::get('Gmanager', 'defaultDirectory'), -1) != '/') {
+                Registry::set('current', Config::get('Gmanager', 'defaultDirectory') . '/');
+            } else {
+                Registry::set('current', Config::get('Gmanager', 'defaultDirectory'));
+            }
+            Registry::set('currentType', 'dir');
+        }
+
+        Registry::set('hCurrent', htmlspecialchars(Registry::get('current'), ENT_COMPAT));
+        Registry::set('rCurrent', str_replace('%2F', '/', rawurlencode(Registry::get('current'))));
     }
 
 
@@ -1610,26 +1613,21 @@ class Gmanager
      */
     public function ftpMoveFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
-        $h = opendir($from);
-        while (($f = readdir($h)) !== false) {
-            if ($f == '.' || $f == '..') {
-                continue;
-            }
-
-            if (is_dir($from . '/' . $f)) {
+        foreach (Registry::getGmanager()->iterator($from) as $f) {
+            if (Registry::getGmanager()->is_dir($from . '/' . $f)) {
                 Registry::getGmanager()->mkdir($to . '/' . $f, $chmodd);
                 $this->ftpMoveFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
             } else {
                 if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
-                    Registry::getGmanager()->file_put_contents($to . '/' . $f, file_get_contents($from . '/' . $f));
+                    Registry::getGmanager()->file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
                 }
 
                 $this->rechmod($to . '/' . $f, $chmodf);
-                unlink($from . '/' . $f);
+                Registry::getGmanager()->unlink($from . '/' . $f);
             }
         }
-        closedir($h);
-        rmdir($from);
+
+        Registry::getGmanager()->rmdir($from);
     }
 
 
@@ -1645,16 +1643,12 @@ class Gmanager
     public function ftpCopyFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
         foreach (Registry::getGmanager()->iterator($from) as $f) {
-            if ($f == '.' || $f == '..') {
-                continue;
-            }
-
             if (Registry::getGmanager()->is_dir($from . '/' . $f)) {
-                mkdir($to . '/' . $f, $chmodd);
+                Registry::getGmanager()->mkdir($to . '/' . $f, $chmodd);
                 $this->ftpCopyFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
             } else {
-                if ($overwrite || !file_exists($to . '/' . $f)) {
-                    file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
+                if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
+                    Registry::getGmanager()->file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
                 }
             }
         }
