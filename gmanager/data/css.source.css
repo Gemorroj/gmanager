@@ -21,6 +21,7 @@ input[type="text"], input[type="file"]{
 }
 
 textarea, select[multiple="true"], input[type="text"], input[type="file"]{
+    overflow: auto;
     width: 85%;
     margin: 2pt 1%;
     background-color: #f0f0f0;
@@ -34,11 +35,10 @@ input[type="text"]:hover, input[type="file"]:hover{
 }
 
 legend input[type="checkbox"]{
-    margin:0 !important;
+    margin: 0 !important;
 }
 
 input[type="checkbox"]:checked{
-    border: 2px solid #ffffff;
     background-color: #007090;
 }
 
@@ -229,6 +229,14 @@ a:active{
     font-family: "Courier New", monospace;
 }
 
+div.bar{
+    white-space: nowrap;
+}
+
+div.bar input[type="text"]{
+    width: 86%;
+}
+
 .pedit{
     border-radius: 3pt;
     background-color: #ebebeb;
@@ -243,4 +251,10 @@ a:active{
 .pedit_r{
     width: 36px;
     white-space: nowrap;
+}
+
+input.pinput{
+    -wap-input-format:'*N';
+    width: 2%;
+    min-width: 20px;
 }

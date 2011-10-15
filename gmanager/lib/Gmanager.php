@@ -1698,7 +1698,7 @@ class Gmanager
     public function getType ($f)
     {
         $type = array_reverse(explode('.', strtoupper($f)));
-        if ((isset($type[1]) && $type[1] != '') && ($type[1] . '.' . $type[0] == 'TAR.GZ' || $type[1] . '.' . $type[0] == 'TAR.BZ' || $type[1] . '.' . $type[0] == 'TAR.GZ2' || $type[1] . '.' . $type[0] == 'TAR.BZ2')) {
+        if ((isset($type[1]) && $type[1] != '') && ($type[1] . '.' . $type[0] === 'TAR.GZ' || $type[1] . '.' . $type[0] === 'TAR.BZ' || $type[1] . '.' . $type[0] === 'TAR.GZ2' || $type[1] . '.' . $type[0] === 'TAR.BZ2')) {
             return $type[1] . '.' . $type[0];
         }
 

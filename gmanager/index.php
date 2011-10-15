@@ -41,7 +41,7 @@ echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '
 
 
 if (Config::get('Gmanager', 'addressBar')) {
-    echo '<div class="edit"><form action="index.php?" method="get"><div>';
+    echo '<div class="edit"><form action="index.php?" method="get"><div class="bar">';
     if ($ia) {
         echo '<input type="hidden" name="add_archive" value="' . htmlspecialchars($_GET['add_archive']) . '"/><input type="hidden" name="go" value="1"/>';
     }
@@ -132,7 +132,7 @@ if (Registry::getGmanager()->file_exists(Registry::get('current')) || Registry::
         $d = str_replace('%2F', '/', rawurlencode(dirname(Registry::get('current'))));
         $found = '<div class="rb">' . Language::get('create') . ' <a href="change.php?go=create_file&amp;c=' . $d . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . $d . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $d . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $d . '">' . Language::get('mod') . '</a><br/></div>';
     } else {
-        $found = '<form action="' . $_SERVER['PHP_SELF'] . '?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . Registry::get('limit') . '" type="text" onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:2%;"/><input type="submit" value="' . Language::get('limit') . '"/></div></form><div class="rb">' . Language::get('create') . ' <a href="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('mod') . '</a><br/></div>';
+        $found = '<form action="' . $_SERVER['PHP_SELF'] . '?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . Registry::get('limit') . '" type="text" onkeypress="return Gmanager.number(event)" class="pinput"/><input type="submit" value="' . Language::get('limit') . '"/></div></form><div class="rb">' . Language::get('create') . ' <a href="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('mod') . '</a><br/></div>';
     }
 } else {
     $found = '<div class="red">' . Language::get('not_found') . '(' . Registry::get('hCurrent') . ')' . '<br/></div>';

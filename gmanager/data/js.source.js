@@ -9,14 +9,14 @@ var Gmanager = {
         var r;
         o.focus();
 
-        if (document.selection !== undefined) {
+        if ("selection" in document) {
             r = document.selection.createRange();
             if (r.parentElement() !== o) {
                 return;
             }
             r.text = s;
             r.select();
-        } else if (o.selectionStart !== undefined) {
+        } else if ("selectionStart" in o) {
             r = o.selectionStart;
             o.value = o.value.substr(0, r) + s + o.value.substr(o.selectionEnd, o.value.length);
             r += s.length;
@@ -27,25 +27,23 @@ var Gmanager = {
         o.focus();
     },
     _getCaretPosition: function (t) {
-        var sel, clone;
+        var sel, clone, el;
 
-        if (t.selectionStart !== undefined) {
+        if ("selectionStart" in t) {
             return t.selectionStart;
-        } else if (document.selection) {
+        } else {
             sel = document.selection.createRange();
-            clone = sel.duplicate();
-            sel.collapse(true);
-            clone.moveToElementText(t);
-            clone.setEndPoint("EndToEnd", sel);
+            el = t.createTextRange();
+            clone = el.duplicate();
+            el.moveToBookmark(sel.getBookmark());
+            clone.setEndPoint("EndToStart", el);
             return clone.text.length;
         }
-
-        return 0;
     },
     _setCaretPosition: function (t, n) {
         var r;
 
-        if (document.all === undefined || window.opera !== undefined) {
+        if ("setSelectionRange" in t) {
             if (window.opera !== undefined) {
                 t.setSelectionRange(n + 1, n + 1);
             } else {
@@ -77,7 +75,7 @@ var Gmanager = {
         if (f[n] === undefined) {
             return false;
         } else if (f[n] instanceof HTMLInputElement) {
-            if (!f[n].checked) {
+            if (f[n].checked === false) {
                 window.alert(document.getElementById("chF").innerHTML);
             }
             return f[n].checked;
@@ -85,7 +83,7 @@ var Gmanager = {
 
         var i = 0;
         for (; i < f[n].length; i++) {
-            if (f[n][i].checked) {
+            if (f[n][i].checked === true) {
                 return true;
             }
         }

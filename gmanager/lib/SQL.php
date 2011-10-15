@@ -19,7 +19,7 @@ class SQL
      * main
      * 
      * @param  bool $force
-     * @return mixed (object or bool)
+     * @return objec|bool
      */
     public static function main ($force = false)
     {

@@ -19,6 +19,9 @@ class HTTP extends Gmanager
     static private $_id     = array();
 
 
+    /**
+     * __construct
+     */
     public function __construct ()
     {
         Registry::set('sysType', strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX');
@@ -28,7 +31,7 @@ class HTTP extends Gmanager
     /**
      * Valid chmod
      * 
-     * @param mixed $chmod
+     * @param int|string $chmod
      * @return int
      */
     private function _chmoder ($chmod)
@@ -51,7 +54,7 @@ class HTTP extends Gmanager
      * mkdir
      * 
      * @param string $dir
-     * @param mixed $chmod
+     * @param int|string $chmod
      * @return bool
      */
     public function mkdir ($dir, $chmod = 0755)
@@ -64,7 +67,7 @@ class HTTP extends Gmanager
      * chmod
      * 
      * @param string $file
-     * @param mixed $chmod
+     * @param int|string $chmod
      * @return bool
      */
     public function chmod ($file, $chmod = 0755)
@@ -323,7 +326,7 @@ class HTTP extends Gmanager
      * 
      * @param string $from
      * @param string $to
-     * @param mixed  $chmod
+     * @param int|string  $chmod
      * @return bool
      */
     public function copy ($from, $to, $chmod = 0644)

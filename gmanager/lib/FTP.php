@@ -22,6 +22,14 @@ class FTP extends Gmanager
     static private $_dir        = '/';
 
 
+    /**
+     * __construct
+     * 
+     * @param string $user
+     * @param string $pass
+     * @param string $host
+     * @param int $port
+     */
     public function __construct ($user = 'root', $pass = '', $host = 'localhost', $port = 21)
     {
         $this->_res = ftp_connect($host, $port, 10);
@@ -35,10 +43,16 @@ class FTP extends Gmanager
     }
 
 
+    /**
+     * __destruct
+     * 
+     * @return bool
+     */
     public function __destruct ()
     {
         return ftp_close($this->_res);
     }
+
 
     /*
     private static function _change_symbol ($str = '')
@@ -51,7 +65,7 @@ class FTP extends Gmanager
     /**
      * Valid chmod
      * 
-     * @param mixed $chmod
+     * @param int|string $chmod
      * @return int
      */
     private function _chmoder ($chmod)
@@ -72,8 +86,9 @@ class FTP extends Gmanager
 
     /**
      * mkdir
+     * 
      * @param string $dir
-     * @param mixed $chmod
+     * @param int|string $chmod
      * @return bool
      */
     public function mkdir ($dir, $chmod = 0755)
@@ -92,8 +107,9 @@ class FTP extends Gmanager
 
     /**
      * chmod
+     * 
      * @param string $file
-     * @param mixed $chmod
+     * @param int|string $chmod
      * @return bool
      */
     public function chmod ($file, $chmod = 0755)
@@ -364,7 +380,7 @@ class FTP extends Gmanager
      * 
      * @param string $from
      * @param string $to
-     * @param mixed  $chmod
+     * @param int|string  $chmod
      * @return bool
      */
     public function copy ($from, $to, $chmod = 0644)

@@ -35,7 +35,7 @@
  * @author    Vincent Blavet <vincent@phpconcept.net>
  * @copyright 1997-2010 The Authors
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version   CVS: $Id$
+ * @version   CVS: $Id: Tar.php 314430 2011-08-07 14:45:45Z mrook $
  * @link      http://pear.php.net/package/Archive_Tar
  */
 
@@ -50,7 +50,7 @@ define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
 * @package Archive_Tar
 * @author  Vincent Blavet <vincent@phpconcept.net>
 * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
-* @version $Revision$
+* @version $Revision: 314430 $
 */
 class Archive_Tar extends PEAR
 {
