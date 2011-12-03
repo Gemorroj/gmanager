@@ -63,28 +63,6 @@ class FTP extends Gmanager
 
 
     /**
-     * Valid chmod
-     * 
-     * @param int|string $chmod
-     * @return int
-     */
-    private function _chmoder ($chmod)
-    {
-        if (!is_int($chmod)) {
-            $strlen = strlen($chmod);
-
-            if (($strlen != 3 && $strlen != 4) || !is_numeric($chmod)) {
-                return false;
-            } else if ($strlen == 3) {
-                $chmod = '0' . $chmod;
-            }
-            $chmod = octdec($chmod);
-        }
-        return $chmod;
-    }
-
-
-    /**
      * mkdir
      * 
      * @param string $dir

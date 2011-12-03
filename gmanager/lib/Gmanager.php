@@ -267,7 +267,6 @@ class Gmanager
         $error = array();
 
         foreach (Registry::getGmanager()->iterator($d) as $file) {
-
             if ($file == $static) {
                 continue;
             }
@@ -280,7 +279,7 @@ class Gmanager
             if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
 
                 if (Registry::getGmanager()->mkdir($dest . '/' . $file, $ch)) {
-                    Registry::getGmanager()->chmod($dest, $ch);
+                    Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
                     $this->copyFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_files_false')) . ' (' . Errors::get() . ')';
@@ -342,9 +341,7 @@ class Gmanager
             } else {
 
                 if ($overwrite || !Registry::getGmanager()->file_exists($dest . '/' . $file)) {
-                    if (Registry::getGmanager()->rename($d . '/' . $file, $dest . '/' . $file)) {
-                        Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
-                    } else {
+                    if (!Registry::getGmanager()->rename($d . '/' . $file, $dest . '/' . $file)) {
                         $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_file_false')) . ' (' . Errors::get() . ')';
                     }
                 } else {
@@ -364,15 +361,15 @@ class Gmanager
 
 
     /**
-     * copyFile
-     * 
+     * Check access copy or move file
+     *
      * @param string $source
      * @param string $dest
      * @param mixed  $chmod
      * @param bool   $overwrite
-     * @return string
+     * @return string   Error string or empty string
      */
-    public function copyFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
+    private function _checkChangeFile ($source, $dest, $chmod, $overwrite)
     {
         if (!$overwrite && Registry::getGmanager()->file_exists($dest)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
@@ -383,6 +380,26 @@ class Gmanager
                 $this->rechmod($dest, $chmod);
             }
             return Errors::message(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), Errors::MESSAGE_OK);
+        }
+
+        return '';
+    }
+
+
+    /**
+     * copyFile
+     * 
+     * @param string $source
+     * @param string $dest
+     * @param mixed  $chmod
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function copyFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
+    {
+        $err = $this->_checkChangeFile($source, $dest, $chmod, $overwrite);
+        if ($err) {
+            return $err;
         }
 
         $this->copyD(dirname($source), dirname($dest));
@@ -411,15 +428,9 @@ class Gmanager
      */
     public function moveFile ($source = '', $dest = '', $chmod = '', $overwrite = false)
     {
-        if (!$overwrite && Registry::getGmanager()->file_exists($dest)) {
-            return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
-        }
-
-        if ($source == $dest) {
-            if ($chmod) {
-                $this->rechmod($dest, $chmod);
-            }
-            return Errors::message(htmlspecialchars(str_replace('%file%', $source, Language::get('move_file_true'))), Errors::MESSAGE_OK);
+        $err = $this->_checkChangeFile($source, $dest, $chmod, $overwrite);
+        if ($err) {
+            return $err;
         }
 
         $this->copyD(dirname($source), dirname($dest));
@@ -619,9 +630,9 @@ class Gmanager
      */
     public function rechmod ($current = '', $chmod = 0755)
     {
-        $len = strlen($chmod);
+        $chmod = $this->_chmoder($chmod);
 
-        if (($len != 3 && $len != 4) || !is_numeric($chmod)) {
+        if ($chmod === false) {
             return Errors::message(Language::get('chmod_mode_false'), Errors::MESSAGE_EMAIL);
         }
 
@@ -1170,12 +1181,7 @@ class Gmanager
                 $buf = iconv_substr($buf, 0, -iconv_strlen(ini_get('error_append_string')));
             }
 
-
-            $rows = sizeof(explode("\n", $buf)) + 1;
-            if ($rows < 3) {
-                $rows = 3;
-            }
-            return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
+            return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $this->getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
         } else {
             echo '<div class="input">' . Language::get('result') . '<pre class="code"><code>';
 
@@ -1224,18 +1230,13 @@ class Gmanager
 
             proc_close($h);
 
-            $rows = sizeof(explode("\n", $buf)) + 1;
-            if ($rows < 3) {
-                $rows = 3;
-            }
-
             if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
                 $buf = iconv(Config::get('Gmanager', 'consoleEncoding'), 'UTF-8//TRANSLIT', $buf);
             }
         } else {
             return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
         }
-        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $rows . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $this->getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
     }
 
 
@@ -1620,9 +1621,9 @@ class Gmanager
             } else {
                 if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
                     Registry::getGmanager()->file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
+                    $this->rechmod($to . '/' . $f, $chmodf);
                 }
 
-                $this->rechmod($to . '/' . $f, $chmodf);
                 Registry::getGmanager()->unlink($from . '/' . $f);
             }
         }
@@ -1649,6 +1650,7 @@ class Gmanager
             } else {
                 if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
                     Registry::getGmanager()->file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
+                    $this->rechmod($to . '/' . $f, $chmodf);
                 }
             }
         }
@@ -1725,6 +1727,22 @@ class Gmanager
 
 
     /**
+     * Get rows for textarea
+     *
+     * @param string $str
+     * @return int
+     */
+    public function getRows ($str)
+    {
+        $rows = sizeof(explode("\n", $str)) + 1;
+        if ($rows < 3) {
+            $rows = 3;
+        }
+        return $rows;
+    }
+
+
+    /**
      * id2name
      * 
      * @param int    $id
@@ -1773,6 +1791,25 @@ class Gmanager
         }
 
         return array('name' => '', 'passwd' => '', 'uid' => '', 'gid' => '', 'gecos' => '', 'dir' => '', 'shell' => '');
+    }
+
+
+    /**
+     * Valid chmod
+     *
+     * @param int|string $chmod
+     * @return int|bool
+     * @access protected
+     */
+    protected function _chmoder ($chmod)
+    {
+        $chmod = decoct(intval($chmod, 8)); // string to integer, integer to string
+
+        if (strlen($chmod) != 3) {
+            return false;
+        }
+
+        return octdec('0' . $chmod);
     }
 
 
