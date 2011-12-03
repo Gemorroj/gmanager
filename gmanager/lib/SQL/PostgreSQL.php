@@ -30,7 +30,15 @@ class SQL_PostgreSQL implements SQL_Interface
      */
     private function _connect ($host = 'localhost', $name = 'postgres', $pass = 'postgres', $db = '', $charset = 'utf8')
     {
-        if (!$this->_resource = pg_connect(($db ? 'dbname=' . $db . ' ' : '') . 'host=' . $host . ' user=' . $name . ' password=' . $pass . ' options=\'--client_encoding=' . $charset . '\'')) {
+        $dsn = '';
+        $dsn .= $db ? ' dbname=\'' . addslashes($db) . '\' ' : '';
+        $dsn .= $host ? ' host=\'' . addslashes($host) . '\' ' : '';
+        $dsn .= $name ? ' user=\'' . addslashes($name) . '\' ' : '';
+        $dsn .= $pass ? ' password=\'' . addslashes($pass) . '\' ' : '';
+        $dsn .= $charset ? ' options=\'--client_encoding=' . addslashes($charset) . '\'' : '';
+
+        $this->_resource = pg_connect(ltrim($dsn));
+        if (!$this->_resource) {
             return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
         }
 
@@ -62,10 +70,10 @@ class SQL_PostgreSQL implements SQL_Interface
 
              . 'error_reporting(0);' . "\n\n"
 
-             . 'if (strpos($_SERVER[\'HTTP_USER_AGENT\'], \'MSIE\') !== false) {' . "\n"
-             . '    header(\'Content-type: text/html; charset=UTF-8\');' . "\n"
+             . 'if (isset($_SERVER[\'HTTP_ACCEPT\']) && stripos($_SERVER[\'HTTP_ACCEPT\'], \'application/xhtml+xml\') !== false) {' . "\n"
+             . '    header(\'Content-type: text/xhtml+xml; charset=UTF-8\');' . "\n"
              . '} else {' . "\n"
-             . '    header(\'Content-type: application/xhtml+xml; charset=UTF-8\');' . "\n"
+             . '    header(\'Content-type: application/html; charset=UTF-8\');' . "\n"
              . '}' . "\n\n"
 
              . 'echo \'<?xml version="1.0" encoding="UTF-8"?>' . "\n"
@@ -150,21 +158,21 @@ class SQL_PostgreSQL implements SQL_Interface
         if ($tables) {
             if ($tables['tables']) {
                 foreach ($tables['tables'] as $f) {
-                    //TODO:доделать выборку
-                    $q = pg_query($this->_resource, 'SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
-                    if ($q) {
-                        $true .= pg_result_seek($q, 1) . ";\n\n";
+                    $out = array();
+                    exec(escapeshellcmd(Config::get('Postgres', 'path')) . ' -U ' . escapeshellarg($name) . ' -F p -b -s -t ' . escapeshellarg($f) . ' ' . escapeshellarg($db), $out);
+                    if ($out) {
+                        $true .= implode("\n", $out);
                     } else {
-                        $false .= pg_errormessage($this->_resource) . "\n";
+                        $false .= Language::get('sql_schema_error') . htmlspecialchars($f, ENT_NOQUOTES) . "\n";
                     }
                 }
             }
             if ($tables['data']) {
                 foreach ($tables['data'] as $f) {
-                    $q = pg_query($this->_resource, 'SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
+                    $q = pg_query($this->_resource, 'SELECT * FROM ' . str_replace(array('"', "'"), array('""', "''"), $f) . ';');
                     if ($q) {
                         if (pg_num_rows($q) > 0) {
-                            $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
+                            $true .= 'INSERT INTO ' . str_replace(array('"', "'"), array('""', "''"), $f) . ' VALUES';
                             while ($row = pg_fetch_row($q)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
@@ -181,7 +189,10 @@ class SQL_PostgreSQL implements SQL_Interface
             }
 
             if ($true) {
-                Registry::getGmanager()->mkdir(dirname($tables['file']));
+                $dir = dirname($tables['file']);
+                if (!Registry::getGmanager()->is_dir($dir)) {
+                    Registry::getGmanager()->mkdir($dir);
+                }
                 if (!Registry::getGmanager()->file_put_contents($tables['file'], $true)) {
                     $false .= Errors::get() . "\n";
                 }
@@ -195,8 +206,8 @@ class SQL_PostgreSQL implements SQL_Interface
         } else {
             $q = pg_query($this->_resource, 'SELECT * FROM information_schema.tables;');
             if ($q) {
-                while($row = pg_fetch_row($q)) {
-                    $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
+                while($row = pg_fetch_assoc($q)) {
+                    $true .= '<option value="' . rawurlencode($row['table_name']) . '">' . htmlspecialchars($row['table_name'], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
             }

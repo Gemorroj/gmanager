@@ -179,6 +179,7 @@ return array(
     'sql_query_false'               =>  'Error executing database operation',
     'sql_true'                      =>  'Number of Queries: ',
     'sql_rows'                      =>  'Affected rows: ',
+    'sql_schema_error'              =>  'Error table scheme: ',
     'microtime'                     =>  'Query time: %time% sec.',
     'create_sql_installer'          =>  'Create Installer',
     'save_as'                       =>  'Save as',

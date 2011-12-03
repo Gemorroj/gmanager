@@ -66,11 +66,11 @@ class SQL_MySQLi implements SQL_Interface
 
              . 'error_reporting(0);' . "\n\n"
 
-             . 'if (strpos($_SERVER[\'HTTP_USER_AGENT\'], \'MSIE\') !== false) {' . "\n"
-             . '    header(\'Content-type: text/html; charset=UTF-8\');' . "\n"
-             . '} else {' . "\n"
-             . '    header(\'Content-type: application/xhtml+xml; charset=UTF-8\');' . "\n"
-             . '}' . "\n\n"
+            . 'if (isset($_SERVER[\'HTTP_ACCEPT\']) && stripos($_SERVER[\'HTTP_ACCEPT\'], \'application/xhtml+xml\') !== false) {' . "\n"
+            . '    header(\'Content-type: text/xhtml+xml; charset=UTF-8\');' . "\n"
+            . '} else {' . "\n"
+            . '    header(\'Content-type: application/html; charset=UTF-8\');' . "\n"
+            . '}' . "\n\n"
 
              . 'echo \'<?xml version="1.0" encoding="UTF-8"?>' . "\n"
              . '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n"
@@ -189,7 +189,10 @@ class SQL_MySQLi implements SQL_Interface
             }
 
             if ($true) {
-                Registry::getGmanager()->mkdir(dirname($tables['file']));
+                $dir = dirname($tables['file']);
+                if (!Registry::getGmanager()->is_dir($dir)) {
+                    Registry::getGmanager()->mkdir($dir);
+                }
                 if (!Registry::getGmanager()->file_put_contents($tables['file'], $true)) {
                     $false .= Errors::get() . "\n";
                 }

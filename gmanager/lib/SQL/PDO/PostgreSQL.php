@@ -31,8 +31,16 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
     private function _connect ($host = 'localhost', $name = 'postgres', $pass = 'postgres', $db = '', $charset = 'utf8')
     {
         try {
-            $this->_resource = new PDO('pgsql:' . ($db ? 'dbname=' . $db . ';' : '') . 'host=' . $host . ';user=' . $name . ';password=' . $pass);
-            $this->_resource->exec('SET NAMES ' . $charset);
+            $dsn = '';
+            $dsn .= $db ? 'dbname=' . addslashes($db) . ';' : '';
+            $dsn .= $host ? 'host=' . addslashes($host) . ';' : '';
+            $dsn .= $name ? 'user=' . addslashes($name) . ';' : '';
+            $dsn .= $pass ? 'password=' . addslashes($pass) . ';' : '';
+
+            $this->_resource = new PDO('pgsql:' . $dsn);
+            if ($charset) {
+                $this->_resource->exec('SET NAMES ' . $this->_resource->quote($charset));
+            }
         } catch (Exception $e) {
             return Errors::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Errors::MESSAGE_FAIL);
         }
@@ -65,11 +73,11 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
 
              . 'error_reporting(0);' . "\n\n"
 
-             . 'if (strpos($_SERVER[\'HTTP_USER_AGENT\'], \'MSIE\') !== false) {' . "\n"
-             . '    header(\'Content-type: text/html; charset=UTF-8\');' . "\n"
-             . '} else {' . "\n"
-             . '    header(\'Content-type: application/xhtml+xml; charset=UTF-8\');' . "\n"
-             . '}' . "\n\n"
+            . 'if (isset($_SERVER[\'HTTP_ACCEPT\']) && stripos($_SERVER[\'HTTP_ACCEPT\'], \'application/xhtml+xml\') !== false) {' . "\n"
+            . '    header(\'Content-type: text/xhtml+xml; charset=UTF-8\');' . "\n"
+            . '} else {' . "\n"
+            . '    header(\'Content-type: application/html; charset=UTF-8\');' . "\n"
+            . '}' . "\n\n"
 
              . 'echo \'<?xml version="1.0" encoding="UTF-8"?>' . "\n"
              . '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n"
@@ -157,22 +165,21 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
         if ($tables) {
             if ($tables['tables']) {
                 foreach ($tables['tables'] as $f) {
-                    $q = $this->_resource->query('SHOW CREATE TABLE `' . str_replace('`', '``', $f) . '`;');
-                    if ($q) {
-                        $tmp = $q->fetch(PDO::FETCH_NUM);
-                        $true .= $tmp[1] . ";\n\n";
+                    $out = array();
+                    exec(escapeshellcmd(Config::get('Postgres', 'path')) . ' -U ' . escapeshellarg($name) . ' -F p -b -s -t ' . escapeshellarg($f) . ' ' . escapeshellarg($db), $out);
+                    if ($out) {
+                        $true .= implode("\n", $out);
                     } else {
-                        $tmp = $this->_resource->errorInfo();
-                        $false .= $tmp[2] . "\n";
+                        $false .= Language::get('sql_schema_error') . htmlspecialchars($f, ENT_NOQUOTES) . "\n";
                     }
                 }
             }
             if ($tables['data']) {
                 foreach ($tables['data'] as $f) {
-                    $q = $this->_resource->query('SELECT * FROM `' . str_replace('`', '``', $f) . '`;');
+                    $q = $this->_resource->query('SELECT * FROM ' . str_replace(array('"', "'"), array('""', "''"), $f) . ';');
                     if ($q) {
                         if ($q->columnCount()) {
-                            $true .= 'INSERT INTO `' . str_replace('`', '``', $f) . '` VALUES';
+                            $true .= 'INSERT INTO ' . str_replace(array('"', "'"), array('""', "''"), $f) . ' VALUES';
                             while ($row = $q->fetch(PDO::FETCH_NUM)) {
                                 $true .= "\n(";
                                 foreach ($row as $v) {
@@ -190,7 +197,10 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
             }
 
             if ($true) {
-                Registry::getGmanager()->mkdir(dirname($tables['file']));
+                $dir = dirname($tables['file']);
+                if (!Registry::getGmanager()->is_dir($dir)) {
+                    Registry::getGmanager()->mkdir($dir);
+                }
                 if (!Registry::getGmanager()->file_put_contents($tables['file'], $true)) {
                     $false .= Errors::get() . "\n";
                 }
@@ -204,8 +214,8 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
         } else {
             $q = $this->_resource->query('SELECT * FROM information_schema.tables;');
             if ($q) {
-                while($row = $q->fetch(PDO::FETCH_NUM)) {
-                    $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
+                while($row = $q->fetch(PDO::FETCH_ASSOC)) {
+                    $true .= '<option value="' . rawurlencode($row['table_name']) . '">' . htmlspecialchars($row['table_name'], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
             }
