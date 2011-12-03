@@ -138,13 +138,8 @@ class FTP extends Gmanager
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 
-        $tmp = iconv_substr($file, 0, iconv_strrpos($file, '/'));
-        if ($tmp === false) {
-            $tmp = substr($file, 0, strrpos($file, '/'));
-        }
-
-        ftp_chdir($this->_res, IOWrapper::set($tmp));
-        $result = ftp_put($this->_res, basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
+        ftp_chdir($this->_res, IOWrapper::set(mb_substr($file, 0, mb_strrpos($file, '/'))));
+        $result = ftp_put($this->_res, Gmanager::basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
 
         unlink($php_temp);
         return ($result ? 1 : 0);
@@ -163,7 +158,7 @@ class FTP extends Gmanager
         //return is_dir($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[basename($str)]['type'] === 'dir';
+        return $rawlist[Gmanager::basename($str)]['type'] === 'dir';
     }
 
 
@@ -179,7 +174,7 @@ class FTP extends Gmanager
         //return is_file($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[basename($str)]['type'] === 'file';
+        return $rawlist[Gmanager::basename($str)]['type'] === 'file';
     }
 
 
@@ -195,7 +190,7 @@ class FTP extends Gmanager
         //return is_link($this->_url . $str);
         
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[basename($str)]['type'] === 'link';
+        return $rawlist[Gmanager::basename($str)]['type'] === 'link';
     }
 
 
@@ -241,7 +236,7 @@ class FTP extends Gmanager
         //return sprintf('%u', ftp_size($this->_res, $file));
 
         $rawlist = $this->_rawlist(dirname($file));
-        return $rawlist[basename($file)]['size'];
+        return $rawlist[Gmanager::basename($file)]['size'];
     }
 
 
@@ -291,7 +286,7 @@ class FTP extends Gmanager
         //return filemtime($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[basename($str)]['mtime'];
+        return $rawlist[Gmanager::basename($str)]['mtime'];
     }
 
 
@@ -377,7 +372,7 @@ class FTP extends Gmanager
 
         foreach ($this->_rawlist($dir) as $var) {
             if ($var['file'] !== '.') {
-                $tmp[] = basename($var['file']);
+                $tmp[] = Gmanager::basename($var['file']);
             }
         }
 
@@ -397,7 +392,7 @@ class FTP extends Gmanager
         //return fileperms($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[basename($str)]['chmod'];
+        return $rawlist[Gmanager::basename($str)]['chmod'];
     }
 
 
@@ -410,7 +405,7 @@ class FTP extends Gmanager
     public function stat ($str)
     {
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[basename($str)];
+        return $rawlist[Gmanager::basename($str)];
     }
 
 
@@ -423,14 +418,14 @@ class FTP extends Gmanager
     public function readlink ($link)
     {
         $rawlist = $this->_rawlist(dirname($link));
-        $t1 = $rawlist[basename($link)]['file'];
+        $t1 = $rawlist[Gmanager::basename($link)]['file'];
         $t2 = explode(' -> ', $t1);
         $t2 = end($t2);
         if ($t2[0] != PATH_SEPARATOR) {
             if ($t2 == '.') {
-                $t2 = substr(Registry::get('current'), 0, -1);
+                $t2 = mb_substr(Registry::get('current'), 0, -1);
             } else if ($t2 == '..') {
-                $t2 = substr(strrev(strstr(strrev(Registry::get('current')), '/')), 0, -1);
+                $t2 = mb_substr(strrev(mb_strstr(strrev(Registry::get('current')), '/')), 0, -1);
             } else {
                 $t2 = (Registry::get('current') != '.' ? Registry::get('current') : '') . $t2;
             }
@@ -462,8 +457,8 @@ class FTP extends Gmanager
         //return IOWrapper::get(realpath(IOWrapper::set($path)));
 
         $str = preg_replace('/\/(?:\/*)/', '/', preg_replace('/\w+\/\.\.\//', '', str_replace('\\', '/', $path)));
-        if (iconv_substr($str, -1) === '/') {
-            return iconv_substr($str, 0, -1);
+        if (mb_substr($str, -1) === '/') {
+            return mb_substr($str, 0, -1);
         }
         return $str;
     }
@@ -491,7 +486,7 @@ class FTP extends Gmanager
         }
 
         foreach ((array)ftp_rawlist($this->_res, '-A /' . IOWrapper::set($dir)) as $var) {
-            if (substr($var, -3) == ' ..') {
+            if (mb_substr($var, -3) == ' ..') {
                 continue;
             } else {
                 preg_replace_callback(
@@ -527,7 +522,7 @@ class FTP extends Gmanager
     {
         $data[10] = IOWrapper::get(trim($data[10]));
 
-        self::$_rawlist[self::$_dir][basename($data[10])] = array(
+        self::$_rawlist[self::$_dir][Gmanager::basename($data[10])] = array(
             'chmod' => $data[1] == 'd' && Registry::get('sysType') == 'WIN' ? 0777 : (Registry::get('sysType') == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
             'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Gmanager::id2name($data[3])) : $data[3],

@@ -63,8 +63,8 @@ class ListData
             $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $uid = $pgid = $gid = $name = $size = $isize = $chmod = '';
 
             /*
-            if (substr($file, -1) == '/') {
-                $file = iconv_substr($file, 0, iconv_strlen($file)-1);    
+            if (mb_substr($file, -1) == '/') {
+                $file = mb_substr($file, 0, mb_strlen($file) - 1);
             }
             */
 
@@ -72,7 +72,7 @@ class ListData
                 $file = $current . $file;
             }
 
-            $basename = basename($file);
+            $basename = Gmanager::basename($file);
             $r_file = str_replace('%2F', '/', rawurlencode($file));
             $stat = Registry::getGmanager()->stat($file);
             $time = $stat['mtime'];
@@ -282,7 +282,7 @@ class ListData
                 continue;
             }
 
-            $type = htmlspecialchars(Registry::getGmanager()->getType(basename($f)), ENT_NOQUOTES);
+            $type = htmlspecialchars(Registry::getGmanager()->getType(Gmanager::basename($f)), ENT_NOQUOTES);
             $arch = Registry::getGmanager()->isArchive($type);
             $stat = Registry::getGmanager()->stat($c . $f);
 
@@ -295,15 +295,14 @@ class ListData
 
                 $fl = ($type == 'GZ') ? Registry::getGmanager()->getGzContent($c . $f) : Registry::getGmanager()->file_get_contents($c . $f);
 
-                // Fix for PHP < 6.0
                 if (!$r && !$h) {
-                    if (@iconv('UTF-8', 'UTF-8//IGNORE', $fl) == $fl) {
-                        $fl = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $fl));
+                    if (mb_convert_encoding($fl, 'UTF-8', 'UTF-8') != $fl) {
+                        $fl = mb_strtolower(mb_convert_encoding($fl, 'UTF-8', Config::get('Gmanager', 'altEncoding')));
                     } else {
-                        $fl = strtolower($fl);
+                        $fl = mb_strtolower($fl);
                     }
                 }
-                if (($in = substr_count($fl, $s)) === 0) {
+                if (($in = mb_substr_count($fl, $s)) === 0) {
                     continue;
                 }
                 $in = ' (' . $in . ')';
@@ -311,14 +310,13 @@ class ListData
                 if ($r || $h) {
                     $fs = $f;
                 } else {
-                    // Fix for PHP < 6.0
-                    if (@iconv('UTF-8', 'UTF-8//IGNORE', $f) == $f) {
-                        $fs = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $f));
+                    if (mb_convert_encoding($f, 'UTF-8', 'UTF-8') != $f) {
+                        $fs = mb_strtolower(mb_convert_encoding($f, 'UTF-8', Config::get('Gmanager', 'altEncoding')));
                     } else {
-                        $fs = strtolower($f);
+                        $fs = mb_strtolower($f);
                     }
                 }
-                if (strpos($fs, $s) === false) {
+                if (mb_strpos($fs, $s) === false) {
                     continue;
                 }
             }
@@ -442,8 +440,7 @@ class ListData
         if ($h) {
             $s = implode('', array_map('chr', str_split($s, 4)));
         } else if (!$r) {
-            // Fix for PHP < 6.0
-            $s = strtolower(@iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//IGNORE', $s));
+            $s = mb_strtolower($s);
         }
 
         $data = self::_getListSearchArray($c, $s, $w, $r, $h, $limit, $archive, (Config::get('Editor', 'target') ? ' target="_blank"' : ''));

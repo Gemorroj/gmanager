@@ -41,7 +41,7 @@ class Config
         define('PCLZIP_TEMPORARY_DIR', $this->getTemp() . '/');
         define('GMANAGER_REQUEST_TIME', time());
 
-        iconv_set_encoding('internal_encoding', 'UTF-8');
+        mb_internal_encoding('UTF-8');
         setlocale(LC_ALL, self::get('PHP', 'locale'));
         date_default_timezone_set(self::get('PHP', 'timeZone'));
         @set_time_limit(self::get('PHP', 'timeLimit'));

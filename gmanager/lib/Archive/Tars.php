@@ -59,7 +59,7 @@ class Archive_Tars implements Archive_Interface
 
             $tmp = array();
             foreach ($ext as $v) {
-                $b = IOWrapper::set(basename($v));
+                $b = IOWrapper::set(Gmanager::basename($v));
                 $tmp[] = $ftp_name . $b;
                 file_put_contents($ftp_name . $b, Registry::getGmanager()->file_get_contents($v));
             }

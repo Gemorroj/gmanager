@@ -63,12 +63,12 @@ class Gmanager
             Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
 
             if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
-                if (substr(Registry::get('current'), -1) != '/') {
+                if (mb_substr(Registry::get('current'), -1) != '/') {
                     Registry::set('current', Registry::get('current') . '/');
                 }
             }
         } else {
-            if (substr(Config::get('Gmanager', 'defaultDirectory'), -1) != '/') {
+            if (mb_substr(Config::get('Gmanager', 'defaultDirectory'), -1) != '/') {
                 Registry::set('current', Config::get('Gmanager', 'defaultDirectory') . '/');
             } else {
                 Registry::set('current', Config::get('Gmanager', 'defaultDirectory'));
@@ -109,7 +109,7 @@ class Gmanager
         $chmod = $chmod ? $chmod : (isset($_POST['chmod'][0]) ? htmlspecialchars($_POST['chmod'][0], ENT_NOQUOTES) : (isset($_POST['chmod']) ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0));
 
         $d = dirname(str_replace('\\', '/', $realpath));
-        $archive = $this->isArchive($this->getType(basename(Registry::get('current'))));
+        $archive = $this->isArchive($this->getType(self::basename(Registry::get('current'))));
 
         if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
             if (Registry::get('current') == '.') {
@@ -139,24 +139,20 @@ class Gmanager
 
 
     /**
-     * staticName
+     * _staticName
      * 
      * @param string $current
      * @param string $dest
      * @return string
      */
-    public function staticName ($current = '', $dest = '')
+    private function _staticName ($current = '', $dest = '')
     {
-        $substr = 'iconv_substr';
-        if (!($len = iconv_strlen($current))) {
-            $len = strlen($current);
-            $substr = 'substr';
-        }
+        $len = mb_strlen($current);
 
-        if ($substr($dest, 0, $len) == $current) {
-            $static = $substr($dest, $len);
+        if (mb_substr($dest, 0, $len) == $current) {
+            $static = mb_substr($dest, $len);
 
-            if (strpos($static, '/')) {
+            if (mb_strpos($static, '/')) {
                 $static = strtok($static, '/');
             }
         } else {
@@ -661,9 +657,9 @@ class Gmanager
             $this->copyD($current, $to);
 
             if ($del) {
-                return $this->moveFiles($current, $name, $this->staticName($current, $name), $overwrite);
+                return $this->moveFiles($current, $name, $this->_staticName($current, $name), $overwrite);
             } else {
-                return $this->copyFiles($current, $name, $this->staticName($current, $name), $overwrite);
+                return $this->copyFiles($current, $name, $this->_staticName($current, $name), $overwrite);
             }
         } else {
             if ($del) {
@@ -714,7 +710,7 @@ class Gmanager
         }
 
         if ($charset[0]) {
-            $content = iconv($charset[0], $charset[1] . '//TRANSLIT', $content);
+            $content = mb_convert_encoding($content, $charset[1], $charset[0]);
         }
 
         return Errors::message($pg, $erl ? Errors::MESSAGE_FAIL : Errors::MESSAGE_OK) . $this->code($content, $erl);
@@ -742,7 +738,7 @@ class Gmanager
 
         fputs($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
-            'Content-length: ' . (iconv_strlen($content) + 2) . "\r\n" .
+            'Content-length: ' . (mb_strlen($content) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
             'Connection: close' . "\r\n" .
             'User-Agent: GManager ' . Config::getVersion() . "\r\n\r\n" .
@@ -788,7 +784,7 @@ class Gmanager
 
         $fl = Registry::getGmanager()->file_get_contents($current);
         if ($charset[0]) {
-            $fl = iconv($charset[0], $charset[1] . '//TRANSLIT', $fl);
+            $fl = mb_convert_encoding($fl, $charset[1], $charset[0]);
         }
 
         $xml_parser = xml_parser_create();
@@ -849,11 +845,11 @@ class Gmanager
     {
         $array = explode('<br />', $url ? $this->urlHighlight($fl) : $this->xhtmlHighlight($fl));
         $all = sizeof($array);
-        $len = strlen($all);
+        $len = mb_strlen($all);
         $pg = '';
         for ($i = 0; $i < $all; ++$i) {
             $next = $i + 1;
-            $l = strlen($next);
+            $l = mb_strlen($next);
             $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . '<br/>';
         }
     
@@ -889,7 +885,7 @@ class Gmanager
         }
 
         if ($name == '') {
-            $name = basename($file, '.gz');
+            $name = self::basename($file, '.gz');
         }
         fclose($fo);
 
@@ -997,8 +993,8 @@ class Gmanager
     {
         $fname = $name;
 
-        if (substr($dir, -1) != '/') {
-            $name = basename($dir);
+        if (mb_substr($dir, -1) != '/') {
+            $name = self::basename($dir);
             $dir = dirname($dir) . '/';
         }
 
@@ -1027,8 +1023,8 @@ class Gmanager
         $out = array(0);
 
         foreach (explode("\n", trim($headers)) as $v) {
-            if (strripos($v, 'User-Agent:') === 0) {
-                $out[0] = trim(substr($v, 11));
+            if (mb_strripos($v, 'User-Agent:') === 0) {
+                $out[0] = trim(mb_substr($v, 11));
             } else {
                 $out[] = trim($v);
             }
@@ -1052,11 +1048,11 @@ class Gmanager
         if (isset($h['Content-Disposition'])) {
             preg_match('/.+;\s+filename=(?:")?([^"]+)/i', $h['Content-Disposition'], $arr);
             if (isset($arr[1])) {
-                $name = basename($arr[1]);
+                $name = self::basename($arr[1]);
             }
         }
 
-        return ($name != '' ? $name : rawurldecode(basename(parse_url($url, PHP_URL_PATH))));
+        return ($name != '' ? $name : rawurldecode(self::basename(parse_url($url, PHP_URL_PATH))));
     }
 
 
@@ -1085,13 +1081,13 @@ class Gmanager
         $tmp = array();
         $url = trim($url);
 
-        if (strpos($url, "\n") !== false) {
+        if (mb_strpos($url, "\n") !== false) {
             foreach (explode("\n", $url) as $v) {
                 $v = trim($v);
-                $tmp[] = array($v, $name . basename($v));
+                $tmp[] = array($v, $name . self::basename($v));
             }
         } else {
-            $last = substr($name, -1);
+            $last = mb_substr($name, -1);
             $temp = false;
             if ($last != '/' && Registry::getGmanager()->is_dir($name)) {
                 $name .= '/';
@@ -1099,7 +1095,7 @@ class Gmanager
             }
 
             if ($last != '/' && !$temp) {
-                $name = dirname($name) . '/' . basename($name);
+                $name = dirname($name) . '/' . self::basename($name);
             } else {
                 $name .= $this->_getUrlName($url);
             }
@@ -1146,7 +1142,7 @@ class Gmanager
      */
     public function sendMail ($theme = '', $mess = '', $to = '', $from = '')
     {
-        if (mail($to, '=?UTF-8?B?' . base64_encode($theme) . '?=', wordwrap($mess, 70), 'From: ' . $from . "\r\nContent-type: text/plain; charset=UTF-8\r\nX-Mailer: Gmanager " . Config::getVersion())) {
+        if (mail($to, '=?UTF-8?B?' . base64_encode($theme) . '?=', wordwrap($mess, 70, "\n"), 'From: ' . $from . "\r\nContent-type: text/plain; charset=UTF-8\r\nX-Mailer: Gmanager " . Config::getVersion())) {
             return Errors::message(Language::get('send_mail_true'), Errors::MESSAGE_OK);
         } else {
             return Errors::message(Language::get('send_mail_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -1174,11 +1170,11 @@ class Gmanager
             ob_end_clean();
 
 
-            if (iconv_substr($buf, 0, iconv_strlen(ini_get('error_prepend_string'))) == ini_get('error_prepend_string')) {
-                $buf = iconv_substr($buf, iconv_strlen(ini_get('error_prepend_string')));
+            if (mb_substr($buf, 0, mb_strlen(ini_get('error_prepend_string'))) == ini_get('error_prepend_string')) {
+                $buf = mb_substr($buf, mb_strlen(ini_get('error_prepend_string')));
             }
-            if (iconv_substr($buf, -iconv_strlen(ini_get('error_append_string'))) == ini_get('error_append_string')) {
-                $buf = iconv_substr($buf, 0, -iconv_strlen(ini_get('error_append_string')));
+            if (mb_substr($buf, -mb_strlen(ini_get('error_append_string'))) == ini_get('error_append_string')) {
+                $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
             }
 
             return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $this->getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
@@ -1217,8 +1213,8 @@ class Gmanager
             pclose($h);
         */
 
-        if (Registry::get('sysType') == 'WIN') {
-            $cmd = iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $cmd);
+        if (Config::get('Gmanager', 'altEncoding') != 'UTF-8') {
+            $cmd = mb_convert_encoding($cmd, Config::get('Gmanager', 'altEncoding'), 'UTF-8');
         }
 
         if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
@@ -1230,8 +1226,8 @@ class Gmanager
 
             proc_close($h);
 
-            if (iconv('UTF-8', 'UTF-8', $buf) != $buf) {
-                $buf = iconv(Config::get('Gmanager', 'consoleEncoding'), 'UTF-8//TRANSLIT', $buf);
+            if (Config::get('Gmanager', 'consoleEncoding') != 'UTF-8') {
+                $buf = mb_convert_encoding($buf, 'UTF-8', Config::get('Gmanager', 'consoleEncoding'));
             }
         } else {
             return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
@@ -1271,7 +1267,7 @@ class Gmanager
                 return Errors::message(Language::get('regexp_error'), Errors::MESSAGE_FAIL);
             }
         } else {
-            $all = substr_count($c, $from);
+            $all = mb_substr_count($c, $from);
             if (!$all) {
                 return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
             }
@@ -1323,7 +1319,7 @@ class Gmanager
                 return Errors::message(Language::get('regexp_error'), Errors::MESSAGE_FAIL);
             }
         } else {
-            if (!substr_count($c, $from)) {
+            if (!mb_substr_count($c, $from)) {
                 return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
             }
 
@@ -1377,6 +1373,11 @@ class Gmanager
         // $f = rawurldecode($f);
 
         $info = pathinfo($f);
+        $info['dirname'] = IOWrapper::get($info['dirname']);
+        $info['basename'] = IOWrapper::get($info['basename']);
+        $info['extension'] = IOWrapper::get($info['extension']);
+        $info['filename'] = IOWrapper::get($info['filename']);
+
 
         if (preg_match_all('/\[replace=([^,]),([^\]])/U', $name, $arr, PREG_SET_ORDER)) {
             foreach ($arr as $var) {
@@ -1390,7 +1391,7 @@ class Gmanager
         }
         if (preg_match_all('/\[rand=*(\d*),*(\d*)\]/U', $name, $arr, PREG_SET_ORDER)) {
             foreach ($arr as $var) {
-                $name = str_replace($var[0], iconv_substr(str_shuffle(Config::get('Gmanager', 'rand')), 0, mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
+                $name = str_replace($var[0], mb_substr(str_shuffle(Config::get('Gmanager', 'rand')), 0, mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
             }
         }
         $name = str_replace('[f]', $info['extension'], $name);
@@ -1398,15 +1399,9 @@ class Gmanager
         $name = str_replace('[date]', strftime('%d_%m_%Y'), $name);
 
         if ($register == 1) {
-            $tmp = strtolower($name);
-            if (!iconv_strlen($tmp)) {
-                $tmp = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8//TRANSLIT', strtolower(iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $name)));
-            }
+            $tmp = mb_strtolower($name);
         } else if ($register == 2) {
-            $tmp = strtoupper($name);
-            if (!iconv_strlen($tmp)) {
-                $tmp = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8//TRANSLIT', strtoupper(iconv('UTF-8', Config::get('Gmanager', 'altEncoding') . '//TRANSLIT', $name)));
-            }
+            $tmp = mb_strtoupper($name);
         } else {
             $tmp = $name;
         }
@@ -1501,7 +1496,7 @@ class Gmanager
             return $str;
         }
 
-        $len = @iconv_strlen($str);
+        $len = mb_strlen($str);
         $maxLen = Config::get('Gmanager', 'maxLinkSize');
 
         if ($len > $maxLen) {
@@ -1510,7 +1505,7 @@ class Gmanager
             if ($maxLen % 2) {
                 $end += 1;
             }
-            return iconv_substr($str, 0, $start) . ' ... ' . iconv_substr($str, $end);
+            return mb_substr($str, 0, $start) . ' ... ' . mb_substr($str, $end);
         }
 
         return $str;
@@ -1597,7 +1592,7 @@ class Gmanager
     {
         $ch = explode(' -> ', $charset);
         if ($text) {
-            $text = iconv($ch[0], $ch[1] . '//TRANSLIT', $text);
+            $text = mb_convert_encoding($text, $ch[1], $ch[0]);
         }
         return array(0 => $ch[0], 1 => $ch[1], 'text' => $text);
     }
@@ -1693,7 +1688,7 @@ class Gmanager
      */
     public function getType ($f)
     {
-        $type = array_reverse(explode('.', strtoupper($f)));
+        $type = array_reverse(explode('.', mb_strtoupper($f)));
         if ((isset($type[1]) && $type[1] != '') && ($type[1] . '.' . $type[0] === 'TAR.GZ' || $type[1] . '.' . $type[0] === 'TAR.BZ' || $type[1] . '.' . $type[0] === 'TAR.GZ2' || $type[1] . '.' . $type[0] === 'TAR.BZ2')) {
             return $type[1] . '.' . $type[0];
         }
@@ -1765,6 +1760,19 @@ class Gmanager
 
 
     /**
+     * Multibyte basename
+     *
+     * @param string    $str
+     * @return string
+     */
+    public static function basename ($str)
+    {
+        $file = explode('/', $str);
+        return end($file);
+    }
+
+
+    /**
      * getUname
      * 
      * @return string
@@ -1772,8 +1780,8 @@ class Gmanager
     public function getUname ()
     {
         $uname = php_uname();
-        if (Registry::get('sysType') == 'WIN') {
-            $uname = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8', $uname);
+        if (Config::get('Gmanager', 'altEncoding') != 'UTF-8') {
+            $uname = mb_convert_encoding($uname, 'UTF-8', Config::get('Gmanager', 'altEncoding'));
         }
         return $uname;
     }
@@ -1838,27 +1846,6 @@ class Gmanager
         }
         closedir($h);
         rmdir($dir);
-    }
-
-
-    /**
-     * phpinfo
-     * 
-     * @param int $what
-     */
-    public function phpinfo($what = -1)
-    {
-        header('Content-Type: text/html; charset=UTF-8');
-
-        if (Registry::get('sysType') == 'WIN' && ob_start()) {
-            phpinfo($what);
-            $phpinfo = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8', ob_get_contents());
-            ob_end_clean();
-            echo $phpinfo;
-        } else {
-            phpinfo($what);
-        }
-        exit;
     }
 }
 

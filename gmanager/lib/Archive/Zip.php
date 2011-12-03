@@ -43,14 +43,14 @@ class Archive_Zip implements Archive_Interface
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
-        Registry::getGmanager()->createDir(iconv_substr($name, 0, strrpos($name, '/')));
+        Registry::getGmanager()->createDir(mb_substr($name, 0, mb_strrpos($name, '/')));
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $temp = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
             $ftp = array();
             mkdir($temp, 0755, true);
             foreach ($ext as $f) {
-                $ftp[] = $tmp = $temp . '/' . IOWrapper::get(basename($f));
+                $ftp[] = $tmp = $temp . '/' . IOWrapper::get(Gmanager::basename($f));
                 if (Registry::getGmanager()->is_dir($f)) {
                     mkdir($tmp, 0755, true);
                     Registry::getGmanager()->ftpCopyFiles($f, $tmp);
@@ -107,7 +107,7 @@ class Archive_Zip implements Archive_Interface
 
         $tmp = array();
         foreach ($ext as $v) {
-            $b = IOWrapper::set(basename($v));
+            $b = IOWrapper::set(Gmanager::basename($v));
             $tmp[] = $tmpFolder . '/' . $b;
             if (Registry::getGmanager()->is_dir($v)) {
                 mkdir($tmpFolder . '/' . $b, 0777, true);
@@ -519,8 +519,9 @@ class Archive_Zip implements Archive_Interface
 
             $prop = $zip->properties();
             if (isset($prop['comment']) && $prop['comment'] != '') {
-                if (iconv('UTF-8', 'UTF-8', $prop['comment']) != $prop['comment']) {
-                    $prop['comment'] = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8//TRANSLIT', $prop['comment']);
+
+                if (mb_convert_encoding($prop['comment'], 'UTF-8', 'UTF-8') != $prop['comment']) {
+                    $prop['comment'] = mb_convert_encoding($prop['comment'], 'UTF-8', Config::get('Gmanager', 'altEncoding'));
                 }
                 $l .= '<tr class="border"><td>' . Language::get('comment_archive') . '</td><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '"><pre>' . htmlspecialchars($prop['comment'], ENT_NOQUOTES) . '</pre></td></tr>';
             }
@@ -619,7 +620,7 @@ class Archive_Zip implements Archive_Interface
             }
         }
 
-        $result = ($zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, iconv_substr($tmp, iconv_strlen(dirname(dirname($tmp))))) != 0);
+        $result = ($zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, mb_substr($tmp, mb_strlen(dirname(dirname($tmp))))) != 0);
 
         Registry::getGmanager()->clean($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {

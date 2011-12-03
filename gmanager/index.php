@@ -28,7 +28,7 @@ if (Registry::get('current') == '.') {
 if (Registry::get('currentType') == 'dir') {
     $archive = false;
 } else {
-    $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(basename(Registry::get('current'))));
+    $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('current'))));
 }
 
 $f = 0;

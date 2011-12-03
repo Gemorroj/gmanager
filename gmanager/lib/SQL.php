@@ -68,19 +68,19 @@ class SQL
         $position = 0;
         $query    = '';
 
-        for ($strlen = iconv_strlen($str); $position < $strlen; ++$position) {
+        for ($len = mb_strlen($str); $position < $len; ++$position) {
             $char  = $str[$position];
 
             switch ($char) {
                 case '-':
-                    if (substr($str, $position, 3) != '-- ') {
+                    if (mb_substr($str, $position, 3) != '-- ') {
                         $query .= $char;
                         break;
                     }
 
 
                 case '#':
-                    while ($char != "\r" && $char != "\n" && $position < $strlen - 1) {
+                    while ($char != "\r" && $char != "\n" && $position < $len - 1) {
                         $char = $str[++$position];
                     }
                     break;
@@ -92,14 +92,14 @@ class SQL
                     $quote  = $char;
                     $query .= $quote;
 
-                    while ($position < $strlen - 1) {
+                    while ($position < $len - 1) {
                         $char = $str[++$position];
                         if ($char == '\\') {
                             $query .= $char;
-                            if ($position < $strlen - 1) {
+                            if ($position < $len - 1) {
                                 $char   = $str[++$position];
                                 $query .= $char;
-                                if ($position < $strlen - 1) {
+                                if ($position < $len - 1) {
                                     $char = $str[++$position];
                                 }
                             } else {

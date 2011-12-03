@@ -52,7 +52,7 @@ Registry::getGmanager()->sendHeader();
 
 echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '<div class="w2">' . Language::get('title_edit') . '<br/></div>' . Registry::getGmanager()->head();
 
-$archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(basename(Registry::get('hCurrent'))));
+$archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('hCurrent'))));
 
 switch ($_GET['go']) {
     case 'save':
@@ -80,7 +80,7 @@ switch ($_GET['go']) {
         }
 
         if ($_POST['charset'] != 'utf-8') {
-            $_POST['text'] = iconv('UTF-8', $_POST['charset'], $_POST['text']);
+            $_POST['text'] = mb_convert_encoding($_POST['text'], $_POST['charset'], 'UTF-8');
         }
 
         if ($archive == 'ZIP') {
@@ -143,26 +143,21 @@ switch ($_GET['go']) {
         } else {
             $content['text'] = htmlspecialchars(Registry::getGmanager()->file_get_contents(Registry::get('current')), $quotes, 'UTF-8');
             $content['size'] = Registry::getGmanager()->formatSize(Registry::getGmanager()->size(Registry::get('current')));
-            $content['lines'] = substr_count($content['text'], "\n") + 1;
+            $content['lines'] = mb_substr_count($content['text'], "\n") + 1;
             $f = '';
         }
 
         if ($charset[0] && $content['size'] > 0) {
-            $content['text'] = iconv($charset[0], $charset[1], $content['text']);
+            $content['text'] = mb_convert_encoding($content['text'], $charset[1], $charset[0]);
         }
 
         if ($_GET['beautify']) {
             $content['text'] = Registry::getGmanager()->beautify($content['text']);
             $content['size'] = Registry::getGmanager()->formatSize(strlen($content['text']));
-            $content['lines'] = substr_count($content['text'], "\n");
+            $content['lines'] = mb_substr_count($content['text'], "\n");
         }
 
-
-        $r = Registry::getGmanager()->realpath(Registry::get('current'));
-        $l = iconv_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT']));
-        if (!$path = @iconv_substr($r, $l)) {
-            $path = iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8', iconv_substr($r, $l));
-        }
+        $path = mb_substr(Registry::getGmanager()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));
 
         if (Config::get('Gmanager', 'mode') == 'HTTP' && $path) {
             $http = '<div class="rb"><a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . str_replace('%2F', '/', rawurlencode(str_replace('\\', '/', $path)))) . '">' . Language::get('look') . '</a><br/></div>';

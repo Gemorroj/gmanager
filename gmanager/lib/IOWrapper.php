@@ -23,11 +23,8 @@ class IOWrapper
      */
     public static function get ($data)
     {
-        if (Registry::get('sysType') == 'WIN') {
-            return iconv(Config::get('Gmanager', 'altEncoding'), 'UTF-8', $data);
-        } else {
-            return $data;
-        }
+        $enc = Config::get('Gmanager', 'altEncoding');
+        return ($enc !== 'UTF-8' ? mb_convert_encoding($data, 'UTF-8', $enc) : $data);
     }
 
 
@@ -39,11 +36,8 @@ class IOWrapper
      */
     public static function set ($data)
     {
-        if (Registry::get('sysType') == 'WIN') {
-            return iconv('UTF-8', Config::get('Gmanager', 'altEncoding'), $data);
-        } else {
-            return $data;
-        }
+        $enc = Config::get('Gmanager', 'altEncoding');
+        return ($enc !== 'UTF-8' ? mb_convert_encoding($data, $enc, 'UTF-8') : $data);
     }
 }
 

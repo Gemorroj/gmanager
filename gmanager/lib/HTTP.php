@@ -258,7 +258,7 @@ class HTTP extends Gmanager
     public function readlink ($link)
     {
         chdir(Registry::get('current'));
-        return array(basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
+        return array(Gmanager::basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
     }
 
 

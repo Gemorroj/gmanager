@@ -36,7 +36,7 @@ class Beautifier_PHP implements Beautifier_Interface
         for ($i = 0; $i < $all; ++$i) {
             switch ($str[$i]) {
                 case "'":
-                    $prev = iconv_substr($out, -1);
+                    $prev = mb_substr($out, -1);
                     if ($prev != '\\' && $block[0] === false && $block[1] === false && $block[2] === false && $block[3] === false && $block[4] === false) {
                         $block[0] = true;
                         if (!in_array($prev, array('[', '(', ' ', "\n"))) {
@@ -50,7 +50,7 @@ class Beautifier_PHP implements Beautifier_Interface
 
 
                 case '"':
-                    $prev = iconv_substr($out, -1);
+                    $prev = mb_substr($out, -1);
                     if ($prev != '\\' && $block[0] === false && $block[1] === false && $block[2] === false && $block[3] === false && $block[4] === false) {
                         $block[1] = true;
                         if (!in_array($prev, array('[', '(', ' ', "\n"))) {
@@ -72,7 +72,7 @@ class Beautifier_PHP implements Beautifier_Interface
 
 
                 case '*':
-                    $prev = iconv_substr($out, -1);
+                    $prev = mb_substr($out, -1);
                     if ($prev == '/' && $block[0] === false && $block[1] === false && $block[3] === false && $block[4] === false) {
                         $block[2] = true;
                     }
@@ -81,7 +81,7 @@ class Beautifier_PHP implements Beautifier_Interface
 
 
                 case '/':
-                    $prev = iconv_substr($out, -1);
+                    $prev = mb_substr($out, -1);
                     if ($prev == '*' && $block[0] === false && $block[1] === false && $block[2] === true && $block[3] === false && $block[4] === false) {
                         $block[2] = false;
                     }
@@ -102,8 +102,8 @@ class Beautifier_PHP implements Beautifier_Interface
                     $block[3] = $block[4] = false;
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3]) {
                         $rep = str_repeat(self::$tab, $tab);
-                        $len = strlen($rep);
-                        if (iconv_substr($out, -$len) != $rep) {
+                        $len = mb_strlen($rep);
+                        if (mb_substr($out, -$len) != $rep) {
                             $out .= $str[$i] . $rep;
                             while (true) {
                                 if (@$str[$i + 1] != ' ' && @$str[$i + 1] != "\n") {
@@ -112,16 +112,16 @@ class Beautifier_PHP implements Beautifier_Interface
                                 $i++;
                             }
                         }
-                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || iconv_substr($out, -(2 + iconv_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab)) {
+                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab)) {
                         $out .= $str[$i];
                     }
                     break;
 
 
                 case ' ':
-                    if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4] && (iconv_substr($out, -2) == ', ') || iconv_substr($out, -3) == ' . ' || iconv_substr($out, -3) == ' = ') {
+                    if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4] && (mb_substr($out, -2) == ', ') || mb_substr($out, -3) == ' . ' || mb_substr($out, -3) == ' = ') {
                         break;
-                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || (iconv_substr($out, -(2 + iconv_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab) && iconv_substr($out, -(2 + iconv_strlen(str_repeat(self::$tab, $tab)))) != '(' . "\n" . str_repeat(self::$tab, $tab))) {
+                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || (mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab) && mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '(' . "\n" . str_repeat(self::$tab, $tab))) {
                         $out .= $str[$i];
                     }
                     break;
@@ -131,7 +131,7 @@ class Beautifier_PHP implements Beautifier_Interface
                     if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4]) {
                         $out .= $str[$i];
                         break;
-                    } else if (!in_array(iconv_substr($out, -1), array(' ', "\n"))) {
+                    } else if (!in_array(mb_substr($out, -1), array(' ', "\n"))) {
                         $out .= ' ';
                     }
                     $tab++;
@@ -152,7 +152,7 @@ class Beautifier_PHP implements Beautifier_Interface
                 case '(':
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4]) {
                         $out = rtrim($out);
-                        if (strtoupper(iconv_substr($out, -5)) == 'ARRAY') {
+                        if (strtoupper(mb_substr($out, -5)) == 'ARRAY') {
                             $tab++;
                             $out .= ' ' . $str[$i] . "\n" . str_repeat(self::$tab, $tab);
                             $array = true;
@@ -186,7 +186,7 @@ class Beautifier_PHP implements Beautifier_Interface
 
                 case '.':
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4]) {
-                        if (iconv_substr($out, -1) != ' ') {
+                        if (mb_substr($out, -1) != ' ') {
                             $out .= ' ';
                         }
                         $out .= $str[$i] . ' ';
@@ -198,7 +198,7 @@ class Beautifier_PHP implements Beautifier_Interface
 
                 case '=':
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4]) {
-                        $prev = iconv_substr($out, -1);
+                        $prev = mb_substr($out, -1);
                         if ($prev != ' ' && $prev != '=') {
                             $out .= ' ';
                         }
@@ -215,8 +215,8 @@ class Beautifier_PHP implements Beautifier_Interface
                 case 'E':
                 case 'e':
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4]) {
-                        if (strtoupper(iconv_substr($out, -3)) == 'ELS' && in_array(iconv_substr($out, -4, 1), array("\n", ' '))) {
-                            $out = rtrim(iconv_substr($out, 0, -4)) . ' ' . iconv_substr($out, -3);
+                        if (strtoupper(mb_substr($out, -3)) == 'ELS' && in_array(mb_substr($out, -4, 1), array("\n", ' '))) {
+                            $out = rtrim(mb_substr($out, 0, -4)) . ' ' . mb_substr($out, -3);
                         }
                     }
                     $out .= $str[$i];
