@@ -21,14 +21,14 @@ require 'lib/Config.php';
 if (Registry::get('current') == '.') {
     Registry::set('current', Registry::getGmanager()->getcwd() . '/');
     Registry::set('hCurrent', htmlspecialchars(Registry::getGmanager()->getcwd(), ENT_COMPAT) . '/');
-    Registry::set('rCurrent', str_replace('%2F', '/', rawurlencode(Registry::getGmanager()->getcwd())));
+    Registry::set('rCurrent', Helper_View::getRawurl(Registry::getGmanager()->getcwd()));
 }
 
 
 if (Registry::get('currentType') == 'dir') {
     $archive = false;
 } else {
-    $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('current'))));
+    $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
 }
 
 $f = 0;
@@ -129,7 +129,7 @@ if ($archive == 'ZIP') {
 
 if (Registry::getGmanager()->file_exists(Registry::get('current')) || Registry::get('currentType') == 'link') {
     if ($archive) {
-        $d = str_replace('%2F', '/', rawurlencode(dirname(Registry::get('current'))));
+        $d = Helper_View::getRawurl(dirname(Registry::get('current')));
         $found = '<div class="rb">' . Language::get('create') . ' <a href="change.php?go=create_file&amp;c=' . $d . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . $d . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $d . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $d . '">' . Language::get('mod') . '</a><br/></div>';
     } else {
         $found = '<form action="' . $_SERVER['PHP_SELF'] . '?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . Registry::get('limit') . '" type="text" onkeypress="return Gmanager.number(event)" class="pinput"/><input type="submit" value="' . Language::get('limit') . '"/></div></form><div class="rb">' . Language::get('create') . ' <a href="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('mod') . '</a><br/></div>';
@@ -139,7 +139,7 @@ if (Registry::getGmanager()->file_exists(Registry::get('current')) || Registry::
 }
 
 
-$tm = '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Registry::getGmanager()->formatSize(memory_get_peak_usage()) . '<br/></div>';
+$tm = '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Helper_View::formatSize(memory_get_peak_usage()) . '<br/></div>';
 
 if (!$if && !$f && !$ia) {
     echo '</table><div class="ch"><input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_chmod" value="' . Language::get('chmod') . '"/> <input onclick="return (Gmanager.checkForm(document.forms[1],\'check[]\') &amp;&amp; Gmanager.delNotify());" type="submit" name="full_del" value="' . Language::get('del') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_rename" value="' . Language::get('change') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="fname" value="' . Language::get('rename') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="create_archive" value="' . Language::get('create_archive') . '"/></div></div></form>' . $found . $tm . Registry::get('foot');

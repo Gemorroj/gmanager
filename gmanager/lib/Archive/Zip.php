@@ -50,7 +50,7 @@ class Archive_Zip implements Archive_Interface
             $ftp = array();
             mkdir($temp, 0755, true);
             foreach ($ext as $f) {
-                $ftp[] = $tmp = $temp . '/' . IOWrapper::get(Gmanager::basename($f));
+                $ftp[] = $tmp = $temp . '/' . IOWrapper::get(Helper_System::basename($f));
                 if (Registry::getGmanager()->is_dir($f)) {
                     mkdir($tmp, 0755, true);
                     Registry::getGmanager()->ftpCopyFiles($f, $tmp);
@@ -78,7 +78,7 @@ class Archive_Zip implements Archive_Interface
                 $result = false;
                 $zip->error_string = Errors::get();
             }
-            Registry::getGmanager()->clean($temp);
+            Helper_System::clean($temp);
         }
 
         if ($result) {
@@ -107,7 +107,7 @@ class Archive_Zip implements Archive_Interface
 
         $tmp = array();
         foreach ($ext as $v) {
-            $b = IOWrapper::set(Gmanager::basename($v));
+            $b = IOWrapper::set(Helper_System::basename($v));
             $tmp[] = $tmpFolder . '/' . $b;
             if (Registry::getGmanager()->is_dir($v)) {
                 mkdir($tmpFolder . '/' . $b, 0777, true);
@@ -126,7 +126,7 @@ class Archive_Zip implements Archive_Interface
                 $zip->error_string = Errors::get();
             }
         }
-        Registry::getGmanager()->clean($tmpFolder);
+        Helper_System::clean($tmpFolder);
 
         if ($add) {
             return Errors::message(Language::get('add_archive_true'), Errors::MESSAGE_OK);
@@ -327,8 +327,8 @@ class Archive_Zip implements Archive_Interface
      */
     public function lookFile ($current, $f = '', $str = null)
     {
-        $r_current = str_replace('%2F', '/', rawurlencode($current));
-        $r_f = str_replace('%2F', '/', rawurlencode($f));
+        $r_current = Helper_View::getRawurl($current);
+        $r_f = Helper_View::getRawurl($f);
 
         $zip = $this->_pclZip($current);
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
@@ -345,7 +345,7 @@ class Archive_Zip implements Archive_Interface
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . Registry::getGmanager()->formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Registry::getGmanager()->formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext[0]['content']));
+                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext[0]['content']));
             }
         }
     }
@@ -370,7 +370,7 @@ class Archive_Zip implements Archive_Interface
         if (!$ext) {
             return array('text' => Language::get('archive_error'), 'size' => 0, 'lines' => 0);
         } else {
-            return array('text' => trim($ext[0]['content']), 'size' => Registry::getGmanager()->formatSize($ext[0]['size']), 'lines' => sizeof(explode("\n", $ext[0]['content'])));
+            return array('text' => trim($ext[0]['content']), 'size' => Helper_View::formatSize($ext[0]['size']), 'lines' => sizeof(explode("\n", $ext[0]['content'])));
         }
     }
 
@@ -442,7 +442,7 @@ class Archive_Zip implements Archive_Interface
     public function listArchive ($current, $down = '')
     {
         //TODO: refactoring to ListData
-        $r_current = str_replace('%2F', '/', rawurlencode($current));
+        $r_current = Helper_View::getRawurl($current);
 
         $zip = $this->_pclZip($current);
         $list = $zip->listContent();
@@ -461,7 +461,7 @@ class Archive_Zip implements Archive_Interface
 
             $s = sizeof($list);
             for ($i = 0; $i < $s; ++$i) {
-                $r_name = str_replace('%2F', '/', rawurlencode($list[$i]['filename']));
+                $r_name = Helper_View::getRawurl($list[$i]['filename']);
 
                 if ($list[$i]['folder']) {
                     $type = 'DIR';
@@ -469,9 +469,9 @@ class Archive_Zip implements Archive_Interface
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars(Registry::getGmanager()->getType($list[$i]['filename']), ENT_NOQUOTES);
-                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Registry::getGmanager()->strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
-                    $size = Registry::getGmanager()->formatSize($list[$i]['size']);
+                    $type = htmlspecialchars(Helper_System::getType($list[$i]['filename']), ENT_NOQUOTES);
+                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
+                    $size = Helper_View::formatSize($list[$i]['size']);
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 
@@ -550,7 +550,7 @@ class Archive_Zip implements Archive_Interface
 
         foreach ($zip->extract(PCLZIP_OPT_PATH, $tmp) as $f) {
             if ($f['status'] != 'ok') {
-                Registry::getGmanager()->clean($tmp);
+                Helper_System::clean($tmp);
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     Registry::getGmanager()->ftpArchiveEnd();
                 }
@@ -565,12 +565,12 @@ class Archive_Zip implements Archive_Interface
         if (file_exists($tmp . '/' . $sysName)) {
             if ($overwrite) {
                 if ($folder) {
-                    Registry::getGmanager()->clean($tmp . '/' . $sysName);
+                    Helper_System::clean($tmp . '/' . $sysName);
                 } else {
                     unlink($tmp . '/' . $sysName);
                 }
             } else {
-                Registry::getGmanager()->clean($tmp);
+                Helper_System::clean($tmp);
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     Registry::getGmanager()->ftpArchiveEnd();
                 }
@@ -601,7 +601,7 @@ class Archive_Zip implements Archive_Interface
         }
 
         if (!$result) {
-            Registry::getGmanager()->clean($tmp);
+            Helper_System::clean($tmp);
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Registry::getGmanager()->ftpArchiveEnd();
             }
@@ -622,7 +622,7 @@ class Archive_Zip implements Archive_Interface
 
         $result = ($zip->create($tmp, PCLZIP_OPT_REMOVE_PATH, mb_substr($tmp, mb_strlen(dirname(dirname($tmp))))) != 0);
 
-        Registry::getGmanager()->clean($tmp);
+        Helper_System::clean($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             Registry::getGmanager()->ftpArchiveEnd($current);
         }

@@ -139,7 +139,7 @@ class FTP extends Gmanager
         chmod($php_temp, 0666);
 
         ftp_chdir($this->_res, IOWrapper::set(mb_substr($file, 0, mb_strrpos($file, '/'))));
-        $result = ftp_put($this->_res, Gmanager::basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
+        $result = ftp_put($this->_res, Helper_System::basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
 
         unlink($php_temp);
         return ($result ? 1 : 0);
@@ -158,7 +158,7 @@ class FTP extends Gmanager
         //return is_dir($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[Gmanager::basename($str)]['type'] === 'dir';
+        return $rawlist[Helper_System::basename($str)]['type'] === 'dir';
     }
 
 
@@ -174,7 +174,7 @@ class FTP extends Gmanager
         //return is_file($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[Gmanager::basename($str)]['type'] === 'file';
+        return $rawlist[Helper_System::basename($str)]['type'] === 'file';
     }
 
 
@@ -190,7 +190,7 @@ class FTP extends Gmanager
         //return is_link($this->_url . $str);
         
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[Gmanager::basename($str)]['type'] === 'link';
+        return $rawlist[Helper_System::basename($str)]['type'] === 'link';
     }
 
 
@@ -236,7 +236,7 @@ class FTP extends Gmanager
         //return sprintf('%u', ftp_size($this->_res, $file));
 
         $rawlist = $this->_rawlist(dirname($file));
-        return $rawlist[Gmanager::basename($file)]['size'];
+        return $rawlist[Helper_System::basename($file)]['size'];
     }
 
 
@@ -286,7 +286,7 @@ class FTP extends Gmanager
         //return filemtime($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[Gmanager::basename($str)]['mtime'];
+        return $rawlist[Helper_System::basename($str)]['mtime'];
     }
 
 
@@ -372,7 +372,7 @@ class FTP extends Gmanager
 
         foreach ($this->_rawlist($dir) as $var) {
             if ($var['file'] !== '.') {
-                $tmp[] = Gmanager::basename($var['file']);
+                $tmp[] = Helper_System::basename($var['file']);
             }
         }
 
@@ -392,7 +392,7 @@ class FTP extends Gmanager
         //return fileperms($this->_url . $str);
 
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[Gmanager::basename($str)]['chmod'];
+        return $rawlist[Helper_System::basename($str)]['chmod'];
     }
 
 
@@ -405,7 +405,7 @@ class FTP extends Gmanager
     public function stat ($str)
     {
         $rawlist = $this->_rawlist(dirname($str));
-        return $rawlist[Gmanager::basename($str)];
+        return $rawlist[Helper_System::basename($str)];
     }
 
 
@@ -418,7 +418,7 @@ class FTP extends Gmanager
     public function readlink ($link)
     {
         $rawlist = $this->_rawlist(dirname($link));
-        $t1 = $rawlist[Gmanager::basename($link)]['file'];
+        $t1 = $rawlist[Helper_System::basename($link)]['file'];
         $t2 = explode(' -> ', $t1);
         $t2 = end($t2);
         if ($t2[0] != PATH_SEPARATOR) {
@@ -522,12 +522,12 @@ class FTP extends Gmanager
     {
         $data[10] = IOWrapper::get(trim($data[10]));
 
-        self::$_rawlist[self::$_dir][Gmanager::basename($data[10])] = array(
+        self::$_rawlist[self::$_dir][Helper_System::basename($data[10])] = array(
             'chmod' => $data[1] == 'd' && Registry::get('sysType') == 'WIN' ? 0777 : (Registry::get('sysType') == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
-            'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Gmanager::id2name($data[3])) : $data[3],
+            'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Helper_System::id2name($data[3])) : $data[3],
             'gid'   => $data[4],
-            'group' => is_numeric($data[4]) ? (isset(self::$_id[$data[4]]) ? self::$_id[$data[4]] : self::$_id[$data[4]] = Gmanager::id2name($data[4])) : $data[4],
+            'group' => is_numeric($data[4]) ? (isset(self::$_id[$data[4]]) ? self::$_id[$data[4]] : self::$_id[$data[4]] = Helper_System::id2name($data[4])) : $data[4],
             'size'  => $data[5],
             'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
             'file'  => $data[10],

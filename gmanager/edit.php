@@ -44,7 +44,7 @@ $charset = array('', '');
 $full_charset = '';
 
 if ($_GET['charset']) {
-    list($charset[0], $charset[1],) = Registry::getGmanager()->encoding('', $_GET['charset']);
+    list($charset[0], $charset[1],) = Helper_Editor::encoding('', $_GET['charset']);
     $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
@@ -52,7 +52,7 @@ Registry::getGmanager()->sendHeader();
 
 echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '<div class="w2">' . Language::get('title_edit') . '<br/></div>' . Registry::getGmanager()->head();
 
-$archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('hCurrent'))));
+$archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
 switch ($_GET['go']) {
     case 'save':
@@ -142,7 +142,7 @@ switch ($_GET['go']) {
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
             $content['text'] = htmlspecialchars(Registry::getGmanager()->file_get_contents(Registry::get('current')), $quotes, 'UTF-8');
-            $content['size'] = Registry::getGmanager()->formatSize(Registry::getGmanager()->size(Registry::get('current')));
+            $content['size'] = Helper_View::formatSize(Registry::getGmanager()->size(Registry::get('current')));
             $content['lines'] = mb_substr_count($content['text'], "\n") + 1;
             $f = '';
         }
@@ -153,14 +153,14 @@ switch ($_GET['go']) {
 
         if ($_GET['beautify']) {
             $content['text'] = Registry::getGmanager()->beautify($content['text']);
-            $content['size'] = Registry::getGmanager()->formatSize(strlen($content['text']));
+            $content['size'] = Helper_View::formatSize(strlen($content['text']));
             $content['lines'] = mb_substr_count($content['text'], "\n");
         }
 
         $path = mb_substr(Registry::getGmanager()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));
 
         if (Config::get('Gmanager', 'mode') == 'HTTP' && $path) {
-            $http = '<div class="rb"><a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . str_replace('%2F', '/', rawurlencode(str_replace('\\', '/', $path)))) . '">' . Language::get('look') . '</a><br/></div>';
+            $http = '<div class="rb"><a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . Helper_View::getRawurl(str_replace('\\', '/', $path))) . '">' . Language::get('look') . '</a><br/></div>';
         } else {
             $http = '';
         }
@@ -199,6 +199,6 @@ switch ($_GET['go']) {
 }
 
 
-echo '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Registry::getGmanager()->formatSize(memory_get_peak_usage()) . '<br/></div>' . Registry::get('foot');
+echo '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Helper_View::formatSize(memory_get_peak_usage()) . '<br/></div>' . Registry::get('foot');
 
 ?>

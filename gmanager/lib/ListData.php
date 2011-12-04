@@ -38,7 +38,7 @@ class ListData
         $i      = 0;
 
         $t      = (Config::get('Editor', 'target') ? ' target="_blank"' : '');
-        $add    = ($addArchive ? '&amp;go=1&amp;add_archive=' . str_replace('%2F', '/', rawurlencode($addArchive)) : '');
+        $add    = ($addArchive ? '&amp;go=1&amp;add_archive=' . Helper_View::getRawurl($addArchive) : '');
 
 
         if ($itype == 'time') {
@@ -72,8 +72,8 @@ class ListData
                 $file = $current . $file;
             }
 
-            $basename = Gmanager::basename($file);
-            $r_file = str_replace('%2F', '/', rawurlencode($file));
+            $basename = Helper_System::basename($file);
+            $r_file = Helper_View::getRawurl($file);
             $stat = Registry::getGmanager()->stat($file);
             $time = $stat['mtime'];
             $uid  = $stat['owner'];
@@ -83,10 +83,10 @@ class ListData
             if (Registry::getGmanager()->is_link($file)) {
                 $type = 'LINK';
                 $tmp = Registry::getGmanager()->readlink($file);
-                $r_file = str_replace('%2F', '/', rawurlencode($tmp[1]));
+                $r_file = Helper_View::getRawurl($tmp[1]);
 
                 if (Config::get('Display', 'name')) {
-                    $name = htmlspecialchars(Registry::getGmanager()->strLink($tmp[0], true), ENT_NOQUOTES);
+                    $name = htmlspecialchars(Helper_View::strLink($tmp[0], true), ENT_NOQUOTES);
                     $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
                 }
                 if (Config::get('Display', 'down')) {
@@ -97,7 +97,7 @@ class ListData
                 }
                 if (Config::get('Display', 'size')) {
                     $isize = $stat['size'];
-                    $size = Registry::getGmanager()->formatSize($isize);
+                    $size = Helper_View::formatSize($isize);
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
@@ -131,7 +131,7 @@ class ListData
                     } else {
                         $name = $file;
                     }
-                    $name = htmlspecialchars(Registry::getGmanager()->strLink($name, true), ENT_NOQUOTES);
+                    $name = htmlspecialchars(Helper_View::strLink($name, true), ENT_NOQUOTES);
                     $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
                 }
                 if (Config::get('Display', 'down')) {
@@ -143,7 +143,7 @@ class ListData
                 if (Config::get('Display', 'size')) {
                     if (Config::get('Gmanager', 'dirSize')) {
                         $isize = Registry::getGmanager()->size($file, true);
-                        $size = Registry::getGmanager()->formatSize($isize);
+                        $size = Helper_View::formatSize($isize);
                     } else {
                         $isize = $size = Language::get('unknown');
                     }
@@ -170,8 +170,8 @@ class ListData
                 }
                 $page1[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate . $puid . $pgid;
             } else {
-                $type = htmlspecialchars(Registry::getGmanager()->getType($basename), ENT_NOQUOTES);
-                $archive = Registry::getGmanager()->isArchive($type);
+                $type = htmlspecialchars(Helper_System::getType($basename), ENT_NOQUOTES);
+                $archive = Helper_Archive::isArchive($type);
 
                 if (Config::get('Display', 'name')) {
                     if (Config::get('Gmanager', 'realName') == Config::REALNAME_FULL) {
@@ -182,7 +182,7 @@ class ListData
                     } else {
                         $name = $file;
                     }
-                    $name = htmlspecialchars(Registry::getGmanager()->strLink($name, true), ENT_NOQUOTES);
+                    $name = htmlspecialchars(Helper_View::strLink($name, true), ENT_NOQUOTES);
 
                     if ($archive) {
                         $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . Language::get('extract_archive') . '</a></td>';
@@ -202,7 +202,7 @@ class ListData
                 }
                 if (Config::get('Display', 'size')) {
                     $isize = $stat['size'];
-                    $size = Registry::getGmanager()->formatSize($stat['size']);
+                    $size = Helper_View::formatSize($stat['size']);
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
@@ -259,14 +259,14 @@ class ListData
     /**
      * getListSearchArray
      * 
-     * @param string $c
-     * @param string $s
-     * @param bool   $w
-     * @param bool   $r
-     * @param bool   $h
-     * @param int    $limit
-     * @param bool   $archive
-     * @param string $t
+     * @param string $c where
+     * @param string $s search string
+     * @param bool   $w in text
+     * @param bool   $r register
+     * @param bool   $h hex
+     * @param int    $limit max file size
+     * @param bool   $archive in gz archives
+     * @param string $t target
      * @return array
      */
     private static function _getListSearchArray ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false, $t = '')
@@ -282,8 +282,8 @@ class ListData
                 continue;
             }
 
-            $type = htmlspecialchars(Registry::getGmanager()->getType(Gmanager::basename($f)), ENT_NOQUOTES);
-            $arch = Registry::getGmanager()->isArchive($type);
+            $type = htmlspecialchars(Helper_System::getType(Helper_System::basename($f)), ENT_NOQUOTES);
+            $arch = Helper_Archive::isArchive($type);
             $stat = Registry::getGmanager()->stat($c . $f);
 
             $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pgid = $pn = $in = null;
@@ -302,7 +302,9 @@ class ListData
                         $fl = mb_strtolower($fl);
                     }
                 }
-                if (($in = mb_substr_count($fl, $s)) === 0) {
+
+                $in = mb_substr_count($fl, $s);
+                if ($in === 0) {
                     continue;
                 }
                 $in = ' (' . $in . ')';
@@ -324,10 +326,10 @@ class ListData
             $count++;
 
             //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
-            $r_file = str_replace('%2F', '/', rawurlencode($c . $f));
+            $r_file = Helper_View::getRawurl($c . $f);
 
             if (Config::get('Display', 'name')) {
-                $name = htmlspecialchars(Registry::getGmanager()->strLink($c . $f, true), ENT_NOQUOTES);
+                $name = htmlspecialchars(Helper_View::strLink($c . $f, true), ENT_NOQUOTES);
                 if ($arch) {
                     $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
                 } else {
@@ -341,7 +343,7 @@ class ListData
                 $ptype = '<td>' . $type . '</td>';
             }
             if (Config::get('Display', 'size')) {
-                $psize = '<td>' . Registry::getGmanager()->formatSize($stat['size']) . '</td>';
+                $psize = '<td>' . Helper_View::formatSize($stat['size']) . '</td>';
             }
             if (Config::get('Display', 'change')) {
                 $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
@@ -424,13 +426,13 @@ class ListData
     /**
      * getListSearchData
      * 
-     * @param string $c
-     * @param string $s
-     * @param bool   $w
-     * @param bool   $r
-     * @param bool   $h
-     * @param int    $limit
-     * @param bool   $archive
+     * @param string $c where
+     * @param string $s search string
+     * @param bool   $w in text
+     * @param bool   $r register
+     * @param bool   $h hex
+     * @param int    $limit max file size
+     * @param bool   $archive in gz archives
      * @return string
      */
     public static function getListSearchData($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)

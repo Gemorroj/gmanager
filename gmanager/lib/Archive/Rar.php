@@ -230,7 +230,7 @@ class Archive_Rar implements Archive_Interface
             if ($str) {
                 return $ext;
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . Registry::getGmanager()->formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Registry::getGmanager()->formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext));
+                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext));
             }
         }
     }
@@ -288,7 +288,7 @@ class Archive_Rar implements Archive_Interface
      */
     public function listArchive ($current, $down = '')
     {
-        $r_current = str_replace('%2F', '/', rawurlencode($current));
+        $r_current = Helper_View::getRawurl($current);
         $rar = $this->_rarOpen($current);
 
         if (!$list = rar_list($rar)) {
@@ -306,7 +306,7 @@ class Archive_Rar implements Archive_Interface
             $s = sizeof($list);
             for ($i = 0; $i < $s; ++$i) {
 
-                $r_name = str_replace('%2F', '/', rawurlencode($list[$i]->getName()));
+                $r_name = Helper_View::getRawurl($list[$i]->getName());
 
                 if (!$list[$i]->getCrc()) {
                     $type = 'DIR';
@@ -314,9 +314,9 @@ class Archive_Rar implements Archive_Interface
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars(Registry::getGmanager()->getType($list[$i]->getName()), ENT_NOQUOTES);
-                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Registry::getGmanager()->strLink($list[$i]->getName(), true), ENT_NOQUOTES) . '</a>';
-                    $size = Registry::getGmanager()->formatSize($list[$i]->getUnpackedSize());
+                    $type = htmlspecialchars(Helper_System::getType($list[$i]->getName()), ENT_NOQUOTES);
+                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($list[$i]->getName(), true), ENT_NOQUOTES) . '</a>';
+                    $size = Helper_View::formatSize($list[$i]->getUnpackedSize());
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 

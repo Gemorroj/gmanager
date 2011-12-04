@@ -59,7 +59,7 @@ class Archive_Tars implements Archive_Interface
 
             $tmp = array();
             foreach ($ext as $v) {
-                $b = IOWrapper::set(Gmanager::basename($v));
+                $b = IOWrapper::set(Helper_System::basename($v));
                 $tmp[] = $ftp_name . $b;
                 file_put_contents($ftp_name . $b, Registry::getGmanager()->file_get_contents($v));
             }
@@ -78,7 +78,7 @@ class Archive_Tars implements Archive_Interface
             if (!Registry::getGmanager()->ftpArchiveEnd($current)) {
                 $add = false;
             }
-            Registry::getGmanager()->clean($ftp_name);
+            Helper_System::clean($ftp_name);
         }
 
         if ($add) {
@@ -117,7 +117,7 @@ class Archive_Tars implements Archive_Interface
 
         Registry::getGmanager()->unlink($current);
         $list = $tgz->createModify($tmp_name, '.', $tmp_name);
-        Registry::getGmanager()->clean($tmp_name);
+        Helper_System::clean($tmp_name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             Registry::getGmanager()->ftpArchiveEnd($current);
@@ -302,7 +302,7 @@ class Archive_Tars implements Archive_Interface
                     if ($str) {
                         return $ext;
                     } else {
-                        return Errors::message(Language::get('real_size') . ': ' . Registry::getGmanager()->formatSize($list[$i]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $list[$i]['mtime']), Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext));
+                        return Errors::message(Language::get('real_size') . ': ' . Helper_View::formatSize($list[$i]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $list[$i]['mtime']), Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext));
                     }
                 }
             }
@@ -354,7 +354,7 @@ class Archive_Tars implements Archive_Interface
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {
-            $r_current = str_replace('%2F', '/', rawurlencode($current));
+            $r_current = Helper_View::getRawurl($current);
             $l = '';
 
             if ($down) {
@@ -363,7 +363,7 @@ class Archive_Tars implements Archive_Interface
 
             $s = sizeof($list);
             for ($i = 0; $i < $s; ++$i) {
-                $r_name = rawurlencode($list[$i]['filename']);
+                $r_name = Helper_View::getRawurl($list[$i]['filename']);
     
                 if ($list[$i]['typeflag']) {
                     $type = 'DIR';
@@ -371,9 +371,9 @@ class Archive_Tars implements Archive_Interface
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars(Registry::getGmanager()->getType($list[$i]['filename']), ENT_NOQUOTES);
-                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Registry::getGmanager()->strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
-                    $size = Registry::getGmanager()->formatSize($list[$i]['size']);
+                    $type = htmlspecialchars(Helper_System::getType($list[$i]['filename']), ENT_NOQUOTES);
+                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
+                    $size = Helper_View::formatSize($list[$i]['size']);
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -448,7 +448,7 @@ class Archive_Tars implements Archive_Interface
         }
 
         if (!$tgz->extract($tmp)) {
-            Registry::getGmanager()->clean($tmp);
+            Helper_System::clean($tmp);
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Registry::getGmanager()->ftpArchiveEnd();
             }
@@ -458,12 +458,12 @@ class Archive_Tars implements Archive_Interface
         if (file_exists($tmp . '/' . $sysName)) {
             if ($overwrite) {
                 if ($folder) {
-                    Registry::getGmanager()->clean($tmp . '/' . $sysName);
+                    Helper_System::clean($tmp . '/' . $sysName);
                 } else {
                     unlink($tmp . '/' . $sysName);
                 }
             } else {
-                Registry::getGmanager()->clean($tmp);
+                Helper_System::clean($tmp);
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     Registry::getGmanager()->ftpArchiveEnd();
                 }
@@ -492,7 +492,7 @@ class Archive_Tars implements Archive_Interface
         }
 
         if (!$result) {
-            Registry::getGmanager()->clean($tmp);
+            Helper_System::clean($tmp);
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Registry::getGmanager()->ftpArchiveEnd();
             }
@@ -513,7 +513,7 @@ class Archive_Tars implements Archive_Interface
 
         $result = $tgz->createModify($tmp, '.', $tmp);
 
-        Registry::getGmanager()->clean($tmp);
+        Helper_System::clean($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             Registry::getGmanager()->ftpArchiveEnd($current);
         }

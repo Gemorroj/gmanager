@@ -22,7 +22,7 @@ $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 
 if (isset($_GET['get']) && Registry::getGmanager()->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
-        $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename($_GET['get'])));
+        $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_GET['get'])));
         if ($archive == 'ZIP') {
             Registry::set('archiveDriver', 'zip');
             $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
@@ -38,10 +38,10 @@ if (isset($_GET['get']) && Registry::getGmanager()->is_file($_GET['get'])) {
         } else {
             $f = '';
         }
-        $name = Gmanager::basename($_GET['f']);
+        $name = Helper_System::basename($_GET['f']);
     } else {
         $f = Registry::getGmanager()->file_get_contents($_GET['get']);
-        $name = Gmanager::basename($_GET['get']);
+        $name = Helper_System::basename($_GET['get']);
     }
 
     Getf::download($f, $name, true, false);
@@ -119,7 +119,7 @@ switch ($_GET['go']) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname(Registry::get('current')), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('change_chmod') . ' ' . Language::get('of files') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . ' ' . Language::get('of folders') . '<br/><input name="mega_full_extract" type="hidden" value="1"/><input type="submit" value="' . Language::get('extract_archive') . '"/></div></form></div>';
             } else {
-                $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('hCurrent'))));
+                $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
                 if ($archive == 'ZIP') {
                     Registry::set('archiveDriver', 'zip');
@@ -147,7 +147,7 @@ switch ($_GET['go']) {
             } else {
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
-                $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('hCurrent'))));
+                $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
                 if ($archive == 'ZIP') {
                     Registry::set('archiveDriver', 'zip');
@@ -187,7 +187,7 @@ switch ($_GET['go']) {
                 $_POST['dir'] = rawurldecode($_POST['dir']);
                 $_POST['add_archive'] = rawurldecode($_POST['add_archive']);
 
-                $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename($_POST['add_archive'])));
+                $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_POST['add_archive'])));
 
                 if ($archive == 'ZIP') {
                     Registry::set('archiveDriver', 'zip');
@@ -216,11 +216,11 @@ switch ($_GET['go']) {
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    echo Registry::getGmanager()->frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . Gmanager::basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+                    echo Registry::getGmanager()->frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . Helper_System::basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['del_archive'])) {
-                $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Gmanager::basename(Registry::get('current'))));
+                $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
                 if ($archive == 'ZIP') {
@@ -292,7 +292,7 @@ switch ($_GET['go']) {
 
     case 'rename':
         if (isset($_POST['name']) && $_POST['name'] != '') {
-            $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Registry::get('current')));
+            $archive = Helper_Archive::isArchive(Helper_System::getType(Registry::get('current')));
             $if = isset($_GET['f']);
             if ($if && $archive == 'ZIP') {
                 Registry::set('archiveDriver', 'zip');
@@ -353,7 +353,7 @@ switch ($_GET['go']) {
         $safe = strtoupper(ini_get('safe_mode'));
         $php_user = Registry::getGmanager()->getPHPUser();
 
-        echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('search') . '</a></li><li><a href="change.php?go=eval&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('eval') . '</a></li><li><a href="change.php?go=cmd&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('cmd') . '</a></li><li>SQL<ul><li><a href="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '">MySQL</a></li><li><a href="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '">PostgreSQL</a></li><li><a href="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '">SQLite</a></li></ul></li><li><a href="change.php?go=sql_tables&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('tables') . '</a></li><li><a href="change.php?go=sql_installer&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('create_sql_installer') . '</a></li><li><a href="change.php?go=scan&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('scan') . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('send_mail') . '</a></li><li><a href="change.php?go=phpinfo&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('phpinfo') . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('new_version') . '</a></li></ul>' . ($php_user['name'] ? '<span style="color:#000;">&#187;</span> ' . Language::get('php_user') . htmlspecialchars($php_user['name'], ENT_NOQUOTES) . '<br/>' : '') . '<span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'ON' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(Registry::getGmanager()->getUname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . Language::get('disk_total_space') . ' ' . Registry::getGmanager()->formatSize(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . Language::get('disk_free_space') . ' ' . Registry::getGmanager()->formatSize(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
+        echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('search') . '</a></li><li><a href="change.php?go=eval&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('eval') . '</a></li><li><a href="change.php?go=cmd&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('cmd') . '</a></li><li>SQL<ul><li><a href="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '">MySQL</a></li><li><a href="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '">PostgreSQL</a></li><li><a href="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '">SQLite</a></li></ul></li><li><a href="change.php?go=sql_tables&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('tables') . '</a></li><li><a href="change.php?go=sql_installer&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('create_sql_installer') . '</a></li><li><a href="change.php?go=scan&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('scan') . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('send_mail') . '</a></li><li><a href="change.php?go=phpinfo&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('phpinfo') . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('new_version') . '</a></li></ul>' . ($php_user['name'] ? '<span style="color:#000;">&#187;</span> ' . Language::get('php_user') . htmlspecialchars($php_user['name'], ENT_NOQUOTES) . '<br/>' : '') . '<span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'ON' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(Registry::getGmanager()->getUname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . Language::get('disk_total_space') . ' ' . Helper_View::formatSize(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . Language::get('disk_free_space') . ' ' . Helper_View::formatSize(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
         break;
 
 
@@ -378,7 +378,7 @@ switch ($_GET['go']) {
             $only_headers = isset($_POST['oh']);
             if ($url = Registry::getGmanager()->getData($_POST['url'], $_POST['headers'], $only_headers, $_POST['post'])) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
-                echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Registry::getGmanager()->formatSize(strlen($url)) . '</span><br/></div>' . Registry::getGmanager()->code($url, 0, true);
+                echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Helper_View::formatSize(strlen($url)) . '</span><br/></div>' . Registry::getGmanager()->code($url, 0, true);
             } else {
                 echo Errors::message(Language::get('not_connect'), Errors::MESSAGE_EMAIL);
             }
@@ -485,7 +485,7 @@ switch ($_GET['go']) {
                     echo Registry::getGmanager()->sqlBackup('', '', '', $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
                 } else {
                     $tables = Registry::getGmanager()->sqlBackup('', '', '', $_POST['db'], $_POST['charset'], array());
-                    echo '<div class="input"><form action="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('sql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('sql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Registry::get('hCurrent') . 'backup_' . htmlspecialchars(Gmanager::basename($_POST['db'])) . '.sql"/><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
+                    echo '<div class="input"><form action="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('sql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('sql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Registry::get('hCurrent') . 'backup_' . htmlspecialchars(Helper_System::basename($_POST['db'])) . '.sql"/><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
                 }
             } else {
                 $Patterns = new Patterns;
@@ -618,17 +618,17 @@ switch ($_GET['go']) {
             break;
         }
 
-        $archive = Registry::getGmanager()->isArchive(Registry::getGmanager()->getType(Registry::get('current')));
+        $archive = Helper_Archive::isArchive(Helper_System::getType(Registry::get('current')));
         if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR' || $archive == 'BZ2')) {
-            $r_file = str_replace('%2F', '/', rawurlencode($_GET['f']));
+            $r_file = Helper_View::getRawurl($_GET['f']);
             $h_file = htmlspecialchars($_GET['f']);
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Registry::get('rCurrent') . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
         } else {
             if (Registry::get('currentType') == 'dir') {
-                $size = Registry::getGmanager()->formatSize(Registry::getGmanager()->size(Registry::get('current'), true));
+                $size = Helper_View::formatSize(Registry::getGmanager()->size(Registry::get('current'), true));
                 $md5 = '';
             } else if (Registry::get('currentType') == 'file' || Registry::get('currentType') == 'link') {
-                $size = Registry::getGmanager()->formatSize(Registry::getGmanager()->size(Registry::get('current')));
+                $size = Helper_View::formatSize(Registry::getGmanager()->size(Registry::get('current')));
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     $md5 = Language::get('md5') . ': ' . md5(Registry::getGmanager()->file_get_contents(Registry::get('current')));
                 } else {
@@ -641,6 +641,6 @@ switch ($_GET['go']) {
         break;
 }
 
-echo '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Registry::getGmanager()->formatSize(memory_get_peak_usage()) . '<br/></div>' . Registry::get('foot');
+echo '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Helper_View::formatSize(memory_get_peak_usage()) . '<br/></div>' . Registry::get('foot');
 
 ?>

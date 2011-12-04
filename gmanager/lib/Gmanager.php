@@ -77,7 +77,7 @@ class Gmanager
         }
 
         Registry::set('hCurrent', htmlspecialchars(Registry::get('current'), ENT_COMPAT));
-        Registry::set('rCurrent', str_replace('%2F', '/', rawurlencode(Registry::get('current'))));
+        Registry::set('rCurrent', Helper_View::getRawurl(Registry::get('current')));
     }
 
 
@@ -109,20 +109,20 @@ class Gmanager
         $chmod = $chmod ? $chmod : (isset($_POST['chmod'][0]) ? htmlspecialchars($_POST['chmod'][0], ENT_NOQUOTES) : (isset($_POST['chmod']) ? htmlspecialchars($_POST['chmod'], ENT_NOQUOTES) : 0));
 
         $d = dirname(str_replace('\\', '/', $realpath));
-        $archive = $this->isArchive($this->getType(self::basename(Registry::get('current'))));
+        $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
 
         if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
             if (Registry::get('current') == '.') {
-                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars($this->strLink(Registry::getGmanager()->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(Registry::getGmanager()->getcwd()) . ')<br/></div>';
+                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars(Helper_View::strLink(Registry::getGmanager()->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(Registry::getGmanager()->getcwd()) . ')<br/></div>';
             } else {
-                return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+                return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
             }
         } else if (Registry::get('currentType') == 'file' && $archive) {
             $up = dirname($d);
-            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         } else {
             $up = dirname($d);
-            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($up)) . '">' . htmlspecialchars($this->strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . str_replace('%2F', '/', rawurlencode($d)) . '">' . htmlspecialchars($this->strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="edit.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', $this->strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="edit.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         }
     }
 
@@ -526,29 +526,6 @@ class Gmanager
 
 
     /**
-     * formatSize
-     * 
-     * @param int|bool   $size
-     * @param int        $int
-     * @return string
-     */
-    public function formatSize ($size = false, $int = 2)
-    {
-        if ($size === false) {
-            return Language::get('unknown');
-        } else if ($size < 1024) {
-            return $size . ' Byte';
-        } else if ($size < 1048576) {
-            return round($size / 1024, $int) . ' Kb';
-        } else if ($size < 1073741824) {
-            return round($size / 1048576, $int) . ' Mb';
-        } else {
-            return round($size / 1073741824, $int) . ' Gb';
-        }
-    }
-
-
-    /**
      * lookChmod
      * 
      * @param string $file
@@ -802,38 +779,6 @@ class Gmanager
 
 
     /**
-     * xhtmlHighlight
-     * 
-     * @param string $fl
-     * @return string
-     */
-    public function xhtmlHighlight ($fl = '')
-    {
-        return str_replace(array('&nbsp;', '<code>', '</code>'), array('&#160;', '', ''), preg_replace('#color="(.*?)"#', 'style="color: $1"', str_replace(array('<font ', '</font>'), array('<span ', '</span>'), highlight_string($fl, true))));
-    }
-
-
-    /**
-     * urlHighlight
-     * 
-     * @param string $fl
-     * @return string
-     */
-    public function urlHighlight ($fl = '')
-    {
-        return '<code>' . nl2br(
-            preg_replace('/(&quot;|&#039;)[^<>]*(&quot;|&#039;)/iU', '<span style="color:#DD0000">$0</span>',
-                preg_replace('/&lt;!--.*--&gt;/iU', '<span style="color:#FF8000">$0</span>',
-                    preg_replace('/(&lt;[^\s!]*\s)([^<>]*)([\/?]?&gt;)/iU', '$1<span style="color:#007700">$2</span>$3',
-                        preg_replace('/&lt;[^<>]*&gt;/iU', '<span style="color:#0000BB">$0</span>', htmlspecialchars($fl, ENT_QUOTES))
-                    )
-                )
-            )
-        ) . '</code>';
-    }
-
-
-    /**
      * code
      * 
      * @param string $fl
@@ -843,7 +788,7 @@ class Gmanager
      */
     public function code ($fl = '', $line = 0, $url = false)
     {
-        $array = explode('<br />', $url ? $this->urlHighlight($fl) : $this->xhtmlHighlight($fl));
+        $array = explode('<br />', $url ? Helper_View::urlHighlight($fl) : Helper_View::xhtmlHighlight($fl));
         $all = sizeof($array);
         $len = mb_strlen($all);
         $pg = '';
@@ -852,7 +797,7 @@ class Gmanager
             $l = mb_strlen($next);
             $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . '<br/>';
         }
-    
+
         return '<div class="code"><code>' . $pg . '</code></div>';
     }
 
@@ -885,7 +830,7 @@ class Gmanager
         }
 
         if ($name == '') {
-            $name = self::basename($file, '.gz');
+            $name = Helper_System::basename($file, '.gz');
         }
         fclose($fo);
 
@@ -929,7 +874,7 @@ class Gmanager
         }
 
         if ($ext) {
-            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . $this->formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . $this->formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), Registry::getGmanager()->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
+            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . Helper_View::formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), Registry::getGmanager()->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
         } else {
             return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
         }
@@ -994,7 +939,7 @@ class Gmanager
         $fname = $name;
 
         if (mb_substr($dir, -1) != '/') {
-            $name = self::basename($dir);
+            $name = Helper_System::basename($dir);
             $dir = dirname($dir) . '/';
         }
 
@@ -1048,11 +993,11 @@ class Gmanager
         if (isset($h['Content-Disposition'])) {
             preg_match('/.+;\s+filename=(?:")?([^"]+)/i', $h['Content-Disposition'], $arr);
             if (isset($arr[1])) {
-                $name = self::basename($arr[1]);
+                $name = Helper_System::basename($arr[1]);
             }
         }
 
-        return ($name != '' ? $name : rawurldecode(self::basename(parse_url($url, PHP_URL_PATH))));
+        return ($name != '' ? $name : rawurldecode(Helper_System::basename(parse_url($url, PHP_URL_PATH))));
     }
 
 
@@ -1084,7 +1029,7 @@ class Gmanager
         if (mb_strpos($url, "\n") !== false) {
             foreach (explode("\n", $url) as $v) {
                 $v = trim($v);
-                $tmp[] = array($v, $name . self::basename($v));
+                $tmp[] = array($v, $name . Helper_System::basename($v));
             }
         } else {
             $last = mb_substr($name, -1);
@@ -1095,7 +1040,7 @@ class Gmanager
             }
 
             if ($last != '/' && !$temp) {
-                $name = dirname($name) . '/' . self::basename($name);
+                $name = dirname($name) . '/' . Helper_System::basename($name);
             } else {
                 $name .= $this->_getUrlName($url);
             }
@@ -1165,7 +1110,7 @@ class Gmanager
             eval($eval);
 
             $info['time'] = round(microtime(true) - $info['time'], 6);
-            $info['ram'] = $this->formatSize(memory_get_usage(false) - $info['ram'], 6);
+            $info['ram'] = Helper_View::formatSize(memory_get_usage(false) - $info['ram'], 6);
             $buf = ob_get_contents();
             ob_end_clean();
 
@@ -1177,7 +1122,7 @@ class Gmanager
                 $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
             }
 
-            return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $this->getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
+            return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
         } else {
             echo '<div class="input">' . Language::get('result') . '<pre class="code"><code>';
 
@@ -1187,7 +1132,7 @@ class Gmanager
             eval($eval);
 
             $info['time'] = round(microtime(true) - $info['time'], 6);
-            $info['ram'] = $this->formatSize(memory_get_usage(false) - $info['ram'], 6);
+            $info['ram'] = Helper_View::formatSize(memory_get_usage(false) - $info['ram'], 6);
 
             echo '</code></pre>';
             echo str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
@@ -1232,7 +1177,7 @@ class Gmanager
         } else {
             return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
         }
-        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . $this->getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
     }
 
 
@@ -1331,23 +1276,19 @@ class Gmanager
     /**
      * search
      * 
-     * @param string $c
-     * @param string $s
-     * @param bool   $w
-     * @param bool   $r
-     * @param bool   $h
-     * @param int    $limit
-     * @param bool   $archive
+     * @param string $c where
+     * @param string $s search string
+     * @param bool   $w in text
+     * @param bool   $r register
+     * @param bool   $h hex
+     * @param int    $limit max file size
+     * @param bool   $archive in gz archives
      * @return string
      */
     public function search ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
     {
         $html = ListData::getListSearchData($c, $s, $w, $r, $h, $limit, $archive);
-        if ($html) {
-            return $html;
-        } else {
-            return ListData::getListEmptySearchData();
-        }
+        return $html ? $html : ListData::getListEmptySearchData();
     }
 
 
@@ -1484,35 +1425,6 @@ class Gmanager
 
 
     /**
-     * strLink
-     * 
-     * @param string $str
-     * @param bool   $sub
-     * @return string
-     */
-    public function strLink ($str = '', $sub = false)
-    {
-        if (!$sub) {
-            return $str;
-        }
-
-        $len = mb_strlen($str);
-        $maxLen = Config::get('Gmanager', 'maxLinkSize');
-
-        if ($len > $maxLen) {
-            $start = ceil($maxLen / 2);
-            $end = $len - $start;
-            if ($maxLen % 2) {
-                $end += 1;
-            }
-            return mb_substr($str, 0, $start) . ' ... ' . mb_substr($str, $end);
-        }
-
-        return $str;
-    }
-
-
-    /**
      * getData
      * 
      * @param string $url
@@ -1578,23 +1490,6 @@ class Gmanager
         }
 
         return array('headers' => $headers, 'body' => $body);
-    }
-
-
-    /**
-     * encoding
-     * 
-     * @param string $text
-     * @param string $charset
-     * @return array
-     */
-    public function encoding ($text = '', $charset)
-    {
-        $ch = explode(' -> ', $charset);
-        if ($text) {
-            $text = mb_convert_encoding($text, $ch[1], $ch[0]);
-        }
-        return array(0 => $ch[0], 1 => $ch[1], 'text' => $text);
     }
 
 
@@ -1681,98 +1576,6 @@ class Gmanager
 
 
     /**
-     * getType
-     * 
-     * @param string $f
-     * @return string
-     */
-    public function getType ($f)
-    {
-        $type = array_reverse(explode('.', mb_strtoupper($f)));
-        if ((isset($type[1]) && $type[1] != '') && ($type[1] . '.' . $type[0] === 'TAR.GZ' || $type[1] . '.' . $type[0] === 'TAR.BZ' || $type[1] . '.' . $type[0] === 'TAR.GZ2' || $type[1] . '.' . $type[0] === 'TAR.BZ2')) {
-            return $type[1] . '.' . $type[0];
-        }
-
-        return $type[0];
-    }
-
-
-    /**
-     * isArchive
-     * 
-     * @param string $type
-     * @return string
-     */
-    public function isArchive ($type)
-    {
-        if ($type === 'ZIP' || $type === 'JAR' || $type === 'AAR' || $type === 'WAR') {
-            return 'ZIP';
-        } else if ($type === 'TAR' || $type === 'TGZ' || $type === 'TGZ2' || $type === 'TAR.GZ' || $type === 'TAR.GZ2') {
-            return 'TAR';
-        } else if ($type === 'GZ' || $type === 'GZ2') {
-            return 'GZ';
-        } else if (($type === 'TBZ' || $type === 'TBZ2' || $type === 'TAR.BZ' || $type === 'TAR.BZ2' || $type === 'BZ' || $type === 'BZ2') && extension_loaded('bz2')) {
-            return 'BZ2';
-        } else if ($type === 'RAR' && extension_loaded('rar')) {
-            return 'RAR';
-        }
-
-        return '';
-    }
-
-
-    /**
-     * Get rows for textarea
-     *
-     * @param string $str
-     * @return int
-     */
-    public function getRows ($str)
-    {
-        $rows = sizeof(explode("\n", $str)) + 1;
-        if ($rows < 3) {
-            $rows = 3;
-        }
-        return $rows;
-    }
-
-
-    /**
-     * id2name
-     * 
-     * @param int    $id
-     * @return string
-     */
-    public static function id2name ($id = 0)
-    {
-        if (Registry::get('sysType') == 'WIN') {
-            return '';
-        } else {
-            if (function_exists('posix_getpwuid') && $name = posix_getpwuid($id)) {
-                return $name['name'];
-            } else if ($name = exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellarg($id) . ');print $login;\'')) {
-                return $name;
-            } else {
-                return $id;
-            }
-        }
-    }
-
-
-    /**
-     * Multibyte basename
-     *
-     * @param string    $str
-     * @return string
-     */
-    public static function basename ($str)
-    {
-        $file = explode('/', $str);
-        return end($file);
-    }
-
-
-    /**
      * getUname
      * 
      * @return string
@@ -1818,34 +1621,6 @@ class Gmanager
         }
 
         return octdec('0' . $chmod);
-    }
-
-
-    /**
-     * clean
-     * 
-     * @param string $dir
-     */
-    public function clean ($dir = '')
-    {
-        $h = @opendir($dir);
-        if (!$h) {
-            return;
-        }
-
-        while (($f = readdir($h)) !== false) {
-            if ($f == '.' || $f == '..') {
-                continue;
-            }
-
-            if (is_dir($dir . '/' . $f)) {
-                $this->clean($dir . '/' . $f);
-            } else {
-                unlink($dir . '/' . $f);
-            }
-        }
-        closedir($h);
-        rmdir($dir);
     }
 }
 

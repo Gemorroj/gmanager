@@ -173,13 +173,13 @@ class HTTP extends Gmanager
         if (isset(self::$_id[self::$_stat[$str]['uid']])) {
             self::$_stat[$str]['owner'] = self::$_id[self::$_stat[$str]['uid']];
         } else {
-            self::$_stat[$str]['owner'] = self::$_id[self::$_stat[$str]['uid']] = Gmanager::id2name(self::$_stat[$str]['uid']);
+            self::$_stat[$str]['owner'] = self::$_id[self::$_stat[$str]['uid']] = Helper_System::id2name(self::$_stat[$str]['uid']);
         }
 
         if (isset(self::$_id[self::$_stat[$str]['gid']])) {
             self::$_stat[$str]['group'] = self::$_id[self::$_stat[$str]['gid']];
         } else {
-            self::$_stat[$str]['group'] = self::$_id[self::$_stat[$str]['gid']] = Gmanager::id2name(self::$_stat[$str]['gid']);
+            self::$_stat[$str]['group'] = self::$_id[self::$_stat[$str]['gid']] = Helper_System::id2name(self::$_stat[$str]['gid']);
         }
 
         return self::$_stat[$str];
@@ -258,7 +258,7 @@ class HTTP extends Gmanager
     public function readlink ($link)
     {
         chdir(Registry::get('current'));
-        return array(Gmanager::basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
+        return array(Helper_System::basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
     }
 
 
