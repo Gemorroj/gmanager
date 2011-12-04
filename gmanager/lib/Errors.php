@@ -34,7 +34,7 @@ class Errors
      */
     public static function getTraceFile ()
     {
-        return dirname(__FILE__) . '/../data/GmanagerTrace.log';
+        return GMANAGER_PATH . '/data/GmanagerTrace.log';
     }
 
 

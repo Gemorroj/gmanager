@@ -64,28 +64,6 @@ class Registry
     {
         return array_key_exists($key, self::$_data);
     }
-
-
-    /**
-     * setGmanager
-     * 
-     * @param Gmanager $Gmanager
-     */
-    static public function setGmanager (Gmanager $Gmanager)
-    {
-        self::$_Gmanager = $Gmanager;
-    }
-
-
-    /**
-     * getGmanager
-     * 
-     * @return Gmanager
-     */
-    static public function getGmanager ()
-    {
-        return self::$_Gmanager;
-    }
 }
 
 ?>

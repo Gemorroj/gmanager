@@ -13,14 +13,12 @@
  */
 
 
-define('GMANAGER_START', microtime(true));
-
-require 'lib/Config.php';
+require 'bootstrap.php';
 
 
 $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 
-if (isset($_GET['get']) && Registry::getGmanager()->is_file($_GET['get'])) {
+if (isset($_GET['get']) && Gmanager::getInstance()->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
         $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_GET['get'])));
         if ($archive == 'ZIP') {
@@ -40,7 +38,7 @@ if (isset($_GET['get']) && Registry::getGmanager()->is_file($_GET['get'])) {
         }
         $name = Helper_System::basename($_GET['f']);
     } else {
-        $f = Registry::getGmanager()->file_get_contents($_GET['get']);
+        $f = Gmanager::getInstance()->file_get_contents($_GET['get']);
         $name = Helper_System::basename($_GET['get']);
     }
 
@@ -49,14 +47,14 @@ if (isset($_GET['get']) && Registry::getGmanager()->is_file($_GET['get'])) {
 }
 
 
-$realpath = Registry::getGmanager()->realpath(Registry::get('current'));
+$realpath = Gmanager::getInstance()->realpath(Registry::get('current'));
 if ($realpath && Registry::get('currentType') == 'dir') {
     $realpath .= '/';
 }
 $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath), ENT_COMPAT) : Registry::get('hCurrent');
 
 
-Registry::getGmanager()->sendHeader();
+Gmanager::getInstance()->sendHeader();
 
 
 if ($_GET['go'] == 'phpinfo') {
@@ -68,7 +66,7 @@ if ($_GET['go'] == 'phpinfo') {
     exit;
 }
 
-echo str_replace('%title%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? Language::get('chmod') : (isset($_POST['full_del']) ? Language::get('del') : (isset($_POST['full_rename']) ? Language::get('change') : (isset($_POST['fname']) ? Language::get('rename') : (isset($_POST['create_archive']) ? Language::get('create_archive') : htmlspecialchars(rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), Registry::get('top')) . '<div class="w2">' . Language::get('title_change') . '<br/></div>' . Registry::getGmanager()->head() . Registry::getGmanager()->langJS();
+echo str_replace('%title%', ($_GET['go'] && $_GET['go'] != 1) ? htmlspecialchars($_GET['go'], ENT_NOQUOTES) : (isset($_POST['full_chmod']) ? Language::get('chmod') : (isset($_POST['full_del']) ? Language::get('del') : (isset($_POST['full_rename']) ? Language::get('change') : (isset($_POST['fname']) ? Language::get('rename') : (isset($_POST['create_archive']) ? Language::get('create_archive') : htmlspecialchars(rawurldecode($_SERVER['QUERY_STRING']), ENT_NOQUOTES)))))), Registry::get('top')) . '<div class="w2">' . Language::get('title_change') . '<br/></div>' . Gmanager::getInstance()->head() . Gmanager::getInstance()->langJS();
 
 
 switch ($_GET['go']) {
@@ -86,16 +84,16 @@ switch ($_GET['go']) {
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    echo Registry::getGmanager()->fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i, isset($_POST['overwrite']));
+                    echo Gmanager::getInstance()->fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i, isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['full_del'])) {
             for ($i = 0; $i < $x; ++$i) {
                 $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                if (Registry::getGmanager()->is_dir($_POST['check'][$i])) {
-                    echo Registry::getGmanager()->delDir($_POST['check'][$i] . '/');
+                if (Gmanager::getInstance()->is_dir($_POST['check'][$i])) {
+                    echo Gmanager::getInstance()->delDir($_POST['check'][$i] . '/');
                 } else {
-                    echo Registry::getGmanager()->delFile($_POST['check'][$i]);
+                    echo Gmanager::getInstance()->delFile($_POST['check'][$i]);
                 }
             }
         } else if (isset($_POST['full_chmod'])) {
@@ -108,10 +106,10 @@ switch ($_GET['go']) {
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    if (Registry::getGmanager()->is_dir($_POST['check'][$i])) {
-                        echo Registry::getGmanager()->rechmod($_POST['check'][$i], $_POST['chmod'][1]);
+                    if (Gmanager::getInstance()->is_dir($_POST['check'][$i])) {
+                        echo Gmanager::getInstance()->rechmod($_POST['check'][$i], $_POST['chmod'][1]);
                     } else {
-                        echo Registry::getGmanager()->rechmod($_POST['check'][$i], $_POST['chmod'][0]);
+                        echo Gmanager::getInstance()->rechmod($_POST['check'][$i], $_POST['chmod'][0]);
                     }
                 }
             }
@@ -134,7 +132,7 @@ switch ($_GET['go']) {
                     Registry::set('archiveDriver', 'rar');
                     echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'GZ') {
-                    echo Registry::getGmanager()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    echo Gmanager::getInstance()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['full_extract'])) {
@@ -167,7 +165,7 @@ switch ($_GET['go']) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname(Registry::get('current')), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . '<br/><input name="gz_extract" type="hidden" value="1"/><input type="submit" value="' . Language::get('extract_archive') . '"/></div></form></div>';
             } else {
-                echo Registry::getGmanager()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                echo Gmanager::getInstance()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['create_archive'])) {
             if (!isset($_POST['name'])) {
@@ -216,7 +214,7 @@ switch ($_GET['go']) {
             } else {
                 for ($i = 0; $i < $x; ++$i) {
                     $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
-                    echo Registry::getGmanager()->frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . Helper_System::basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+                    echo Gmanager::getInstance()->frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . Helper_System::basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['del_archive'])) {
@@ -245,18 +243,18 @@ switch ($_GET['go']) {
 
     case 'del':
         if (Registry::get('currentType') == 'dir') {
-            echo Registry::getGmanager()->delDir(Registry::get('current'));
+            echo Gmanager::getInstance()->delDir(Registry::get('current'));
         } else {
-            echo Registry::getGmanager()->delFile(Registry::get('current'));
+            echo Gmanager::getInstance()->delFile(Registry::get('current'));
         }
         break;
 
 
     case 'chmod':
         if (!isset($_POST['chmod'])) {
-            echo '<div class="input"><form action="change.php?go=chmod&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . Registry::getGmanager()->lookChmod(Registry::get('current')) . '"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
+            echo '<div class="input"><form action="change.php?go=chmod&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . Gmanager::getInstance()->lookChmod(Registry::get('current')) . '"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
         } else {
-            echo Registry::getGmanager()->rechmod(Registry::get('current'), $_POST['chmod']);
+            echo Gmanager::getInstance()->rechmod(Registry::get('current'), $_POST['chmod']);
         }
         break;
 
@@ -265,7 +263,7 @@ switch ($_GET['go']) {
         if (!isset($_POST['name'])) {
             echo '<div class="input"><form action="change.php?go=create_dir&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="dir"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('cr') . '"/></div></form></div>';
         } else {
-            echo Registry::getGmanager()->createDir(Registry::get('current') . $_POST['name'], $_POST['chmod']);
+            echo Gmanager::getInstance()->createDir(Registry::get('current') . $_POST['name'], $_POST['chmod']);
         }
         break;
 
@@ -275,7 +273,7 @@ switch ($_GET['go']) {
             $Patterns = new Patterns;
             echo '<div class="input"><form action="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="file.php"/><br/><select name="ptn"><option value="">' . Language::get('empty') . '</option>' . $Patterns->set(array(Patterns::Htaccess, Patterns::HTML, Patterns::PHP, Patterns::WML, Patterns::XHTML))->getOptions() . '</select>' . Language::get('pattern') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('cr') . '"/></div></form></div>';
         } else {
-            if (Registry::getGmanager()->file_exists(Registry::get('current') . $_POST['name']) && !isset($_POST['a'])) {
+            if (Gmanager::getInstance()->file_exists(Registry::get('current') . $_POST['name']) && !isset($_POST['a'])) {
                 echo '<div class="red">' . Language::get('warning') . '<br/></div><form action="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name'], ENT_COMPAT) . '"/><input type="hidden" name="ptn" value="' . htmlspecialchars($_POST['ptn'], ENT_COMPAT) . '"/><input type="hidden" name="chmod" value="' . htmlspecialchars($_POST['chmod'], ENT_COMPAT) . '"/><input type="hidden" name="a" value="1"/><input type="submit" value="' . Language::get('ch') . '"/></div></form>';
             } else {
                 if (Config::get('Gmanager', 'realName') != Config::REALNAME_RELATIVE) {
@@ -284,7 +282,7 @@ switch ($_GET['go']) {
                     $realpath = Registry::get('hCurrent') . htmlspecialchars($_POST['name'], ENT_NOQUOTES, 'UTF-8');
                 }
 
-                echo '<div class="border">' . Language::get('file') . ' <strong><a href="edit.php?' . Registry::get('rCurrent') . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . Registry::getGmanager()->createFile(Registry::get('current') . $_POST['name'], rawurldecode($_POST['ptn']), $_POST['chmod']);
+                echo '<div class="border">' . Language::get('file') . ' <strong><a href="edit.php?' . Registry::get('rCurrent') . rawurlencode($_POST['name']) . '">' . $realpath . '</a></strong> (' . $_POST['chmod'] . ')<br/></div>' . Gmanager::getInstance()->createFile(Registry::get('current') . $_POST['name'], rawurldecode($_POST['ptn']), $_POST['chmod']);
             }
         }
         break;
@@ -299,14 +297,14 @@ switch ($_GET['go']) {
                 echo Archive::main()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'TAR') {
                 Registry::set('archiveDriver', 'tar');
-                echo Registry::getGmanager()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                echo Gmanager::getInstance()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'BZ2' && extension_loaded('bz2')) {
                 Registry::set('archiveDriver', 'tar');
-                echo Registry::getGmanager()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                echo Gmanager::getInstance()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else {
-                echo Registry::getGmanager()->frename(Registry::get('current'), $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
+                echo Gmanager::getInstance()->frename(Registry::get('current'), $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 if (isset($_POST['chmod']) && $_POST['chmod']) {
-                    echo Registry::getGmanager()->rechmod($_POST['name'], $_POST['chmod']);
+                    echo Gmanager::getInstance()->rechmod($_POST['name'], $_POST['chmod']);
                 }
             }
         } else {
@@ -340,10 +338,10 @@ switch ($_GET['go']) {
                 }
 
                 for ($i = 0; $i < $all; ++$i ) {
-                    echo Registry::getGmanager()->uploadFiles($_FILES['f']['tmp_name'][$i], $_FILES['f']['name'][$i], $_POST['name'], $_POST['chmod']);
+                    echo Gmanager::getInstance()->uploadFiles($_FILES['f']['tmp_name'][$i], $_FILES['f']['name'][$i], $_POST['name'], $_POST['chmod']);
                 }
             } else {
-                echo Registry::getGmanager()->uploadUrl($_POST['url'], $_POST['name'], $_POST['chmod'], $_POST['headers'], isset($_POST['set_time_limit']) ? $_POST['set_time_limit'] : false, isset($_POST['ignore_user_abort']));
+                echo Gmanager::getInstance()->uploadUrl($_POST['url'], $_POST['name'], $_POST['chmod'], $_POST['headers'], isset($_POST['set_time_limit']) ? $_POST['set_time_limit'] : false, isset($_POST['ignore_user_abort']));
             }
         }
         break;
@@ -351,14 +349,14 @@ switch ($_GET['go']) {
 
     case 'mod':
         $safe = strtoupper(ini_get('safe_mode'));
-        $php_user = Registry::getGmanager()->getPHPUser();
+        $php_user = Gmanager::getInstance()->getPHPUser();
 
-        echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('search') . '</a></li><li><a href="change.php?go=eval&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('eval') . '</a></li><li><a href="change.php?go=cmd&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('cmd') . '</a></li><li>SQL<ul><li><a href="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '">MySQL</a></li><li><a href="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '">PostgreSQL</a></li><li><a href="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '">SQLite</a></li></ul></li><li><a href="change.php?go=sql_tables&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('tables') . '</a></li><li><a href="change.php?go=sql_installer&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('create_sql_installer') . '</a></li><li><a href="change.php?go=scan&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('scan') . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('send_mail') . '</a></li><li><a href="change.php?go=phpinfo&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('phpinfo') . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('new_version') . '</a></li></ul>' . ($php_user['name'] ? '<span style="color:#000;">&#187;</span> ' . Language::get('php_user') . htmlspecialchars($php_user['name'], ENT_NOQUOTES) . '<br/>' : '') . '<span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'ON' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(Registry::getGmanager()->getUname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . Language::get('disk_total_space') . ' ' . Helper_View::formatSize(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . Language::get('disk_free_space') . ' ' . Helper_View::formatSize(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
+        echo '<div class="red"><ul><li><a href="change.php?go=search&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('search') . '</a></li><li><a href="change.php?go=eval&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('eval') . '</a></li><li><a href="change.php?go=cmd&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('cmd') . '</a></li><li>SQL<ul><li><a href="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '">MySQL</a></li><li><a href="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '">PostgreSQL</a></li><li><a href="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '">SQLite</a></li></ul></li><li><a href="change.php?go=sql_tables&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('tables') . '</a></li><li><a href="change.php?go=sql_installer&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('create_sql_installer') . '</a></li><li><a href="change.php?go=scan&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('scan') . '</a></li><li><a href="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('send_mail') . '</a></li><li><a href="change.php?go=phpinfo&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('phpinfo') . '</a> (' . PHP_VERSION . ')</li><li><a href="change.php?go=new_version&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('new_version') . '</a></li></ul>' . ($php_user['name'] ? '<span style="color:#000;">&#187;</span> ' . Language::get('php_user') . htmlspecialchars($php_user['name'], ENT_NOQUOTES) . '<br/>' : '') . '<span style="color:#000;">&#187;</span> Safe Mode: ' . ($safe == 1 || $safe == 'ON' ? '<span style="color:#b00;">ON</span>' : '<span style="color:#0f0;">OFF</span>') . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars($_SERVER['SERVER_SOFTWARE'], ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . htmlspecialchars(Gmanager::getInstance()->getUname(), ENT_NOQUOTES) . '<br/><span style="color:#000;">&#187;</span> ' . Language::get('disk_total_space') . ' ' . Helper_View::formatSize(@disk_total_space($_SERVER['DOCUMENT_ROOT'])) . '; ' . Language::get('disk_free_space') . ' ' . Helper_View::formatSize(@disk_free_space($_SERVER['DOCUMENT_ROOT'])) . '<br/><span style="color:#000;">&#187;</span> ' . strftime('%d.%m.%Y / %H') . '<span style="text-decoration:blink;">:</span>' . strftime('%M') . '<br/></div>';
         break;
 
 
     case 'new_version':
-        $new = Registry::getGmanager()->getData('http://wapinet.ru/gmanager/gmanager.txt');
+        $new = Gmanager::getInstance()->getData('http://wapinet.ru/gmanager/gmanager.txt');
         if ($new['body']) {
             if (version_compare($new['body'], Config::getVersion(), '<=')) {
                 echo Errors::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::getVersion() . '<br/>' . Language::get('new_version_false'), Errors::MESSAGE_OK);
@@ -376,9 +374,9 @@ switch ($_GET['go']) {
             echo '<div class="input"><form action="change.php?go=scan&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('url') . '<br/><input type="text" name="url" value="http://"/><br/>' . Language::get('headers') . '<br/><textarea rows="3" cols="32" name="headers">User-Agent: ' . (isset($_SERVER['HTTP_USER_AGENT']) ? htmlspecialchars($_SERVER['HTTP_USER_AGENT'], ENT_NOQUOTES) : '') . "\n" . 'Cookie: ' . "\n" . 'Referer: ' . "\n" . 'Accept: ' . (isset($_SERVER['HTTP_ACCEPT']) ? htmlspecialchars($_SERVER['HTTP_ACCEPT'], ENT_NOQUOTES) : '') . "\n" . 'Accept-Charset: ' . (isset($_SERVER['HTTP_ACCEPT_CHARSET']) ? htmlspecialchars($_SERVER['HTTP_ACCEPT_CHARSET'], ENT_NOQUOTES) : '') . "\n" . 'Accept-Language: ' . (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? htmlspecialchars($_SERVER['HTTP_ACCEPT_LANGUAGE'], ENT_NOQUOTES) : '') . "\n" . 'Connection: Close' . "\n" . '</textarea><br/>POST<br/><input type="text" name="post"/><br/><input type="checkbox" name="oh" id="oh" /><label for="oh">' . Language::get('only_headers') . '</label><br/><input type="submit" value="' . Language::get('look') . '"/></div></form></div>';
         } else {
             $only_headers = isset($_POST['oh']);
-            if ($url = Registry::getGmanager()->getData($_POST['url'], $_POST['headers'], $only_headers, $_POST['post'])) {
+            if ($url = Gmanager::getInstance()->getData($_POST['url'], $_POST['headers'], $only_headers, $_POST['post'])) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
-                echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Helper_View::formatSize(strlen($url)) . '</span><br/></div>' . Registry::getGmanager()->code($url, 0, true);
+                echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Helper_View::formatSize(strlen($url)) . '</span><br/></div>' . Gmanager::getInstance()->code($url, 0, true);
             } else {
                 echo Errors::message(Language::get('not_connect'), Errors::MESSAGE_EMAIL);
             }
@@ -390,14 +388,14 @@ switch ($_GET['go']) {
         if (!isset($_POST['from']) || !isset($_POST['theme']) || !isset($_POST['mess']) || !isset($_POST['to'])) {
             echo '<div class="input"><form action="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('mail_to') . '<br/><input type="text" name="to" value="' . (isset($_POST['to']) ? htmlspecialchars($_POST['to'], ENT_COMPAT) : '@') . '"/><br/>' . Language::get('mail_from') . '<br/><input type="text" name="from" value="admin@' . $_SERVER['HTTP_HOST'] . '"/><br/>' . Language::get('mail_theme') . '<br/><input type="text" name="theme" value="' . (isset($_POST['theme']) ? htmlspecialchars($_POST['theme'], ENT_COMPAT) : 'Hello') . '"/><br/>' . Language::get('mail_mess') . '<br/><textarea name="mess" rows="8" cols="48">' . (isset($_POST['mess']) ? htmlspecialchars($_POST['mess'], ENT_NOQUOTES) : '') . '</textarea><br/><input type="submit" value="' . Language::get('send_mail') . '"/></div></form></div>';
         } else {
-            echo Registry::getGmanager()->sendMail($_POST['theme'], $_POST['mess'], $_POST['to'], $_POST['from']);
+            echo Gmanager::getInstance()->sendMail($_POST['theme'], $_POST['mess'], $_POST['to'], $_POST['from']);
         }
         break;
 
 
     case 'eval':
         if (isset($_POST['eval'])) {
-            echo Registry::getGmanager()->showEval($_POST['eval']);
+            echo Gmanager::getInstance()->showEval($_POST['eval']);
             $v = htmlspecialchars($_POST['eval'], ENT_NOQUOTES);
         } else {
             $v = '';
@@ -414,7 +412,7 @@ switch ($_GET['go']) {
                 echo '<div><form action="change.php?" method="get"><div><input type="text" name="c" value="' . $realpath . '"/><br/><input type="hidden" name="go" value="search"/><input type="submit" value="' . Language::get('go') . '"/></div></form></div>';
             }
 
-            echo '<form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div class="telo"><table><tr><th><input type="checkbox" onclick="Gmanager.check(this.form,\'check[]\',this.checked)"/></th>' . (Config::get('Display', 'name') ? '<th>' . Language::get('name') . '</th>' : '') . (Config::get('Display', 'down') ? '<th>' . Language::get('get') . '</th>' : '') . (Config::get('Display', 'type') ? '<th>' . Language::get('type') . '</th>' : '') . (Config::get('Display', 'size') ? '<th>' . Language::get('size') . '</th>' : '') . (Config::get('Display', 'change') ? '<th>' . Language::get('change') . '</th>' : '') . (Config::get('Display', 'del') ? '<th>' . Language::get('del') . '</th>' : '') . (Config::get('Display', 'chmod') ? '<th>' . Language::get('chmod') . '</th>' : '') . (Config::get('Display', 'date') ? '<th>' . Language::get('date') . '</th>' : '') . (Config::get('Display', 'uid') ? '<th>' . Language::get('uid') . '</th>' : '') . (Config::get('Display', 'gid') ? '<th>' . Language::get('gid') . '</th>' : '') . (Config::get('Display', 'n') ? '<th>' . Language::get('n') . '</th>' : '') . '</tr>' . Registry::getGmanager()->search($_POST['where'], $_POST['search'], isset($_POST['in']), isset($_POST['register']), isset($_POST['hex']), $_POST['size'] * 1048576, isset($_POST['archive'])) . '</table><div class="ch"><input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_chmod" value="' . Language::get('chmod') . '"/> <input onclick="return (Gmanager.checkForm(document.forms[1],\'check[]\') &amp;&amp; Gmanager.delNotify());" type="submit" name="full_del" value="' . Language::get('del') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_rename" value="' . Language::get('change') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="create_archive" value="' . Language::get('create_archive') . '"/></div></div></form><div class="rb">' . Language::get('create') . '<a href="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('mod') . '</a><br/></div>';
+            echo '<form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div class="telo"><table><tr><th><input type="checkbox" onclick="Gmanager.check(this.form,\'check[]\',this.checked)"/></th>' . (Config::get('Display', 'name') ? '<th>' . Language::get('name') . '</th>' : '') . (Config::get('Display', 'down') ? '<th>' . Language::get('get') . '</th>' : '') . (Config::get('Display', 'type') ? '<th>' . Language::get('type') . '</th>' : '') . (Config::get('Display', 'size') ? '<th>' . Language::get('size') . '</th>' : '') . (Config::get('Display', 'change') ? '<th>' . Language::get('change') . '</th>' : '') . (Config::get('Display', 'del') ? '<th>' . Language::get('del') . '</th>' : '') . (Config::get('Display', 'chmod') ? '<th>' . Language::get('chmod') . '</th>' : '') . (Config::get('Display', 'date') ? '<th>' . Language::get('date') . '</th>' : '') . (Config::get('Display', 'uid') ? '<th>' . Language::get('uid') . '</th>' : '') . (Config::get('Display', 'gid') ? '<th>' . Language::get('gid') . '</th>' : '') . (Config::get('Display', 'n') ? '<th>' . Language::get('n') . '</th>' : '') . '</tr>' . Gmanager::getInstance()->search($_POST['where'], $_POST['search'], isset($_POST['in']), isset($_POST['register']), isset($_POST['hex']), $_POST['size'] * 1048576, isset($_POST['archive'])) . '</table><div class="ch"><input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_chmod" value="' . Language::get('chmod') . '"/> <input onclick="return (Gmanager.checkForm(document.forms[1],\'check[]\') &amp;&amp; Gmanager.delNotify());" type="submit" name="full_del" value="' . Language::get('del') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_rename" value="' . Language::get('change') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="create_archive" value="' . Language::get('create_archive') . '"/></div></div></form><div class="rb">' . Language::get('create') . '<a href="change.php?go=create_file&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('mod') . '</a><br/></div>';
         } else {
             $v = '';
         }
@@ -428,9 +426,9 @@ switch ($_GET['go']) {
         if (isset($_POST['name']) && isset($_POST['host'])) {
             if (isset($_POST['backup'])) {
                 if (isset($_POST['file']) && $_POST['file']) {
-                    echo Registry::getGmanager()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
+                    echo Gmanager::getInstance()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
                 } else {
-                    $tables = Registry::getGmanager()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array());
+                    $tables = Gmanager::getInstance()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array());
                     echo '<div class="input"><form action="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('sql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('sql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Registry::get('hCurrent') . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
                 }
             } else {
@@ -441,7 +439,7 @@ switch ($_GET['go']) {
                 } else if (!$_POST['sql']) {
                     $_POST['sql'] = 'SHOW TABLES';
                 }
-                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . Registry::getGmanager()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::MySQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/>' : '') . '</div></form></div>';
+                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . Gmanager::getInstance()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::MySQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/>' : '') . '</div></form></div>';
             }
         } else {
             echo '<div class="input"><form action="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name" value=""/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('sql_query') . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . Language::get('sql') . '"/></div></form></div>';
@@ -455,9 +453,9 @@ switch ($_GET['go']) {
         if (isset($_POST['name']) && isset($_POST['host'])) {
             if (isset($_POST['backup'])) {
                 if (isset($_POST['file']) && $_POST['file']) {
-                    echo Registry::getGmanager()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
+                    echo Gmanager::getInstance()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
                 } else {
-                    $tables = Registry::getGmanager()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array());
+                    $tables = Gmanager::getInstance()->sqlBackup($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], array());
                     echo '<div class="input"><form action="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('sql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('sql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Registry::get('hCurrent') . 'backup_' . htmlspecialchars($_POST['db']) . '.sql"/><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
                 }
             } else {
@@ -468,7 +466,7 @@ switch ($_GET['go']) {
                 } else if (!$_POST['sql']) {
                     $_POST['sql'] = 'SELECT * FROM information_schema.tables';
                 }
-                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . Registry::getGmanager()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::PostgreSQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/>' : '') . '</div></form></div>';
+                echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . Gmanager::getInstance()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::PostgreSQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/>' : '') . '</div></form></div>';
             }
         } else {
             echo '<div class="input"><form action="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name" value=""/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('sql_query') . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . Language::get('sql') . '"/></div></form></div>';
@@ -482,9 +480,9 @@ switch ($_GET['go']) {
         if (isset($_POST['db'])) {
             if (isset($_POST['backup'])) {
                 if (isset($_POST['file']) && $_POST['file']) {
-                    echo Registry::getGmanager()->sqlBackup('', '', '', $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
+                    echo Gmanager::getInstance()->sqlBackup('', '', '', $_POST['db'], $_POST['charset'], array('tables' => (isset($_POST['tables']) ? array_map('rawurldecode', $_POST['tables']) : array()), 'data' => (isset($_POST['data']) ?  array_map('rawurldecode', $_POST['data']) : array()), 'file' => $_POST['file']));
                 } else {
-                    $tables = Registry::getGmanager()->sqlBackup('', '', '', $_POST['db'], $_POST['charset'], array());
+                    $tables = Gmanager::getInstance()->sqlBackup('', '', '', $_POST['db'], $_POST['charset'], array());
                     echo '<div class="input"><form action="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('sql_backup_structure') . '<br/><select name="tables[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('sql_backup_data') . '<br/><select name="data[]" multiple="true" size="5">' . $tables . '</select><br/>' . Language::get('file') . '<br/><input type="text" name="file" value="' . Registry::get('hCurrent') . 'backup_' . htmlspecialchars(Helper_System::basename($_POST['db'])) . '.sql"/><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
                 }
             } else {
@@ -493,7 +491,7 @@ switch ($_GET['go']) {
                 if (!$_POST['sql']) {
                     $_POST['sql'] = 'SELECT name FROM sqlite_master WHERE type = "table" ORDER BY name';
                 }
-                echo '<div>&#160;' . $_POST['db'] . '<br/></div>' . Registry::getGmanager()->sqlQuery('', '', '', Registry::getGmanager()->realpath($_POST['db']), $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::SQLite))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/> <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
+                echo '<div>&#160;' . $_POST['db'] . '<br/></div>' . Gmanager::getInstance()->sqlQuery('', '', '', Gmanager::getInstance()->realpath($_POST['db']), $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::SQLite))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/> <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/></div></form></div>';
             }
         } else {
             echo '<div class="input"><form action="change.php?go=sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db" value="' . Registry::get('hCurrent') . '"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('sql_query') . '<br/><textarea id="sql" name="sql" rows="4" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea><br/><input type="submit" value="' . Language::get('sql') . '"/></div></form></div>';
@@ -508,30 +506,30 @@ switch ($_GET['go']) {
 
     case 'sql_tables_mysql':
         Registry::set('sqlDriver', 'mysql');
-        if (!(isset($_POST['tables']) && Registry::getGmanager()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_tables_mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
-            echo Registry::getGmanager()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Registry::getGmanager()->file_get_contents($_POST['tables']));
+            echo Gmanager::getInstance()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']));
         }
         break;
 
 
     case 'sql_tables_postgresql':
         Registry::set('sqlDriver', 'postgresql');
-        if (!(isset($_POST['tables']) && Registry::getGmanager()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_tables_postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
-            echo Registry::getGmanager()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Registry::getGmanager()->file_get_contents($_POST['tables']));
+            echo Gmanager::getInstance()->sqlQuery($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']));
         }
         break;
 
 
     case 'sql_tables_sqlite':
         Registry::set('sqlDriver', 'sqlite');
-        if (!(isset($_POST['tables']) && Registry::getGmanager()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_tables_sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
-            echo Registry::getGmanager()->sqlQuery('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Registry::getGmanager()->file_get_contents($_POST['tables']));
+            echo Gmanager::getInstance()->sqlQuery('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']));
         }
         break;
 
@@ -549,11 +547,11 @@ switch ($_GET['go']) {
             $d = Registry::get('hCurrent');
         }
 
-        if (!(isset($_POST['tables']) && Registry::getGmanager()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_installer_mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
         } else {
-            if ($sql = Registry::getGmanager()->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Registry::getGmanager()->file_get_contents($_POST['tables']))) {
-                echo Registry::getGmanager()->createFile($_POST['file'], $sql, $_POST['chmod']);
+            if ($sql = Gmanager::getInstance()->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']))) {
+                echo Gmanager::getInstance()->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
                 echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
             }
@@ -569,11 +567,11 @@ switch ($_GET['go']) {
             $d = Registry::get('hCurrent');
         }
 
-        if (!(isset($_POST['tables']) && Registry::getGmanager()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_installer_postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
         } else {
-            if ($sql = Registry::getGmanager()->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Registry::getGmanager()->file_get_contents($_POST['tables']))) {
-                echo Registry::getGmanager()->createFile($_POST['file'], $sql, $_POST['chmod']);
+            if ($sql = Gmanager::getInstance()->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']))) {
+                echo Gmanager::getInstance()->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
                 echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
             }
@@ -589,11 +587,11 @@ switch ($_GET['go']) {
             $d = Registry::get('hCurrent');
         }
 
-        if (!(isset($_POST['tables']) && Registry::getGmanager()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
+        if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_installer_sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('chmod') . '<br/><input name="save_as" type="submit" value="' . Language::get('save_as') . '"/><input type="text" name="file" value="' . $d . 'sql_installer.php"/><br/></div></form></div>';
         } else {
-            if ($sql = Registry::getGmanager()->sqlInstaller('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Registry::getGmanager()->file_get_contents($_POST['tables']))) {
-                echo Registry::getGmanager()->createFile($_POST['file'], $sql, $_POST['chmod']);
+            if ($sql = Gmanager::getInstance()->sqlInstaller('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']))) {
+                echo Gmanager::getInstance()->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
                 echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
             }
@@ -603,7 +601,7 @@ switch ($_GET['go']) {
 
     case 'cmd':
         if (isset($_POST['cmd'])) {
-            echo Registry::getGmanager()->showCmd($_POST['cmd']);
+            echo Gmanager::getInstance()->showCmd($_POST['cmd']);
             $v = htmlspecialchars($_POST['cmd'], ENT_COMPAT);
         } else {
             $v = '';
@@ -613,7 +611,7 @@ switch ($_GET['go']) {
 
 
     default:
-        if (!Registry::getGmanager()->file_exists(Registry::get('current'))) {
+        if (!Gmanager::getInstance()->file_exists(Registry::get('current'))) {
             echo Errors::message(Language::get('not_found'), Errors::MESSAGE_FAIL);
             break;
         }
@@ -625,18 +623,18 @@ switch ($_GET['go']) {
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Registry::get('rCurrent') . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
         } else {
             if (Registry::get('currentType') == 'dir') {
-                $size = Helper_View::formatSize(Registry::getGmanager()->size(Registry::get('current'), true));
+                $size = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current'), true));
                 $md5 = '';
             } else if (Registry::get('currentType') == 'file' || Registry::get('currentType') == 'link') {
-                $size = Helper_View::formatSize(Registry::getGmanager()->size(Registry::get('current')));
+                $size = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current')));
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
-                    $md5 = Language::get('md5') . ': ' . md5(Registry::getGmanager()->file_get_contents(Registry::get('current')));
+                    $md5 = Language::get('md5') . ': ' . md5(Gmanager::getInstance()->file_get_contents(Registry::get('current')));
                 } else {
                     $md5 = Language::get('md5') . ': ' . md5_file(IOWrapper::set(Registry::get('current')));
                 }
             }
 
-            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . Registry::getGmanager()->lookChmod(Registry::get('current')) . '"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div><div>' . Language::get('sz') . ': ' . $size . '<br/>' . $md5 . '</div>';
+            echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod" value="' . Gmanager::getInstance()->lookChmod(Registry::get('current')) . '"/>' . Language::get('change_chmod') . '<br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div><div>' . Language::get('sz') . ': ' . $size . '<br/>' . $md5 . '</div>';
         }
         break;
 }

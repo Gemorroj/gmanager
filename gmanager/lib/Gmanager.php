@@ -13,15 +13,50 @@
  */
 
 
-class Gmanager
+abstract class Gmanager
 {
-    private static $_ftpArchive;
+    /**
+     * @var string
+     */
+    private $_ftpArchiveTmp = '';
+    /**
+     * @var HTTP|FTP
+     */
+    private static $_instance = null;
+
+    private function __construct(){}
+    private function __clone(){}
+    private function __wakeup(){}
 
 
     /**
-     * main
+     * getInstance
+     *
+     * @return HTTP|FTP
      */
-    public function main ()
+    public static function getInstance()
+    {
+        if (self::$_instance === null) {
+            if (Config::get('Gmanager', 'mode') === 'FTP') {
+                self::$_instance = new FTP(
+                    Config::get('FTP', 'user'),
+                    Config::get('FTP', 'pass'),
+                    Config::get('FTP', 'host'),
+                    Config::get('FTP', 'port')
+                );
+            } else {
+                self::$_instance = new HTTP;
+            }
+        }
+
+        return self::$_instance;
+    }
+
+
+    /**
+     * init
+     */
+    public function init ()
     {
         $this->_setCurrent();
 
@@ -60,7 +95,7 @@ class Gmanager
             }
 
             Registry::set('current',  str_replace('\\', '/', $c));
-            Registry::set('currentType', Registry::getGmanager()->filetype(Registry::get('current')));
+            Registry::set('currentType', self::$_instance->filetype(Registry::get('current')));
 
             if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
                 if (mb_substr(Registry::get('current'), -1) != '/') {
@@ -100,7 +135,7 @@ class Gmanager
     public function head ()
     {
         if (Config::get('Gmanager', 'mode') != 'FTP') {
-            $realpath = Registry::getGmanager()->realpath(Registry::get('current'));
+            $realpath = self::$_instance->realpath(Registry::get('current'));
             $realpath = $realpath ? $realpath : Registry::get('current');
         } else {
             $realpath = Registry::get('current');
@@ -113,7 +148,7 @@ class Gmanager
 
         if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
             if (Registry::get('current') == '.') {
-                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars(Helper_View::strLink(Registry::getGmanager()->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(Registry::getGmanager()->getcwd()) . ')<br/></div>';
+                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars(Helper_View::strLink(self::$_instance->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(self::$_instance->getcwd()) . ')<br/></div>';
             } else {
                 return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
             }
@@ -173,7 +208,7 @@ class Gmanager
      */
     public function look ($current = '', $itype = '', $down = '')
     {
-        if (!Registry::getGmanager()->is_dir($current) || !Registry::getGmanager()->is_readable($current)) {
+        if (!self::$_instance->is_dir($current) || !self::$_instance->is_readable($current)) {
             return ListData::getListDenyData();
         }
 
@@ -231,8 +266,8 @@ class Gmanager
                 }
             }
 
-            if (!Registry::getGmanager()->is_dir($tmpSet)) {
-                Registry::getGmanager()->mkdir($tmpSet, $instSource !== null ? $this->lookChmod($tmpSource) : null);
+            if (!self::$_instance->is_dir($tmpSet)) {
+                self::$_instance->mkdir($tmpSet, $instSource !== null ? $this->lookChmod($tmpSource) : null);
             }
         }
 
@@ -241,8 +276,8 @@ class Gmanager
             foreach ($tmpAdd as $v) {
                 $checkTo .= '/' . $v['dir'];
 
-                if (!Registry::getGmanager()->is_dir($checkTo)) {
-                    Registry::getGmanager()->mkdir($checkTo, $v['chmod']);
+                if (!self::$_instance->is_dir($checkTo)) {
+                    self::$_instance->mkdir($checkTo, $v['chmod']);
                 }
             }
         }
@@ -262,7 +297,7 @@ class Gmanager
     {
         $error = array();
 
-        foreach (Registry::getGmanager()->iterator($d) as $file) {
+        foreach (self::$_instance->iterator($d) as $file) {
             if ($file == $static) {
                 continue;
             }
@@ -272,10 +307,10 @@ class Gmanager
 
             $ch = $this->lookChmod($d . '/' . $file);
 
-            if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
+            if (self::$_instance->is_dir($d . '/' . $file)) {
 
-                if (Registry::getGmanager()->mkdir($dest . '/' . $file, $ch)) {
-                    Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
+                if (self::$_instance->mkdir($dest . '/' . $file, $ch)) {
+                    self::$_instance->chmod($dest . '/' . $file, $ch);
                     $this->copyFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_files_false')) . ' (' . Errors::get() . ')';
@@ -283,8 +318,8 @@ class Gmanager
 
             } else {
 
-                if ($overwrite || !Registry::getGmanager()->file_exists($dest . '/' . $file)) {
-                    if (!Registry::getGmanager()->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
+                if ($overwrite || !self::$_instance->file_exists($dest . '/' . $file)) {
+                    if (!self::$_instance->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
                         $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_file_false')) . ' (' . Errors::get() . ')';
                     }
                 } else {
@@ -315,7 +350,7 @@ class Gmanager
     {
         $error = array();
 
-        foreach (Registry::getGmanager()->iterator($d) as $file) {
+        foreach (self::$_instance->iterator($d) as $file) {
             if ($file == $static) {
                 continue;
             }
@@ -325,10 +360,10 @@ class Gmanager
 
             $ch = $this->lookChmod($d . '/' . $file);
 
-            if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
+            if (self::$_instance->is_dir($d . '/' . $file)) {
 
-                if (Registry::getGmanager()->mkdir($dest . '/' . $file, $ch)) {
-                    Registry::getGmanager()->chmod($dest . '/' . $file, $ch);
+                if (self::$_instance->mkdir($dest . '/' . $file, $ch)) {
+                    self::$_instance->chmod($dest . '/' . $file, $ch);
                     $this->moveFiles($d . '/' . $file, $dest . '/' . $file, $static, $overwrite);
                 } else {
                     $error[] = str_replace('%title%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_files_false')) . ' (' . Errors::get() . ')';
@@ -336,8 +371,8 @@ class Gmanager
 
             } else {
 
-                if ($overwrite || !Registry::getGmanager()->file_exists($dest . '/' . $file)) {
-                    if (!Registry::getGmanager()->rename($d . '/' . $file, $dest . '/' . $file)) {
+                if ($overwrite || !self::$_instance->file_exists($dest . '/' . $file)) {
+                    if (!self::$_instance->rename($d . '/' . $file, $dest . '/' . $file)) {
                         $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('move_file_false')) . ' (' . Errors::get() . ')';
                     }
                 } else {
@@ -350,7 +385,7 @@ class Gmanager
         if ($error) {
             return Errors::message(implode('<br/>', $error), Errors::MESSAGE_EMAIL);
         } else {
-            Registry::getGmanager()->rmdir($d);
+            self::$_instance->rmdir($d);
             return Errors::message(str_replace('%title%', htmlspecialchars($dest, ENT_NOQUOTES), Language::get('move_files_true')), Errors::MESSAGE_OK);
         }
     }
@@ -367,7 +402,7 @@ class Gmanager
      */
     private function _checkChangeFile ($source, $dest, $chmod, $overwrite)
     {
-        if (!$overwrite && Registry::getGmanager()->file_exists($dest)) {
+        if (!$overwrite && self::$_instance->file_exists($dest)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($dest, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
@@ -400,7 +435,7 @@ class Gmanager
 
         $this->copyD(dirname($source), dirname($dest));
 
-        if (Registry::getGmanager()->copy($source, $dest)) {
+        if (self::$_instance->copy($source, $dest)) {
             if (!$chmod) {
                 $chmod = $this->lookChmod($source);
             }
@@ -431,7 +466,7 @@ class Gmanager
 
         $this->copyD(dirname($source), dirname($dest));
 
-        if (Registry::getGmanager()->rename($source, $dest)) {
+        if (self::$_instance->rename($source, $dest)) {
             if (!$chmod) {
                 $chmod = $this->lookChmod($source);
             }
@@ -452,7 +487,7 @@ class Gmanager
      */
     public function delFile ($f = '')
     {
-        if (Registry::getGmanager()->unlink($f)) {
+        if (self::$_instance->unlink($f)) {
             return Errors::message(Language::get('del_file_true') . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES), Errors::MESSAGE_OK);
         } else {
             return Errors::message(Language::get('del_file_false') . ' -&gt; ' . htmlspecialchars($f, ENT_NOQUOTES) . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -469,23 +504,23 @@ class Gmanager
     public function delDir ($d = '')
     {
         $err = '';
-        Registry::getGmanager()->chmod($d, 0777);
+        self::$_instance->chmod($d, 0777);
 
-        foreach (Registry::getGmanager()->iterator($d) as $f) {
-            $realpath = Registry::getGmanager()->realpath($d . '/' . $f);
+        foreach (self::$_instance->iterator($d) as $f) {
+            $realpath = self::$_instance->realpath($d . '/' . $f);
             $f = $realpath ? str_replace('\\', '/', $realpath) : str_replace('//', '/', $d . '/' . $f);
-            Registry::getGmanager()->chmod($f, 0777);
+            self::$_instance->chmod($f, 0777);
 
-            if (Registry::getGmanager()->is_dir($f) /*&& !Registry::getGmanager()->rmdir($f)*/) {
+            if (self::$_instance->is_dir($f) /*&& !self::$_instance->rmdir($f)*/) {
                 $this->delDir($f . '/');
-            } else if (Registry::getGmanager()->file_exists($f)) {
-                if (!Registry::getGmanager()->unlink($f)) {
+            } else if (self::$_instance->file_exists($f)) {
+                if (!self::$_instance->unlink($f)) {
                     $err .= $f . '<br/>';
                 }
             }
         }
 
-        if (!Registry::getGmanager()->rmdir($d)) {
+        if (!self::$_instance->rmdir($d)) {
             $err .= Errors::get() . '<br/>';
         }
         if ($err) {
@@ -509,11 +544,11 @@ class Gmanager
             $sz = 0;
             do {
                 $d = array_shift($ds);
-                foreach (Registry::getGmanager()->iterator($d) as $file) {
-                    if (Registry::getGmanager()->is_dir($d . '/' . $file)) {
+                foreach (self::$_instance->iterator($d) as $file) {
+                    if (self::$_instance->is_dir($d . '/' . $file)) {
                         $ds[] = $d . '/' . $file;
                     } else {
-                        $sz += Registry::getGmanager()->filesize($d . '/' . $file);
+                        $sz += self::$_instance->filesize($d . '/' . $file);
                     }
                 }
             } while (sizeof($ds) > 0);
@@ -521,7 +556,7 @@ class Gmanager
             return $sz;
         }
 
-        return Registry::getGmanager()->filesize($source);
+        return self::$_instance->filesize($source);
     }
 
 
@@ -533,7 +568,7 @@ class Gmanager
      */
     public function lookChmod ($file = '')
     {
-        return substr(sprintf('%o', Registry::getGmanager()->fileperms($file)), -4);
+        return substr(sprintf('%o', self::$_instance->fileperms($file)), -4);
     }
 
 
@@ -549,7 +584,7 @@ class Gmanager
     {
         $this->createDir(dirname($file));
 
-        if (Registry::getGmanager()->file_put_contents($file, $text)) {
+        if (self::$_instance->file_put_contents($file, $text)) {
             return Errors::message(Language::get('fputs_file_true'), Errors::MESSAGE_OK) . $this->rechmod($file, $chmod);
         } else {
             return Errors::message(Language::get('fputs_file_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -568,7 +603,7 @@ class Gmanager
     {
         $tmp = $tmp2 = $err = '';
         $i = 0;
-        $g = explode(DIRECTORY_SEPARATOR, Registry::getGmanager()->getcwd());
+        $g = explode(DIRECTORY_SEPARATOR, self::$_instance->getcwd());
 
         foreach (explode('/', $dir) as $d) {
             $tmp .= $d . '/';
@@ -576,11 +611,11 @@ class Gmanager
                 $tmp2 .= $g[$i] . '/';
             }
 
-            if ($tmp == $tmp2 || Registry::getGmanager()->is_dir($tmp)) {
+            if ($tmp == $tmp2 || self::$_instance->is_dir($tmp)) {
                 $i++;
                 continue;
             }
-            if (!Registry::getGmanager()->mkdir($tmp, $chmod)) {
+            if (!self::$_instance->mkdir($tmp, $chmod)) {
                 $err .= Errors::get() . ' -&gt; ' . htmlspecialchars($tmp, ENT_NOQUOTES) . '<br/>';
             }
             $i++;
@@ -609,7 +644,7 @@ class Gmanager
             return Errors::message(Language::get('chmod_mode_false'), Errors::MESSAGE_EMAIL);
         }
 
-        if (Registry::getGmanager()->chmod($current, $chmod)) {
+        if (self::$_instance->chmod($current, $chmod)) {
             return Errors::message(Language::get('chmod_true') . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . ' : ' . (is_int($chmod) ? decoct($chmod) : $chmod), Errors::MESSAGE_OK);
         } else {
             return Errors::message(Language::get('chmod_false') . ' -&gt; ' . htmlspecialchars($current, ENT_NOQUOTES) . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
@@ -630,7 +665,7 @@ class Gmanager
      */
     public function frename ($current = '', $name = '', $chmod = '', $del = false, $to = '', $overwrite = false)
     {
-        if (Registry::getGmanager()->is_dir($current)) {
+        if (self::$_instance->is_dir($current)) {
             $this->copyD($current, $to);
 
             if ($del) {
@@ -759,7 +794,7 @@ class Gmanager
             return Errors::message(Language::get('disable_function') . ' (xml)', Errors::MESSAGE_FAIL);
         }
 
-        $fl = Registry::getGmanager()->file_get_contents($current);
+        $fl = self::$_instance->file_get_contents($current);
         if ($charset[0]) {
             $fl = mb_convert_encoding($fl, $charset[1], $charset[0]);
         }
@@ -874,7 +909,7 @@ class Gmanager
         }
 
         if ($ext) {
-            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . Helper_View::formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), Registry::getGmanager()->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
+            return Errors::message(Language::get('name') . ': ' . htmlspecialchars($info['name'], ENT_NOQUOTES) . '<br/>' . Language::get('archive_size') . ': ' . Helper_View::formatSize($this->size($c)) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($info['length']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), self::$_instance->filemtime($c)), Errors::MESSAGE_OK) . $this->code(trim($ext));
         } else {
             return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
         }
@@ -899,8 +934,8 @@ class Gmanager
         $info = $this->getGzInfo($tmp);
 
         $data = null;
-        if ($overwrite || !Registry::getGmanager()->file_exists($name . '/' . $info['name'])) {
-            if (!Registry::getGmanager()->file_put_contents($name . '/' . $info['name'], $this->getGzContent($tmp))) {
+        if ($overwrite || !self::$_instance->file_exists($name . '/' . $info['name'])) {
+            if (!self::$_instance->file_put_contents($name . '/' . $info['name'], $this->getGzContent($tmp))) {
                 $data = Errors::message(Language::get('extract_file_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
             }
         } else {
@@ -914,7 +949,7 @@ class Gmanager
             return $data;
         }
 
-        if (Registry::getGmanager()->is_file($name . '/' . $info['name'])) {
+        if (self::$_instance->is_file($name . '/' . $info['name'])) {
             if ($chmod[0]) {
                 $this->rechmod($name . '/' . $info['name'], $chmod[0]);
             }
@@ -943,7 +978,7 @@ class Gmanager
             $dir = dirname($dir) . '/';
         }
 
-        if (Registry::getGmanager()->file_put_contents($dir . $name, file_get_contents($tmp))) {
+        if (self::$_instance->file_put_contents($dir . $name, file_get_contents($tmp))) {
             if ($chmod) {
                 $this->rechmod($dir . $name, $chmod);
             }
@@ -1034,7 +1069,7 @@ class Gmanager
         } else {
             $last = mb_substr($name, -1);
             $temp = false;
-            if ($last != '/' && Registry::getGmanager()->is_dir($name)) {
+            if ($last != '/' && self::$_instance->is_dir($name)) {
                 $name .= '/';
                 $temp = true;
             }
@@ -1050,19 +1085,19 @@ class Gmanager
         $out = '';
         foreach ($tmp as $v) {
             $dir = dirname($v[1]);
-            if (!Registry::getGmanager()->is_dir($dir)) {
-                Registry::getGmanager()->mkdir($dir, 0755);
+            if (!self::$_instance->is_dir($dir)) {
+                self::$_instance->mkdir($dir, 0755);
             }
 
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 if ($tmp) {
-                    $r = Registry::getGmanager()->file_put_contents($v[1], $tmp['body']);
-                    Registry::getGmanager()->chmod($v[1], $chmod);
+                    $r = self::$_instance->file_put_contents($v[1], $tmp['body']);
+                    self::$_instance->chmod($v[1], $chmod);
                 } else {
                     $r = false;
                 }
             } else {
-                $r = Registry::getGmanager()->copy($v[0], $v[1], $chmod);
+                $r = self::$_instance->copy($v[0], $v[1], $chmod);
             }
 
             if ($r) {
@@ -1195,7 +1230,7 @@ class Gmanager
         if (!$from) {
             return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
         }
-        $c = Registry::getGmanager()->file_get_contents($current);
+        $c = self::$_instance->file_get_contents($current);
 
         if ($regexp) {
             preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
@@ -1205,7 +1240,7 @@ class Gmanager
             }
             $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
             if ($str) {
-                if (!Registry::getGmanager()->file_put_contents($current, $str)) {
+                if (!self::$_instance->file_put_contents($current, $str)) {
                     return Errors::message(Language::get('replace_false_file') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
                 }
             } else {
@@ -1217,7 +1252,7 @@ class Gmanager
                 return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
             }
 
-            if (!Registry::getGmanager()->file_put_contents($current, str_replace($from, $to, $c))) {
+            if (!self::$_instance->file_put_contents($current, str_replace($from, $to, $c))) {
                 return Errors::message(Language::get('replace_false_file') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
             }
 
@@ -1347,11 +1382,11 @@ class Gmanager
             $tmp = $name;
         }
 
-        if (!$overwrite && Registry::getGmanager()->file_exists($info['dirname'] . '/' . $tmp)) {
+        if (!$overwrite && self::$_instance->file_exists($info['dirname'] . '/' . $tmp)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($info['dirname'] . '/' . $tmp, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
-        if (Registry::getGmanager()->rename($f, $info['dirname'] . '/' . $tmp)) {
+        if (self::$_instance->rename($f, $info['dirname'] . '/' . $tmp)) {
             return Errors::message($info['basename'] . ' - ' . $tmp, Errors::MESSAGE_OK);
         } else {
             return Errors::message(Errors::get() . ' ' . $info['basename'] . ' -&gt; ' . $tmp, Errors::MESSAGE_EMAIL);
@@ -1504,21 +1539,21 @@ class Gmanager
      */
     public function ftpMoveFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
-        foreach (Registry::getGmanager()->iterator($from) as $f) {
-            if (Registry::getGmanager()->is_dir($from . '/' . $f)) {
-                Registry::getGmanager()->mkdir($to . '/' . $f, $chmodd);
+        foreach (self::$_instance->iterator($from) as $f) {
+            if (self::$_instance->is_dir($from . '/' . $f)) {
+                self::$_instance->mkdir($to . '/' . $f, $chmodd);
                 $this->ftpMoveFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
             } else {
-                if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
-                    Registry::getGmanager()->file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
+                if ($overwrite || !self::$_instance->file_exists($to . '/' . $f)) {
+                    self::$_instance->file_put_contents($to . '/' . $f, self::$_instance->file_get_contents($from . '/' . $f));
                     $this->rechmod($to . '/' . $f, $chmodf);
                 }
 
-                Registry::getGmanager()->unlink($from . '/' . $f);
+                self::$_instance->unlink($from . '/' . $f);
             }
         }
 
-        Registry::getGmanager()->rmdir($from);
+        self::$_instance->rmdir($from);
     }
 
 
@@ -1533,13 +1568,13 @@ class Gmanager
      */
     public function ftpCopyFiles ($from = '', $to = '', $chmodf = 0644, $chmodd = 0755, $overwrite = false)
     {
-        foreach (Registry::getGmanager()->iterator($from) as $f) {
-            if (Registry::getGmanager()->is_dir($from . '/' . $f)) {
-                Registry::getGmanager()->mkdir($to . '/' . $f, $chmodd);
+        foreach (self::$_instance->iterator($from) as $f) {
+            if (self::$_instance->is_dir($from . '/' . $f)) {
+                self::$_instance->mkdir($to . '/' . $f, $chmodd);
                 $this->ftpCopyFiles($from . '/' . $f, $to . '/' . $f, $chmodf, $chmodd, $overwrite);
             } else {
-                if ($overwrite || !Registry::getGmanager()->file_exists($to . '/' . $f)) {
-                    Registry::getGmanager()->file_put_contents($to . '/' . $f, Registry::getGmanager()->file_get_contents($from . '/' . $f));
+                if ($overwrite || !self::$_instance->file_exists($to . '/' . $f)) {
+                    self::$_instance->file_put_contents($to . '/' . $f, self::$_instance->file_get_contents($from . '/' . $f));
                     $this->rechmod($to . '/' . $f, $chmodf);
                 }
             }
@@ -1555,9 +1590,9 @@ class Gmanager
      */
     public function ftpArchiveStart ($current = '')
     {
-        self::$_ftpArchive = Config::getTemp() . '/GmanagerFtpArchive' . GMANAGER_REQUEST_TIME . '.tmp';
-        file_put_contents(self::$_ftpArchive, Registry::getGmanager()->file_get_contents($current));
-        return self::$_ftpArchive;
+        $this->_ftpArchiveTmp = Config::getTemp() . '/GmanagerFtpArchive' . GMANAGER_REQUEST_TIME . '.tmp';
+        file_put_contents($this->_ftpArchiveTmp, self::$_instance->file_get_contents($current));
+        return $this->_ftpArchiveTmp;
     }
 
 
@@ -1569,8 +1604,8 @@ class Gmanager
      */
     public function ftpArchiveEnd ($current = '')
     {
-        $result = ($current != '') ? Registry::getGmanager()->file_put_contents($current, file_get_contents(self::$_ftpArchive)) : true;
-        unlink(self::$_ftpArchive);
+        $result = ($current != '') ? self::$_instance->file_put_contents($current, file_get_contents($this->_ftpArchiveTmp)) : true;
+        unlink($this->_ftpArchiveTmp);
         return (bool)$result;
     }
 

@@ -23,7 +23,7 @@ class Archive_Zip implements Archive_Interface
      */
     private function _pclZip($file)
     {
-        return new PclZip(Config::get('Gmanager', 'mode') == 'FTP' ? Registry::getGmanager()->ftpArchiveStart($file) : IOWrapper::set($file));
+        return new PclZip(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($file) : IOWrapper::set($file));
     }
 
 
@@ -39,11 +39,11 @@ class Archive_Zip implements Archive_Interface
      */
     public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
-        if (!$overwrite && Registry::getGmanager()->file_exists($name)) {
+        if (!$overwrite && Gmanager::getInstance()->file_exists($name)) {
             return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
         }
 
-        Registry::getGmanager()->createDir(mb_substr($name, 0, mb_strrpos($name, '/')));
+        Gmanager::getInstance()->createDir(mb_substr($name, 0, mb_strrpos($name, '/')));
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $temp = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
@@ -51,11 +51,11 @@ class Archive_Zip implements Archive_Interface
             mkdir($temp, 0755, true);
             foreach ($ext as $f) {
                 $ftp[] = $tmp = $temp . '/' . IOWrapper::get(Helper_System::basename($f));
-                if (Registry::getGmanager()->is_dir($f)) {
+                if (Gmanager::getInstance()->is_dir($f)) {
                     mkdir($tmp, 0755, true);
-                    Registry::getGmanager()->ftpCopyFiles($f, $tmp);
+                    Gmanager::getInstance()->ftpCopyFiles($f, $tmp);
                 } else {
-                    file_put_contents($tmp, Registry::getGmanager()->file_get_contents($f));
+                    file_put_contents($tmp, Gmanager::getInstance()->file_get_contents($f));
                 }
             }
             $ext = $ftp;
@@ -74,7 +74,7 @@ class Archive_Zip implements Archive_Interface
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            if (!Registry::getGmanager()->ftpArchiveEnd($name)) {
+            if (!Gmanager::getInstance()->ftpArchiveEnd($name)) {
                 $result = false;
                 $zip->error_string = Errors::get();
             }
@@ -83,7 +83,7 @@ class Archive_Zip implements Archive_Interface
 
         if ($result) {
             if ($chmod) {
-                Registry::getGmanager()->rechmod($name, $chmod);
+                Gmanager::getInstance()->rechmod($name, $chmod);
             }
             return Errors::message(Language::get('create_archive_true'), Errors::MESSAGE_OK);
         } else {
@@ -109,10 +109,10 @@ class Archive_Zip implements Archive_Interface
         foreach ($ext as $v) {
             $b = IOWrapper::set(Helper_System::basename($v));
             $tmp[] = $tmpFolder . '/' . $b;
-            if (Registry::getGmanager()->is_dir($v)) {
+            if (Gmanager::getInstance()->is_dir($v)) {
                 mkdir($tmpFolder . '/' . $b, 0777, true);
             } else {
-                file_put_contents($tmpFolder . '/' . $b, Registry::getGmanager()->file_get_contents($v));
+                file_put_contents($tmpFolder . '/' . $b, Gmanager::getInstance()->file_get_contents($v));
             }
         }
 
@@ -121,7 +121,7 @@ class Archive_Zip implements Archive_Interface
         $add = $zip->add($tmp, PCLZIP_OPT_ADD_PATH, IOWrapper::set($dir), PCLZIP_OPT_REMOVE_PATH, $tmpFolder);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            if (!Registry::getGmanager()->ftpArchiveEnd($current)) {
+            if (!Gmanager::getInstance()->ftpArchiveEnd($current)) {
                 $add = false;
                 $zip->error_string = Errors::get();
             }
@@ -161,7 +161,7 @@ class Archive_Zip implements Archive_Interface
 
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($current);
         }
 
         if ($list != 0) {
@@ -190,7 +190,7 @@ class Archive_Zip implements Archive_Interface
         } else {
             $fl = array();
             foreach ($ext as $f) {
-                if (Registry::getGmanager()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
+                if (Gmanager::getInstance()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
                     $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
                 } else {
                     $fl[] = $f;
@@ -221,20 +221,20 @@ class Archive_Zip implements Archive_Interface
 
         if (!$res) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
             return Errors::message(Language::get('extract_file_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->createDir($sysName);
-            Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->createDir($sysName);
+            Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($name)) {
             if ($chmod) {
-                Registry::getGmanager()->rechmod($name, $chmod);
+                Gmanager::getInstance()->rechmod($name, $chmod);
             }
             return Errors::message(Language::get('extract_file_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         } else {
@@ -260,10 +260,10 @@ class Archive_Zip implements Archive_Interface
 
         function pclzip_cb_post_extract ($p_event, &$p_header)
         {
-            if (Registry::getGmanager()->is_dir(IOWrapper::get($p_header['filename']))) {
-                Registry::getGmanager()->rechmod(IOWrapper::get($p_header['filename']), Registry::get('extractArchiveDirectoryChmod'));
+            if (Gmanager::getInstance()->is_dir(IOWrapper::get($p_header['filename']))) {
+                Gmanager::getInstance()->rechmod(IOWrapper::get($p_header['filename']), Registry::get('extractArchiveDirectoryChmod'));
             } else if (Config::get('Gmanager', 'mode') != 'FTP') {
-                Registry::getGmanager()->rechmod(IOWrapper::get($p_header['filename']), Registry::get('extractArchiveFileChmod'));
+                Gmanager::getInstance()->rechmod(IOWrapper::get($p_header['filename']), Registry::get('extractArchiveFileChmod'));
             }
             return 1;
         }
@@ -287,7 +287,7 @@ class Archive_Zip implements Archive_Interface
 
         if (!$res) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
                 rmdir($ftp_name);
             }
             return Errors::message(Language::get('extract_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
@@ -301,14 +301,14 @@ class Archive_Zip implements Archive_Interface
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->createDir($sysName, Registry::get('extractArchiveDirectoryChmod'));
-            Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, Registry::get('extractArchiveFileChmod'), Registry::get('extractArchiveDirectoryChmod'), $overwrite);
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->createDir($sysName, Registry::get('extractArchiveDirectoryChmod'));
+            Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, Registry::get('extractArchiveFileChmod'), Registry::get('extractArchiveDirectoryChmod'), $overwrite);
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($sysName)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($sysName)) {
             if ($chmod) {
-                Registry::getGmanager()->rechmod($sysName, $chmod[1]);
+                Gmanager::getInstance()->rechmod($sysName, $chmod[1]);
             }
             return Errors::message(Language::get('extract_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         } else {
@@ -334,7 +334,7 @@ class Archive_Zip implements Archive_Interface
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
         if (!$ext) {
@@ -345,7 +345,7 @@ class Archive_Zip implements Archive_Interface
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext[0]['content']));
+                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . Gmanager::getInstance()->code(trim($ext[0]['content']));
             }
         }
     }
@@ -364,7 +364,7 @@ class Archive_Zip implements Archive_Interface
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
         if (!$ext) {
@@ -404,7 +404,7 @@ class Archive_Zip implements Archive_Interface
 
         if ($zip->delete(PCLZIP_OPT_BY_NAME, $f) == 0) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
             unlink($tmp);
             return Errors::message(Language::get('fputs_file_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
@@ -421,7 +421,7 @@ class Archive_Zip implements Archive_Interface
 
         unlink($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($current);
         }
 
         if ($fl) {
@@ -449,7 +449,7 @@ class Archive_Zip implements Archive_Interface
 
         if (!$list) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {
@@ -514,7 +514,7 @@ class Archive_Zip implements Archive_Interface
             }
 
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
 
             $prop = $zip->properties();
@@ -552,7 +552,7 @@ class Archive_Zip implements Archive_Interface
             if ($f['status'] != 'ok') {
                 Helper_System::clean($tmp);
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
-                    Registry::getGmanager()->ftpArchiveEnd();
+                    Gmanager::getInstance()->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL);
                 break;
@@ -572,7 +572,7 @@ class Archive_Zip implements Archive_Interface
             } else {
                 Helper_System::clean($tmp);
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
-                    Registry::getGmanager()->ftpArchiveEnd();
+                    Gmanager::getInstance()->ftpArchiveEnd();
                 }
                 return Errors::message(Language::get('overwrite_false'), Errors::MESSAGE_FAIL);
             }
@@ -588,9 +588,9 @@ class Archive_Zip implements Archive_Interface
         if ($folder) {
             // переделать на ftp
             if ($del) {
-                $result = Registry::getGmanager()->moveFiles($tmp . '/' . $arch_name, $tmp . '/' . $name);
+                $result = Gmanager::getInstance()->moveFiles($tmp . '/' . $arch_name, $tmp . '/' . $name);
             } else {
-                $result = Registry::getGmanager()->copyFiles($tmp . '/' . $arch_name, $tmp . '/' . $name);
+                $result = Gmanager::getInstance()->copyFiles($tmp . '/' . $arch_name, $tmp . '/' . $name);
             }
         } else {
             if ($del) {
@@ -603,7 +603,7 @@ class Archive_Zip implements Archive_Interface
         if (!$result) {
             Helper_System::clean($tmp);
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
             if ($folder) {
                 if ($del) {
@@ -624,7 +624,7 @@ class Archive_Zip implements Archive_Interface
 
         Helper_System::clean($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($current);
         }
 
         if ($result) {

@@ -13,8 +13,10 @@
  */
 
 
-define('GMANAGER_START', microtime(true));
-
+if (isset($_POST['get'])) {
+    header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ? '&f=' . $_GET['f'] : ''))));
+    exit;
+}
 
 $_GET['f']          = isset($_GET['f']) ? $_GET['f'] : '';
 $_GET['go']         = isset($_GET['go']) ? $_GET['go'] : '';
@@ -29,15 +31,11 @@ if ($_GET['charset'] || $_GET['beautify']) {
     }
 }
 
-if (isset($_POST['get'])) {
-    header('Location: http://' . str_replace(array('\\', '//'), '/', $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/change.php?get=' . rawurlencode($_GET['c'] . ($_GET['f'] ? '&f=' . $_GET['f'] : ''))));
-    exit;
-} else if (isset($_POST['line_edit'])) {
+if (isset($_POST['line_edit'])) {
     $_GET['go'] = '';
 }
 
-
-require 'lib/Config.php';
+require 'bootstrap.php';
 
 
 $charset = array('', '');
@@ -48,9 +46,9 @@ if ($_GET['charset'] && $_GET['charset'] != 'default') {
     $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }
 
-Registry::getGmanager()->sendHeader();
+Gmanager::getInstance()->sendHeader();
 
-echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '<div class="w2">' . Language::get('title_edit') . '<br/></div>' . Registry::getGmanager()->head();
+echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '<div class="w2">' . Language::get('title_edit') . '<br/></div>' . Gmanager::getInstance()->head();
 
 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
@@ -62,7 +60,7 @@ switch ($_GET['go']) {
                 Registry::set('archiveDriver', 'zip');
                 $tmp = explode("\n", Archive::main()->lookFile(Registry::get('current'), $_GET['f'], true));
             } else {
-                $tmp = explode("\n", Registry::getGmanager()->file_get_contents(Registry::get('current')));
+                $tmp = explode("\n", Gmanager::getInstance()->file_get_contents(Registry::get('current')));
             }
 
 
@@ -87,7 +85,7 @@ switch ($_GET['go']) {
             Registry::set('archiveDriver', 'zip');
             echo Archive::main()->setEditFile(Registry::get('current'), $_GET['f'], $_POST['text']);
         } else {
-            echo Registry::getGmanager()->createFile(Registry::get('current'), $_POST['text'], $_POST['chmod']);
+            echo Gmanager::getInstance()->createFile(Registry::get('current'), $_POST['text'], $_POST['chmod']);
         }
         break;
 
@@ -98,19 +96,19 @@ switch ($_GET['go']) {
             $content = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
             $content = $content['text'];
         } else {
-            $content = Registry::getGmanager()->file_get_contents(Registry::get('current'));            
+            $content = Gmanager::getInstance()->file_get_contents(Registry::get('current'));
         }
 
         if (Config::get('Gmanager', 'syntax') == Config::SYNTAX_WAPINET) {
-            echo Registry::getGmanager()->syntaxWapinet($content, $charset);
+            echo Gmanager::getInstance()->syntaxWapinet($content, $charset);
         } else {
-            echo Registry::getGmanager()->syntax($content, $charset);
+            echo Gmanager::getInstance()->syntax($content, $charset);
         }
         break;
 
 
     case 'validator':
-        echo Registry::getGmanager()->validator(Registry::get('current'), $charset);
+        echo Gmanager::getInstance()->validator(Registry::get('current'), $charset);
         break;
 
 
@@ -127,9 +125,9 @@ switch ($_GET['go']) {
             $from = htmlspecialchars($_POST['from'], ENT_COMPAT);
             $to = htmlspecialchars($_POST['to'], ENT_COMPAT);
             if ($archive == 'ZIP') {
-                echo Registry::getGmanager()->zipReplace(Registry::get('current'), $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
+                echo Gmanager::getInstance()->zipReplace(Registry::get('current'), $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
             } else {
-                echo Registry::getGmanager()->replace(Registry::get('current'), $_POST['from'], $_POST['to'], isset($_POST['regexp']));
+                echo Gmanager::getInstance()->replace(Registry::get('current'), $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             }
         }
 
@@ -141,8 +139,8 @@ switch ($_GET['go']) {
             $content['text'] = htmlspecialchars($content['text'], $quotes, 'UTF-8');
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
-            $content['text'] = htmlspecialchars(Registry::getGmanager()->file_get_contents(Registry::get('current')), $quotes, 'UTF-8');
-            $content['size'] = Helper_View::formatSize(Registry::getGmanager()->size(Registry::get('current')));
+            $content['text'] = htmlspecialchars(Gmanager::getInstance()->file_get_contents(Registry::get('current')), $quotes, 'UTF-8');
+            $content['size'] = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current')));
             $content['lines'] = mb_substr_count($content['text'], "\n") + 1;
             $f = '';
         }
@@ -152,12 +150,12 @@ switch ($_GET['go']) {
         }
 
         if ($_GET['beautify']) {
-            $content['text'] = Registry::getGmanager()->beautify($content['text']);
+            $content['text'] = Gmanager::getInstance()->beautify($content['text']);
             $content['size'] = Helper_View::formatSize(strlen($content['text']));
             $content['lines'] = mb_substr_count($content['text'], "\n");
         }
 
-        $path = mb_substr(Registry::getGmanager()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));
+        $path = mb_substr(Gmanager::getInstance()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));
 
         if (Config::get('Gmanager', 'mode') == 'HTTP' && $path) {
             $http = '<div class="rb"><a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . Helper_View::getRawurl(str_replace('\\', '/', $path))) . '">' . Language::get('look') . '</a><br/></div>';
@@ -187,7 +185,7 @@ switch ($_GET['go']) {
             $edit = '<textarea name="text" rows="18" cols="64" wrap="' . (Config::get('Editor', 'wrap') ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
         }
 
-        echo '<div class="input">' . $content['lines'] . ' ' . Language::get('lines') . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . Registry::get('rCurrent') . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . Language::get('save') . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . Language::get('chmod') . ' <input onkeypress="return Gmanager.number(event)" type="text" name="chmod" value="' . Registry::getGmanager()->lookChmod(Registry::get('current')) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . Language::get('get') . '"/></div></form><a href="edit.php?lineEditor=0&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('basic_editor') . '</a> / <a href="edit.php?lineEditor=1&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('line_editor') . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . Registry::get('rCurrent') . $f . '" method="post"><div>' . Language::get('replace_from') . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . Language::get('replace_to') . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" id="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/><label for="regexp">' . Language::get('regexp') . '</label><br/><input type="submit" value="' . Language::get('replace') . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . Registry::get('rCurrent') . $f . '&amp;' . $full_charset . 'go=syntax">' . Language::get('syntax') . '</a><br/></div>';
+        echo '<div class="input">' . $content['lines'] . ' ' . Language::get('lines') . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . Registry::get('rCurrent') . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . Language::get('save') . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . Language::get('chmod') . ' <input onkeypress="return Gmanager.number(event)" type="text" name="chmod" value="' . Gmanager::getInstance()->lookChmod(Registry::get('current')) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . Language::get('get') . '"/></div></form><a href="edit.php?lineEditor=0&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('basic_editor') . '</a> / <a href="edit.php?lineEditor=1&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('line_editor') . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . Registry::get('rCurrent') . $f . '" method="post"><div>' . Language::get('replace_from') . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . Language::get('replace_to') . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" id="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/><label for="regexp">' . Language::get('regexp') . '</label><br/><input type="submit" value="' . Language::get('replace') . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . Registry::get('rCurrent') . $f . '&amp;' . $full_charset . 'go=syntax">' . Language::get('syntax') . '</a><br/></div>';
 
 
         if ($archive == '' && extension_loaded('xml')) {

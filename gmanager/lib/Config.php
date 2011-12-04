@@ -53,22 +53,12 @@ class Config
         ini_set('error_log', Errors::getTraceFile());
         set_error_handler('Errors::errorHandler');
 
-        if (self::get('Gmanager', 'mode') === 'FTP') {
-            Registry::setGmanager(new FTP(
-                self::get('FTP', 'user'),
-                self::get('FTP', 'pass'),
-                self::get('FTP', 'host'),
-                self::get('FTP', 'port')
-            ));
-        } else {
-            Registry::setGmanager(new HTTP);
-        }
-        Registry::getGmanager()->main();
-
 
         if (self::get('Auth', 'enable')) {
             Auth::main();
         }
+
+        Gmanager::getInstance()->init();
     }
 
 
@@ -104,7 +94,7 @@ class Config
      */
     public static function getTemp ()
     {
-        return realpath(dirname(__FILE__) . '/../data');
+        return GMANAGER_PATH . DIRECTORY_SEPARATOR . 'data';
     }
 
 
@@ -131,26 +121,6 @@ class Config
     {
         return '0.8b';
     }
-}
-
-
-new Config(dirname(__FILE__) . '/../config.ini');
-
-set_include_path(
-    get_include_path() . PATH_SEPARATOR .
-    dirname(__FILE__) . PATH_SEPARATOR .
-    dirname(__FILE__) . DIRECTORY_SEPARATOR . 'PEAR'
-);
-
-
-/**
- * Autoloader
- *
- * @param string $class
- */
-function __autoload ($class)
-{
-    require dirname(__FILE__) . '/' . str_replace('_', '/', $class) . '.php';
 }
 
 ?>

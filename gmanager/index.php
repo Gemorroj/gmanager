@@ -13,15 +13,13 @@
  */
 
 
-define('GMANAGER_START', microtime(true));
-
-require 'lib/Config.php';
+require 'bootstrap.php';
 
 
 if (Registry::get('current') == '.') {
-    Registry::set('current', Registry::getGmanager()->getcwd() . '/');
-    Registry::set('hCurrent', htmlspecialchars(Registry::getGmanager()->getcwd(), ENT_COMPAT) . '/');
-    Registry::set('rCurrent', Helper_View::getRawurl(Registry::getGmanager()->getcwd()));
+    Registry::set('current', Gmanager::getInstance()->getcwd() . '/');
+    Registry::set('hCurrent', htmlspecialchars(Gmanager::getInstance()->getcwd(), ENT_COMPAT) . '/');
+    Registry::set('rCurrent', Helper_View::getRawurl(Gmanager::getInstance()->getcwd()));
 }
 
 
@@ -35,9 +33,9 @@ $f = 0;
 $if = isset($_GET['f']);
 $ia = isset($_GET['add_archive']);
 
-Registry::getGmanager()->sendHeader();
+Gmanager::getInstance()->sendHeader();
 
-echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '<div class="w2">' . Language::get('title_index') . '<br/></div>' . Registry::getGmanager()->head() . Registry::getGmanager()->langJS();
+echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '<div class="w2">' . Language::get('title_index') . '<br/></div>' . Gmanager::getInstance()->head() . Gmanager::getInstance()->langJS();
 
 
 if (Config::get('Gmanager', 'addressBar')) {
@@ -121,13 +119,13 @@ if ($archive == 'ZIP') {
         $f = 1;
     }
 } else if ($archive == 'GZ') {
-    echo Registry::getGmanager()->gz(Registry::get('current')) . '<div class="ch"><form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . Language::get('extract_archive') . '"/></div></form></div>';
+    echo Gmanager::getInstance()->gz(Registry::get('current')) . '<div class="ch"><form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . Language::get('extract_archive') . '"/></div></form></div>';
     $if = true;
 } else {
-    echo Registry::getGmanager()->look(Registry::get('current'), $itype, $idown);
+    echo Gmanager::getInstance()->look(Registry::get('current'), $itype, $idown);
 }
 
-if (Registry::getGmanager()->file_exists(Registry::get('current')) || Registry::get('currentType') == 'link') {
+if (Gmanager::getInstance()->file_exists(Registry::get('current')) || Registry::get('currentType') == 'link') {
     if ($archive) {
         $d = Helper_View::getRawurl(dirname(Registry::get('current')));
         $found = '<div class="rb">' . Language::get('create') . ' <a href="change.php?go=create_file&amp;c=' . $d . '">' . Language::get('file') . '</a> / <a href="change.php?go=create_dir&amp;c=' . $d . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="change.php?go=upload&amp;c=' . $d . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="change.php?go=mod&amp;c=' . $d . '">' . Language::get('mod') . '</a><br/></div>';

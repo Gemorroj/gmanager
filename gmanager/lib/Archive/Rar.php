@@ -23,7 +23,7 @@ class Archive_Rar implements Archive_Interface
      */
     private function _rarOpen($file)
     {
-        return rar_open(Config::get('Gmanager', 'mode') == 'FTP' ? Registry::getGmanager()->ftpArchiveStart($file) : IOWrapper::set($file));
+        return rar_open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($file) : IOWrapper::set($file));
     }
 
 
@@ -85,7 +85,7 @@ class Archive_Rar implements Archive_Interface
         $tmp = array();
         $err = '';
         foreach ($ext as $f) {
-            if (Registry::getGmanager()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
+            if (Gmanager::getInstance()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
                 if ($overwrite) {
                     unlink($name . '/' . $f);
                     $tmp[] = $f;
@@ -117,7 +117,7 @@ class Archive_Rar implements Archive_Interface
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                 }
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
-            } else if (!Registry::getGmanager()->file_exists((Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
+            } else if (!Gmanager::getInstance()->file_exists((Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
                 // fix bug in rar extension
                 // method extract alredy returned "true"
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
@@ -125,14 +125,14 @@ class Archive_Rar implements Archive_Interface
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->createDir($sysName);
-            Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->createDir($sysName);
+            Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($name)) {
             if ($chmod) {
-                Registry::getGmanager()->rechmod($name, $chmod);
+                Gmanager::getInstance()->rechmod($name, $chmod);
             }
             return Errors::message(Language::get('extract_file_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         } else {
@@ -165,34 +165,34 @@ class Archive_Rar implements Archive_Interface
         foreach (rar_list($rar) as $f) {
             $n = $f->getName();
 
-            if (!$overwrite && Registry::getGmanager()->file_exists($name . '/' . IOWrapper::get($n))) {
+            if (!$overwrite && Gmanager::getInstance()->file_exists($name . '/' . IOWrapper::get($n))) {
                 $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
             } else {
                 $entry = rar_entry_get($rar, $n);
                 if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
                     if (Config::get('Gmanager', 'mode') == 'FTP') {
-                        Registry::getGmanager()->ftpArchiveEnd();
+                        Gmanager::getInstance()->ftpArchiveEnd();
                         rmdir($ftp_name);
                     }
                     $err .= str_replace('%file%', htmlspecialchars($n, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
                 }
             }
 
-            if (Registry::getGmanager()->is_dir($name . '/' . IOWrapper::get($n))) {
-                Registry::getGmanager()->rechmod($name . '/' . IOWrapper::get($n), $chmod[1]);
+            if (Gmanager::getInstance()->is_dir($name . '/' . IOWrapper::get($n))) {
+                Gmanager::getInstance()->rechmod($name . '/' . IOWrapper::get($n), $chmod[1]);
             } else {
-                Registry::getGmanager()->rechmod($name . '/' . IOWrapper::get($n), $chmod[0]);
+                Gmanager::getInstance()->rechmod($name . '/' . IOWrapper::get($n), $chmod[0]);
             }
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->createDir($sysName, $chmod[1]);
-            Registry::getGmanager()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->createDir($sysName, $chmod[1]);
+            Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP' || Registry::getGmanager()->is_dir($name)) {
-            Registry::getGmanager()->rechmod($name, $chmod[1]);
+        if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($name)) {
+            Gmanager::getInstance()->rechmod($name, $chmod[1]);
             return Errors::message(Language::get('extract_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
         } else {
             return Errors::message(Language::get('extract_false'), Errors::MESSAGE_EMAIL);
@@ -221,7 +221,7 @@ class Archive_Rar implements Archive_Interface
         unlink($tmp);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Registry::getGmanager()->ftpArchiveEnd();
+            Gmanager::getInstance()->ftpArchiveEnd();
         }
 
         if (!$ext) {
@@ -230,7 +230,7 @@ class Archive_Rar implements Archive_Interface
             if ($str) {
                 return $ext;
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . Registry::getGmanager()->code(trim($ext));
+                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . Gmanager::getInstance()->code(trim($ext));
             }
         }
     }
@@ -293,7 +293,7 @@ class Archive_Rar implements Archive_Interface
 
         if (!$list = rar_list($rar)) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
         } else {
@@ -359,7 +359,7 @@ class Archive_Rar implements Archive_Interface
             }
 
             if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Registry::getGmanager()->ftpArchiveEnd();
+                Gmanager::getInstance()->ftpArchiveEnd();
             }
 
             return $l;
