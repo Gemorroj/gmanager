@@ -44,7 +44,7 @@ var Gmanager = {
         var r;
 
         if ("setSelectionRange" in t) {
-            if (window.opera !== undefined) {
+            if ("opera" in window) {
                 t.setSelectionRange(n + 1, n + 1);
             } else {
                 t.setSelectionRange(n, n);
@@ -72,7 +72,7 @@ var Gmanager = {
         }
     },
     checkForm: function (f, n) {
-        if (f[n] === undefined) {
+        if (typeof f[n] === "undefined") {
             return false;
         } else if (f[n] instanceof HTMLInputElement) {
             if (f[n].checked === false) {
@@ -128,7 +128,7 @@ var Gmanager = {
         var tb = tr.parentNode,
             f;
 
-        if (this.id === undefined) {
+        if (typeof this.id === "undefined") {
             this.id = tb.lastChild.getAttribute("id").substring(1);
         }
         this.id++;
