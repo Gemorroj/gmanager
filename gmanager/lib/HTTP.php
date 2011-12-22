@@ -252,6 +252,7 @@ class HTTP extends Gmanager
     /**
      * readlink
      * 
+     * @link http://www.php.net/manual/ru/function.readlink.php for Windows
      * @param string $link
      * @return array
      */
