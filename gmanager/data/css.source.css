@@ -1,4 +1,4 @@
-body{
+body {
     background-color: #f7f7f7;
     color: #000000;
     font-size: 12px;
@@ -8,19 +8,20 @@ body{
     font-family: "Times New Roman", serif;
 }
 
-form{
+form {
     margin: 0;
 }
 
-textarea{
+textarea {
     resize: both;
 }
 
-input[type="text"], input[type="file"]{
+input[type="text"], input[type="file"] {
     resize: horizontal;
+    overflow: hidden !important;
 }
 
-textarea, select[multiple="true"], input[type="text"], input[type="file"]{
+textarea, select[multiple="true"], input[type="text"], input[type="file"] {
     overflow: auto;
     width: 85%;
     margin: 2pt 1%;
@@ -30,19 +31,19 @@ textarea, select[multiple="true"], input[type="text"], input[type="file"]{
     border: 1px solid #000000;
 }
 
-input[type="text"]:hover, input[type="file"]:hover{
+input[type="text"]:hover, input[type="file"]:hover {
     background-color: #aaccff;
 }
 
-legend input[type="checkbox"]{
+legend input[type="checkbox"] {
     margin: 0 !important;
 }
 
-input[type="checkbox"]:checked{
+input[type="checkbox"]:checked {
     background-color: #007090;
 }
 
-table{
+table {
     border-spacing: 1px;
     border-radius: 3pt;
     width: 100%;
@@ -50,48 +51,48 @@ table{
     font-size: 11px;
 }
 
-tr:hover{
+tr:hover {
     background-color: #90bbdd;
 }
 
-th{
+th {
     border-radius: 5pt;
     background-color: #777777;
 }
 
-td{
+td {
     margin: 0;
     padding: 0 0 0 1px;
 }
 
-label{
+label {
     white-space: nowrap;
     display: inline;
 }
 
-a{
+a {
     color: #000033;
     text-decoration: none;
 }
 
-a:hover{
+a:hover {
     text-decoration: underline;
     color: #aa0000;
 }
 
-a:active{
+a:active {
     color: #000000;
 }
 
-.input textarea, .input select, .input input[type="checkbox"], .input input[type="radio"]{
+.input textarea, .input select, .input input[type="checkbox"], .input input[type="radio"] {
     margin: 2pt 1%;
 }
 
-.check{
+.check {
     text-align: center;
 }
 
-.w{
+.w {
     border-radius: 3pt;
     background-color: #007090;
     text-align: center;
@@ -101,15 +102,15 @@ a:active{
     border: 1px solid #000033;
 }
 
-.w a{
+.w a {
     color: #ffffff;
 }
 
-.w a:hover{
+.w a:hover {
     color: #f0f0f0;
 }
 
-.w2{
+.w2 {
     text-shadow: 1pt 1pt 1pt #bbbbbb;
     border-radius: 10pt;
     text-align: center;
@@ -120,7 +121,7 @@ a:active{
     color: #ffffff;
 }
 
-.telo{
+.telo {
     border-radius: 3pt;
     background-color: #007090;
     color: #ffffff;
@@ -128,7 +129,7 @@ a:active{
     margin: 1px;
 }
 
-.input{
+.input {
     background-color: #aaaaaa;
     color: #000000;
     font-size: 11px;
@@ -136,15 +137,15 @@ a:active{
     padding: 0 0 0 1%;
 }
 
-.red{
+.red {
     color: #ff0000;
 }
 
-.green{
+.green {
     color: #00bb00;
 }
 
-.border{
+.border {
     white-space: nowrap;
     border-radius: 3pt;
     background-color: #ebebeb;
@@ -154,7 +155,7 @@ a:active{
     padding: 1px 4pt 1px 2pt;
 }
 
-.border2{
+.border2 {
     border-radius: 3pt;
     background-color: #dddddd;
     color: #cc0000;
@@ -163,7 +164,7 @@ a:active{
     padding: 1px 4pt 1px 2pt;
 }
 
-.rb{
+.rb {
     border-radius: 3pt;
     text-align: right;
     background-color: #ebebeb;
@@ -173,14 +174,14 @@ a:active{
     padding: 1px 4pt 1px 0;
 }
 
-.ch{
+.ch {
     white-space: nowrap;
     margin: 2px 0 2px 1%;
     color: #cc0000;
     font-weight: bold;
 }
 
-.code{
+.code {
     background-color: #ebebeb;
     font-weight: bold;
     padding: 2pt 1pt 2pt 3pt;
@@ -189,19 +190,19 @@ a:active{
     overflow: auto;
 }
 
-.true_code{
+.true_code {
     background-color: #000000;
     color: #ffffff;
 }
 
-.fail_code{
+.fail_code {
     background-color: #000000;
     color: #ff0000;
     font-weight: bold;
     margin: 2px;
 }
 
-.submit{
+.submit {
     background-color: #ffffff;
     color: #000000;
     font-weight: bold;
@@ -210,50 +211,54 @@ a:active{
     border: 1px solid #0077a0;
 }
 
-.submit a{
+.submit a {
     color: #000000;
 }
 
-.submit a:hover{
+.submit a:hover {
     color: #333333;
     background-color: #f0f0f0;
 }
 
-.submit a:visited{
+.submit a:visited {
     color: #111111;
 }
 
-.edit input[type="text"], textarea{
+fieldset {
+    border-radius: 3pt;
+}
+
+.edit input[type="text"], textarea {
     margin: 0 0 0 2pt;
     width: 93%;
     font-family: "Courier New", monospace;
 }
 
-div.bar{
+div.bar {
     white-space: nowrap;
 }
 
-div.bar input[type="text"]{
+div.bar input[type="text"] {
     width: 86%;
 }
 
-.pedit{
+.pedit {
     border-radius: 3pt;
     background-color: #ebebeb;
     color: #cc0000;
     font-weight: bold;
 }
 
-.pedit input[type="text"]{
+.pedit input[type="text"] {
     width: 99.5%;
 }
 
-.pedit_r{
+.pedit_r {
     width: 36px;
     white-space: nowrap;
 }
 
-input.pinput{
+input.pinput {
     -wap-input-format:'*N';
     width: 2%;
     min-width: 20px;

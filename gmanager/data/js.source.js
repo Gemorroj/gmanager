@@ -1,4 +1,5 @@
 var Gmanager = {
+    _editId: null,
     _getKey: function (e) {
         if (e.which == null && (e.charCode != null || e.keyCode != null)) {
             e.which = e.charCode != null ? e.charCode : e.keyCode;
@@ -101,59 +102,59 @@ var Gmanager = {
             this._insAtCaret(o, decodeURIComponent(p));
         }
     },
-    files: function (t) {
-        var f = document.createElement("input"),
-            fl = document.getElementById("fl"),
-            fli, flb, el1, el2;
+    filesDel: function () {
+        var fl = document.getElementById("fl");
+        var flb = fl.lastChild;
+        var fli = flb.previousSibling;
+
+        if (fli.previousSibling !== null) {
+            flb.parentNode.removeChild(flb);
+            fli.parentNode.removeChild(fli);
+        }
+
+    },
+    filesAdd: function () {
+        var fl = document.getElementById("fl"),
+            f = document.createElement("input");
 
         f.setAttribute("name", "f[]");
         f.setAttribute("type", "file");
 
-        if (t === 1) {
-            fl.insertBefore(f, null);
-            fl.appendChild(document.createElement("br"));
-        } else {
-            fli = fl.getElementsByTagName("input");
-            flb = fl.getElementsByTagName("br");
-            if (fli.length > 0) {
-                el1 = fli[fli.length - 1];
-                el1.parentNode.removeChild(el1);
-                el2 = flb[flb.length - 1];
-                el2.parentNode.removeChild(el2);
-            }
-        }
+        fl.insertBefore(f, null);
+        fl.appendChild(document.createElement("br"));
     },
-    edit: function (t, n) {
-        var tr = n.parentNode;
+    _setEditId: function () {
+        if (this._editId === null) {
+            this._editId = document.getElementById("pedit").lastChild.getAttribute("id").substring(1);
+        }
+        this._editId++;
+    },
+    editAdd: function (n) {
+        this._setEditId();
+
+        var tr = n.parentNode.parentNode;
         var tb = tr.parentNode,
-            f;
-
-        if (typeof this.id === "undefined") {
-            this.id = tb.lastChild.getAttribute("id").substring(1);
-        }
-        this.id++;
-
-        if (t === 1) {
             f = tr.cloneNode(true);
-            f.setAttribute("id", "i" + this.id);
-            f.getElementsByTagName("input").item(0).setAttribute("value", "");
-            f.getElementsByTagName("td").item(0).innerHTML = "+";
-            tb.insertBefore(f, tr.nextSibling);
-        } else {
-            tb.removeChild(tr);
-        }
+
+        f.setAttribute("id", "i" + this._editId);
+        f.cells[0].innerHTML = "+";
+        f.cells[1].firstChild.setAttribute("value", "");
+        tb.insertBefore(f, tr.nextSibling);
+    },
+    editDel: function (n) {
+        this._setEditId();
+        n.parentNode.parentNode.parentNode.deleteRow(n.parentNode.parentNode.rowIndex);
     },
     formatCode: function (e, t) {
         var pos = this._getCaretPosition(t),
             arr, str,
-            comp = "",
-            i = 0;
+            comp = "";
 
         if ((this._getKey(e) === 13) && !(/opera mini|opera mobi/.test(window.navigator.userAgent.toLowerCase()))) {
             arr = t.value.substring(0, pos).split("\n");
             str = arr[arr.length - 1].split("");
 
-            for (; i < str.length; i++) {
+            for (var i = 0, l = str.length; i < l; i++) {
                 if (str[i] === " ") {
                     comp += " ";
                 } else {

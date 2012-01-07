@@ -31,7 +31,7 @@ if ($_GET['charset'] || $_GET['beautify']) {
     }
 }
 
-if (isset($_POST['line_edit'])) {
+if (isset($_POST['editorLine']) || isset($_POST['editorReplace'])) {
     $_GET['go'] = '';
 }
 
@@ -52,7 +52,7 @@ echo str_replace('%title%', Registry::get('hCurrent'), Registry::get('top')) . '
 
 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
-switch ($_GET['go']) {
+switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
     case 'save':
         if (Registry::get('lineEditor')) {
             $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
@@ -112,48 +112,51 @@ switch ($_GET['go']) {
         break;
 
 
-    case 'replace':
     default:
-        $to = $from = '';
-
         if (Registry::get('currentType') != 'file') {
             echo Errors::message(Language::get('not_found'), Errors::MESSAGE_FAIL);
             break;
         }
+        $start = isset($_POST['start']) ? intval($_POST['start']) - 1 : 0;
+        $end = isset($_POST['end']) ? intval($_POST['end']) : Config::get('LineEditor', 'lines');
 
-        if ($_GET['go'] == 'replace' && isset($_POST['from']) && isset($_POST['to'])) {
-            $from = htmlspecialchars($_POST['from'], ENT_COMPAT);
-            $to = htmlspecialchars($_POST['to'], ENT_COMPAT);
+        if (isset($_POST['editorReplace']) && isset($_POST['from']) && isset($_POST['to'])) {
             if ($archive == 'ZIP') {
-                echo Gmanager::getInstance()->zipReplace(Registry::get('current'), $_GET['f'], $_POST['from'], $_POST['to'], $_POST['regexp']);
+                $data = Gmanager::getInstance()->zipReplace(Registry::get('current'), $_GET['f'], $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             } else {
-                echo Gmanager::getInstance()->replace(Registry::get('current'), $_POST['from'], $_POST['to'], isset($_POST['regexp']));
+                $data = Gmanager::getInstance()->replace(Registry::get('current'), $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             }
+            echo $data['message'];
+            unset($data['message']);
+        } else {
+            $data = array();
+            if ($archive == 'ZIP') {
+                Registry::set('archiveDriver', 'zip');
+                $archData = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
+                $data['content'] = $archData['text'];
+            } else {
+                $data['content'] = Gmanager::getInstance()->file_get_contents(Registry::get('current'));
+            }
+        }
+
+        if ($archive == 'ZIP') {
+            $f = '&amp;f=' . rawurlencode($_GET['f']);
+        } else {
+            $f = '';
+        }
+
+        if ($charset[0] && $data['content']) {
+            $data['content'] = mb_convert_encoding($data['content'], $charset[1], $charset[0]);
+        }
+
+        if ($_GET['beautify']) {
+            $data['content'] = Gmanager::getInstance()->beautify($data['content']);
         }
 
         $quotes = defined('ENT_IGNORE') ? ENT_COMPAT | ENT_IGNORE : ENT_COMPAT;
 
-        if ($archive == 'ZIP') {
-            Registry::set('archiveDriver', 'zip');
-            $content = Archive::main()->getEditFile(Registry::get('current'), $_GET['f']);
-            $content['text'] = htmlspecialchars($content['text'], $quotes, 'UTF-8');
-            $f = '&amp;f=' . rawurlencode($_GET['f']);
-        } else {
-            $content['text'] = htmlspecialchars(Gmanager::getInstance()->file_get_contents(Registry::get('current')), $quotes, 'UTF-8');
-            $content['size'] = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current')));
-            $content['lines'] = mb_substr_count($content['text'], "\n") + 1;
-            $f = '';
-        }
-
-        if ($charset[0] && $content['size'] > 0) {
-            $content['text'] = mb_convert_encoding($content['text'], $charset[1], $charset[0]);
-        }
-
-        if ($_GET['beautify']) {
-            $content['text'] = Gmanager::getInstance()->beautify($content['text']);
-            $content['size'] = Helper_View::formatSize(strlen($content['text']));
-            $content['lines'] = mb_substr_count($content['text'], "\n");
-        }
+        $data['size'] = Helper_View::formatSize(strlen($data['content']));
+        $data['lines'] = mb_substr_count($data['content'], "\n") + 1;
 
         $path = mb_substr(Gmanager::getInstance()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));
 
@@ -163,29 +166,30 @@ switch ($_GET['go']) {
             $http = '';
         }
 
-        if (Registry::get('lineEditor') && $content['lines'] > Config::get('LineEditor', 'minLines')) {
-            $i = $start = isset($_REQUEST['start']) ? intval($_REQUEST['start']) - 1 : 0;
+        if (Registry::get('lineEditor') && $data['lines'] > Config::get('LineEditor', 'minLines')) {
+            $i = $start;
             $j = 0;
-            $end = isset($_REQUEST['end']) ? intval($_REQUEST['end']) : Config::get('LineEditor', 'lines');
 
-            $edit = '<table class="pedit">';
+            $edit = '<table class="pedit"><tbody id="pedit">';
 
-            foreach (array_slice(explode("\n", $content['text']), $start, $end) as $var) {
+            foreach (array_slice(explode("\n", $data['content']), $start, $end) as $var) {
                 $j++;
                 $i++;
-                $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . $var . '"/></td><td class="pedit_r"><a href="javascript:void(0);" onclick="Gmanager.edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="Gmanager.edit(0,this.parentNode);">[-]</a></td></tr>';
+                $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . htmlspecialchars($var, $quotes, 'UTF-8') . '"/></td><td class="pedit_r"><a title="' . Language::get('add') . '" href="javascript:void(0);" onclick="Gmanager.editAdd(this);">[+]</a> / <a title="' . Language::get('dl') . '" href="javascript:void(0);" onclick="Gmanager.editDel(this);">[-]</a></td></tr>';
             }
             if ($end > $i) {
                 $j++;
-                $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td class="pedit_r"><a href="javascript:void(0);" onclick="Gmanager.edit(1,this.parentNode);">[+]</a> / <a href="javascript:void(0);" onclick="Gmanager.edit(0,this.parentNode);">[-]</a></td></tr>';
+                $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td class="pedit_r"><a title="' . Language::get('add') . '" href="javascript:void(0);" onclick="Gmanager.editAdd(this);">[+]</a> / <a title="' . Language::get('dl') . '" href="javascript:void(0);" onclick="Gmanager.editDel(this);">[-]</a></td></tr>';
             }
 
-            $edit .= '</table><input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="line_edit" type="submit" value="' . Language::get('look') . '"/><br/>';
+            $edit .= '</tbody></table>';
+            $appendEdit = '<input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="editorLine" type="submit" value="' . Language::get('look') . '"/><br/>';
         } else {
-            $edit = '<textarea name="text" rows="18" cols="64" wrap="' . (Config::get('Editor', 'wrap') ? 'on' : 'off') . '">' . $content['text'] . '</textarea><br/>';
+            $edit = '<textarea name="text" rows="18" cols="64" wrap="' . (Config::get('Editor', 'wrap') ? 'on' : 'off') . '">' . htmlspecialchars($data['content'], $quotes, 'UTF-8') . '</textarea><br/>';
+            $appendEdit = '';
         }
 
-        echo '<div class="input">' . $content['lines'] . ' ' . Language::get('lines') . ' / ' . $content['size'] . '<form action="edit.php?go=save&amp;c=' . Registry::get('rCurrent') . $f . '" method="post"><div class="edit">' . $edit . '<input type="submit" value="' . Language::get('save') . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . Language::get('chmod') . ' <input onkeypress="return Gmanager.number(event)" type="text" name="chmod" value="' . Gmanager::getInstance()->lookChmod(Registry::get('current')) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . Language::get('get') . '"/></div></form><a href="edit.php?lineEditor=0&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('basic_editor') . '</a> / <a href="edit.php?lineEditor=1&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('line_editor') . '</a></div><div class="input"><form action="edit.php?go=replace&amp;c=' . Registry::get('rCurrent') . $f . '" method="post"><div>' . Language::get('replace_from') . '<br/><input type="text" name="from" value="' . $from . '" style="width:128pt;"/>' . Language::get('replace_to') . '<input type="text" name="to" value="' . $to . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" id="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/><label for="regexp">' . Language::get('regexp') . '</label><br/><input type="submit" value="' . Language::get('replace') . '"/></div></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . Registry::get('rCurrent') . $f . '&amp;' . $full_charset . 'go=syntax">' . Language::get('syntax') . '</a><br/></div>';
+        echo '<div class="input">' . $data['lines'] . ' ' . Language::get('lines') . ' / ' . $data['size'] . '<form action="edit.php?c=' . Registry::get('rCurrent') . $f . '" method="post"><div class="edit">' . $edit . '</div><fieldset class="edit">' . $appendEdit . '<input name="editorSave" type="submit" value="' . Language::get('save') . '"/><select name="charset"><option value="utf-8">utf-8</option><option value="windows-1251"' . ($charset[1] == 'windows-1251'? ' selected="selected"' : '') . '>windows-1251</option><option value="iso-8859-1"' . ($charset[1] == 'iso-8859-1'? ' selected="selected"' : '') . '>iso-8859-1</option><option value="cp866"' . ($charset[1] == 'cp866'? ' selected="selected"' : '') . '>cp866</option><option value="koi8-r"' . ($charset[1] == 'koi8-r'? ' selected="selected"' : '') . '>koi8-r</option></select><br/>' . Language::get('chmod') . ' <input onkeypress="return Gmanager.number(event)" type="text" name="chmod" value="' . Gmanager::getInstance()->lookChmod(Registry::get('current')) . '" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;"/><br/><input type="submit" name="get" value="' . Language::get('get') . '"/><br/><a href="edit.php?lineEditor=0&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('basic_editor') . '</a> / <a href="edit.php?lineEditor=1&amp;c=' . Registry::get('rCurrent') . $f . '">' . Language::get('line_editor') . '</a></fieldset><fieldset class="edit">' . Language::get('replace_from') . '<br/><input type="text" name="from" value="' . (isset($_POST['from']) ? htmlspecialchars($_POST['from']) : '') . '" style="width:128pt;"/>' . Language::get('replace_to') . '<input type="text" name="to" value="' . (isset($_POST['to']) ? htmlspecialchars($_POST['to']) : '') . '" style="width:128pt;"/><br/><input type="checkbox" name="regexp" id="regexp" value="1"' . (isset($_POST['regexp']) ? ' checked="checked"' : '') . '/><label for="regexp">' . Language::get('regexp') . '</label><br/><input type="submit" name="editorReplace" value="' . Language::get('replace') . '"/></fieldset></form></div>' . $http . '<div class="rb"><a href="edit.php?c=' . Registry::get('rCurrent') . $f . '&amp;' . $full_charset . 'go=syntax">' . Language::get('syntax') . '</a><br/></div>';
 
 
         if ($archive == '' && extension_loaded('xml')) {

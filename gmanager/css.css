@@ -1,1 +1,44 @@
-a{color:#003;text-decoration:none}body{background:#f7f7f7;border:3px solid #ebebeb;color:#000;font:12px "Times New Roman",serif;margin:0;padding:1px}form{margin:0}input[type="text"],input[type="file"]{resize:horizontal}label{display:inline;white-space:nowrap}legend input[type="checkbox"]{margin:0 !important}table{background:#b0b0b0;border-radius:3pt;border-spacing:1px;font-size:11px;width:100%}td{margin:0;padding:0 0 0 1px}textarea{resize:both}textarea,select[multiple="true"],input[type="text"],input[type="file"]{overflow:auto;background:#f0f0f0;border:1px solid #000;color:#000;font-family:"Courier New",serif;margin:2pt 1%;width:85%}th{background:#777;border-radius:5pt}.border{background:#ebebeb;border-bottom:1px solid #ccc;border-radius:3pt;border-top:1px solid #fff;color:#c00;padding:1px 4pt 1px 2pt;white-space:nowrap}.border2{background:#ddd;border-bottom:1px solid #ccc;border-radius:3pt;border-top:1px solid #fff;color:#c00;padding:1px 4pt 1px 2pt}.ch{color:#c00;font-weight:bold;margin:2px 0 2px 1%;white-space:nowrap}.check{text-align:center}.code{background:#ebebeb;border:1px solid #0077a0;font-weight:bold;margin:1%;overflow:auto;padding:2pt 1pt 2pt 3pt}.edit input[type="text"],textarea{font-family:"Courier New",monospace;margin:0 0 0 2pt;width:93%}.fail_code{background:#000;color:#f00;font-weight:bold;margin:2px}.green{color:#0b0}.input{background:#aaa;border:1px solid #0077a0;color:#000;font-size:11px;padding:0 0 0 1%}.input textarea,.input select,.input input[type="checkbox"],.input input[type="radio"]{margin:2pt 1%}.pedit{background:#ebebeb;border-radius:3pt;color:#c00;font-weight:bold}.pedit input[type="text"]{width:99.5%}.pedit_r{width:36px;white-space:nowrap}.rb{background:#ebebeb;border-bottom:1px solid #ccc;border-radius:3pt;border-top:1px solid #fff;color:#c00;padding:1px 4pt 1px 0;text-align:right}.red{color:#f00}.submit{background:#fff;border:1px solid #0077a0;color:#000;font-weight:bold;margin:0;padding:0 1px}.telo{background:#007090;border:1px solid #003;border-radius:3pt;color:#fff;margin:1px}.true_code{background:#000;color:#fff}.w{background:#007090;border:1px solid #003;border-radius:3pt;color:#003;font-size:11px;font-weight:bold;text-align:center}.w a{color:#fff}.w2{background:#000;border:1px solid #0077a0;border-radius:10pt;color:#fff;font-weight:bold;margin:1% 2%;text-align:center;text-shadow:1pt 1pt 1pt #bbb}.submit a:hover{background:#f0f0f0;color:#333}.submit a:visited{color:#111}.w a:hover{color:#f0f0f0}a:active,.submit a{color:#000}a:hover{color:#a00;text-decoration:underline}input[type="checkbox"]:checked{background:#007090}input[type="text"]:hover,input[type="file"]:hover{background:#acf}tr:hover{background:#90bbdd}input.pinput{-wap-input-format:'*N';width:2%;min-width:20px}div.bar{white-space:nowrap}div.bar input[type="text"]{width:86%}
+body{background-color:#f7f7f7;color:#000;font-size:12px;border:3px solid #ebebeb;font-family:"Times New Roman", serif;margin:0;padding:1px}
+form{margin:0}
+textarea{resize:both}
+input[type=text],input[type=file]{resize:horizontal;overflow:hidden!important}
+textarea,select[multiple=true],input[type=text],input[type=file]{overflow:auto;width:85%;background-color:#f0f0f0;color:#000;font-family:"Courier New", serif;border:1px solid #000;margin:2pt 1%}
+input[type=text]:hover,input[type=file]:hover{background-color:#acf}
+legend input[type=checkbox]{margin:0!important}
+input[type=checkbox]:checked{background-color:#007090}
+table{border-spacing:1px;border-radius:3pt;width:100%;background-color:#b0b0b0;font-size:11px}
+tr:hover{background-color:#90bbdd}
+th{border-radius:5pt;background-color:#777}
+td{margin:0;padding:0 0 0 1px}
+label{white-space:nowrap;display:inline}
+a{color:#003;text-decoration:none}
+a:hover{text-decoration:underline;color:#a00}
+.input textarea,.input select,.input input[type=checkbox],.input input[type=radio]{margin:2pt 1%}
+.check{text-align:center}
+.w{border-radius:3pt;background-color:#007090;text-align:center;font-weight:700;font-size:11px;color:#003;border:1px solid #003}
+.w a{color:#fff}
+.w a:hover{color:#f0f0f0}
+.w2{text-shadow:1pt 1pt 1pt #bbb;border-radius:10pt;text-align:center;font-weight:700;border:1px solid #0077a0;background-color:#000;color:#fff;margin:1% 2%}
+.telo{border-radius:3pt;background-color:#007090;color:#fff;border:1px solid #003;margin:1px}
+.input{background-color:#aaa;color:#000;font-size:11px;border:1px solid #0077a0;padding:0 0 0 1%}
+.red{color:red}
+.green{color:#0b0}
+.border{white-space:nowrap;border-radius:3pt;background-color:#ebebeb;color:#c00;border-top:1px solid #fff;border-bottom:1px solid #ccc;padding:1px 4pt 1px 2pt}
+.border2{border-radius:3pt;background-color:#ddd;color:#c00;border-top:1px solid #fff;border-bottom:1px solid #ccc;padding:1px 4pt 1px 2pt}
+.rb{border-radius:3pt;text-align:right;background-color:#ebebeb;color:#c00;border-top:1px solid #fff;border-bottom:1px solid #ccc;padding:1px 4pt 1px 0}
+.ch{white-space:nowrap;color:#c00;font-weight:700;margin:2px 0 2px 1%}
+.code{background-color:#ebebeb;font-weight:700;border:1px solid #0077a0;overflow:auto;margin:1%;padding:2pt 1pt 2pt 3pt}
+.true_code{background-color:#000;color:#fff}
+.fail_code{background-color:#000;color:red;font-weight:700;margin:2px}
+.submit{background-color:#fff;color:#000;font-weight:700;border:1px solid #0077a0;margin:0;padding:0 1px}
+.submit a:hover{color:#333;background-color:#f0f0f0}
+.submit a:visited{color:#111}
+fieldset{border-radius:3pt}
+.edit input[type=text],textarea{width:93%;font-family:"Courier New", monospace;margin:0 0 0 2pt}
+div.bar{white-space:nowrap}
+div.bar input[type=text]{width:86%}
+.pedit{border-radius:3pt;background-color:#ebebeb;color:#c00;font-weight:700}
+.pedit input[type=text]{width:99.5%}
+.pedit_r{width:36px;white-space:nowrap}
+input.pinput{-wap-input-format:'*N';width:2%;min-width:20px}
+a:active,.submit a{color:#000}

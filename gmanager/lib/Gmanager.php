@@ -632,8 +632,8 @@ abstract class Gmanager
     /**
      * rechmod
      * 
-     * @param string $current
-     * @param mixed  $chmod
+     * @param string     $current
+     * @param int|string $chmod
      * @return string
      */
     public function rechmod ($current = '', $chmod = 0755)
@@ -1217,53 +1217,63 @@ abstract class Gmanager
 
 
     /**
+     * _replace
+     *
+     * @param string $content
+     * @param string $from
+     * @param string $to
+     * @param bool   $regexp
+     * @return array          array('message' => '', 'content' => '')
+     */
+    private function _replace ($content = '', $from = '', $to = '', $regexp = false)
+    {
+        $output = array(
+            'content' => $content,
+            'message' => ''
+        );
+
+        if ($from == '') {
+            $output['message'] = Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
+        } else {
+            if ($regexp) {
+                $count = preg_match_all('/' . str_replace('/', '\/', $from) . '/', $content, $match);
+                if ($count === false) {
+                    $output['message'] = Errors::message(Language::get('regexp_error'), Errors::MESSAGE_FAIL);
+                } else {
+                    $output['message'] = Errors::message(Language::get('replace_true') . $count, Errors::MESSAGE_OK);
+                    $output['content'] = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $content);
+                }
+            } else {
+                $all = mb_substr_count($content, $from);
+                $output['message'] = Errors::message(Language::get('replace_true') . $all, Errors::MESSAGE_OK);
+
+                if ($all) {
+                    $output['content'] = str_replace($from, $to, $content);
+                }
+            }
+        }
+
+        return $output;
+    }
+
+
+    /**
      * replace
      * 
      * @param string $current
      * @param string $from
      * @param string $to
      * @param bool   $regexp
-     * @return string
+     * @return array          array('message' => '', 'content' => '')
      */
     public function replace ($current = '', $from = '', $to = '', $regexp = false)
     {
-        if (!$from) {
-            return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
-        }
-        $c = self::$_instance->file_get_contents($current);
-
-        if ($regexp) {
-            preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
-            $all = sizeof($all[0]);
-            if (!$all) {
-                return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
-            }
-            $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
-            if ($str) {
-                if (!self::$_instance->file_put_contents($current, $str)) {
-                    return Errors::message(Language::get('replace_false_file') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
-                }
-            } else {
-                return Errors::message(Language::get('regexp_error'), Errors::MESSAGE_FAIL);
-            }
-        } else {
-            $all = mb_substr_count($c, $from);
-            if (!$all) {
-                return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
-            }
-
-            if (!self::$_instance->file_put_contents($current, str_replace($from, $to, $c))) {
-                return Errors::message(Language::get('replace_false_file') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
-            }
-
-            $str = true;
-        }
-
-        if ($str) {
-            return Errors::message(Language::get('replace_true') . $all, Errors::MESSAGE_OK);
-        } else {
-            return Errors::message(Language::get('replace_false_file'), Errors::MESSAGE_FAIL);
-        }
+        return $this->_replace(
+            self::$_instance->file_get_contents($current),
+            $from,
+            $to,
+            $regexp
+        );
     }
 
 
@@ -1275,36 +1285,19 @@ abstract class Gmanager
      * @param string $from
      * @param string $to
      * @param bool   $regexp
-     * @return string
+     * @return array          array('message' => '', 'content' => '')
      */
     public function zipReplace ($current = '', $f = '', $from = '', $to = '', $regexp = false)
     {
-        if (!$from) {
-            return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
-        }
-
         Registry::set('archiveDriver', 'zip');
         $c = Archive::main()->getEditFile($current, $f);
-        $c = $c['text'];
 
-        if ($regexp) {
-            preg_match_all('/' . str_replace('/', '\/', $from) . '/', $c, $all);
-            if (!sizeof($all[0])) {
-                return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
-            }
-            $str = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $c);
-            if ($str) {
-                return Archive::main()->setEditFile($current, $f, $str);
-            } else {
-                return Errors::message(Language::get('regexp_error'), Errors::MESSAGE_FAIL);
-            }
-        } else {
-            if (!mb_substr_count($c, $from)) {
-                return Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
-            }
-
-            return Archive::main()->setEditFile($current, $f, str_replace($from, $to, $c));
-        }
+        return $this->_replace(
+            $c['text'],
+            $from,
+            $to,
+            $regexp
+        );
     }
 
 
