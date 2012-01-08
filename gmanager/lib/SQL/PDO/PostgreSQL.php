@@ -62,7 +62,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
      */
     public function installer ($host = null, $name = null, $pass = null, $db = '', $charset = null, $sql = '')
     {
-        if (!$sql || !$query = SQL::parser($sql)) {
+        if (!$sql || !($query = SQL::parser($sql))) {
             return '';
         }
 

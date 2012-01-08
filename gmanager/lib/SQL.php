@@ -15,42 +15,76 @@
 
 class SQL
 {
+    /**
+     * Database
+     *
+     * @const string
+     */
     const DB_MYSQL      = 'mysql';
     const DB_POSTGRESQL = 'postgresql';
     const DB_SQLITE     = 'sqlite';
 
 
+    private $_db;
+    private $_force = false;
+
+
+    /**
+     * setDb
+     *
+     * @param string $db
+     * @return SQL
+     */
+    public function setDb ($db)
+    {
+        $this->_db = $db;
+        return $this;
+    }
+
+
+    /**
+     * setForce
+     *
+     * @param bool $force
+     * @return SQL
+     */
+    public function setForce ($force = false)
+    {
+        $this->_force = $force;
+        return $this;
+    }
+
+
     /**
      * factory
-     * 
-     * @param  bool $force
+     *
      * @return SQL_PDO_MySQL|SQL_MySQLi|SQL_MySQL|SQL_PDO_PostgreSQL|SQL_PostgreSQL|SQL_PDO_SQLite|null
      */
-    public static function factory ($force = false)
+    public function factory ()
     {
-        switch (Registry::get('sqlDb')) {
+        switch ($this->_db) {
             case self::DB_MYSQL:
-                if ($force || extension_loaded('pdo_mysql')) {
+                if ($this->_force || extension_loaded('pdo_mysql')) {
                     return new SQL_PDO_MySQL;
-                } else if ($force || extension_loaded('mysqli')) {
+                } else if ($this->_force || extension_loaded('mysqli')) {
                     return new SQL_MySQLi;
-                } else if ($force || extension_loaded('mysql')) {
+                } else if ($this->_force || extension_loaded('mysql')) {
                     return new SQL_MySQL;
                 }
                 break;
 
 
             case self::DB_POSTGRESQL:
-                if ($force || extension_loaded('pdo_pgsql')) {
+                if ($this->_force || extension_loaded('pdo_pgsql')) {
                     return new SQL_PDO_PostgreSQL;
-                } else if ($force || extension_loaded('pgsql')) {
+                } else if ($this->_force || extension_loaded('pgsql')) {
                     return new SQL_PostgreSQL;
                 }
                 break;
 
 
             case self::DB_SQLITE:
-                if ($force || extension_loaded('pdo_sqlite')) {
+                if ($this->_force || extension_loaded('pdo_sqlite')) {
                     return new SQL_PDO_SQLite;
                 }
                 break;
