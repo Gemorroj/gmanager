@@ -1223,9 +1223,10 @@ abstract class Gmanager
      * @param string $from
      * @param string $to
      * @param bool   $regexp
+     * @param bool   $caseLess
      * @return array          array('message' => '', 'content' => '')
      */
-    private function _replace ($content = '', $from = '', $to = '', $regexp = false)
+    private function _replace ($content = '', $from = '', $to = '', $regexp = false, $caseLess = true)
     {
         $output = array(
             'content' => $content,
@@ -1235,21 +1236,15 @@ abstract class Gmanager
         if ($from == '') {
             $output['message'] = Helper_View::message(Language::get('replace_false_str'), Helper_View::MESSAGE_ERROR);
         } else {
-            if ($regexp) {
-                $out = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $content, -1, $count);
-                if ($out === null || preg_last_error() !== PREG_NO_ERROR) {
-                    $output['message'] = Helper_View::message(Language::get('regexp_error'), Helper_View::MESSAGE_ERROR);
-                } else {
-                    $output['message'] = Helper_View::message(Language::get('replace_true') . $count, Helper_View::MESSAGE_SUCCESS);
-                    $output['content'] = $out;
-                }
-            } else {
-                $all = mb_substr_count($content, $from);
-                $output['message'] = Helper_View::message(Language::get('replace_true') . $all, Helper_View::MESSAGE_SUCCESS);
+            $pattern = '/' . ($regexp ? str_replace('/', '\/', $from) : preg_quote($from, '/')) . '/';
+            $pattern = $caseLess ? $pattern : $pattern . 'i';
 
-                if ($all) {
-                    $output['content'] = str_replace($from, $to, $content);
-                }
+            $out = preg_replace($pattern, $to, $content, -1, $count);
+            if ($out === null || preg_last_error() !== PREG_NO_ERROR) {
+                $output['message'] = Helper_View::message(Language::get('regexp_error'), Helper_View::MESSAGE_ERROR);
+            } else {
+                $output['message'] = Helper_View::message(Language::get('replace_true') . $count, Helper_View::MESSAGE_SUCCESS);
+                $output['content'] = $out;
             }
         }
 
@@ -1264,30 +1259,33 @@ abstract class Gmanager
      * @param string $from
      * @param string $to
      * @param bool   $regexp
+     * @param bool   $caseLess
      * @return array          array('message' => '', 'content' => '')
      */
-    public function replace ($current = '', $from = '', $to = '', $regexp = false)
+    public function replace ($current = '', $from = '', $to = '', $regexp = false, $caseLess = true)
     {
         return $this->_replace(
             self::$_instance->file_get_contents($current),
             $from,
             $to,
-            $regexp
+            $regexp,
+            $caseLess
         );
     }
 
 
     /**
-     * zipReplace
+     * replaceZip
      * 
      * @param string $current
      * @param string $f
      * @param string $from
      * @param string $to
      * @param bool   $regexp
+     * @param bool   $caseLess
      * @return array          array('message' => '', 'content' => '')
      */
-    public function zipReplace ($current = '', $f = '', $from = '', $to = '', $regexp = false)
+    public function replaceZip ($current = '', $f = '', $from = '', $to = '', $regexp = false, $caseLess = true)
     {
         $archive = new Archive;
         $c = $archive->setFormat(Archive::FORMAT_ZIP)->setFile($current)->factory()->getEditFile($f);
@@ -1296,7 +1294,8 @@ abstract class Gmanager
             $c['text'],
             $from,
             $to,
-            $regexp
+            $regexp,
+            $caseLess
         );
     }
 
