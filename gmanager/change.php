@@ -22,17 +22,17 @@ if (isset($_GET['get']) && Gmanager::getInstance()->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
         $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_GET['get'])));
         if ($archive == 'ZIP') {
-            Registry::set('archiveDriver', 'zip');
-            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+            Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
         } else if ($archive == 'TAR') {
-            Registry::set('archiveDriver', 'tar');
-            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+            Registry::set('archiveFormat', Archive::FORMAT_TAR);
+            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
         } else if ($archive == 'BZ2') {
-            Registry::set('archiveDriver', 'tar');
-            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+            Registry::set('archiveFormat', Archive::FORMAT_BZ2);
+            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
         } else if ($archive == 'RAR') {
-            Registry::set('archiveDriver', 'rar');
-            $f = Archive::main()->lookFile($_GET['get'], $_GET['f'], true);
+            Registry::set('archiveFormat', Archive::FORMAT_RAR);
+            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
         } else {
             $f = '';
         }
@@ -120,17 +120,17 @@ switch ($_GET['go']) {
                 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
                 if ($archive == 'ZIP') {
-                    Registry::set('archiveDriver', 'zip');
-                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    Registry::set('archiveDriver', 'tar');
-                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_TAR);
+                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveDriver', 'tar');
-                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
+                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    Registry::set('archiveDriver', 'rar');
-                    echo Archive::main()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_RAR);
+                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 } else if ($archive == 'GZ') {
                     echo Gmanager::getInstance()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
@@ -148,17 +148,17 @@ switch ($_GET['go']) {
                 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
                 if ($archive == 'ZIP') {
-                    Registry::set('archiveDriver', 'zip');
-                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'TAR') {
-                    Registry::set('archiveDriver', 'tar');
-                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_TAR);
+                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveDriver', 'tar');
-                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
+                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    Registry::set('archiveDriver', 'rar');
-                    echo Archive::main()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                    Registry::set('archiveFormat', Archive::FORMAT_RAR);
+                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['gz_extract'])) {
@@ -175,9 +175,9 @@ switch ($_GET['go']) {
                 }
                 echo '<input type="submit" value="' . Language::get('create_archive') . '"/></div></form></div>';
             } else {
-                Registry::set('archiveDriver', 'zip');
+                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
-                echo Archive::main()->createArchive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
+                echo Archive::factory()->createArchive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['add_archive'])) {
             if (isset($_POST['dir'])) {
@@ -188,14 +188,14 @@ switch ($_GET['go']) {
                 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_POST['add_archive'])));
 
                 if ($archive == 'ZIP') {
-                    Registry::set('archiveDriver', 'zip');
-                    echo Archive::main()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
-                } else if ($archive == 'TAR') {
-                    Registry::set('archiveDriver', 'tar');
-                    echo Archive::main()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+                    echo Archive::factory()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                } else if ($archive == Archive::FORMAT_TAR) {
+                    Registry::set('archiveFormat', 'tar');
+                    echo Archive::factory()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveDriver', 'tar');
-                    echo Archive::main()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
+                    echo Archive::factory()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
                 }
             } else {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('add_archive_dir') . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
@@ -218,25 +218,27 @@ switch ($_GET['go']) {
                 }
             }
         } else if (isset($_POST['del_archive'])) {
-                $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
-                $_POST['check'] = array_map('rawurldecode', $_POST['check']);
+            $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
+            $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
-                if ($archive == 'ZIP') {
-                    Registry::set('archiveDriver', 'zip');
-                    foreach ($_POST['check'] as $ch) {
-                        echo Archive::main()->delFile(Registry::get('current'), $ch);
-                    }
-                } else if ($archive == 'TAR') {
-                    Registry::set('archiveDriver', 'tar');
-                    foreach ($_POST['check'] as $ch) {
-                        echo Archive::main()->delFile(Registry::get('current'), $ch);
-                    }
-                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveDriver', 'tar');
-                    foreach ($_POST['check'] as $ch) {
-                        Archive::main()->delFile(Registry::get('current'), $ch);
-                    }
+            if ($archive == 'ZIP') {
+                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+                $factory = Archive::factory();
+            } else if ($archive == 'TAR') {
+                Registry::set('archiveFormat', Archive::FORMAT_TAR);
+                $factory = Archive::factory();
+            } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
+                Registry::set('archiveFormat', Archive::FORMAT_BZ2);
+                $factory = Archive::factory();
+            } else {
+                $factory = null;
+            }
+
+            if ($factory instanceof Archive_Interface) {
+                foreach ($_POST['check'] as $ch) {
+                    $factory->delFile(Registry::get('current'), $ch);
                 }
+            }
         }
         break;
 
@@ -293,13 +295,13 @@ switch ($_GET['go']) {
             $archive = Helper_Archive::isArchive(Helper_System::getType(Registry::get('current')));
             $if = isset($_GET['f']);
             if ($if && $archive == 'ZIP') {
-                Registry::set('archiveDriver', 'zip');
-                echo Archive::main()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+                echo Archive::factory()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'TAR') {
-                Registry::set('archiveDriver', 'tar');
+                Registry::set('archiveFormat', Archive::FORMAT_TAR);
                 echo Gmanager::getInstance()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else if ($if && $archive == 'BZ2' && extension_loaded('bz2')) {
-                Registry::set('archiveDriver', 'tar');
+                Registry::set('archiveFormat', Archive::FORMAT_BZ2);
                 echo Gmanager::getInstance()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else {
                 echo Gmanager::getInstance()->frename(Registry::get('current'), $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
@@ -314,14 +316,14 @@ switch ($_GET['go']) {
 
 
     case 'del_zip_archive':
-        Registry::set('archiveDriver', 'zip');
-        echo Archive::main()->delFile($_GET['c'], $_GET['f']);
+        Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+        echo Archive::factory()->delFile($_GET['c'], $_GET['f']);
         break;
 
 
     case 'del_tar_archive':
-        Registry::set('archiveDriver', 'tar');
-        echo Archive::main()->delFile($_GET['c'], $_GET['f']);
+        Registry::set('archiveFormat', Archive::FORMAT_TAR);
+        echo Archive::factory()->delFile($_GET['c'], $_GET['f']);
         break;
 
 
@@ -421,7 +423,7 @@ switch ($_GET['go']) {
 
 
     case 'mysql':
-        Registry::set('sqlDriver', 'mysql');
+        Registry::set('sqlDb', SQL::DB_MYSQL);
         $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
         if (isset($_POST['name']) && isset($_POST['host'])) {
             if (isset($_POST['backup'])) {
@@ -448,7 +450,7 @@ switch ($_GET['go']) {
 
 
     case 'postgresql':
-        Registry::set('sqlDriver', 'postgresql');
+        Registry::set('sqlDb', SQL::DB_POSTGRESQL);
         $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
         if (isset($_POST['name']) && isset($_POST['host'])) {
             if (isset($_POST['backup'])) {
@@ -475,7 +477,7 @@ switch ($_GET['go']) {
 
 
     case 'sqlite':
-        Registry::set('sqlDriver', 'sqlite');
+        Registry::set('sqlDb', SQL::DB_SQLITE);
         $_POST['sql'] = isset($_POST['sql']) ? trim($_POST['sql']) : '';
         if (isset($_POST['db'])) {
             if (isset($_POST['backup'])) {
@@ -505,7 +507,7 @@ switch ($_GET['go']) {
 
 
     case 'sql_tables_mysql':
-        Registry::set('sqlDriver', 'mysql');
+        Registry::set('sqlDb', SQL::DB_MYSQL);
         if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_tables_mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
@@ -515,7 +517,7 @@ switch ($_GET['go']) {
 
 
     case 'sql_tables_postgresql':
-        Registry::set('sqlDriver', 'postgresql');
+        Registry::set('sqlDb', SQL::DB_POSTGRESQL);
         if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_tables_postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_user') . '<br/><input type="text" name="name"/><br/>' . Language::get('sql_pass') . '<br/><input type="text" name="pass"/><br/>' . Language::get('sql_host') . '<br/><input type="text" name="host" value="localhost"/><br/>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('charset') . '<br/><input type="text" name="charset" value="utf8"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
@@ -525,7 +527,7 @@ switch ($_GET['go']) {
 
 
     case 'sql_tables_sqlite':
-        Registry::set('sqlDriver', 'sqlite');
+        Registry::set('sqlDb', SQL::DB_SQLITE);
         if (!(isset($_POST['tables']) && Gmanager::getInstance()->is_file($_POST['tables'])) && !(isset($_FILES['f_tables']) && !$_FILES['f_tables']['error'])) {
             echo '<div class="input"><form action="change.php?go=sql_tables_sqlite&amp;c=' . Registry::get('rCurrent') . '" method="post" enctype="multipart/form-data"><div>' . Language::get('sql_db') . '<br/><input type="text" name="db"/><br/>' . Language::get('tables_file') . '<br/><input type="text" name="tables" value="' . Registry::get('hCurrent') . '" style="width:40%"/><input type="file" name="f_tables" style="width:40%"/><br/><input type="submit" value="' . Language::get('tables') . '"/></div></form></div>';
         } else {
@@ -540,7 +542,7 @@ switch ($_GET['go']) {
 
 
     case 'sql_installer_mysql':
-        Registry::set('sqlDriver', 'mysql');
+        Registry::set('sqlDb', SQL::DB_MYSQL);
         if (mb_substr(Registry::get('hCurrent'), -1) != '/') {
             $d = str_replace('\\', '/', dirname(Registry::get('hCurrent')) . '/');
         } else {
@@ -560,7 +562,7 @@ switch ($_GET['go']) {
 
 
     case 'sql_installer_postgresql':
-        Registry::set('sqlDriver', 'postgresql');
+        Registry::set('sqlDb', SQL::DB_POSTGRESQL);
         if (mb_substr(Registry::get('hCurrent'), -1) != '/') {
             $d = str_replace('\\', '/', dirname(Registry::get('hCurrent')) . '/');
         } else {
@@ -580,7 +582,7 @@ switch ($_GET['go']) {
 
 
     case 'sql_installer_sqlite':
-        Registry::set('sqlDriver', 'sqlite');
+        Registry::set('sqlDb', SQL::DB_SQLITE);
         if (mb_substr(Registry::get('hCurrent'), -1) != '/') {
             $d = str_replace('\\', '/', dirname(Registry::get('hCurrent')) . '/');
         } else {

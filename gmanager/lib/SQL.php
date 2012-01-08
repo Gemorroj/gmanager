@@ -15,16 +15,21 @@
 
 class SQL
 {
+    const DB_MYSQL      = 'mysql';
+    const DB_POSTGRESQL = 'postgresql';
+    const DB_SQLITE     = 'sqlite';
+
+
     /**
-     * main
+     * factory
      * 
      * @param  bool $force
-     * @return object|bool
+     * @return SQL_PDO_MySQL|SQL_MySQLi|SQL_MySQL|SQL_PDO_PostgreSQL|SQL_PostgreSQL|SQL_PDO_SQLite|null
      */
-    public static function main ($force = false)
+    public static function factory ($force = false)
     {
-        switch (Registry::get('sqlDriver')) {
-            case 'mysql':
+        switch (Registry::get('sqlDb')) {
+            case self::DB_MYSQL:
                 if ($force || extension_loaded('pdo_mysql')) {
                     return new SQL_PDO_MySQL;
                 } else if ($force || extension_loaded('mysqli')) {
@@ -35,7 +40,7 @@ class SQL
                 break;
 
 
-            case 'postgresql':
+            case self::DB_POSTGRESQL:
                 if ($force || extension_loaded('pdo_pgsql')) {
                     return new SQL_PDO_PostgreSQL;
                 } else if ($force || extension_loaded('pgsql')) {
@@ -44,14 +49,14 @@ class SQL
                 break;
 
 
-            case 'sqlite':
+            case self::DB_SQLITE:
                 if ($force || extension_loaded('pdo_sqlite')) {
                     return new SQL_PDO_SQLite;
                 }
                 break;
         }
 
-        return false;
+        return null;
     }
 
 

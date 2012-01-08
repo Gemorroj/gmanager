@@ -15,33 +15,40 @@
 
 class Archive
 {
+    const FORMAT_ZIP = 'zip';
+    const FORMAT_TAR = 'tar';
+    const FORMAT_BZ2 = 'bz2';
+    const FORMAT_RAR = 'rar';
+
+
     /**
-     * main
+     * factory
      *
-     * @return object|bool
+     * @return Archive_Zip|Archive_Tars|Archive_Rar|null
      */
-    public static function main ()
+    public static function factory ()
     {
-        switch (Registry::get('archiveDriver')) {
-            case 'zip':
+        switch (Registry::get('archiveFormat')) {
+            case self::FORMAT_ZIP:
                 return new Archive_Zip;
                 break;
 
 
-            case 'tar':
+            case self::FORMAT_TAR:
+            case self::FORMAT_BZ2:
                 // Archive_Tar exists =(
                 return new Archive_Tars;
                 break;
 
 
-            case 'rar':
+            case self::FORMAT_RAR:
                 if (extension_loaded('rar')) {
                     return new Archive_Rar;
                 }
                 break;
         }
 
-        return false;
+        return null;
     }
 }
 

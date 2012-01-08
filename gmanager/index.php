@@ -87,35 +87,35 @@ if (!$if) {
 }
 
 if ($archive == 'ZIP') {
-    Registry::set('archiveDriver', 'zip');
+    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
     if ($if) {
-        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
+        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
     } else {
-        echo Archive::main()->listArchive(Registry::get('current'), $idown);
+        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
         $f = 1;
     }
 } else if ($archive == 'TAR') {
-    Registry::set('archiveDriver', 'tar');
+    Registry::set('archiveFormat', Archive::FORMAT_TAR);
     if ($if) {
-        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
+        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
     } else {
-        echo Archive::main()->listArchive(Registry::get('current'), $idown);
+        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
         $f = 1;
     }
 } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-    Registry::set('archiveDriver', 'tar');
+    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
     if ($if) {
-        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
+        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
     } else {
-        echo Archive::main()->listArchive(Registry::get('current'), $idown);
+        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
         $f = 1;
     }
 } else if ($archive == 'RAR' && extension_loaded('rar')) {
-    Registry::set('archiveDriver', 'rar');
+    Registry::set('archiveFormat', Archive::FORMAT_RAR);
     if ($if) {
-        echo Archive::main()->lookFile(Registry::get('current'), $_GET['f']);
+        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
     } else {
-        echo Archive::main()->listArchive(Registry::get('current'), $idown);
+        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
         $f = 1;
     }
 } else if ($archive == 'GZ') {

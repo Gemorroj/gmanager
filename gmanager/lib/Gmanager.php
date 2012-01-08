@@ -1289,8 +1289,8 @@ abstract class Gmanager
      */
     public function zipReplace ($current = '', $f = '', $from = '', $to = '', $regexp = false)
     {
-        Registry::set('archiveDriver', 'zip');
-        $c = Archive::main()->getEditFile($current, $f);
+        Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+        $c = Archive::factory()->getEditFile($current, $f);
 
         return $this->_replace(
             $c['text'],
@@ -1400,7 +1400,7 @@ abstract class Gmanager
      */
     public function sqlInstaller ($host = '', $name = '', $pass = '', $db = '', $charset = '', $sql = '')
     {
-        $SQL = SQL::main(true);
+        $SQL = SQL::factory(true);
         if (!$SQL) {
             return '';
         }
@@ -1421,7 +1421,7 @@ abstract class Gmanager
      */
     public function sqlBackup ($host = '', $name = '', $pass = '', $db = '', $charset = '', $tables = array())
     {
-        $SQL = SQL::main();
+        $SQL = SQL::factory();
         if (!$SQL) {
             return Helper_View::message(Language::get('sql_connect_false'), Helper_View::MESSAGE_ERROR);
         } else {
@@ -1443,7 +1443,7 @@ abstract class Gmanager
      */
     public function sqlQuery ($host = '', $name = '', $pass = '', $db = '', $charset = '', $data = '')
     {
-        $SQL = SQL::main();
+        $SQL = SQL::factory();
         if (!$SQL) {
             return Helper_View::message(Language::get('sql_connect_false'), Helper_View::MESSAGE_ERROR);
         } else {

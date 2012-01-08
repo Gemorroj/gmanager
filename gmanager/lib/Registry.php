@@ -16,7 +16,6 @@
 class Registry
 {
     static private $_data = array();
-    static private $_Gmanager = null;
 
 
     /**
