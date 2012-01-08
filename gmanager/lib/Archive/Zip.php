@@ -15,35 +15,51 @@
 
 class Archive_Zip implements Archive_Interface
 {
+    private $_name;
+    private $_archive;
+
+
     /**
-     * _pclZip
-     * 
-     * @param string $file
+     * Constructor
+     *
+     * @param string $name Archive filename
+     */
+    public function __construct ($name)
+    {
+        $this->_name = $name;
+    }
+
+
+    /**
+     * Open Archive
+     *
      * @return PclZip
      */
-    private function _pclZip($file)
+    private function _open()
     {
-        return new PclZip(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($file) : IOWrapper::set($file));
+        if ($this->_archive === null) {
+            $this->_archive = new PclZip(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
+        }
+        return $this->_archive;
     }
 
 
     /**
      * createArchive
-     * 
-     * @param string $name
+     *
      * @param mixed  $chmod
      * @param array  $ext
      * @param string $comment
      * @param bool   $overwrite
      * @return string
      */
-    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive ($chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
-        if (!$overwrite && Gmanager::getInstance()->file_exists($name)) {
-            return Helper_View::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Helper_View::MESSAGE_ERROR);
+        if (!$overwrite && Gmanager::getInstance()->file_exists($this->_name)) {
+            return Helper_View::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($this->_name, ENT_NOQUOTES) . ')', Helper_View::MESSAGE_ERROR);
         }
 
-        Gmanager::getInstance()->createDir(mb_substr($name, 0, mb_strrpos($name, '/')));
+        Gmanager::getInstance()->createDir(mb_substr($this->_name, 0, mb_strrpos($this->_name, '/')));
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $temp = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
@@ -66,7 +82,7 @@ class Archive_Zip implements Archive_Interface
         }
 
         //TODO:empty directories
-        $zip = $this->_pclZip($name);
+        $zip = $this->_open();
         if ($comment != '') {
             $result = ($zip->create($ext, PCLZIP_OPT_REMOVE_PATH, IOWrapper::set($temp), PCLZIP_OPT_COMMENT, $comment) != 0);
         } else {
@@ -74,7 +90,7 @@ class Archive_Zip implements Archive_Interface
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            if (!Gmanager::getInstance()->ftpArchiveEnd($name)) {
+            if (!Gmanager::getInstance()->ftpArchiveEnd($this->_name)) {
                 $result = false;
                 $zip->error_string = Errors::get();
             }
@@ -83,7 +99,7 @@ class Archive_Zip implements Archive_Interface
 
         if ($result) {
             if ($chmod) {
-                Gmanager::getInstance()->rechmod($name, $chmod);
+                Gmanager::getInstance()->rechmod($this->_name, $chmod);
             }
             return Helper_View::message(Language::get('create_archive_true'), Helper_View::MESSAGE_SUCCESS);
         } else {
@@ -94,13 +110,12 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * addFile
-     * 
-     * @param string $current
+     *
      * @param mixed  $ext
      * @param string $dir
      * @return string
      */
-    public function addFile ($current, $ext = array(), $dir = '')
+    public function addFile ($ext = array(), $dir = '')
     {
         $tmpFolder = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
         mkdir($tmpFolder, 0777);
@@ -117,11 +132,11 @@ class Archive_Zip implements Archive_Interface
         }
 
 
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         $add = $zip->add($tmp, PCLZIP_OPT_ADD_PATH, IOWrapper::set($dir), PCLZIP_OPT_REMOVE_PATH, $tmpFolder);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            if (!Gmanager::getInstance()->ftpArchiveEnd($current)) {
+            if (!Gmanager::getInstance()->ftpArchiveEnd($this->_name)) {
                 $add = false;
                 $zip->error_string = Errors::get();
             }
@@ -138,14 +153,13 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * delFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @return string
      */
-    public function delFile ($current, $f = '')
+    public function delFile ($f = '')
     {
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         //    $comment = $zip->properties();
         //    $comment = $comment['comment'];
         //  TODO: сохранение комментариев
@@ -161,7 +175,7 @@ class Archive_Zip implements Archive_Interface
 
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Gmanager::getInstance()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($this->_name);
         }
 
         if ($list != 0) {
@@ -174,15 +188,14 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * extractFile
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param mixed  $chmod
      * @param array $ext
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current, $name = '', $chmod = '', $ext = array(), $overwrite = false)
+    public function extractFile ($name = '', $chmod = '', $ext = array(), $overwrite = false)
     {
         $err = '';
         if ($overwrite) {
@@ -206,11 +219,11 @@ class Archive_Zip implements Archive_Interface
         $sysName = IOWrapper::set($name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpZipFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         $res = $zip->extract(PCLZIP_OPT_PATH, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName, PCLZIP_OPT_BY_NAME, $fl, PCLZIP_OPT_REPLACE_NEWER);
 
         foreach ($res as $status) {
@@ -245,14 +258,13 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * extractArchive
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param array  $chmod
      * @param bool   $overwrite
      * @return string
      */
-    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
     {
         $sysName = IOWrapper::set($name);
         Registry::set('extractArchiveDirectoryChmod', $chmod[1]);
@@ -269,13 +281,13 @@ class Archive_Zip implements Archive_Interface
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
 
 
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
 
 
         if ($overwrite) {
@@ -319,18 +331,17 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * lookFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @param string $str
      * @return string
      */
-    public function lookFile ($current, $f = '', $str = null)
+    public function lookFile ($f = '', $str = null)
     {
-        $r_current = Helper_View::getRawurl($current);
+        $r_current = Helper_View::getRawurl($this->_name);
         $r_f = Helper_View::getRawurl($f);
 
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
@@ -353,14 +364,13 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * getEditFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @return array
      */
-    public function getEditFile ($current, $f = '')
+    public function getEditFile ($f = '')
     {
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         $ext = $zip->extract(PCLZIP_OPT_BY_NAME, $f, PCLZIP_OPT_EXTRACT_AS_STRING);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
@@ -377,13 +387,12 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * setEditFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @param string $text
      * @return string
      */
-    public function setEditFile ($current, $f = '', $text = '')
+    public function setEditFile ($f = '', $text = '')
     {
         Registry::set('setEditFile', $f);
 
@@ -398,7 +407,7 @@ class Archive_Zip implements Archive_Interface
         fputs($fp, $text);
         fclose($fp);
 
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         $comment = $zip->properties();
         $comment = $comment['comment'];
 
@@ -421,7 +430,7 @@ class Archive_Zip implements Archive_Interface
 
         unlink($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Gmanager::getInstance()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($this->_name);
         }
 
         if ($fl) {
@@ -434,17 +443,14 @@ class Archive_Zip implements Archive_Interface
 
     /**
      * listArchive
-     * 
-     * @param string $current
+     *
+     * @todo refactoring to ListData
      * @param string $down
      * @return string
      */
-    public function listArchive ($current, $down = '')
+    public function listArchive ($down = '')
     {
-        //TODO: refactoring to ListData
-        $r_current = Helper_View::getRawurl($current);
-
-        $zip = $this->_pclZip($current);
+        $zip = $this->_open();
         $list = $zip->listContent();
 
         if (!$list) {
@@ -453,6 +459,7 @@ class Archive_Zip implements Archive_Interface
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Helper_View::message(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL) . '</td></tr>';
         } else {
+            $r_current = Helper_View::getRawurl($this->_name);
             $l = '';
 
             if ($down) {
@@ -534,17 +541,16 @@ class Archive_Zip implements Archive_Interface
     /**
      * renameFile
      *
-     * @param string $current
      * @param string $name
      * @param string $arch_name
      * @param bool   $del
      * @param bool   $overwrite
      * @return string
      */
-    public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false)
+    public function renameFile ($name, $arch_name, $del = false, $overwrite = false)
     {
         $tmp        = Config::getTemp() . '/GmanagerZip' . GMANAGER_REQUEST_TIME;
-        $zip        = $this->_pclZip($current);
+        $zip        = $this->_open();
         $folder     = '';
         $sysName    = IOWrapper::set($name);
 
@@ -624,7 +630,7 @@ class Archive_Zip implements Archive_Interface
 
         Helper_System::clean($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Gmanager::getInstance()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($this->_name);
         }
 
         if ($result) {

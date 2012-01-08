@@ -56,9 +56,9 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
     case 'save':
         if (Registry::get('lineEditor')) {
             $fill = array_fill($_POST['start'] - 1, $_POST['end'], 1);
-            if ($archive == 'ZIP') {
-                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                $tmp = explode("\n", Archive::factory()->lookFile(Registry::get('current'), $_GET['f'], true));
+            if ($archive == Archive::FORMAT_ZIP) {
+                $obj = new Archive;
+                $tmp = explode("\n", $obj->setFormat(Archive::FORMAT_ZIP)->setFile(Registry::get('current'))->factory()->lookFile($_GET['f'], true));
             } else {
                 $tmp = explode("\n", Gmanager::getInstance()->file_get_contents(Registry::get('current')));
             }
@@ -81,9 +81,9 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             $_POST['text'] = mb_convert_encoding($_POST['text'], $_POST['charset'], 'UTF-8');
         }
 
-        if ($archive == 'ZIP') {
-            Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-            echo Archive::factory()->setEditFile(Registry::get('current'), $_GET['f'], $_POST['text']);
+        if ($archive == Archive::FORMAT_ZIP) {
+            $obj = new Archive;
+            echo $obj->setFormat(Archive::FORMAT_ZIP)->setFile(Registry::get('current'))->factory()->setEditFile($_GET['f'], $_POST['text']);
         } else {
             echo Gmanager::getInstance()->createFile(Registry::get('current'), $_POST['text'], $_POST['chmod']);
         }
@@ -91,9 +91,9 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
 
 
     case 'syntax':
-        if ($archive == 'ZIP') {
-            Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-            $content = Archive::factory()->getEditFile(Registry::get('current'), $_GET['f']);
+        if ($archive == Archive::FORMAT_ZIP) {
+            $obj = new Archive;
+            $content = $obj->setFormat(Archive::FORMAT_ZIP)->setFile(Registry::get('current'))->factory()->getEditFile($_GET['f']);
             $content = $content['text'];
         } else {
             $content = Gmanager::getInstance()->file_get_contents(Registry::get('current'));
@@ -121,7 +121,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
         $end = isset($_POST['end']) ? intval($_POST['end']) : Config::get('LineEditor', 'lines');
 
         if (isset($_POST['editorReplace']) && isset($_POST['from']) && isset($_POST['to'])) {
-            if ($archive == 'ZIP') {
+            if ($archive == Archive::FORMAT_ZIP) {
                 $data = Gmanager::getInstance()->zipReplace(Registry::get('current'), $_GET['f'], $_POST['from'], $_POST['to'], isset($_POST['regexp']));
             } else {
                 $data = Gmanager::getInstance()->replace(Registry::get('current'), $_POST['from'], $_POST['to'], isset($_POST['regexp']));
@@ -130,16 +130,16 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             unset($data['message']);
         } else {
             $data = array();
-            if ($archive == 'ZIP') {
-                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                $archData = Archive::factory()->getEditFile(Registry::get('current'), $_GET['f']);
+            if ($archive == Archive::FORMAT_ZIP) {
+                $obj = new Archive;
+                $archData = $obj->setFormat(Archive::FORMAT_ZIP)->setFile(Registry::get('current'))->factory()->getEditFile($_GET['f']);
                 $data['content'] = $archData['text'];
             } else {
                 $data['content'] = Gmanager::getInstance()->file_get_contents(Registry::get('current'));
             }
         }
 
-        if ($archive == 'ZIP') {
+        if ($archive == Archive::FORMAT_ZIP) {
             $f = '&amp;f=' . rawurlencode($_GET['f']);
         } else {
             $f = '';

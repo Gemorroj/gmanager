@@ -15,29 +15,45 @@
 
 class Archive_Tars implements Archive_Interface
 {
+    private $_name;
+    private $_archive;
+
+
     /**
-     * _archiveTar
-     * 
-     * @param string $file
+     * Constructor
+     *
+     * @param string $name Archive filename
+     */
+    public function __construct ($name)
+    {
+        $this->_name = $name;
+    }
+
+
+    /**
+     * Open Archive
+     *
      * @return Archive_Tar
      */
-    private function _archiveTar($file)
+    private function _open()
     {
-        return new Archive_Tar(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($file) : IOWrapper::set($file));
+        if ($this->_archive === null) {
+            $this->_archive = new Archive_Tar(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
+        }
+        return $this->_archive;
     }
 
 
     /**
      * createArchive
-     * 
-     * @param string $name
+     *
      * @param mixed  $chmod
      * @param array  $ext
      * @param string $comment
      * @param bool   $overwrite
      * @return string
      */
-    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive ($chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
@@ -45,13 +61,12 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * addFile
-     * 
-     * @param string $current
+     *
      * @param mixed  $ext
      * @param string $dir
      * @return string
      */
-    public function addFile ($current, $ext = array(), $dir = '')
+    public function addFile ($ext = array(), $dir = '')
     {
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . GMANAGER_REQUEST_TIME . '/';
@@ -67,7 +82,7 @@ class Archive_Tars implements Archive_Interface
             unset($tmp);
         }
 
-        $tgz = $this->_archiveTar($current);
+        $tgz = $this->_open();
 
         $add = true;
         foreach ($ext as $v) {
@@ -75,7 +90,7 @@ class Archive_Tars implements Archive_Interface
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            if (!Gmanager::getInstance()->ftpArchiveEnd($current)) {
+            if (!Gmanager::getInstance()->ftpArchiveEnd($this->_name)) {
                 $add = false;
             }
             Helper_System::clean($ftp_name);
@@ -91,14 +106,13 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * delFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @return string
      */
-    public function delFile ($current, $f = '')
+    public function delFile ($f = '')
     {
-        $tgz = $this->_archiveTar($current);
+        $tgz = $this->_open();
 
         $list = $tgz->listContent();
 
@@ -115,12 +129,12 @@ class Archive_Tars implements Archive_Interface
         $tmp_name = Config::getTemp() . '/GmanagerTar' . GMANAGER_REQUEST_TIME . '/';
         $tgz->extractList($new_tar, $tmp_name);
 
-        Gmanager::getInstance()->unlink($current);
+        Gmanager::getInstance()->unlink($this->_name);
         $list = $tgz->createModify($tmp_name, '.', $tmp_name);
         Helper_System::clean($tmp_name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Gmanager::getInstance()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($this->_name);
         }
 
         if ($list) {
@@ -133,15 +147,14 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * extractFile
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param mixed  $chmod
      * @param array $ext
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current, $name = '', $chmod = '', $ext = array(), $overwrite = false)
+    public function extractFile ($name = '', $chmod = '', $ext = array(), $overwrite = false)
     {
         $tmp = array();
         $err = '';
@@ -166,11 +179,11 @@ class Archive_Tars implements Archive_Interface
         $sysName = IOWrapper::set($name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-               $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+               $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
                $ftp_name = Config::getTemp() . '/GmanagerFtpTarFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
-        $tgz = $this->_archiveTar($current);
+        $tgz = $this->_open();
 
         if (!$tgz->extractList($ext, Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
@@ -198,24 +211,23 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * extractArchive
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param array  $chmod
      * @param bool   $overwrite
      * @return string
      */
-    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
     {
         $sysName = IOWrapper::set($name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
 
-        $tgz = $this->_archiveTar($current);
+        $tgz = $this->_open();
         $extract = $tgz->listContent();
         $err = '';
 
@@ -271,15 +283,14 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * lookFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @param string $str
      * @return string
      */
-    public function lookFile ($current, $f = '', $str = null)
+    public function lookFile ($f = '', $str = null)
     {
-        $tgz = $this->_archiveTar($current);
+        $tgz = $this->_open();
         $ext = $tgz->extractInString($f);
 
         if (!$ext) {
@@ -312,12 +323,11 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * getEditFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @return array
      */
-    public function getEditFile ($current, $f = '')
+    public function getEditFile ($f = '')
     {
         return array('text' => Language::get('not_supported'), 'size' => 0, 'lines' => 0);
     }
@@ -325,13 +335,12 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * setEditFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @param string $text
      * @return string
      */
-    public function setEditFile ($current, $f = '', $text = '')
+    public function setEditFile ($f = '', $text = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR_EMAIL);
     }
@@ -339,22 +348,23 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * listArchive
-     * 
-     * @param string $current
+     *
+     * @todo refactoring to ListData
      * @param string $down
      * @return string
      */
-    public function listArchive ($current, $down = '')
+    public function listArchive ($down = '')
     {
-        $tgz = $this->_archiveTar($current);
+        $tgz = $this->_open();
+        $list = $tgz->listContent();
 
-        if (!$list = $tgz->listContent()) {
+        if (!$list) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL) . '</td></tr>';
         } else {
-            $r_current = Helper_View::getRawurl($current);
+            $r_current = Helper_View::getRawurl($this->_name);
             $l = '';
 
             if ($down) {
@@ -425,18 +435,17 @@ class Archive_Tars implements Archive_Interface
 
     /**
      * renameFile
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param string $arch_name
      * @param bool   $del
      * @param bool   $overwrite
      * @return string
      */
-    public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false)
+    public function renameFile ($name, $arch_name, $del = false, $overwrite = false)
     {
         $tmp        = Config::getTemp() . '/GmanagerTar' . GMANAGER_REQUEST_TIME;
-        $tgz        = $this->_archiveTar($current);
+        $tgz        = $this->_open();
         $sysName    = IOWrapper::set($name);
 
         $folder = '';
@@ -515,7 +524,7 @@ class Archive_Tars implements Archive_Interface
 
         Helper_System::clean($tmp);
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            Gmanager::getInstance()->ftpArchiveEnd($current);
+            Gmanager::getInstance()->ftpArchiveEnd($this->_name);
         }
 
         if ($result) {

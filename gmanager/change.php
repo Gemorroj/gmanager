@@ -21,18 +21,9 @@ $_GET['go'] = isset($_GET['go']) ? $_GET['go'] : '';
 if (isset($_GET['get']) && Gmanager::getInstance()->is_file($_GET['get'])) {
     if (isset($_GET['f'])) {
         $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_GET['get'])));
-        if ($archive == 'ZIP') {
-            Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
-        } else if ($archive == 'TAR') {
-            Registry::set('archiveFormat', Archive::FORMAT_TAR);
-            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
-        } else if ($archive == 'BZ2') {
-            Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
-        } else if ($archive == 'RAR') {
-            Registry::set('archiveFormat', Archive::FORMAT_RAR);
-            $f = Archive::factory()->lookFile($_GET['get'], $_GET['f'], true);
+        if ($archive && $archive != Archive::FORMAT_GZ) {
+            $obj = new Archive;
+            $f = $obj->setFormat($archive)->setFile($_GET['get'])->factory()->lookFile($_GET['f'], true);
         } else {
             $f = '';
         }
@@ -119,19 +110,10 @@ switch ($_GET['go']) {
             } else {
                 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
-                if ($archive == 'ZIP') {
-                    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == 'TAR') {
-                    Registry::set('archiveFormat', Archive::FORMAT_TAR);
-                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    Registry::set('archiveFormat', Archive::FORMAT_RAR);
-                    echo Archive::factory()->extractArchive(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == 'GZ') {
+                if ($archive && $archive != Archive::FORMAT_GZ) {
+                    $obj = new Archive;
+                    echo $obj->setFormat($archive)->setFile(Registry::get('current'))->factory()->extractArchive($_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
+                } else if ($archive == Archive::FORMAT_GZ) {
                     echo Gmanager::getInstance()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
             }
@@ -147,18 +129,9 @@ switch ($_GET['go']) {
 
                 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('hCurrent'))));
 
-                if ($archive == 'ZIP') {
-                    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
-                } else if ($archive == 'TAR') {
-                    Registry::set('archiveFormat', Archive::FORMAT_TAR);
-                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
-                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
-                } else if ($archive == 'RAR' && extension_loaded('rar')) {
-                    Registry::set('archiveFormat', Archive::FORMAT_RAR);
-                    echo Archive::factory()->extractFile(Registry::get('current'), $_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
+                if ($archive && $archive != Archive::FORMAT_GZ) {
+                    $obj = new Archive;
+                    echo $obj->setFormat($archive)->setFile(Registry::get('current'))->factory()->extractFile($_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 }
             }
         } else if (isset($_POST['gz_extract'])) {
@@ -175,9 +148,9 @@ switch ($_GET['go']) {
                 }
                 echo '<input type="submit" value="' . Language::get('create_archive') . '"/></div></form></div>';
             } else {
-                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
-                echo Archive::factory()->createArchive($_POST['name'], $_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
+                $obj = new Archive;
+                echo $obj->setFormat(Archive::FORMAT_ZIP)->setFile($_POST['name'])->factory()->createArchive($_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
             }
         } else if (isset($_POST['add_archive'])) {
             if (isset($_POST['dir'])) {
@@ -187,15 +160,9 @@ switch ($_GET['go']) {
 
                 $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename($_POST['add_archive'])));
 
-                if ($archive == 'ZIP') {
-                    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                    echo Archive::factory()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
-                } else if ($archive == Archive::FORMAT_TAR) {
-                    Registry::set('archiveFormat', 'tar');
-                    echo Archive::factory()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
-                } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-                    echo Archive::factory()->addFile($_POST['add_archive'], $_POST['check'], $_POST['dir']);
+                if ($archive && $archive != Archive::FORMAT_GZ && $archive != Archive::FORMAT_RAR) {
+                    $obj = new Archive;
+                    echo $obj->setFormat($archive)->setFile($_POST['add_archive'])->factory()->addFile($_POST['check'], $_POST['dir']);
                 }
             } else {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('add_archive_dir') . '<br/><input type="text" name="dir" value="./"/><br/><input name="add_archive" type="hidden" value="' . $_POST['add_archive'] . '"/>';
@@ -221,22 +188,11 @@ switch ($_GET['go']) {
             $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
             $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
-            if ($archive == 'ZIP') {
-                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                $factory = Archive::factory();
-            } else if ($archive == 'TAR') {
-                Registry::set('archiveFormat', Archive::FORMAT_TAR);
-                $factory = Archive::factory();
-            } else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-                Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-                $factory = Archive::factory();
-            } else {
-                $factory = null;
-            }
-
-            if ($factory instanceof Archive_Interface) {
+            if ($archive && $archive != Archive::FORMAT_GZ && $archive != Archive::FORMAT_RAR) {
+                $obj = new Archive;
+                $factory = $obj->setFormat($archive)->setFile($_POST['add_archive'])->factory();
                 foreach ($_POST['check'] as $ch) {
-                    $factory->delFile(Registry::get('current'), $ch);
+                    $factory->delFile($ch);
                 }
             }
         }
@@ -293,16 +249,10 @@ switch ($_GET['go']) {
     case 'rename':
         if (isset($_POST['name']) && $_POST['name'] != '') {
             $archive = Helper_Archive::isArchive(Helper_System::getType(Registry::get('current')));
-            $if = isset($_GET['f']);
-            if ($if && $archive == 'ZIP') {
-                Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-                echo Archive::factory()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
-            } else if ($if && $archive == 'TAR') {
-                Registry::set('archiveFormat', Archive::FORMAT_TAR);
-                echo Gmanager::getInstance()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
-            } else if ($if && $archive == 'BZ2' && extension_loaded('bz2')) {
-                Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-                echo Gmanager::getInstance()->renameFile(Registry::get('current'), $_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
+
+            if (isset($_GET['f']) && $archive && $archive != Archive::FORMAT_GZ && $archive != Archive::FORMAT_RAR) {
+                $obj = new Archive;
+                echo $obj->setFormat($archive)->setFile(Registry::get('current'))->factory()->renameFile($_POST['name'], rawurldecode($_POST['arch_name']), isset($_POST['del']), isset($_POST['overwrite']));
             } else {
                 echo Gmanager::getInstance()->frename(Registry::get('current'), $_POST['name'], isset($_POST['chmod']) ? $_POST['chmod'] : null, isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 if (isset($_POST['chmod']) && $_POST['chmod']) {
@@ -316,14 +266,14 @@ switch ($_GET['go']) {
 
 
     case 'del_zip_archive':
-        Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-        echo Archive::factory()->delFile($_GET['c'], $_GET['f']);
+        $obj = new Archive;
+        echo $obj->setFormat(Archive::FORMAT_ZIP)->setFile($_GET['c'])->factory()->delFile($_GET['f']);
         break;
 
 
     case 'del_tar_archive':
-        Registry::set('archiveFormat', Archive::FORMAT_TAR);
-        echo Archive::factory()->delFile($_GET['c'], $_GET['f']);
+        $obj = new Archive;
+        echo $obj->setFormat(Archive::FORMAT_TAR)->setFile($_GET['c'])->factory()->delFile($_GET['f']);
         break;
 
 
@@ -619,7 +569,7 @@ switch ($_GET['go']) {
         }
 
         $archive = Helper_Archive::isArchive(Helper_System::getType(Registry::get('current')));
-        if (isset($_GET['f']) && ($archive == 'ZIP' || $archive == 'TAR' || $archive == 'BZ2')) {
+        if (isset($_GET['f']) && ($archive == Archive::FORMAT_ZIP || $archive == Archive::FORMAT_TAR || $archive == Archive::FORMAT_BZ2)) {
             $r_file = Helper_View::getRawurl($_GET['f']);
             $h_file = htmlspecialchars($_GET['f']);
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Registry::get('rCurrent') . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';

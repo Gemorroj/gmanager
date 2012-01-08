@@ -24,7 +24,7 @@ if (Registry::get('current') == '.') {
 
 
 if (Registry::get('currentType') == 'dir') {
-    $archive = false;
+    $archive = null;
 } else {
     $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
 }
@@ -81,44 +81,21 @@ if (!$if) {
             $itype = '';
             echo '<form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div class="telo"><table><tr><th><input type="checkbox" onclick="Gmanager.check(this.form,\'check[]\',this.checked)"/></th>' . (Config::get('Display', 'name') ? '<th>' . $mnem . ' <a href="?c=' . Registry::get('rCurrent') . $down . '">' . Language::get('name') . '</a></th>' : '') . (Config::get('Display', 'down') ? '<th>' . Language::get('get') . '</th>' : '') . (Config::get('Display', 'type') ? '<th><a href="?c=' . Registry::get('rCurrent') . '&amp;type">' . Language::get('type') . '</a></th>' : '') . (Config::get('Display', 'size') ? '<th><a href="?c=' . Registry::get('rCurrent') . '&amp;size">' . Language::get('size') . '</a></th>' : '') . (Config::get('Display', 'change') ? '<th>' . Language::get('change') . '</th>' : '') . (Config::get('Display', 'del') ? '<th>' . Language::get('del') . '</th>' : '') . (Config::get('Display', 'chmod') ? '<th><a href="?c=' . Registry::get('rCurrent') . '&amp;chmod">' . Language::get('chmod') . '</a></th>' : '') . (Config::get('Display', 'date') ? '<th><a href="?c=' . Registry::get('rCurrent') . '&amp;time">' . Language::get('date') . '</a></th>' : '') . (Config::get('Display', 'uid') ? '<th><a href="?c=' . Registry::get('rCurrent') . '&amp;uid">' . Language::get('uid') . '</a></th>' : '') . (Config::get('Display', 'gid') ? '<th><a href="?c=' . Registry::get('rCurrent') . '&amp;gid">' . Language::get('gid') . '</a></th>' : '') . (Config::get('Display', 'n') ? '<th>' . Language::get('n') . '</th>' : '') . '</tr>';
         }
-    } else if ($archive != 'GZ') {
+    } else if ($archive != Archive::FORMAT_GZ) {
         echo '<form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div class="telo"><table><tr><th><input type="checkbox" onclick="Gmanager.check(this.form,\'check[]\',this.checked)"/></th>' . (Config::get('Display', 'name') ? '<th>' . $mnem . ' <a href="?c=' . Registry::get('rCurrent') . $down . '">' . Language::get('name') . '</a></th>' : '') . (Config::get('Display', 'down') ? '<th>' . Language::get('get') . '</th>' : '') . (Config::get('Display', 'type') ? '<th>' . Language::get('type') . '</th>' : '') . (Config::get('Display', 'size') ? '<th>' . Language::get('size') . '</th>' : '') . (Config::get('Display', 'change') ? '<th>' . Language::get('change') . '</th>' : '') . (Config::get('Display', 'del') ? '<th>' . Language::get('del') . '</th>' : '') . (Config::get('Display', 'chmod') ? '<th>' . Language::get('chmod') . '</th>' : '') . (Config::get('Display', 'date') ? '<th>' . Language::get('date') . '</th>' : '') . (Config::get('Display', 'uid') ? '<th>' . Language::get('uid') . '</th>' : '') . (Config::get('Display', 'gid') ? '<th>' . Language::get('gid') . '</th>' : '') . (Config::get('Display', 'n') ? '<th>' . Language::get('n') . '</th>' : '') . '</tr>';
     }
 }
 
-if ($archive == 'ZIP') {
-    Registry::set('archiveFormat', Archive::FORMAT_ZIP);
+if ($archive && $archive != Archive::FORMAT_GZ) {
+    $obj = new Archive;
+    $factory = $obj->setFormat($archive)->setFile(Registry::get('current'))->factory();
     if ($if) {
-        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
+        echo $factory->lookFile($_GET['f']);
     } else {
-        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
+        echo $factory->listArchive($idown);
         $f = 1;
     }
-} else if ($archive == 'TAR') {
-    Registry::set('archiveFormat', Archive::FORMAT_TAR);
-    if ($if) {
-        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
-    } else {
-        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
-        $f = 1;
-    }
-} else if ($archive == 'BZ2' && extension_loaded('bz2')) {
-    Registry::set('archiveFormat', Archive::FORMAT_BZ2);
-    if ($if) {
-        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
-    } else {
-        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
-        $f = 1;
-    }
-} else if ($archive == 'RAR' && extension_loaded('rar')) {
-    Registry::set('archiveFormat', Archive::FORMAT_RAR);
-    if ($if) {
-        echo Archive::factory()->lookFile(Registry::get('current'), $_GET['f']);
-    } else {
-        echo Archive::factory()->listArchive(Registry::get('current'), $idown);
-        $f = 1;
-    }
-} else if ($archive == 'GZ') {
+} else if ($archive == Archive::FORMAT_GZ) {
     echo Gmanager::getInstance()->gz(Registry::get('current')) . '<div class="ch"><form action="change.php?c=' . Registry::get('rCurrent') . '&amp;go=1" method="post"><div><input type="submit" name="gz_extract" value="' . Language::get('extract_archive') . '"/></div></form></div>';
     $if = true;
 } else {
@@ -143,7 +120,7 @@ if (!$if && !$f && !$ia) {
     echo '</table><div class="ch"><input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_chmod" value="' . Language::get('chmod') . '"/> <input onclick="return (Gmanager.checkForm(document.forms[1],\'check[]\') &amp;&amp; Gmanager.delNotify());" type="submit" name="full_del" value="' . Language::get('del') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_rename" value="' . Language::get('change') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="fname" value="' . Language::get('rename') . '"/> <input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="create_archive" value="' . Language::get('create_archive') . '"/></div></div></form>' . $found . $tm . Registry::get('foot');
 } else if ($f) {
     echo '</table><div class="ch"><input onclick="return Gmanager.checkForm(document.forms[1],\'check[]\');" type="submit" name="full_extract" value="' . Language::get('extract_file') . '"/> <input type="submit" name="mega_full_extract" value="' . Language::get('extract_archive') . '"/>';
-    if ($archive != 'RAR') {
+    if ($archive != Archive::FORMAT_RAR) {
         echo ' <input type="submit" name="add_archive" value="' . Language::get('add_archive') . '"/> <input onclick="return (Gmanager.checkForm(document.forms[1],\'check[]\') &amp;&amp; Gmanager.delNotify());" type="submit" name="del_archive" value="' . Language::get('del') . '"/>';
     }
     echo '</div></div></form>' . $found . $tm . Registry::get('foot');

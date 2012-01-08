@@ -15,29 +15,45 @@
 
 class Archive_Rar implements Archive_Interface
 {
+    private $_name;
+    private $_archive;
+
+
     /**
-     * _rarOpen
-     * 
-     * @param string $file
+     * Constructor
+     *
+     * @param string $name Archive filename
+     */
+    public function __construct ($name)
+    {
+        $this->_name = $name;
+    }
+
+
+    /**
+     * Open Archive
+     *
      * @return RarArchive
      */
-    private function _rarOpen($file)
+    private function _open()
     {
-        return rar_open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($file) : IOWrapper::set($file));
+        if ($this->_archive === null) {
+            $this->_archive = rar_open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
+        }
+        return $this->_archive;
     }
 
 
     /**
      * createArchive
-     * 
-     * @param string $name
+     *
      * @param mixed  $chmod
      * @param array  $ext
      * @param string $comment
      * @param bool   $overwrite
      * @return string
      */
-    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive ($chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
@@ -45,13 +61,12 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * addFile
-     * 
-     * @param string $current
+     *
      * @param mixed  $ext
      * @param string $dir
      * @return string
      */
-    public function addFile ($current, $ext = array(), $dir = '')
+    public function addFile ($ext = array(), $dir = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
@@ -59,12 +74,11 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * delFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @return string
      */
-    public function delFile ($current, $f = '')
+    public function delFile ($f = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
@@ -72,15 +86,14 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * extractFile
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param mixed  $chmod
      * @param array $ext
      * @param bool   $overwrite
      * @return string
      */
-    public function extractFile ($current, $name = '', $chmod = '', $ext = array(), $overwrite = false)
+    public function extractFile ($name = '', $chmod = '', $ext = array(), $overwrite = false)
     {
         $tmp = array();
         $err = '';
@@ -105,11 +118,11 @@ class Archive_Rar implements Archive_Interface
         $sysName = IOWrapper::set($name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
-        $rar = $this->_rarOpen($current);
+        $rar = $this->_open();
 
         foreach ($ext as $var) {
             $entry = rar_entry_get($rar, $var);
@@ -143,24 +156,23 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * extractArchive
-     * 
-     * @param string $current
+     *
      * @param string $name
      * @param array  $chmod
      * @param bool   $overwrite
      * @return string
      */
-    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
     {
         $sysName = IOWrapper::set($name);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($current) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
 
-        $rar = $this->_rarOpen($current);
+        $rar = $this->_open();
         $err = '';
         foreach (rar_list($rar) as $f) {
             $n = $f->getName();
@@ -202,15 +214,14 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * lookFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @param string $str
      * @return string
      */
-    public function lookFile ($current, $f = '', $str = null)
+    public function lookFile ($f = '', $str = null)
     {
-        $rar = $this->_rarOpen($current);
+        $rar = $this->_open();
         $entry = rar_entry_get($rar, $f);
 
         // создаем временный файл
@@ -238,12 +249,11 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * getEditFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @return array
      */
-    public function getEditFile ($current, $f = '')
+    public function getEditFile ($f = '')
     {
         return array('text' => Language::get('not_supported'), 'size' => 0, 'lines' => 0);
     }
@@ -251,29 +261,12 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * setEditFile
-     * 
-     * @param string $current
+     *
      * @param string $f
      * @param string $text
      * @return string
      */
-    public function setEditFile ($current, $f = '', $text = '')
-    {
-        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
-    }
-
-
-    /**
-     * renameFile
-     *
-     * @param string $current
-     * @param string $name
-     * @param string $arch_name
-     * @param bool   $del
-     * @param bool   $overwrite
-     * @return string
-     */
-    public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false)
+    public function setEditFile ($f = '', $text = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
@@ -281,22 +274,23 @@ class Archive_Rar implements Archive_Interface
 
     /**
      * listArchive
-     * 
-     * @param string $current
+     *
+     * @todo refactoring to ListData
      * @param string $down
      * @return string
      */
-    public function listArchive ($current, $down = '')
+    public function listArchive ($down = '')
     {
-        $r_current = Helper_View::getRawurl($current);
-        $rar = $this->_rarOpen($current);
+        $rar = $this->_open();
+        $list = rar_list($rar);
 
-        if (!$list = rar_list($rar)) {
+        if (!$list) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
             return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL) . '</td></tr>';
         } else {
+            $r_current = Helper_View::getRawurl($this->_name);
             $l = '';
 
             if ($down) {
@@ -364,6 +358,21 @@ class Archive_Rar implements Archive_Interface
 
             return $l;
         }
+    }
+
+
+    /**
+     * renameFile
+     *
+     * @param string $name
+     * @param string $arch_name
+     * @param bool   $del
+     * @param bool   $overwrite
+     * @return string
+     */
+    public function renameFile ($name, $arch_name, $del = false, $overwrite = false)
+    {
+        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 }
 

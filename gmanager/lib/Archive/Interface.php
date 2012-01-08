@@ -15,16 +15,17 @@
 
 interface Archive_Interface
 {
-    public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false);
-    public function listArchive ($current, $down = '');
-    public function getEditFile ($current, $f = '');
-    public function setEditFile ($current, $f = '', $text = '');
-    public function lookFile ($current, $f = '', $str = null);
-    public function extractArchive ($current, $name = '', $chmod = array(), $overwrite = false);
-    public function extractFile ($current, $name = '', $chmod = '', $ext = array(), $overwrite = false);
-    public function delFile ($current, $f = '');
-    public function addFile ($current, $ext = array(), $dir = '');
-    public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false);
+    public function __construct ($name);
+    public function renameFile ($name, $arch_name, $del = false, $overwrite = false);
+    public function listArchive ($down = '');
+    public function getEditFile ($f = '');
+    public function setEditFile ($f = '', $text = '');
+    public function lookFile ($f = '', $str = null);
+    public function extractArchive ($name = '', $chmod = array(), $overwrite = false);
+    public function extractFile ($name = '', $chmod = '', $ext = array(), $overwrite = false);
+    public function delFile ($f = '');
+    public function addFile ($ext = array(), $dir = '');
+    public function createArchive ($chmod = 0644, $ext = array(), $comment = '', $overwrite = false);
 }
 
 ?>

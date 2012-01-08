@@ -1289,8 +1289,8 @@ abstract class Gmanager
      */
     public function zipReplace ($current = '', $f = '', $from = '', $to = '', $regexp = false)
     {
-        Registry::set('archiveFormat', Archive::FORMAT_ZIP);
-        $c = Archive::factory()->getEditFile($current, $f);
+        $archive = new Archive;
+        $c = $archive->setFormat(Archive::FORMAT_ZIP)->setFile($current)->factory()->getEditFile($f);
 
         return $this->_replace(
             $c['text'],
