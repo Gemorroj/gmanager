@@ -211,7 +211,6 @@ return array(
     'filename_empty'                =>  'Filename cannot be empty',
     'beautifier'                    =>  'Beautifier',
     'beautify'                      =>  'Beautify',
-    'hex'                           =>  'HEX',
     'empty_search'                  =>  'Your search did not precise',
     'empty'                         =>  'Empty',
     'select_database'               =>  'Select Database',

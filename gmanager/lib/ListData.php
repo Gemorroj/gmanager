@@ -259,68 +259,51 @@ class ListData
 
     /**
      * getListSearchArray
-     * 
-     * @param string $c where
-     * @param string $s search string
-     * @param bool   $w in text
-     * @param bool   $r register
-     * @param bool   $h hex
-     * @param int    $limit max file size
-     * @param bool   $archive in gz archives
+     *
+     * @param string $where    where
+     * @param string $pattern  regexp pattern
+     * @param bool   $inText   in text
+     * @param int    $limit    max file size
+     * @param bool   $archive  in gz archives
      * @param string $t target
      * @return array
      */
-    private static function _getListSearchArray ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false, $t = '')
+    private static function _getListSearchArray ($where = '', $pattern = '', $inText = false, $limit = 8388608, $archive = false, $t = '')
     {
         static $count = 0;
         static $page  = array();
 
-        $c = str_replace('//', '/', $c . '/');
+        $where = str_replace('//', '/', $where . '/');
 
         $obj = Gmanager::getInstance();
-        foreach ($obj->iterator($c) as $f) {
-            if ($obj->is_dir($c . $f)) {
-                self::_getListSearchArray($c . $f . '/', $s, $w, $r, false, $limit, $archive, $t);
+        foreach ($obj->iterator($where) as $f) {
+            if ($obj->is_dir($where . $f)) {
+                self::_getListSearchArray($where . $f . '/', $pattern, $inText, $limit, $archive, $t);
                 continue;
             }
 
             $type = htmlspecialchars(Helper_System::getType(Helper_System::basename($f)), ENT_NOQUOTES);
             $arch = Helper_Archive::isArchive($type);
-            $stat = $obj->stat($c . $f);
+            $stat = $obj->stat($where . $f);
 
             $pname = $pdown = $ptype = $psize = $pchange = $pdel = $pchmod = $pdate = $puid = $pgid = $pn = $in = null;
 
-            if ($w) {
-                if ($stat['size'] > $limit || ($arch && !$archive) || ($arch && $archive && $type != 'GZ')) {
+            if ($inText) {
+                if ($stat['size'] > $limit || ($arch && !$archive) || ($arch && $archive && $type != Archive::FORMAT_GZ)) {
                     continue;
                 }
 
-                $fl = ($type == 'GZ') ? $obj->getGzContent($c . $f) : $obj->file_get_contents($c . $f);
-
-                if (!$r && !$h) {
-                    if (mb_convert_encoding($fl, 'UTF-8', 'UTF-8') != $fl) {
-                        $fl = mb_strtolower(mb_convert_encoding($fl, 'UTF-8', Config::get('Gmanager', 'altEncoding')));
-                    } else {
-                        $fl = mb_strtolower($fl);
-                    }
-                }
-
-                $in = mb_substr_count($fl, $s);
-                if ($in === 0) {
-                    continue;
-                }
-                $in = ' (' . $in . ')';
-            } else {
-                if ($r || $h) {
-                    $fs = $f;
+                $in = preg_match_all($pattern, ($type == Archive::FORMAT_GZ) ? $obj->getGzContent($where . $f) : $obj->file_get_contents($where . $f), $match);
+                unset($match);
+                if ($in) {
+                    $in = ' (' . $in . ')';
                 } else {
-                    if (mb_convert_encoding($f, 'UTF-8', 'UTF-8') != $f) {
-                        $fs = mb_strtolower(mb_convert_encoding($f, 'UTF-8', Config::get('Gmanager', 'altEncoding')));
-                    } else {
-                        $fs = mb_strtolower($f);
-                    }
+                    continue;
                 }
-                if (mb_strpos($fs, $s) === false) {
+            } else {
+                $in = preg_match_all($pattern, $f, $match);
+                unset($match);
+                if (!$in) {
                     continue;
                 }
             }
@@ -328,10 +311,10 @@ class ListData
             $count++;
 
             //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
-            $r_file = Helper_View::getRawurl($c . $f);
+            $r_file = Helper_View::getRawurl($where . $f);
 
             if (Config::get('Display', 'name')) {
-                $name = htmlspecialchars(Helper_View::strLink($c . $f, true), ENT_NOQUOTES);
+                $name = htmlspecialchars(Helper_View::strLink($where . $f, true), ENT_NOQUOTES);
                 if ($arch) {
                     $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
                 } else {
@@ -354,7 +337,7 @@ class ListData
                 $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
             }
             if (Config::get('Display', 'chmod')) {
-                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $obj->lookChmod($c . $f) . '</a></td>';
+                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $obj->lookChmod($where . $f) . '</a></td>';
             }
             if (Config::get('Display', 'date')) {
                 $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $stat['mtime']) . '</td>';
@@ -427,27 +410,29 @@ class ListData
 
     /**
      * getListSearchData
-     * 
-     * @param string $c where
-     * @param string $s search string
-     * @param bool   $w in text
-     * @param bool   $r register
-     * @param bool   $h hex
-     * @param int    $limit max file size
-     * @param bool   $archive in gz archives
+     *
+     * @param string $where    where
+     * @param string $search   search string
+     * @param bool   $inText   in text
+     * @param bool   $caseLess register
+     * @param bool   $regexp   regexp
+     * @param int    $limit    max file size
+     * @param bool   $archive  in gz archives
      * @return string
      */
-    public static function getListSearchData($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
+    public static function getListSearchData($where = '', $search = '', $inText = false, $caseLess = false, $regexp = false, $limit = 8388608, $archive = false)
     {
         $html = '';
 
-        if ($h) {
-            $s = implode('', array_map('chr', str_split($s, 4)));
-        } else if (!$r) {
-            $s = mb_strtolower($s);
+        $pattern = '/' . ($regexp ? str_replace('/', '\/', $search) : preg_quote($search, '/')) . '/u'; // always Unicode
+        $pattern = $caseLess ? $pattern : $pattern . 'i';
+
+        // testing regexp pattern
+        if (preg_match_all($pattern, '', $match) === false) {
+            return self::getListIncorrectSearchString();
         }
 
-        $data = self::_getListSearchArray($c, $s, $w, $r, $h, $limit, $archive, (Config::get('Editor', 'target') ? ' target="_blank"' : ''));
+        $data = self::_getListSearchArray($where, $pattern, $inText, $limit, $archive, (Config::get('Editor', 'target') ? ' target="_blank"' : ''));
 
         if ($data) {
             $line = false;
@@ -480,6 +465,17 @@ class ListData
     public static function getListEmptySearchData ()
     {
         return '<tr class="border"><th colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('empty_search') . '</th></tr>';
+    }
+
+
+    /**
+     * getListIncorrectSearchString
+     *
+     * @return string
+     */
+    public static function getListIncorrectSearchString ()
+    {
+        return '<tr class="border"><th colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('regexp_error') . '</th></tr>';
     }
 
 

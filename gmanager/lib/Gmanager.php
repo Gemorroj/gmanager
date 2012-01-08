@@ -1236,7 +1236,7 @@ abstract class Gmanager
         if ($from == '') {
             $output['message'] = Helper_View::message(Language::get('replace_false_str'), Helper_View::MESSAGE_ERROR);
         } else {
-            $pattern = '/' . ($regexp ? str_replace('/', '\/', $from) : preg_quote($from, '/')) . '/';
+            $pattern = '/' . ($regexp ? str_replace('/', '\/', $from) : preg_quote($from, '/')) . '/u'; // always Unicode
             $pattern = $caseLess ? $pattern : $pattern . 'i';
 
             $out = preg_replace($pattern, $to, $content, -1, $count);
@@ -1303,18 +1303,18 @@ abstract class Gmanager
     /**
      * search
      * 
-     * @param string $c where
-     * @param string $s search string
-     * @param bool   $w in text
-     * @param bool   $r register
-     * @param bool   $h hex
-     * @param int    $limit max file size
-     * @param bool   $archive in gz archives
+     * @param string $where    where
+     * @param string $search   search string
+     * @param bool   $inText   in text
+     * @param bool   $caseLess register
+     * @param bool   $regexp   regexp
+     * @param int    $limit    max file size
+     * @param bool   $archive  in gz archives
      * @return string
      */
-    public function search ($c = '', $s = '', $w = false, $r = false, $h = false, $limit = 8388608, $archive = false)
+    public function search ($where = '', $search = '', $inText = false, $caseLess = false, $regexp = false, $limit = 8388608, $archive = false)
     {
-        $html = ListData::getListSearchData($c, $s, $w, $r, $h, $limit, $archive);
+        $html = ListData::getListSearchData($where, $search, $inText, $caseLess, $regexp, $limit, $archive);
         return $html ? $html : ListData::getListEmptySearchData();
     }
 

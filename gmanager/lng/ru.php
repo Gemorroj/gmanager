@@ -211,7 +211,6 @@ return array(
     'filename_empty'                =>  'Имя файла не может быть пустым',
     'beautifier'                    =>  'Форматирование',
     'beautify'                      =>  'Форматировать',
-    'hex'                           =>  'HEX',
     'empty_search'                  =>  'По Вашему запросу ничего не найдено',
     'empty'                         =>  'Пусто',
     'select_database'               =>  'Выберите СУБД',
