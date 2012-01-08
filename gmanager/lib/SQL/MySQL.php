@@ -31,7 +31,7 @@ class SQL_MySQL implements SQL_Interface
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
         if (!$this->_resource = mysql_connect($host, $name, $pass)) {
-            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
+            return Helper_View::message(Language::get('sql_connect_false'), Helper_View::MESSAGE_ERROR);
         }
         if ($charset) {
             mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
@@ -39,7 +39,7 @@ class SQL_MySQL implements SQL_Interface
 
         if ($db) {
             if (!mysql_select_db($db, $this->_resource)) {
-                return Errors::message(Language::get('sql_select_db_false'), Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('sql_select_db_false'), Helper_View::MESSAGE_ERROR);
             }
         }
 
@@ -201,9 +201,9 @@ class SQL_MySQL implements SQL_Interface
             }
 
             if ($false) {
-                return Errors::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Helper_View::MESSAGE_ERROR);
             } else {
-                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
+                return Helper_View::message(Language::get('sql_backup_true'), Helper_View::MESSAGE_SUCCESS);
             }
         } else {
             $q = mysql_query('SHOW TABLES;', $this->_resource);
@@ -251,7 +251,7 @@ class SQL_MySQL implements SQL_Interface
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
+                return Helper_View::message(Language::get('sql_query_false'), Helper_View::MESSAGE_ERROR_EMAIL) . '<div><code>' . mysql_error($this->_resource) . '</code></div>';
             } else {
                 if (is_resource($r) && $row = mysql_num_rows($r)) {
                     $rows += $row;
@@ -280,7 +280,7 @@ class SQL_MySQL implements SQL_Interface
         }
 
         mysql_close($this->_resource);
-        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Helper_View::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Helper_View::MESSAGE_SUCCESS) . $out;
     }
 }
 

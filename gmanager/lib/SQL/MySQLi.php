@@ -32,7 +32,7 @@ class SQL_MySQLi implements SQL_Interface
     {
         $this->_resource = new mysqli($host, $name, $pass, $db);
         if (!$this->_resource || $this->_resource->connect_error) {
-            return Errors::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), Errors::MESSAGE_FAIL);
+            return Helper_View::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($this->_resource->connect_error, ENT_NOQUOTES), Helper_View::MESSAGE_ERROR);
         }
         if ($charset) {
             $this->_resource->set_charset($charset);
@@ -199,9 +199,9 @@ class SQL_MySQLi implements SQL_Interface
             }
 
             if ($false) {
-                return Errors::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Helper_View::MESSAGE_ERROR);
             } else {
-                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
+                return Helper_View::message(Language::get('sql_backup_true'), Helper_View::MESSAGE_SUCCESS);
             }
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
@@ -249,7 +249,7 @@ class SQL_MySQLi implements SQL_Interface
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . $this->_resource->error . '</code></div>';
+                return Helper_View::message(Language::get('sql_query_false'), Helper_View::MESSAGE_ERROR_EMAIL) . '<div><code>' . $this->_resource->error . '</code></div>';
             } else {
                 if (is_object($r) && $row = $r->num_rows) {
                     $rows += $row;
@@ -278,7 +278,7 @@ class SQL_MySQLi implements SQL_Interface
         }
 
         $this->_resource->close();
-        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Helper_View::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Helper_View::MESSAGE_SUCCESS) . $out;
     }
 }
 

@@ -308,7 +308,7 @@ switch ($_GET['go']) {
                 }
             }
         } else {
-            echo Errors::message(Language::get('filename_empty'), Errors::MESSAGE_FAIL);
+            echo Helper_View::message(Language::get('filename_empty'), Helper_View::MESSAGE_ERROR);
         }
         break;
 
@@ -337,7 +337,7 @@ switch ($_GET['go']) {
                     }
                 }
 
-                for ($i = 0; $i < $all; ++$i ) {
+                for ($i = 0; $i < $all; ++$i) {
                     echo Gmanager::getInstance()->uploadFiles($_FILES['f']['tmp_name'][$i], $_FILES['f']['name'][$i], $_POST['name'], $_POST['chmod']);
                 }
             } else {
@@ -359,12 +359,12 @@ switch ($_GET['go']) {
         $new = Gmanager::getInstance()->getData('http://wapinet.ru/gmanager/gmanager.txt');
         if ($new['body']) {
             if (version_compare($new['body'], Config::getVersion(), '<=')) {
-                echo Errors::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::getVersion() . '<br/>' . Language::get('new_version_false'), Errors::MESSAGE_OK);
+                echo Helper_View::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::getVersion() . '<br/>' . Language::get('new_version_false'), Helper_View::MESSAGE_SUCCESS);
             } else {
-                echo Errors::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::getVersion() . '<br/>' . Language::get('new_version_true') . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . Language::get('get') . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', Errors::MESSAGE_FAIL);
+                echo Helper_View::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::getVersion() . '<br/>' . Language::get('new_version_true') . '<br/>&#187; <a href="http://wapinet.ru/gmanager/gmanager.zip">' . Language::get('get') . '</a><br/><input name="" value="http://wapinet.ru/gmanager/gmanager.zip" size="39"/>', Helper_View::MESSAGE_ERROR);
             }
         } else {
-            echo Errors::message(Language::get('not_connect'), Errors::MESSAGE_EMAIL);
+            echo Helper_View::message(Language::get('not_connect'), Helper_View::MESSAGE_ERROR_EMAIL);
         }
         break;
 
@@ -378,7 +378,7 @@ switch ($_GET['go']) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
                 echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Helper_View::formatSize(strlen($url)) . '</span><br/></div>' . Gmanager::getInstance()->code($url, 0, true);
             } else {
-                echo Errors::message(Language::get('not_connect'), Errors::MESSAGE_EMAIL);
+                echo Helper_View::message(Language::get('not_connect'), Helper_View::MESSAGE_ERROR_EMAIL);
             }
         }
         break;
@@ -553,7 +553,7 @@ switch ($_GET['go']) {
             if ($sql = Gmanager::getInstance()->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']))) {
                 echo Gmanager::getInstance()->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
-                echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
+                echo Helper_View::message(Language::get('sql_parser_error'), Helper_View::MESSAGE_ERROR_EMAIL);
             }
         }
         break;
@@ -573,7 +573,7 @@ switch ($_GET['go']) {
             if ($sql = Gmanager::getInstance()->sqlInstaller($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']))) {
                 echo Gmanager::getInstance()->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
-                echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
+                echo Helper_View::message(Language::get('sql_parser_error'), Helper_View::MESSAGE_ERROR_EMAIL);
             }
         }
         break;
@@ -593,7 +593,7 @@ switch ($_GET['go']) {
             if ($sql = Gmanager::getInstance()->sqlInstaller('', '', '', $_POST['db'], '', !$_FILES['f_tables']['error'] ? file_get_contents($_FILES['f_tables']['tmp_name']) : Gmanager::getInstance()->file_get_contents($_POST['tables']))) {
                 echo Gmanager::getInstance()->createFile($_POST['file'], $sql, $_POST['chmod']);
             } else {
-                echo Errors::message(Language::get('sql_parser_error'), Errors::MESSAGE_EMAIL);
+                echo Helper_View::message(Language::get('sql_parser_error'), Helper_View::MESSAGE_ERROR_EMAIL);
             }
         }
         break;
@@ -612,7 +612,7 @@ switch ($_GET['go']) {
 
     default:
         if (!Gmanager::getInstance()->file_exists(Registry::get('current'))) {
-            echo Errors::message(Language::get('not_found'), Errors::MESSAGE_FAIL);
+            echo Helper_View::message(Language::get('not_found'), Helper_View::MESSAGE_ERROR);
             break;
         }
 

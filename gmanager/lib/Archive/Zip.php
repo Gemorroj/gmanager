@@ -40,7 +40,7 @@ class Archive_Zip implements Archive_Interface
     public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
         if (!$overwrite && Gmanager::getInstance()->file_exists($name)) {
-            return Errors::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Errors::MESSAGE_FAIL);
+            return Helper_View::message(Language::get('overwrite_false') . ' (' . htmlspecialchars($name, ENT_NOQUOTES) . ')', Helper_View::MESSAGE_ERROR);
         }
 
         Gmanager::getInstance()->createDir(mb_substr($name, 0, mb_strrpos($name, '/')));
@@ -85,9 +85,9 @@ class Archive_Zip implements Archive_Interface
             if ($chmod) {
                 Gmanager::getInstance()->rechmod($name, $chmod);
             }
-            return Errors::message(Language::get('create_archive_true'), Errors::MESSAGE_OK);
+            return Helper_View::message(Language::get('create_archive_true'), Helper_View::MESSAGE_SUCCESS);
         } else {
-            return Errors::message(Language::get('create_archive_false') . '<br/>' . htmlspecialchars($zip->errorInfo(true), ENT_NOQUOTES), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('create_archive_false') . '<br/>' . htmlspecialchars($zip->errorInfo(true), ENT_NOQUOTES), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -129,9 +129,9 @@ class Archive_Zip implements Archive_Interface
         Helper_System::clean($tmpFolder);
 
         if ($add) {
-            return Errors::message(Language::get('add_archive_true'), Errors::MESSAGE_OK);
+            return Helper_View::message(Language::get('add_archive_true'), Helper_View::MESSAGE_SUCCESS);
         } else {
-            return Errors::message(Language::get('add_archive_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('add_archive_false') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -165,9 +165,9 @@ class Archive_Zip implements Archive_Interface
         }
 
         if ($list != 0) {
-            return Errors::message(Language::get('del_file_true') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', Errors::MESSAGE_OK);
+            return Helper_View::message(Language::get('del_file_true') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')', Helper_View::MESSAGE_SUCCESS);
         } else {
-            return Errors::message(Language::get('del_file_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('del_file_false') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -200,7 +200,7 @@ class Archive_Zip implements Archive_Interface
         unset($ext);
 
         if (!$fl) {
-            return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
+            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
 
         $sysName = IOWrapper::set($name);
@@ -223,7 +223,7 @@ class Archive_Zip implements Archive_Interface
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
-            return Errors::message(Language::get('extract_file_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('extract_file_false') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL);
         }
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
@@ -236,9 +236,9 @@ class Archive_Zip implements Archive_Interface
             if ($chmod) {
                 Gmanager::getInstance()->rechmod($name, $chmod);
             }
-            return Errors::message(Language::get('extract_file_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
+            return Helper_View::message(Language::get('extract_file_true'), Helper_View::MESSAGE_SUCCESS) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         } else {
-            return Errors::message(Language::get('extract_file_false'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('extract_file_false'), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -290,7 +290,7 @@ class Archive_Zip implements Archive_Interface
                 Gmanager::getInstance()->ftpArchiveEnd();
                 rmdir($ftp_name);
             }
-            return Errors::message(Language::get('extract_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('extract_false') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL);
         }
 
         $err = '';
@@ -310,9 +310,9 @@ class Archive_Zip implements Archive_Interface
             if ($chmod) {
                 Gmanager::getInstance()->rechmod($sysName, $chmod[1]);
             }
-            return Errors::message(Language::get('extract_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
+            return Helper_View::message(Language::get('extract_true'), Helper_View::MESSAGE_SUCCESS) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         } else {
-            return Errors::message(Language::get('extract_false'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -338,14 +338,14 @@ class Archive_Zip implements Archive_Interface
         }
 
         if (!$ext) {
-            return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL);
         } else if ($ext[0]['status'] == 'unsupported_encryption') {
-            return Errors::message(Language::get('archive_error_encrypt'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('archive_error_encrypt'), Helper_View::MESSAGE_ERROR_EMAIL);
         } else {
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Errors::MESSAGE_OK) . Gmanager::getInstance()->code(trim($ext[0]['content']));
+                return Helper_View::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Helper_View::MESSAGE_SUCCESS) . Gmanager::getInstance()->code(trim($ext[0]['content']));
             }
         }
     }
@@ -392,7 +392,7 @@ class Archive_Zip implements Archive_Interface
         $fp = fopen($tmp, 'w');
 
         if (!$fp) {
-            return Errors::message(Language::get('fputs_file_false') . '<br/>' . Errors::get(), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('fputs_file_false') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR_EMAIL);
         }
 
         fputs($fp, $text);
@@ -407,7 +407,7 @@ class Archive_Zip implements Archive_Interface
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
             unlink($tmp);
-            return Errors::message(Language::get('fputs_file_false') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('fputs_file_false') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL);
         }
 
 
@@ -425,9 +425,9 @@ class Archive_Zip implements Archive_Interface
         }
 
         if ($fl) {
-            return Errors::message(Language::get('fputs_file_true'), Errors::MESSAGE_OK);
+            return Helper_View::message(Language::get('fputs_file_true'), Helper_View::MESSAGE_SUCCESS);
         } else {
-            return Errors::message(Language::get('fputs_file_false'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('fputs_file_false'), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -451,7 +451,7 @@ class Archive_Zip implements Archive_Interface
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), Errors::MESSAGE_EMAIL) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Helper_View::message(Language::get('archive_error') . '<br/>' . $zip->errorInfo(true), Helper_View::MESSAGE_ERROR_EMAIL) . '</td></tr>';
         } else {
             $l = '';
 
@@ -554,7 +554,7 @@ class Archive_Zip implements Archive_Interface
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     Gmanager::getInstance()->ftpArchiveEnd();
                 }
-                return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR);
                 break;
             }
             if ($arch_name == $f['stored_filename']) {
@@ -574,7 +574,7 @@ class Archive_Zip implements Archive_Interface
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     Gmanager::getInstance()->ftpArchiveEnd();
                 }
-                return Errors::message(Language::get('overwrite_false'), Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('overwrite_false'), Helper_View::MESSAGE_ERROR);
             }
         }
 
@@ -607,15 +607,15 @@ class Archive_Zip implements Archive_Interface
             }
             if ($folder) {
                 if ($del) {
-                    return Errors::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), Helper_View::MESSAGE_ERROR);
                 } else {
-                    return Errors::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), Helper_View::MESSAGE_ERROR);
                 }
             } else {
                 if ($del) {
-                    return Errors::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), Helper_View::MESSAGE_ERROR);
                 } else {
-                    return Errors::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), Helper_View::MESSAGE_ERROR);
                 }
             }
         }
@@ -630,29 +630,29 @@ class Archive_Zip implements Archive_Interface
         if ($result) {
             if ($folder) {
                 if ($del) {
-                    return Errors::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_true')), Errors::MESSAGE_OK);
+                    return Helper_View::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_true')), Helper_View::MESSAGE_SUCCESS);
                 } else {
-                    return Errors::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_true')), Errors::MESSAGE_OK);
+                    return Helper_View::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_true')), Helper_View::MESSAGE_SUCCESS);
                 }
             } else {
                 if ($del) {
-                    return Errors::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_true')), Errors::MESSAGE_OK);
+                    return Helper_View::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_true')), Helper_View::MESSAGE_SUCCESS);
                 } else {
-                    return Errors::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_true')), Errors::MESSAGE_OK);
+                    return Helper_View::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_true')), Helper_View::MESSAGE_SUCCESS);
                 }
             }
         } else {
             if ($folder) {
                 if ($del) {
-                    return Errors::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_files_false')), Helper_View::MESSAGE_ERROR);
                 } else {
-                    return Errors::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%title%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_files_false')), Helper_View::MESSAGE_ERROR);
                 }
             } else {
                 if ($del) {
-                    return Errors::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('move_file_false')), Helper_View::MESSAGE_ERROR);
                 } else {
-                    return Errors::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), Errors::MESSAGE_FAIL);
+                    return Helper_View::message(str_replace('%file%', htmlspecialchars($arch_name, ENT_NOQUOTES), Language::get('copy_file_false')), Helper_View::MESSAGE_ERROR);
                 }
             }
         }

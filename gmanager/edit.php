@@ -114,7 +114,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
 
     default:
         if (Registry::get('currentType') != 'file') {
-            echo Errors::message(Language::get('not_found'), Errors::MESSAGE_FAIL);
+            echo Helper_View::message(Language::get('not_found'), Helper_View::MESSAGE_ERROR);
             break;
         }
         $start = isset($_POST['start']) ? intval($_POST['start']) - 1 : 0;

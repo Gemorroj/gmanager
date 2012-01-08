@@ -39,7 +39,7 @@ class SQL_PostgreSQL implements SQL_Interface
 
         $this->_resource = pg_connect(ltrim($dsn));
         if (!$this->_resource) {
-            return Errors::message(Language::get('sql_connect_false'), Errors::MESSAGE_FAIL);
+            return Helper_View::message(Language::get('sql_connect_false'), Helper_View::MESSAGE_ERROR);
         }
 
         return $this->_resource;
@@ -199,9 +199,9 @@ class SQL_PostgreSQL implements SQL_Interface
             }
 
             if ($false) {
-                return Errors::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('sql_backup_false') . '<pre>' . trim($false) . '</pre>', Helper_View::MESSAGE_ERROR);
             } else {
-                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
+                return Helper_View::message(Language::get('sql_backup_true'), Helper_View::MESSAGE_SUCCESS);
             }
         } else {
             $q = pg_query($this->_resource, 'SELECT * FROM information_schema.tables;');
@@ -249,7 +249,7 @@ class SQL_PostgreSQL implements SQL_Interface
             $time += microtime(true) - $start;
 
             if (!$r) {
-                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . pg_errormessage($this->_resource) . '</code></div>';
+                return Helper_View::message(Language::get('sql_query_false'), Helper_View::MESSAGE_ERROR_EMAIL) . '<div><code>' . pg_errormessage($this->_resource) . '</code></div>';
             } else {
                 if (is_resource($r) && pg_num_rows($r) > 0 && $row = pg_num_rows($r)) {
                     $rows += $row;
@@ -278,7 +278,7 @@ class SQL_PostgreSQL implements SQL_Interface
         }
 
         pg_close($this->_resource);
-        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Helper_View::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Helper_View::MESSAGE_SUCCESS) . $out;
     }
 }
 

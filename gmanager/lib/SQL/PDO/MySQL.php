@@ -39,7 +39,7 @@ class SQL_PDO_MySQL implements SQL_Interface
 
             $this->_resource = new PDO('mysql:' . $dsn, $name, $pass, $attr);
         } catch (Exception $e) {
-            return Errors::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Errors::MESSAGE_FAIL);
+            return Helper_View::message(Language::get('sql_connect_false') . '<br/>' . htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Helper_View::MESSAGE_ERROR);
         }
 
         return $this->_resource;
@@ -204,9 +204,9 @@ class SQL_PDO_MySQL implements SQL_Interface
             }
 
             if ($false) {
-                return Errors::message(Language::get('sql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', Errors::MESSAGE_FAIL);
+                return Helper_View::message(Language::get('sql_backup_false') . '<pre>' . htmlspecialchars(trim($false), ENT_NOQUOTES) . '</pre>', Helper_View::MESSAGE_ERROR);
             } else {
-                return Errors::message(Language::get('sql_backup_true'), Errors::MESSAGE_OK);
+                return Helper_View::message(Language::get('sql_backup_true'), Helper_View::MESSAGE_SUCCESS);
             }
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
@@ -255,7 +255,7 @@ class SQL_PDO_MySQL implements SQL_Interface
 
             if (!$r) {
                 $tmp = $this->_resource->errorInfo();
-                return Errors::message(Language::get('sql_query_false'), Errors::MESSAGE_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
+                return Helper_View::message(Language::get('sql_query_false'), Helper_View::MESSAGE_ERROR_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
                 if (is_object($r)) {
                     while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
@@ -283,7 +283,7 @@ class SQL_PDO_MySQL implements SQL_Interface
             }
         }
 
-        return Errors::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Errors::MESSAGE_OK) . $out;
+        return Helper_View::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Helper_View::MESSAGE_SUCCESS) . $out;
     }
 }
 

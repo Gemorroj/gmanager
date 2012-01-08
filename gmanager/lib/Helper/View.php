@@ -15,6 +15,10 @@
 
 class Helper_View
 {
+    const MESSAGE_SUCCESS       = 0;
+    const MESSAGE_ERROR         = 1;
+    const MESSAGE_ERROR_EMAIL   = 2;
+
     /**
      * getRawurl
      *
@@ -132,6 +136,27 @@ class Helper_View
                 )
             )
         ) . '</code>';
+    }
+
+
+    /**
+     * message
+     *
+     * @param string $text
+     * @param int    $error Helper_View::MESSAGE_SUCCESS - success,
+     *                      Helper_View::MESSAGE_ERROR - error,
+     *                      Helper_View::MESSAGE_ERROR_EMAIL - error and email
+     * @return string
+     */
+    public static function message ($text = '', $error = Helper_View::MESSAGE_SUCCESS)
+    {
+        if ($error == self::MESSAGE_ERROR_EMAIL) {
+            return '<div class="red">' . $text . '<br/></div><div><form action="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . Config::getVersion() . ' Error (' . Config::get('Gmanager', 'mode') . ')"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . Helper_System::basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . Language::get('send_report') . '"/></div></form></div>';
+        } else if ($error == self::MESSAGE_ERROR) {
+            return '<div class="red">' . $text . '<br/></div>';
+        }
+
+        return '<div class="green">' . $text . '<br/></div>';
     }
 }
 

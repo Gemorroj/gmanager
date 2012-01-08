@@ -39,7 +39,7 @@ class Archive_Rar implements Archive_Interface
      */
     public function createArchive ($name, $chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
     {
-        return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
+        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
 
@@ -53,7 +53,7 @@ class Archive_Rar implements Archive_Interface
      */
     public function addFile ($current, $ext = array(), $dir = '')
     {
-        return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
+        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
 
@@ -66,7 +66,7 @@ class Archive_Rar implements Archive_Interface
      */
     public function delFile ($current, $f = '')
     {
-        return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
+        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
 
@@ -99,7 +99,7 @@ class Archive_Rar implements Archive_Interface
         $ext = & $tmp;
 
         if (!$ext) {
-            return Errors::message(Language::get('extract_false'), Errors::MESSAGE_FAIL) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
+            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
 
         $sysName = IOWrapper::set($name);
@@ -134,9 +134,9 @@ class Archive_Rar implements Archive_Interface
             if ($chmod) {
                 Gmanager::getInstance()->rechmod($name, $chmod);
             }
-            return Errors::message(Language::get('extract_file_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
+            return Helper_View::message(Language::get('extract_file_true'), Helper_View::MESSAGE_SUCCESS) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         } else {
-            return Errors::message(Language::get('extract_file_false'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('extract_file_false'), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -193,9 +193,9 @@ class Archive_Rar implements Archive_Interface
 
         if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($name)) {
             Gmanager::getInstance()->rechmod($name, $chmod[1]);
-            return Errors::message(Language::get('extract_true'), Errors::MESSAGE_OK) . ($err ? Errors::message(rtrim($err, '<br/>'), Errors::MESSAGE_FAIL) : '');
+            return Helper_View::message(Language::get('extract_true'), Helper_View::MESSAGE_SUCCESS) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         } else {
-            return Errors::message(Language::get('extract_false'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -225,12 +225,12 @@ class Archive_Rar implements Archive_Interface
         }
 
         if (!$ext) {
-            return Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL);
+            return Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL);
         } else {
             if ($str) {
                 return $ext;
             } else {
-                return Errors::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Errors::MESSAGE_OK) . Gmanager::getInstance()->code(trim($ext));
+                return Helper_View::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Helper_View::MESSAGE_SUCCESS) . Gmanager::getInstance()->code(trim($ext));
             }
         }
     }
@@ -259,7 +259,7 @@ class Archive_Rar implements Archive_Interface
      */
     public function setEditFile ($current, $f = '', $text = '')
     {
-        return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
+        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
 
@@ -275,7 +275,7 @@ class Archive_Rar implements Archive_Interface
      */
     public function renameFile ($current, $name, $arch_name, $del = false, $overwrite = false)
     {
-        return Errors::message(Language::get('not_supported'), Errors::MESSAGE_FAIL);
+        return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
 
@@ -295,7 +295,7 @@ class Archive_Rar implements Archive_Interface
             if (Config::get('Gmanager', 'mode') == 'FTP') {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Errors::message(Language::get('archive_error'), Errors::MESSAGE_EMAIL) . '</td></tr>';
+            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL) . '</td></tr>';
         } else {
             $l = '';
 
