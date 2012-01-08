@@ -1236,12 +1236,12 @@ abstract class Gmanager
             $output['message'] = Errors::message(Language::get('replace_false_str'), Errors::MESSAGE_FAIL);
         } else {
             if ($regexp) {
-                $count = preg_match_all('/' . str_replace('/', '\/', $from) . '/', $content, $match);
-                if ($count === false) {
+                $out = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $content, -1, $count);
+                if ($out === null || preg_last_error() !== PREG_NO_ERROR) {
                     $output['message'] = Errors::message(Language::get('regexp_error'), Errors::MESSAGE_FAIL);
                 } else {
                     $output['message'] = Errors::message(Language::get('replace_true') . $count, Errors::MESSAGE_OK);
-                    $output['content'] = preg_replace('/' . str_replace('/', '\/', $from) . '/', $to, $content);
+                    $output['content'] = $out;
                 }
             } else {
                 $all = mb_substr_count($content, $from);
