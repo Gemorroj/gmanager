@@ -3,10 +3,10 @@
  * 
  * This software is distributed under the GNU GPL v3.0 license.
  * @author Gemorroj
- * @copyright 2008-2011 http://wapinet.ru
+ * @copyright 2008-2012 http://wapinet.ru
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  * @link http://wapinet.ru/gmanager/
- * @version 0.8 beta
+ * @version 0.8
  * 
  * PHP version >= 5.2.1
  * 
@@ -33,7 +33,7 @@ class Config
     {
         self::$_config = new Config_Ini($config);
 
-        Registry::set('top', '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru"><head><title>%title% - Gmanager 0.8 beta</title><meta http-equiv="Content-Type" content="' . self::getContentType() . '; charset=UTF-8" /><link rel="stylesheet" type="text/css" href="css.css"/><script type="text/javascript" src="js.js"></script></head><body>');
+        Registry::set('top', '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru"><head><title>%title% - Gmanager 0.8</title><meta http-equiv="Content-Type" content="' . self::getContentType() . '; charset=UTF-8" /><link rel="stylesheet" type="text/css" href="css.css"/><script type="text/javascript" src="js.js"></script></head><body>');
         Registry::set('foot', '<div class="w">Powered by Gemorroj<br/><a href="http://wapinet.ru/gmanager/">wapinet.ru</a></div></body></html>');
 
         Language::setLanguage(self::get('Gmanager', 'language'));
@@ -119,7 +119,7 @@ class Config
      */
     public static function getVersion ()
     {
-        return '0.8b';
+        return '0.8';
     }
 }
 
