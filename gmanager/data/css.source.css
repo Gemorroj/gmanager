@@ -4,7 +4,7 @@ body {
     font-size: 12px;
     margin: 0;
     padding: 1px;
-    border: 3px solid #ebebeb;
+    border: 2px solid #ebebeb;
     font-family: "Times New Roman", serif;
 }
 
@@ -253,9 +253,18 @@ div.bar input[type="text"] {
     width: 99.5%;
 }
 
+.pedit_l {
+    width: 10px;
+}
+
+.pedit_c {
+    padding-right: 3px;
+    width: 100%;
+}
+
 .pedit_r {
-    width: 36px;
     white-space: nowrap;
+    float: right;
 }
 
 input.pinput {

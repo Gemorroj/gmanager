@@ -175,11 +175,11 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             foreach (array_slice(explode("\n", $data['content']), $start, $end) as $var) {
                 $j++;
                 $i++;
-                $edit .= '<tr id="i' . $j . '"><td style="width:10px;">' . $i . '</td><td><input name="line[' . ($i - 1) . '][]" type="text" value="' . htmlspecialchars($var, $quotes, 'UTF-8') . '"/></td><td class="pedit_r"><a title="' . Language::get('add') . '" href="javascript:void(0);" onclick="Gmanager.editAdd(this);">[+]</a> / <a title="' . Language::get('dl') . '" href="javascript:void(0);" onclick="Gmanager.editDel(this);">[-]</a></td></tr>';
+                $edit .= '<tr id="i' . $j . '"><td class="pedit_l">' . $i . '</td><td class="pedit_c"><input name="line[' . ($i - 1) . '][]" type="text" value="' . htmlspecialchars($var, $quotes, 'UTF-8') . '"/></td><td class="pedit_r"><a title="' . Language::get('add') . '" href="javascript:void(0);" onclick="Gmanager.editAdd(this);">[+]</a> / <a title="' . Language::get('dl') . '" href="javascript:void(0);" onclick="Gmanager.editDel(this);">[-]</a></td></tr>';
             }
             if ($end > $i) {
                 $j++;
-                $edit .= '<tr id="i' . $j . '"><td style="width:10px">' . ($i + 1) . '+</td><td><input name="line[' . $i . '][]" type="text"/></td><td class="pedit_r"><a title="' . Language::get('add') . '" href="javascript:void(0);" onclick="Gmanager.editAdd(this);">[+]</a> / <a title="' . Language::get('dl') . '" href="javascript:void(0);" onclick="Gmanager.editDel(this);">[-]</a></td></tr>';
+                $edit .= '<tr id="i' . $j . '"><td class="pedit_l">' . ($i + 1) . '+</td><td class="pedit_c"><input name="line[' . $i . '][]" type="text"/></td><td class="pedit_r"><a title="' . Language::get('add') . '" href="javascript:void(0);" onclick="Gmanager.editAdd(this);">[+]</a> / <a title="' . Language::get('dl') . '" href="javascript:void(0);" onclick="Gmanager.editDel(this);">[-]</a></td></tr>';
             }
 
             $edit .= '</tbody></table>';

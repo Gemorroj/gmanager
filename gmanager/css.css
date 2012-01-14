@@ -1,4 +1,4 @@
-body{background-color:#f7f7f7;color:#000;font-size:12px;border:3px solid #ebebeb;font-family:"Times New Roman", serif;margin:0;padding:1px}
+body{background-color:#f7f7f7;color:#000;font-size:12px;border:2px solid #ebebeb;font-family:"Times New Roman", serif;margin:0;padding:1px}
 form{margin:0}
 textarea{resize:both}
 input[type=text],input[type=file]{resize:horizontal;overflow:hidden!important}
@@ -39,6 +39,8 @@ div.bar{white-space:nowrap}
 div.bar input[type=text]{width:86%}
 .pedit{border-radius:3pt;background-color:#ebebeb;color:#c00;font-weight:700}
 .pedit input[type=text]{width:99.5%}
-.pedit_r{width:36px;white-space:nowrap}
+.pedit_l{width:10px}
+.pedit_c{padding-right:3px;width:100%}
+.pedit_r{white-space:nowrap;float:right}
 input.pinput{-wap-input-format:'*N';width:2%;min-width:20px}
 a:active,.submit a{color:#000}
