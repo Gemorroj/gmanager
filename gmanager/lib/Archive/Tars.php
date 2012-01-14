@@ -38,6 +38,7 @@ class Archive_Tars implements Archive_Interface
     private function _open()
     {
         if ($this->_archive === null) {
+            require_once 'Archive/Tar.php';
             $this->_archive = new Archive_Tar(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
         }
         return $this->_archive;
