@@ -1138,41 +1138,34 @@ abstract class Gmanager
      */
     public function showEval ($eval = '')
     {
-        if (ob_start()) {
-            $info['time'] = microtime(true);
-            $info['ram'] = memory_get_usage(false);
+        ob_start();
+        $evalFunction = create_function('', $eval . "\n");
 
-            eval($eval);
+        $info = array(
+            'time' => microtime(true),
+            'ram' => memory_get_usage(false)
+        );
 
-            $info['time'] = round(microtime(true) - $info['time'], 6);
-            $info['ram'] = Helper_View::formatSize(memory_get_usage(false) - $info['ram'], 6);
-            $buf = ob_get_contents();
-            ob_end_clean();
+        //eval($eval);
+        $evalFunction();
+
+        $info = array(
+            'ram' => Helper_View::formatSize(memory_get_usage(false) - $info['ram'], 6),
+            'time' => round(microtime(true) - $info['time'], 6),
+        );
+
+        $buf = ob_get_contents();
+        ob_end_clean();
 
 
-            if (mb_substr($buf, 0, mb_strlen(ini_get('error_prepend_string'))) == ini_get('error_prepend_string')) {
-                $buf = mb_substr($buf, mb_strlen(ini_get('error_prepend_string')));
-            }
-            if (mb_substr($buf, -mb_strlen(ini_get('error_append_string'))) == ini_get('error_append_string')) {
-                $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
-            }
-
-            return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
-        } else {
-            echo '<div class="input">' . Language::get('result') . '<pre class="code"><code>';
-
-            $info['time'] = microtime(true);
-            $info['ram'] = memory_get_usage(false);
-
-            eval($eval);
-
-            $info['time'] = round(microtime(true) - $info['time'], 6);
-            $info['ram'] = Helper_View::formatSize(memory_get_usage(false) - $info['ram'], 6);
-
-            echo '</code></pre>';
-            echo str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
-            return '';
+        if (mb_substr($buf, 0, mb_strlen(ini_get('error_prepend_string'))) == ini_get('error_prepend_string')) {
+            $buf = mb_substr($buf, mb_strlen(ini_get('error_prepend_string')));
         }
+        if (mb_substr($buf, -mb_strlen(ini_get('error_append_string'))) == ini_get('error_append_string')) {
+            $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
+        }
+
+        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
     }
 
 
