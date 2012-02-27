@@ -35,7 +35,7 @@
  * @author    Vincent Blavet <vincent@phpconcept.net>
  * @copyright 1997-2010 The Authors
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version   CVS: $Id: Tar.php 314430 2011-08-07 14:45:45Z mrook $
+ * @version   CVS: $Id: Tar.php 323476 2012-02-24 15:27:26Z mrook $
  * @link      http://pear.php.net/package/Archive_Tar
  */
 
@@ -50,7 +50,7 @@ define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
 * @package Archive_Tar
 * @author  Vincent Blavet <vincent@phpconcept.net>
 * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
-* @version $Revision: 314430 $
+* @version $Revision: 323476 $
 */
 class Archive_Tar extends PEAR
 {
@@ -674,9 +674,9 @@ class Archive_Tar extends PEAR
     // {{{ _openWrite()
     function _openWrite()
     {
-        if ($this->_compress_type == 'gz')
+        if ($this->_compress_type == 'gz' && function_exists('gzopen'))
             $this->_file = @gzopen($this->_tarname, "wb9");
-        else if ($this->_compress_type == 'bz2')
+        else if ($this->_compress_type == 'bz2' && function_exists('bzopen'))
             $this->_file = @bzopen($this->_tarname, "w");
         else if ($this->_compress_type == 'none')
             $this->_file = @fopen($this->_tarname, "wb");
@@ -1775,7 +1775,7 @@ class Archive_Tar extends PEAR
             if ($this->_compress_type == 'gz') {
                 while (!@gzeof($v_temp_tar)) {
                     $v_buffer = @gzread($v_temp_tar, 512);
-                    if ($v_buffer == ARCHIVE_TAR_END_BLOCK) {
+                    if ($v_buffer == ARCHIVE_TAR_END_BLOCK || strlen($v_buffer) == 0) {
                         // do not copy end blocks, we will re-make them
                         // after appending
                         continue;
@@ -1920,7 +1920,11 @@ class Archive_Tar extends PEAR
                 }
             }
         }
-        $v_result = strtr($v_result, '\\', '/');
+        
+        if (defined('OS_WINDOWS') && OS_WINDOWS) {
+            $v_result = strtr($v_result, '\\', '/');
+        }
+        
         return $v_result;
     }
 
