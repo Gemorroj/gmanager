@@ -67,9 +67,14 @@ var Gmanager = {
         return (/[\d]/.test(String.fromCharCode(key)));
     },
     check: function (f, n, c) {
-        var i = 0;
-        for (; i < f[n].length; i++) {
-            f[n][i].checked = c;
+        if (typeof f[n] === "undefined") {
+            return false;
+        } else if (f[n] instanceof HTMLInputElement) {
+            f[n].checked = c;
+        } else {
+            for (var i = 0, l = f[n].length; i < l; i++) {
+                f[n][i].checked = c;
+            }
         }
     },
     checkForm: function (f, n) {
@@ -82,8 +87,7 @@ var Gmanager = {
             return f[n].checked;
         }
 
-        var i = 0;
-        for (; i < f[n].length; i++) {
+        for (var i = 0, l = f[n].length; i < l; i++) {
             if (f[n][i].checked === true) {
                 return true;
             }
