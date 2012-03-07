@@ -746,7 +746,7 @@ abstract class Gmanager
             return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
         }
 
-        $content = rawurlencode(trim($content));
+        $content = rawurlencode($content);
 
         $wr = fwrite($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
