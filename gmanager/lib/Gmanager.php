@@ -771,7 +771,7 @@ abstract class Gmanager
             $r .= fread($fp, 1024);
         }
         fclose($fp);
-        return trim($r);
+        return $r;
     }
 
 
