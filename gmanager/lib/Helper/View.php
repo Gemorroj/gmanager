@@ -103,17 +103,19 @@ class Helper_View
      * xhtmlHighlight
      *
      * @param string $fl
-     * @return string
+     * @return array
      */
     public static function xhtmlHighlight ($fl = '')
     {
-        return str_replace(array('&nbsp;', '<code>', '</code>'), array('&#160;', '', ''),
-            preg_replace('#color="(.*?)"#', 'style="color: $1"',
-                str_replace(array('<font ', '</font>'), array('<span ', '</span>'),
-                    highlight_string($fl, true)
+        return array_slice(explode("\n",
+            str_replace(array('&nbsp;', '<code>', '</code>', '<br />'), array(' ', '', '', "\n"),
+                preg_replace('#color="(.*?)"#', 'style="color: $1"',
+                    str_replace(array('<font ', '</font>'), array('<span ', '</span>'),
+                        highlight_string($fl, true)
+                    )
                 )
             )
-        );
+        ), 1, -2);
     }
 
 
@@ -121,11 +123,11 @@ class Helper_View
      * urlHighlight
      *
      * @param string $fl
-     * @return string
+     * @return array
      */
     public static function urlHighlight ($fl = '')
     {
-        return '<code>' . nl2br(
+        return explode("\n",
             preg_replace('/(&quot;|&#039;)[^<>]*(&quot;|&#039;)/iU', '<span style="color:#DD0000">$0</span>',
                 preg_replace('/&lt;!--.*--&gt;/iU', '<span style="color:#FF8000">$0</span>',
                     preg_replace('/(&lt;[^\s!]*\s)([^<>]*)([\/?]?&gt;)/iU', '$1<span style="color:#007700">$2</span>$3',
@@ -135,7 +137,7 @@ class Helper_View
                     )
                 )
             )
-        ) . '</code>';
+        );
     }
 
 

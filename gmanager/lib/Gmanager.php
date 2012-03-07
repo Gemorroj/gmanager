@@ -748,17 +748,23 @@ abstract class Gmanager
 
         $content = rawurlencode(trim($content));
 
-        fputs($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
+        $wr = fwrite($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
             'Content-length: ' . (mb_strlen($content) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
             'Connection: close' . "\r\n" .
             'User-Agent: GManager ' . Config::getVersion() . "\r\n\r\n" .
             'f=' . $content . "\r\n\r\n");
+        if ($wr === false) {
+            return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
+        }
 
         $r = '';
-        while ($r != "\r\n") {
+        while ($r !== "\r\n") {
             $r = fgets($fp);
+            if ($r === false) {
+                return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
+            }
         }
         $r = '';
         while (!feof($fp)) {
@@ -823,17 +829,17 @@ abstract class Gmanager
      */
     public function code ($fl = '', $line = 0, $url = false)
     {
-        $array = explode('<br />', $url ? Helper_View::urlHighlight($fl) : Helper_View::xhtmlHighlight($fl));
+        $array = $url ? Helper_View::urlHighlight($fl) : Helper_View::xhtmlHighlight($fl);
         $all = sizeof($array);
         $len = mb_strlen($all);
         $pg = '';
         for ($i = 0; $i < $all; ++$i) {
             $next = $i + 1;
             $l = mb_strlen($next);
-            $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . '<br/>';
+            $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . "\n";
         }
 
-        return '<div class="code"><code>' . $pg . '</code></div>';
+        return '<div class="code"><pre><code>' . $pg . '</code></pre></div>';
     }
 
 
