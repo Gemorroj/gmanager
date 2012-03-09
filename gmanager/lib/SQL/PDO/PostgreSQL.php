@@ -214,7 +214,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
         } else {
             $q = $this->_resource->query('SELECT * FROM information_schema.tables;');
             if ($q) {
-                while($row = $q->fetch(PDO::FETCH_ASSOC)) {
+                while ($row = $q->fetch(PDO::FETCH_ASSOC)) {
                     $true .= '<option value="' . rawurlencode($row['table_name']) . '">' . htmlspecialchars($row['table_name'], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;

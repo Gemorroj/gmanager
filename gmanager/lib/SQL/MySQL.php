@@ -208,7 +208,7 @@ class SQL_MySQL implements SQL_Interface
         } else {
             $q = mysql_query('SHOW TABLES;', $this->_resource);
             if ($q) {
-                while($row = mysql_fetch_row($q)) {
+                while ($row = mysql_fetch_row($q)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;

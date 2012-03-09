@@ -24,9 +24,18 @@ abstract class Gmanager
      */
     private static $_instance = null;
 
-    private function __construct(){}
-    private function __clone(){}
-    private function __wakeup(){}
+    private function __construct()
+    {
+        
+    }
+    private function __clone()
+    {
+        
+    }
+    private function __wakeup()
+    {
+        
+    }
 
 
     /**
@@ -94,7 +103,7 @@ abstract class Gmanager
                 $c = '.';
             }
 
-            Registry::set('current',  str_replace('\\', '/', $c));
+            Registry::set('current', str_replace('\\', '/', $c));
             Registry::set('currentType', self::$_instance->filetype(Registry::get('current')));
 
             if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
@@ -748,13 +757,16 @@ abstract class Gmanager
 
         $content = rawurlencode($content);
 
-        $wr = fwrite($fp, 'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
+        $wr = fwrite(
+            $fp,
+            'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
             'Content-length: ' . (mb_strlen($content) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
             'Connection: close' . "\r\n" .
             'User-Agent: GManager ' . Config::getVersion() . "\r\n\r\n" .
-            'f=' . $content . "\r\n\r\n");
+            'f=' . $content . "\r\n\r\n"
+        );
         if ($wr === false) {
             return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
         }

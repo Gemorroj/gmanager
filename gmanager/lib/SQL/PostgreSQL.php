@@ -206,7 +206,7 @@ class SQL_PostgreSQL implements SQL_Interface
         } else {
             $q = pg_query($this->_resource, 'SELECT * FROM information_schema.tables;');
             if ($q) {
-                while($row = pg_fetch_assoc($q)) {
+                while ($row = pg_fetch_assoc($q)) {
                     $true .= '<option value="' . rawurlencode($row['table_name']) . '">' . htmlspecialchars($row['table_name'], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;

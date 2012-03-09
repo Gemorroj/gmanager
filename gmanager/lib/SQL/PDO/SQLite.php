@@ -198,7 +198,7 @@ class SQL_PDO_SQLite implements SQL_Interface
         } else {
             $q = $this->_resource->query('SELECT name FROM sqlite_master WHERE type = "table" ORDER BY name;');
             if ($q) {
-                while($row = $q->fetch(PDO::FETCH_NUM)) {
+                while ($row = $q->fetch(PDO::FETCH_NUM)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;

@@ -450,7 +450,7 @@ class Archive_Tars implements Archive_Interface
         $sysName    = IOWrapper::set($name);
 
         $folder = '';
-        foreach($tgz->listContent() as $f) {
+        foreach ($tgz->listContent() as $f) {
             if ($arch_name == $f['filename']) {
                 $folder = $f['typeflag'] == 5 ? 1 : 0;
                 break;

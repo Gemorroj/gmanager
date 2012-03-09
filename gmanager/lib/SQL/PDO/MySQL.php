@@ -211,7 +211,7 @@ class SQL_PDO_MySQL implements SQL_Interface
         } else {
             $q = $this->_resource->query('SHOW TABLES;');
             if ($q) {
-                while($row = $q->fetch(PDO::FETCH_NUM)) {
+                while ($row = $q->fetch(PDO::FETCH_NUM)) {
                     $true .= '<option value="' . rawurlencode($row[0]) . '">' . htmlspecialchars($row[0], ENT_NOQUOTES) . '</option>';
                 }
                 return $true;
