@@ -25,11 +25,11 @@ class Config
 
 
     /**
-     * Constructor
+     * setConfig
      * 
      * @param string $config
      */
-    public function __construct ($config)
+    public static function setConfig ($config)
     {
         self::$_config = new Config_Ini($config);
 
@@ -38,7 +38,7 @@ class Config
 
         Language::setLanguage(self::get('Gmanager', 'language'));
 
-        define('PCLZIP_TEMPORARY_DIR', $this->getTemp() . '/');
+        define('PCLZIP_TEMPORARY_DIR', self::getTemp() . '/');
         define('GMANAGER_REQUEST_TIME', time());
 
         mb_internal_encoding('UTF-8');

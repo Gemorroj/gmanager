@@ -16,7 +16,7 @@
 define('GMANAGER_START', microtime(true));
 define('GMANAGER_PATH', dirname(__FILE__));
 
-new Config('config.ini');
+Config::setConfig('config.ini');
 
 set_include_path(
     get_include_path() . PATH_SEPARATOR .
