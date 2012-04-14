@@ -8,13 +8,16 @@
  * @link http://wapinet.ru/gmanager/
  * @version 0.8.1 beta
  * 
- * PHP version >= 5.2.1
+ * PHP version >= 5.2.3
  * 
  */
 
 
 class SQL_PDO_SQLite implements SQL_Interface
 {
+    /**
+     * @var PDO
+     */
     private $_resource;
 
 
@@ -22,7 +25,7 @@ class SQL_PDO_SQLite implements SQL_Interface
      * PDO SQLite connector
      * 
      * @param string $db
-     * @return object|string
+     * @return PDO|string
      */
     private function _connect ($db = '')
     {
@@ -240,17 +243,13 @@ class SQL_PDO_SQLite implements SQL_Interface
             $r = $this->_resource->query($q . ';');
             $time += microtime(true) - $start;
 
-            if (!$r) {
+            if (!is_object($r)) {
                 $tmp = $this->_resource->errorInfo();
                 return Helper_View::message(Language::get('sql_query_false'), Helper_View::MESSAGE_ERROR_EMAIL) . '<div><code>' . htmlspecialchars($tmp[2], ENT_NOQUOTES) . '</code></div>';
             } else {
-                if (is_object($r)) {
-                    while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
-                        $result[] = $row;
-                    }
-                    $rows += sizeof($result);
-                } else if ($r === true) {
-                    $rows += $this->_resource->rowCount();
+                $rows += $r->rowCount();
+                while ($row = $r->fetch(PDO::FETCH_ASSOC)) {
+                    $result[] = $row;
                 }
             }
             $i++;

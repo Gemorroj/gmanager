@@ -8,7 +8,7 @@
  * @link http://wapinet.ru/gmanager/
  * @version 0.8.1 beta
  * 
- * PHP version >= 5.2.1
+ * PHP version >= 5.2.3
  * 
  */
 
@@ -275,11 +275,11 @@ class Getf
 
         // Кэш
         header('Cache-Control: public, must-revalidate, max-age=60');
-        header('Pragma: cache');
+        header('Pragma: public');
         //header('Expires: Tue, 10 Apr 2038 01:00:00 GMT');
 
 
-        header('Connection: Close');
+        header('Connection: close');
         //header('Keep-Alive: timeout=10, max=60');
         //header('Connection: Keep-Alive');
 

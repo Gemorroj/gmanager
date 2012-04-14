@@ -8,13 +8,16 @@
  * @link http://wapinet.ru/gmanager/
  * @version 0.8.1 beta
  * 
- * PHP version >= 5.2.1
+ * PHP version >= 5.2.3
  * 
  */
 
 
 class SQL_MySQLi implements SQL_Interface
 {
+    /**
+     * @var mysqli
+     */
     private $_resource;
 
 
@@ -26,7 +29,7 @@ class SQL_MySQLi implements SQL_Interface
      * @param string $pass
      * @param string $db
      * @param string $charset
-     * @return object|string
+     * @return mysqli|string
      */
     private function _connect ($host = 'localhost', $name = 'root', $pass = '', $db = '', $charset = 'utf8')
     {
@@ -110,7 +113,7 @@ class SQL_MySQLi implements SQL_Interface
              . 'if (!$connect || $connect->connect_error) {' . "\n"
              . '     exit(\'Can not connect to MySQL</div></body></html>\');' . "\n"
              . '}' . "\n"
-             . '$connect->set_charset(\'' . str_ireplace('utf-8', 'utf8', $charset) . '\');' . "\n\n";
+             . '$connect->set_charset(\'' . $charset . '\');' . "\n\n";
 
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"

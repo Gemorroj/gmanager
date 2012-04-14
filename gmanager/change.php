@@ -8,7 +8,7 @@
  * @link http://wapinet.ru/gmanager/
  * @version 0.8.1 beta
  * 
- * PHP version >= 5.2.1
+ * PHP version >= 5.2.3
  * 
  */
 

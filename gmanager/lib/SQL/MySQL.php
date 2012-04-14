@@ -8,13 +8,16 @@
  * @link http://wapinet.ru/gmanager/
  * @version 0.8.1 beta
  * 
- * PHP version >= 5.2.1
+ * PHP version >= 5.2.3
  * 
  */
 
 
 class SQL_MySQL implements SQL_Interface
 {
+    /**
+     * @var resource
+     */
     private $_resource;
 
 
@@ -34,7 +37,7 @@ class SQL_MySQL implements SQL_Interface
             return Helper_View::message(Language::get('sql_connect_false'), Helper_View::MESSAGE_ERROR);
         }
         if ($charset) {
-            mysql_unbuffered_query('SET NAMES `' . mysql_real_escape_string($charset, $this->_resource) . '`', $this->_resource);
+            mysql_set_charset($charset, $this->_resource);
         }
 
         if ($db) {
@@ -113,7 +116,7 @@ class SQL_MySQL implements SQL_Interface
 
              . '$connect = mysql_connect($_POST[\'host\'], $_POST[\'name\'], $_POST[\'pass\']) or die (\'Can not connect to MySQL</div></body></html>\');' . "\n"
              . 'mysql_select_db($_POST[\'db\'], $connect) or die (\'Error select the database</div></body></html>\');' . "\n"
-             . 'mysql_query(\'SET NAMES `' . str_ireplace('utf-8', 'utf8', $charset) . '`\', $connect);' . "\n\n";
+             . 'mysql_set_charset(\'' . $charset . '\', $connect);' . "\n\n";
 
         foreach ($query as $q) {
             $out .= '$sql = "' . str_replace('"', '\"', trim($q)) . ';";' . "\n"
