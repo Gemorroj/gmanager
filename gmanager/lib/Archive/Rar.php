@@ -9,13 +9,20 @@
  * @version 0.8.1 beta
  * 
  * PHP version >= 5.2.3
+ * PECL rar >= 2.0.0
  * 
  */
 
 
 class Archive_Rar implements Archive_Interface
 {
+    /**
+     * @var string
+     */
     private $_name;
+    /**
+     * @var RarArchive
+     */
     private $_archive;
 
 
@@ -31,6 +38,17 @@ class Archive_Rar implements Archive_Interface
 
 
     /**
+     * Destructor
+     */
+    public function __destruct ()
+    {
+        if ($this->_archive !== null) {
+            $this->_archive->close();
+        }
+    }
+
+
+    /**
      * Open Archive
      *
      * @return RarArchive
@@ -38,7 +56,7 @@ class Archive_Rar implements Archive_Interface
     private function _open()
     {
         if ($this->_archive === null) {
-            $this->_archive = rar_open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
+            $this->_archive = RarArchive::open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
         }
         return $this->_archive;
     }
@@ -125,14 +143,12 @@ class Archive_Rar implements Archive_Interface
         $rar = $this->_open();
 
         foreach ($ext as $var) {
-            $entry = rar_entry_get($rar, $var);
+            $entry = $rar->getEntry($var);
             if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
-                if (Config::get('Gmanager', 'mode') == 'FTP') {
-                }
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
             } else if (!Gmanager::getInstance()->file_exists((Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
                 // fix bug in rar extension
-                // method extract alredy returned "true"
+                // method extract already returned "true"
                 $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
             }
         }
@@ -174,13 +190,12 @@ class Archive_Rar implements Archive_Interface
 
         $rar = $this->_open();
         $err = '';
-        foreach (rar_list($rar) as $f) {
-            $n = $f->getName();
+        foreach ($rar->getEntries() as $entry) {
+            $n = $entry->getName();
 
             if (!$overwrite && Gmanager::getInstance()->file_exists($name . '/' . IOWrapper::get($n))) {
                 $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
             } else {
-                $entry = rar_entry_get($rar, $n);
                 if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
                     if (Config::get('Gmanager', 'mode') == 'FTP') {
                         Gmanager::getInstance()->ftpArchiveEnd();
@@ -222,14 +237,9 @@ class Archive_Rar implements Archive_Interface
     public function lookFile ($f = '', $str = null)
     {
         $rar = $this->_open();
-        $entry = rar_entry_get($rar, $f);
-
-        // создаем временный файл
-        $tmp = Config::getTemp() . '/GmanagerRAR' . GMANAGER_REQUEST_TIME . '.tmp';
-        $entry->extract(true, $tmp); // запишет сюда данные
-
-        $ext = file_get_contents($tmp);
-        unlink($tmp);
+        $entry = $rar->getEntry($f);
+        $stream = $entry->getStream();
+        $ext = stream_get_contents($stream);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
             Gmanager::getInstance()->ftpArchiveEnd();
@@ -282,7 +292,7 @@ class Archive_Rar implements Archive_Interface
     public function listArchive ($down = '')
     {
         $rar = $this->_open();
-        $list = rar_list($rar);
+        $list = $rar->getEntries();
 
         if (!$list) {
             if (Config::get('Gmanager', 'mode') == 'FTP') {
@@ -292,25 +302,24 @@ class Archive_Rar implements Archive_Interface
         } else {
             $r_current = Helper_View::getRawurl($this->_name);
             $l = '';
+            $i = 0;
 
             if ($down) {
                 $list = array_reverse($list);
             }
 
-            $s = sizeof($list);
-            for ($i = 0; $i < $s; ++$i) {
+            foreach ($list as $entry) {
+                $r_name = Helper_View::getRawurl($entry->getName());
 
-                $r_name = Helper_View::getRawurl($list[$i]->getName());
-
-                if (!$list[$i]->getCrc()) {
+                if ($entry->isDirectory()) {
                     $type = 'DIR';
-                    $name = htmlspecialchars($list[$i]->getName(), ENT_NOQUOTES);
+                    $name = htmlspecialchars($entry->getName(), ENT_NOQUOTES);
                     $size = ' ';
                     $down = ' ';
                 } else {
-                    $type = htmlspecialchars(Helper_System::getType($list[$i]->getName()), ENT_NOQUOTES);
-                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($list[$i]->getName(), true), ENT_NOQUOTES) . '</a>';
-                    $size = Helper_View::formatSize($list[$i]->getUnpackedSize());
+                    $type = htmlspecialchars(Helper_System::getType($entry->getName()), ENT_NOQUOTES);
+                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($entry->getName(), true), ENT_NOQUOTES) . '</a>';
+                    $size = Helper_View::formatSize($entry->getUnpackedSize());
                     $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 
@@ -337,7 +346,7 @@ class Archive_Rar implements Archive_Interface
                     $l .= '<td> </td>';
                 }
                 if (Config::get('Display', 'date')) {
-                    $l .= '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($list[$i]->getFileTime())) . '</td>';
+                    $l .= '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())) . '</td>';
                 }
                 if (Config::get('Display', 'uid')) {
                     $l .= '<td> </td>';
@@ -346,7 +355,7 @@ class Archive_Rar implements Archive_Interface
                     $l .= '<td> </td>';
                 }
                 if (Config::get('Display', 'n')) {
-                    $l .= '<td>' . ($i + 1) . '</td>';
+                    $l .= '<td>' . (++$i) . '</td>';
                 }
 
                 $l .= '</tr>';

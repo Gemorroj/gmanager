@@ -15,7 +15,13 @@
 
 class Archive_Tars implements Archive_Interface
 {
+    /**
+     * @var string
+     */
     private $_name;
+    /**
+     * @var Archive_Tar
+     */
     private $_archive;
 
 

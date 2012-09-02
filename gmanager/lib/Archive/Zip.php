@@ -15,7 +15,13 @@
 
 class Archive_Zip implements Archive_Interface
 {
+    /**
+     * @var string
+     */
     private $_name;
+    /**
+     * @var PclZip
+     */
     private $_archive;
 
 
