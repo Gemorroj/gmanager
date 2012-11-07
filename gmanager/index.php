@@ -129,5 +129,3 @@ if (!$if && !$f && !$ia) {
 } else {
     echo $found . $tm . Registry::get('foot');
 }
-
-?>

@@ -631,5 +631,3 @@ switch ($_GET['go']) {
 }
 
 echo '<div class="rb">' . round(microtime(true) - GMANAGER_START, 4) . ' / ' . Helper_View::formatSize(memory_get_peak_usage()) . '<br/></div>' . Registry::get('foot');
-
-?>

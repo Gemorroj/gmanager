@@ -489,5 +489,3 @@ class ListData
         return '<tr><td class="red" colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('permission_denided') . '</td></tr>';
     }
 }
-
-?>

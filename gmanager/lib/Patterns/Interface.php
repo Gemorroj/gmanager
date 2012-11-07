@@ -17,5 +17,3 @@ interface Patterns_Interface
 {
     public static function get ();
 }
-
-?>

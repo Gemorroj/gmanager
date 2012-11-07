@@ -41,5 +41,3 @@ class Patterns_MySQL implements Patterns_Interface
         );
     }
 }
-
-?>

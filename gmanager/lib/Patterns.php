@@ -90,5 +90,3 @@ class Patterns
         return $out;
     }
 }
-
-?>

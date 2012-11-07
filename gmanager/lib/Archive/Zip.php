@@ -670,5 +670,3 @@ class Archive_Zip implements Archive_Interface
         }
     }
 }
-
-?>

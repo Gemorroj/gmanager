@@ -593,5 +593,3 @@ class FTP extends Gmanager
         return $m;
     }
 }
-
-?>

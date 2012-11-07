@@ -192,7 +192,6 @@ return array(
     'of files'                      =>  'tập tin',
     'of folders'                    =>  'thư mục',
     'md5'                           =>  'MD5',
-    'look'                          =>  'Xem',
     'del_notify'                    =>  'Bạn có chắc muốn xóa?',
     'check_form'                    =>  'Kiểm tra file hoặc thư mục',
     //'win_chmod'                   =>  'OS Windows not support rights',
@@ -217,5 +216,3 @@ return array(
     'select_database'               =>  'Chọn Database',
     'not_supported'                 =>  'Hoạt động không được hỗ trợ',
 );
-
-?>

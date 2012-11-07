@@ -179,5 +179,3 @@ class SQL
         return $queries;
     }
 }
-
-?>

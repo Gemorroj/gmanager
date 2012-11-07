@@ -46,7 +46,7 @@ return array(
     'scan'                          =>  'Scanner',
     'pattern'                       =>  'Pattern',
     'enter'                         =>  'Browse',
-    'look'                          =>  'Look',
+    'look'                          =>  'View',
     'go'                            =>  'Go',
     'ch'                            =>  'Change',
     'dl'                            =>  'Delete',
@@ -191,7 +191,6 @@ return array(
     'of files'                      =>  'files',
     'of folders'                    =>  'folders',
     'md5'                           =>  'MD5',
-    'look'                          =>  'View',
     'del_notify'                    =>  'Do you really want to delete?',
     'check_form'                    =>  'Check file or directory',
     //'win_chmod'                   =>  'OS Windows not support rights',
@@ -216,5 +215,3 @@ return array(
     'select_database'               =>  'Select Database',
     'not_supported'                 =>  'Operation not supported',
 );
-
-?>

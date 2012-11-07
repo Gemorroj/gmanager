@@ -64,5 +64,3 @@ class Registry
         return array_key_exists($key, self::$_data);
     }
 }
-
-?>

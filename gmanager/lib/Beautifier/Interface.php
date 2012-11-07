@@ -17,5 +17,3 @@ interface Beautifier_Interface
 {
     public static function beautify ($str);
 }
-
-?>

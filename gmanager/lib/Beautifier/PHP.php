@@ -231,5 +231,3 @@ class Beautifier_PHP implements Beautifier_Interface
         return $out;
     }
 }
-
-?>

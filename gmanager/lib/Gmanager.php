@@ -1596,5 +1596,3 @@ abstract class Gmanager
         return octdec('0' . $chmod);
     }
 }
-
-?>

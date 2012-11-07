@@ -27,5 +27,3 @@ interface Archive_Interface
     public function addFile ($ext = array(), $dir = '');
     public function createArchive ($chmod = 0644, $ext = array(), $comment = '', $overwrite = false);
 }
-
-?>

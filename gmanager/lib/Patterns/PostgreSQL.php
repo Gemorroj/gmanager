@@ -38,5 +38,3 @@ class Patterns_PostgreSQL implements Patterns_Interface
         );
     }
 }
-
-?>

@@ -109,5 +109,3 @@ class Patterns_XHTML implements Patterns_Interface
         );
     }
 }
-
-?>

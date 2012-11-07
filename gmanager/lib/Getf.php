@@ -308,5 +308,3 @@ class Getf
         exit($f);
     }
 }
-
-?>

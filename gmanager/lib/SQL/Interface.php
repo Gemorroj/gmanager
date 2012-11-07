@@ -19,5 +19,3 @@ interface SQL_Interface
     public function backup ($host = null, $name = null, $pass = null, $db = '', $charset = null, $tables = array());
     public function query ($host = null, $name = null, $pass = null, $db = '', $charset = null, $data = '');
 }
-
-?>

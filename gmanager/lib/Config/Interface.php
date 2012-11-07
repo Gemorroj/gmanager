@@ -19,5 +19,3 @@ interface Config_Interface
     public function get ($section, $property);
     public function getSection ($section);
 }
-
-?>

@@ -95,5 +95,3 @@ class Helper_System
         rmdir($dir);
     }
 }
-
-?>

@@ -285,5 +285,3 @@ class SQL_PDO_MySQL implements SQL_Interface
         return Helper_View::message(Language::get('sql_true') . $i . '<br/>' . Language::get('sql_rows') . $rows . '<br/>' . str_replace('%time%', round($time, 6), Language::get('microtime')), Helper_View::MESSAGE_SUCCESS) . $out;
     }
 }
-
-?>

@@ -370,5 +370,3 @@ class HTTP extends Gmanager
         return array_map(array('IOWrapper', 'get'), (array)array_diff(scandir(IOWrapper::set($dir), 0), array('.', '..')));
     }
 }
-
-?>

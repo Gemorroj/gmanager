@@ -40,5 +40,3 @@ class IOWrapper
         return ($enc !== 'UTF-8' ? mb_convert_encoding($data, $enc, 'UTF-8') : $data);
     }
 }
-
-?>

@@ -39,5 +39,3 @@ class Language
         return self::$_lng[$str];
     }
 }
-
-?>

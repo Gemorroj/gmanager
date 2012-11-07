@@ -76,6 +76,7 @@ var Gmanager = {
                 f[n][i].checked = c;
             }
         }
+        return false;
     },
     checkForm: function (f, n) {
         if (typeof f[n] === "undefined") {

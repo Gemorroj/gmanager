@@ -29,7 +29,7 @@ Deny from All
 Satisfy All
 </Files>
 
-DirectoryIndex index.php index.htm index.html index.wml index.xhtml index.phtml
+DirectoryIndex index.php index.html
 
 php_value default_mimetype text/html
 
@@ -39,15 +39,11 @@ php_flag magic_quotes_gpc Off
 php_flag magic_quotes_runtime Off
 php_flag magic_quotes_sybase Off
 
-php_value arg_separator.output "&amp;"
-
 # Debug
 php_value error_reporting -1
 php_flag display_errors Off
 php_flag log_errors On
 
-php_flag zlib.output_compression On
-php_value zlib.output_compression_level 6
 
 Options -Indexes
 
@@ -62,7 +58,7 @@ Deny from All
 Satisfy All
 </Files>
 
-DirectoryIndex index.php index.htm index.html index.wml index.xhtml index.phtml
+DirectoryIndex index.php index.html
 
 php_value default_mimetype text/html
 
@@ -72,15 +68,12 @@ php_flag magic_quotes_gpc Off
 php_flag magic_quotes_runtime Off
 php_flag magic_quotes_sybase Off
 
-php_value arg_separator.output "&amp;"
 
 # Debug
 php_value error_reporting -1
 php_flag display_errors On
 php_flag log_errors Off
 
-php_flag zlib.output_compression On
-php_value zlib.output_compression_level 6
 
 Options -Indexes
 
@@ -92,5 +85,3 @@ ErrorDocument 404 /'
         );
     }
 }
-
-?>

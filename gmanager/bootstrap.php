@@ -34,5 +34,3 @@ function __autoload ($class)
 {
     require GMANAGER_PATH . '/lib/' . str_replace('_', '/', $class) . '.php';
 }
-
-?>

@@ -565,5 +565,3 @@ class Archive_Tars implements Archive_Interface
         }
     }
 }
-
-?>

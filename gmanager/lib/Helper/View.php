@@ -177,5 +177,3 @@ class Helper_View
         return '<div class="green">' . $text . '<br/></div>';
     }
 }
-
-?>

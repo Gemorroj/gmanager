@@ -34,5 +34,3 @@ class Patterns_SQLite implements Patterns_Interface
         );
     }
 }
-
-?>

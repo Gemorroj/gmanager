@@ -122,5 +122,3 @@ class Config
         return '0.8.1b';
     }
 }
-
-?>

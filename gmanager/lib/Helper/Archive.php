@@ -38,5 +38,3 @@ class Helper_Archive
         return '';
     }
 }
-
-?>

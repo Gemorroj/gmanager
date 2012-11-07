@@ -384,5 +384,3 @@ class Archive_Rar implements Archive_Interface
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 }
-
-?>

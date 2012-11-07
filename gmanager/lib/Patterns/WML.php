@@ -35,5 +35,3 @@ class Patterns_WML implements Patterns_Interface
         );
     }
 }
-
-?>

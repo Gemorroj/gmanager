@@ -70,5 +70,3 @@ class Patterns_HTML implements Patterns_Interface
         );
     }
 }
-
-?>
