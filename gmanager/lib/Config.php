@@ -21,6 +21,9 @@ class Config
     const REALNAME_FULL             = 2;
     const REALNAME_RELATIVE_HIDE    = 3;
 
+    /**
+     * @var Config_Interface
+     */
     private static $_config;
 
 

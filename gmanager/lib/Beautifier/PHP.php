@@ -15,6 +15,9 @@
 
 class Beautifier_PHP implements Beautifier_Interface
 {
+    /**
+     * @var string
+     */
     public static $tab = '    ';
 
 

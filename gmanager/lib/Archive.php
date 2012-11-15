@@ -27,7 +27,13 @@ class Archive
     const FORMAT_GZ  = 'GZ';
 
 
+    /**
+     * @var string
+     */
     private $_format;
+    /**
+     * @var string
+     */
     private $_file;
 
 

@@ -14,6 +14,9 @@
 
 class Config_Ini implements Config_Interface
 {
+    /**
+     * @var array
+     */
     private $_config = array();
 
 

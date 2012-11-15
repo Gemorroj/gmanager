@@ -15,11 +15,23 @@
 
 class FTP extends Gmanager
 {
-    private $_res               = null;
-    //private $_url               = null;
+    /**
+     * @var resource
+     */
+    private $_res;
+    /**
+     * @var array
+     */
     static private $_id         = array();
+    /**
+     * @var array
+     */
     static private $_rawlist    = array();
+    /**
+     * @var string
+     */
     static private $_dir        = '/';
+    //private $_url;
 
 
     /**

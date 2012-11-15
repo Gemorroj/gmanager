@@ -25,6 +25,9 @@ class Patterns
     const XHTML         = 'XHTML';
 
 
+    /**
+     * @var array
+     */
     private $_patterns = array();
 
 

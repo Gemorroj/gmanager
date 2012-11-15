@@ -613,9 +613,9 @@ switch ($_GET['go']) {
             $h_file = htmlspecialchars($_GET['f']);
             echo '<div class="input"><form action="change.php?go=rename&amp;c=' . Registry::get('rCurrent') . '&amp;f=' . $r_file . '" method="post"><div><input type="hidden" name="arch_name" value="' . $r_file . '"/>' . Language::get('change_func') . '<br/><input type="text" name="name" value="' . $h_file . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input type="submit" value="' . Language::get('ch') . '"/></div></form></div>';
         } else {
+            $size = $md5 = '';
             if (Registry::get('currentType') == 'dir') {
                 $size = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current'), true));
-                $md5 = '';
             } else if (Registry::get('currentType') == 'file' || Registry::get('currentType') == 'link') {
                 $size = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current')));
                 if (Config::get('Gmanager', 'mode') == 'FTP') {

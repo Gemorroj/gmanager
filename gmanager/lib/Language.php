@@ -15,6 +15,9 @@
 
 class Language
 {
+    /**
+     * @var array
+     */
     private static $_lng = array();
 
     /**
@@ -24,7 +27,7 @@ class Language
      */
     public static function setLanguage ($lng = 'en')
     {
-        self::$_lng = require_once GMANAGER_PATH . '/lng/' . $lng . '.php';
+        self::$_lng = require GMANAGER_PATH . '/lng/' . $lng . '.php';
     }
 
 

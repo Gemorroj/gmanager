@@ -17,7 +17,6 @@ class ListData
 {
     /**
      * @var int $getListCountPages
-     * @access public
      */
     public static $getListCountPages = 0;
 

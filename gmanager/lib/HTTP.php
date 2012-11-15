@@ -15,7 +15,13 @@
 
 class HTTP extends Gmanager
 {
+    /**
+     * @var array
+     */
     static private $_stat   = array();
+    /**
+     * @var array
+     */
     static private $_id     = array();
 
 

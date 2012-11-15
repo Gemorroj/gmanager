@@ -44,12 +44,32 @@ php_value upload_max_filesize 999M
 php_value post_max_size 999M
 php_value max_input_time -1
 
-# Compression
-php_flag zlib.output_compression On
-php_value zlib.output_compression_level 6
-
 # Mbstring
 php_value mbstring.func_overload 0
+
+
+# Compression
+#php_flag zlib.output_compression On
+#php_value zlib.output_compression_level 6
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/css application/javascript text/html application/xhtml+xml application/xml text/xml application/rss+xml text/vnd.wap.wml text/plain
+    <IfModule mod_setenvif.c>
+        BrowserMatch ^Mozilla/4 gzip-only-text/html
+        BrowserMatch ^Mozilla/4\.0[678] no-gzip
+        BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    </IfModule>
+</IfModule>
+
+# Expires
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/gif "access plus 2 months"
+    ExpiresByType image/jpeg "access plus 2 months"
+    ExpiresByType image/png "access plus 2 months"
+    ExpiresByType text/css "access plus 2 months"
+    ExpiresByType application/javascript "access plus 2 months"
+    ExpiresByType image/vnd.microsoft.icon "access plus 2 months"
+</IfModule>
 
 # Highlight PHP code
 #php_value highlight.string #ff0000

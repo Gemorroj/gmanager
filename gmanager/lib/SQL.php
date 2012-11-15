@@ -25,7 +25,13 @@ class SQL
     const DB_SQLITE     = 'sqlite';
 
 
+    /**
+     * @var string
+     */
     private $_db;
+    /**
+     * @var bool
+     */
     private $_force = false;
 
 

@@ -15,6 +15,9 @@
 
 class Registry
 {
+    /**
+     * @var array
+     */
     static private $_data = array();
 
 
