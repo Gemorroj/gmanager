@@ -1,3 +1,5 @@
+"use strict";
+
 var Gmanager = {
     _editId: null,
     _getKey: function (e) {
@@ -45,11 +47,7 @@ var Gmanager = {
         var r;
 
         if ("setSelectionRange" in t) {
-            if ("opera" in window) {
-                t.setSelectionRange(n + 1, n + 1);
-            } else {
-                t.setSelectionRange(n, n);
-            }
+            t.setSelectionRange(n, n);
         } else {
             r = t.createTextRange();
             r.collapse(true);
@@ -101,7 +99,7 @@ var Gmanager = {
         return window.confirm(document.getElementById("delN").innerHTML);
     },
     paste: function (p) {
-        var o = document.forms.post.sql;
+        var o = document.getElementById("sql");
 
         if (p !== "" && o) {
             this._insAtCaret(o, decodeURIComponent(p));
@@ -152,10 +150,11 @@ var Gmanager = {
     },
     formatCode: function (e, t) {
         var pos = this._getCaretPosition(t),
+            key = this._getKey(e),
             arr, str,
             comp = "";
 
-        if ((this._getKey(e) === 13) && !(/opera mini|opera mobi/.test(window.navigator.userAgent.toLowerCase()))) {
+        if ((key === 13 || key === 10) && !(/Opera Mini|Opera Mobi|Opera Tablet/.test(window.navigator.userAgent))) {
             arr = t.value.substring(0, pos).split("\n");
             str = arr[arr.length - 1].split("");
 
