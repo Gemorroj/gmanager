@@ -175,5 +175,89 @@ var Gmanager = {
             return false;
         }
         return true;
+    },
+    textareaLines: function (ta) {
+        var move = false;
+        var el = document.createElement("textarea");
+
+        function setLine () {
+            el.scrollTop = ta.scrollTop;
+            el.style.top = (ta.offsetTop - 3) + "px";
+            el.style.height = (ta.offsetHeight - 4) + "px";
+        }
+        function renderLines (newLine) {
+            var str = "";
+            var l = ta.value.split("\n").length + (newLine === true ? 1 : 0);
+            if (l < 2) {
+                str += "1\n";
+            } else {
+                for (var i = 1; i <= l; i++) {
+                    str += (i + "\n");
+                }
+            }
+
+            el.value = str;
+
+            setLine();
+        }
+
+        el.onscroll = function () { setLine(); };
+        el.style.height = (ta.offsetHeight - 4) + "px";
+        el.style.width = "32px";
+        el.style.position = "absolute";
+        el.style.overflow = "hidden";
+        el.style.textAlign = "right";
+        el.style.resize = "none";
+        el.style.left = "0px";
+        el.style.paddingRight = "0.2em";
+        el.style.zIndex = 0;
+        el.readOnly = "readonly";
+        ta.style.marginLeft = "32px";
+        ta.style.zIndex = 1;
+        ta.style.position = "relative";
+        ta.parentNode.insertBefore(el, ta.nextSibling);
+        renderLines(false);
+        //ta.focus();
+
+        ta.onkeydown = function (e) {
+            var key = Gmanager._getKey(e);
+            if (key === 13 || key === 10) {
+                renderLines(true);
+            } else {
+                setLine();
+            }
+        };
+        ta.onmousedown = function () {
+            setLine();
+            move = true;
+        };
+        ta.onmouseup = function () {
+            setLine();
+            move = false;
+        };
+        ta.onmousemove = function () {
+            if (move) {
+                setLine();
+            }
+        };
+        ta.onscroll = function () {
+            setLine();
+        };
+
+        //TODO:fix for > 1 textarea
+        window.onresize = function () {
+            setLine();
+        };
+    }
+};
+
+window.onload = function () {
+    var t = document.getElementsByTagName("textarea");
+    var i, initT = [], l = t.length;
+    for (i = 0; i < l; i++) {
+        initT.push(t[i]);
+    }
+    for (i = 0; i < l; i++) {
+        Gmanager.textareaLines(initT[i]);
     }
 };

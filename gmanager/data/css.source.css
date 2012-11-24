@@ -268,7 +268,7 @@ div.bar input[type="text"] {
 }
 
 input.pinput {
-    -wap-input-format:'*N';
+    -wap-input-format: '*N';
     width: 2%;
     min-width: 20px;
 }
