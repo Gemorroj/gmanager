@@ -96,8 +96,12 @@ abstract class Gmanager
 
             Registry::set('current', str_replace('\\', '/', $c));
             Registry::set('currentType', self::$_instance->filetype(Registry::get('current')));
+            Registry::set('currentTypeLink', null);
 
-            if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
+            if (Registry::get('currentType') == 'link') {
+                $link = self::$_instance->readlink(Registry::get('current'));
+                Registry::set('currentTypeLink', self::$_instance->filetype($link[1]));
+            } else if (Registry::get('currentType') == 'dir') {
                 if (mb_substr(Registry::get('current'), -1) != '/') {
                     Registry::set('current', Registry::get('current') . '/');
                 }
@@ -146,7 +150,7 @@ abstract class Gmanager
         $d = dirname(str_replace('\\', '/', $realpath));
         $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
 
-        if (Registry::get('currentType') == 'dir' || Registry::get('currentType') == 'link') {
+        if (Registry::get('currentType') == 'dir' || Registry::get('currentTypeLink') == 'dir') {
             if (Registry::get('current') == '.') {
                 return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars(Helper_View::strLink(self::$_instance->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(self::$_instance->getcwd()) . ')<br/></div>';
             } else {
@@ -208,6 +212,11 @@ abstract class Gmanager
      */
     public function look ($current = '', $itype = '', $down = '')
     {
+        if (self::$_instance->is_link($current)) {
+            $link = self::$_instance->readlink($current);
+            $current = $link[1] . '/';
+        }
+
         if (!self::$_instance->is_dir($current) || !self::$_instance->is_readable($current)) {
             return ListData::getListDenyData();
         }
@@ -319,8 +328,14 @@ abstract class Gmanager
             } else {
 
                 if ($overwrite || !self::$_instance->file_exists($dest . '/' . $file)) {
-                    if (!self::$_instance->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
-                        $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_file_false')) . ' (' . Errors::get() . ')';
+                    if (Registry::get('sysType') != 'WIN' && self::$_instance->is_link($d . '/' . $file)) {
+                        if (!self::$_instance->symlink($d . '/' . $file, $dest . '/' . $file, $ch)) {
+                            $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_file_false')) . ' (' . Errors::get() . ')';
+                        }
+                    } else {
+                        if (!self::$_instance->copy($d . '/' . $file, $dest . '/' . $file, $ch)) {
+                            $error[] = str_replace('%file%', htmlspecialchars($d . '/' . $file, ENT_NOQUOTES), Language::get('copy_file_false')) . ' (' . Errors::get() . ')';
+                        }
                     }
                 } else {
                     $error[] = Language::get('overwrite_false') . ' (' . htmlspecialchars($dest . '/' . $file, ENT_NOQUOTES) . ')';

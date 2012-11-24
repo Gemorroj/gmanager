@@ -113,7 +113,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
 
 
     default:
-        if (Registry::get('currentType') != 'file') {
+        if (Registry::get('currentType') != 'file' && Registry::get('currentTypeLink') != 'file') {
             echo Helper_View::message(Language::get('not_found'), Helper_View::MESSAGE_ERROR);
             break;
         }

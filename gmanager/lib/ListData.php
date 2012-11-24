@@ -84,10 +84,17 @@ class ListData
                 $type = 'LINK';
                 $tmp = $obj->readlink($file);
                 $r_file = Helper_View::getRawurl($tmp[1]);
+                $r_link = Helper_View::getRawurl($file);
+                $is_dir = $obj->is_dir($tmp[1]);
 
                 if (Config::get('Display', 'name')) {
-                    $name = htmlspecialchars(Helper_View::strLink($tmp[0], true), ENT_NOQUOTES);
-                    $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
+                    $name = htmlspecialchars(Helper_View::strLink($tmp[0] . ' (' . $tmp[1] . ($is_dir ? '/' : '') . ')', true), ENT_NOQUOTES);
+
+                    if ($is_dir) {
+                        $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '</a></td>';
+                    } else {
+                        $pname = '<td><a href="edit.php?' . $r_file . '">' . $name. '</a></td>';
+                    }
                 }
                 if (Config::get('Display', 'down')) {
                     $pdown = '<td> </td>';
@@ -101,14 +108,14 @@ class ListData
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
+                    $pchange = '<td><a href="change.php?' . $r_link . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::get('Display', 'del')) {
-                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_link . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::get('Display', 'chmod')) {
                     $chmod = $obj->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
+                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_link . '">' . $chmod . '</a></td>';
                 }
                 if (Config::get('Display', 'date')) {
                     $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
@@ -119,7 +126,7 @@ class ListData
                 if (Config::get('Display', 'gid')) {
                     $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
                 }
-                $page0[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_file . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid . $pgid;
+                $page0[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_link . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid . $pgid;
             } else if ($obj->is_dir($file)) {
                 $type = 'DIR';
                 if (Config::get('Display', 'name')) {

@@ -359,6 +359,20 @@ class FTP extends Gmanager
 
 
     /**
+     * symlink
+     *
+     * @param string $from
+     * @param string $to
+     * @param int|string  $chmod
+     * @return bool
+     */
+    public function symlink ($from, $to, $chmod = 0644)
+    {
+        return $this->copy($from, $to, $chmod);
+    }
+
+
+    /**
      * rmdir
      * 
      * @param string $dir

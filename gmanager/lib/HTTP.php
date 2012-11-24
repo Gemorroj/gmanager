@@ -264,7 +264,8 @@ class HTTP extends Gmanager
      */
     public function readlink ($link)
     {
-        chdir(Registry::get('current'));
+        $chdir = Registry::get('currentType') == 'dir' ? Registry::get('current') : dirname(Registry::get('current'));
+        chdir($chdir);
         return array(Helper_System::basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
     }
 
@@ -320,6 +321,28 @@ class HTTP extends Gmanager
         $to   = IOWrapper::set($to);
 
         $result = copy($from, $to);
+        if ($result) {
+            $this->chmod($to, $chmod);
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * copy
+     *
+     * @param string $from
+     * @param string $to
+     * @param int|string  $chmod
+     * @return bool
+     */
+    public function symlink ($from, $to, $chmod = 0644)
+    {
+        $from = IOWrapper::set($from);
+        $to   = IOWrapper::set($to);
+
+        $result = symlink($from, $to);
         if ($result) {
             $this->chmod($to, $chmod);
         }

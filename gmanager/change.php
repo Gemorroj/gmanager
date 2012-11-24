@@ -38,12 +38,15 @@ if (isset($_GET['get']) && Gmanager::getInstance()->is_file($_GET['get'])) {
 }
 
 
-$realpath = Gmanager::getInstance()->realpath(Registry::get('current'));
-if ($realpath && Registry::get('currentType') == 'dir') {
-    $realpath .= '/';
+if (Registry::get('currentType') == 'link') {
+    $realpath = Registry::get('current');
+} else {
+    $realpath = Gmanager::getInstance()->realpath(Registry::get('current'));
+    if ($realpath && Registry::get('currentType') == 'dir') {
+        $realpath .= '/';
+    }
 }
 $realpath = $realpath ? htmlspecialchars(str_replace('\\', '/', $realpath), ENT_COMPAT) : Registry::get('hCurrent');
-
 
 Gmanager::getInstance()->sendHeader();
 
@@ -616,7 +619,7 @@ switch ($_GET['go']) {
             $size = $md5 = '';
             if (Registry::get('currentType') == 'dir') {
                 $size = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current'), true));
-            } else if (Registry::get('currentType') == 'file' || Registry::get('currentType') == 'link') {
+            } else {
                 $size = Helper_View::formatSize(Gmanager::getInstance()->size(Registry::get('current')));
                 if (Config::get('Gmanager', 'mode') == 'FTP') {
                     $md5 = Language::get('md5') . ': ' . md5(Gmanager::getInstance()->file_get_contents(Registry::get('current')));
