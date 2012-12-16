@@ -42,7 +42,7 @@ class Helper_System
         } else {
             if (function_exists('posix_getpwuid') && $name = posix_getpwuid($id)) {
                 return $name['name'];
-            } else if ($name = exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellarg($id) . ');print $login;\'')) {
+            } elseif ($name = exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellarg($id) . ');print $login;\'')) {
                 return $name;
             } else {
                 return $id;

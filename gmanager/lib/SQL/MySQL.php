@@ -261,7 +261,7 @@ class SQL_MySQL implements SQL_Interface
                     while ($row = mysql_fetch_assoc($r)) {
                         $result[] = $row;
                     }
-                } else if ($r === true) {
+                } elseif ($r === true) {
                     $rows += mysql_affected_rows($this->_resource);
                 }
             }

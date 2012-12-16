@@ -72,9 +72,9 @@ class SQL
             case self::DB_MYSQL:
                 if ($this->_force || extension_loaded('pdo_mysql')) {
                     return new SQL_PDO_MySQL;
-                } else if ($this->_force || extension_loaded('mysqli')) {
+                } elseif ($this->_force || extension_loaded('mysqli')) {
                     return new SQL_MySQLi;
-                } else if ($this->_force || extension_loaded('mysql')) {
+                } elseif ($this->_force || extension_loaded('mysql')) {
                     return new SQL_MySQL;
                 }
                 break;
@@ -83,7 +83,7 @@ class SQL
             case self::DB_POSTGRESQL:
                 if ($this->_force || extension_loaded('pdo_pgsql')) {
                     return new SQL_PDO_PostgreSQL;
-                } else if ($this->_force || extension_loaded('pgsql')) {
+                } elseif ($this->_force || extension_loaded('pgsql')) {
                     return new SQL_PostgreSQL;
                 }
                 break;

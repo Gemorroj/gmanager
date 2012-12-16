@@ -276,9 +276,9 @@ class FTP extends Gmanager
     {
         if ($this->is_file($str)) {
             return 'file';
-        } else if ($this->is_dir($str)) {
+        } elseif ($this->is_dir($str)) {
             return 'dir';
-        } else if ($this->is_link($str)) {
+        } elseif ($this->is_link($str)) {
             return 'link';
         }
 
@@ -450,7 +450,7 @@ class FTP extends Gmanager
         if ($t2[0] != PATH_SEPARATOR) {
             if ($t2 == '.') {
                 $t2 = mb_substr(Registry::get('current'), 0, -1);
-            } else if ($t2 == '..') {
+            } elseif ($t2 == '..') {
                 $t2 = mb_substr(strrev(mb_strstr(strrev(Registry::get('current')), '/')), 0, -1);
             } else {
                 $t2 = (Registry::get('current') != '.' ? Registry::get('current') : '') . $t2;
@@ -502,7 +502,7 @@ class FTP extends Gmanager
 
         if (isset(self::$_rawlist[self::$_dir])) {
             return self::$_rawlist[self::$_dir];
-        } else if (isset(self::$_rawlist[self::$_dir . '/'])) {
+        } elseif (isset(self::$_rawlist[self::$_dir . '/'])) {
             return self::$_rawlist[self::$_dir . '/'];
         }
 
@@ -580,9 +580,9 @@ class FTP extends Gmanager
         }
         if ($perm[2] == 'x') {
             $m += 0100;
-        } else if ($perm[2] == 's') {
+        } elseif ($perm[2] == 's') {
             $m += 04100;
-        } else if ($perm[2] == 'S') {
+        } elseif ($perm[2] == 'S') {
             $m += 04000;
         }
 
@@ -595,9 +595,9 @@ class FTP extends Gmanager
         }
         if ($perm[5] == 'x') {
             $m += 010;
-        } else if ($perm[5] == 's') {
+        } elseif ($perm[5] == 's') {
             $m += 02010;
-        } else if ($perm[5] == 'S') {
+        } elseif ($perm[5] == 'S') {
             $m += 02000;
         }
 
@@ -610,9 +610,9 @@ class FTP extends Gmanager
         }
         if ($perm[8] == 'x') {
             $m += 01;
-        } else if ($perm[8] == 't') {
+        } elseif ($perm[8] == 't') {
             $m += 01001;
-        } else if ($perm[8] == 'T') {
+        } elseif ($perm[8] == 'T') {
             $m += 01000;
         }
 

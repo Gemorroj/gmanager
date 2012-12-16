@@ -74,7 +74,7 @@ abstract class Gmanager
             $_GET['lineEditor'] ? Registry::set('lineEditor', true) : Registry::set('lineEditor', false);
 
             setcookie('Gmanager_lineEditor', (int)Registry::get('lineEditor'), 2592000 + GMANAGER_REQUEST_TIME, str_replace('\\', '/', dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
-        } else if (isset($_COOKIE['Gmanager_lineEditor'])) {
+        } elseif (isset($_COOKIE['Gmanager_lineEditor'])) {
             Registry::set('lineEditor', (bool)$_COOKIE['Gmanager_lineEditor']);
         } else {
             Registry::set('lineEditor', Config::get('LineEditor', 'defaultEnable'));
@@ -101,7 +101,7 @@ abstract class Gmanager
             if (Registry::get('currentType') == 'link') {
                 $link = self::$_instance->readlink(Registry::get('current'));
                 Registry::set('currentTypeLink', self::$_instance->filetype($link[1]));
-            } else if (Registry::get('currentType') == 'dir') {
+            } elseif (Registry::get('currentType') == 'dir') {
                 if (mb_substr(Registry::get('current'), -1) != '/') {
                     Registry::set('current', Registry::get('current') . '/');
                 }
@@ -156,7 +156,7 @@ abstract class Gmanager
             } else {
                 return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
             }
-        } else if (Registry::get('currentType') == 'file' && $archive) {
+        } elseif (Registry::get('currentType') == 'file' && $archive) {
             $up = dirname($d);
             return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         } else {
@@ -227,15 +227,15 @@ abstract class Gmanager
         if ($html) {
             if ($itype == 'time') {
                 $out = '&amp;time';
-            } else if ($itype == 'type') {
+            } elseif ($itype == 'type') {
                 $out = '&amp;type';
-            } else if ($itype == 'size') {
+            } elseif ($itype == 'size') {
                 $out = '&amp;size';
-            } else if ($itype == 'chmod') {
+            } elseif ($itype == 'chmod') {
                 $out = '&amp;chmod';
-            } else if ($itype == 'uid') {
+            } elseif ($itype == 'uid') {
                 $out = '&amp;uid';
-            } else if ($itype == 'gid') {
+            } elseif ($itype == 'gid') {
                 $out = '&amp;gid';
             } else {
                 $out = '';
@@ -528,7 +528,7 @@ abstract class Gmanager
 
             if (self::$_instance->is_dir($f) /*&& !self::$_instance->rmdir($f)*/) {
                 $this->delDir($f . '/');
-            } else if (self::$_instance->file_exists($f)) {
+            } elseif (self::$_instance->file_exists($f)) {
                 if (!self::$_instance->unlink($f)) {
                     $err .= $f . '<br/>';
                 }
@@ -880,7 +880,7 @@ abstract class Gmanager
         while (($tmp = fread($fo, 1)) !== '') {
             if ($tmp == $null) {
                 $i++;
-            } else if ($i == 1) {
+            } elseif ($i == 1) {
                 $name .= $tmp;
             }
             if ($i > 2) {
@@ -1385,7 +1385,7 @@ abstract class Gmanager
 
         if ($register == 1) {
             $tmp = mb_strtolower($name);
-        } else if ($register == 2) {
+        } elseif ($register == 2) {
             $tmp = mb_strtoupper($name);
         } else {
             $tmp = $name;

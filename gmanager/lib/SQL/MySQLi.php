@@ -259,7 +259,7 @@ class SQL_MySQLi implements SQL_Interface
                     while ($row = $r->fetch_assoc()) {
                         $result[] = $row;
                     }
-                } else if ($r === true) {
+                } elseif ($r === true) {
                     $rows += $this->_resource->affected_rows;
                 }
             }

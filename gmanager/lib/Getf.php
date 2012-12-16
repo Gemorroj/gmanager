@@ -297,7 +297,7 @@ class Getf
         if ($attach) {
             header('Content-Type: ' . $mime);
             header('Content-Disposition: attachment; filename="' . $name . '"');
-        } else if ($mime == 'text/plain') {
+        } elseif ($mime == 'text/plain') {
             // header('Content-Type: text/plain; charset=' . $charset);
             header('Content-Type: text/plain;');
         } else {

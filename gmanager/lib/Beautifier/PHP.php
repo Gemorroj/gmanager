@@ -23,6 +23,7 @@ class Beautifier_PHP implements Beautifier_Interface
 
     /**
      * Beautifier
+     * Ideally, must meet PSR-2
      * 
      * @param string $str Code
      * @return string
@@ -115,7 +116,7 @@ class Beautifier_PHP implements Beautifier_Interface
                                 $i++;
                             }
                         }
-                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab)) {
+                    } elseif ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab)) {
                         $out .= $str[$i];
                     }
                     break;
@@ -124,7 +125,7 @@ class Beautifier_PHP implements Beautifier_Interface
                 case ' ':
                     if (!$block[0] && !$block[1] && !$block[2] && !$block[3] && !$block[4] && (mb_substr($out, -2) == ', ') || mb_substr($out, -3) == ' . ' || mb_substr($out, -3) == ' = ') {
                         break;
-                    } else if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || (mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab) && mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '(' . "\n" . str_repeat(self::$tab, $tab))) {
+                    } elseif ($block[0] || $block[1] || $block[2] || $block[3] || $block[4] || (mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '{' . "\n" . str_repeat(self::$tab, $tab) && mb_substr($out, -(2 + mb_strlen(str_repeat(self::$tab, $tab)))) != '(' . "\n" . str_repeat(self::$tab, $tab))) {
                         $out .= $str[$i];
                     }
                     break;
@@ -134,7 +135,7 @@ class Beautifier_PHP implements Beautifier_Interface
                     if ($block[0] || $block[1] || $block[2] || $block[3] || $block[4]) {
                         $out .= $str[$i];
                         break;
-                    } else if (!in_array(mb_substr($out, -1), array(' ', "\n"))) {
+                    } elseif (!in_array(mb_substr($out, -1), array(' ', "\n"))) {
                         $out .= ' ';
                     }
                     $tab++;

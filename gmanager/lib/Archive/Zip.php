@@ -280,7 +280,7 @@ class Archive_Zip implements Archive_Interface
         {
             if (Gmanager::getInstance()->is_dir(IOWrapper::get($p_header['filename']))) {
                 Gmanager::getInstance()->rechmod(IOWrapper::get($p_header['filename']), Registry::get('extractArchiveDirectoryChmod'));
-            } else if (Config::get('Gmanager', 'mode') != 'FTP') {
+            } elseif (Config::get('Gmanager', 'mode') != 'FTP') {
                 Gmanager::getInstance()->rechmod(IOWrapper::get($p_header['filename']), Registry::get('extractArchiveFileChmod'));
             }
             return 1;
@@ -356,7 +356,7 @@ class Archive_Zip implements Archive_Interface
 
         if (!$ext) {
             return Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL);
-        } else if ($ext[0]['status'] == 'unsupported_encryption') {
+        } elseif ($ext[0]['status'] == 'unsupported_encryption') {
             return Helper_View::message(Language::get('archive_error_encrypt'), Helper_View::MESSAGE_ERROR_EMAIL);
         } else {
             if ($str) {
@@ -592,7 +592,7 @@ class Archive_Zip implements Archive_Interface
 
         if ($folder) {
             @mkdir($tmp . '/' . $sysName, 0755, true);
-        } else if (!is_dir($tmp . '/' . dirname($sysName))) {
+        } elseif (!is_dir($tmp . '/' . dirname($sysName))) {
             @mkdir($tmp . '/' . dirname($sysName), 0755, true);
         }
 

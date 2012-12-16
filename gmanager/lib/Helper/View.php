@@ -58,11 +58,11 @@ class Helper_View
     {
         if ($size === false) {
             return Language::get('unknown');
-        } else if ($size < 1024) {
+        } elseif ($size < 1024) {
             return $size . ' Byte';
-        } else if ($size < 1048576) {
+        } elseif ($size < 1048576) {
             return round($size / 1024, $int) . ' Kb';
-        } else if ($size < 1073741824) {
+        } elseif ($size < 1073741824) {
             return round($size / 1048576, $int) . ' Mb';
         } else {
             return round($size / 1073741824, $int) . ' Gb';
@@ -170,7 +170,7 @@ class Helper_View
     {
         if ($error == self::MESSAGE_ERROR_EMAIL) {
             return '<div class="red">' . $text . '<br/></div><div><form action="change.php?go=send_mail&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . Config::getVersion() . ' Error (' . Config::get('Gmanager', 'mode') . ')"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . Helper_System::basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . Language::get('send_report') . '"/></div></form></div>';
-        } else if ($error == self::MESSAGE_ERROR) {
+        } elseif ($error == self::MESSAGE_ERROR) {
             return '<div class="red">' . $text . '<br/></div>';
         }
 

@@ -42,15 +42,15 @@ class ListData
 
         if ($itype == 'time') {
             $key = & $time;
-        } else if ($itype == 'type') {
+        } elseif ($itype == 'type') {
             $key = & $type;
-        } else if ($itype == 'size') {
+        } elseif ($itype == 'size') {
             $key = & $isize;
-        } else if ($itype == 'chmod') {
+        } elseif ($itype == 'chmod') {
             $key = & $chmod;
-        } else if ($itype == 'uid') {
+        } elseif ($itype == 'uid') {
             $key = & $uid;
-        } else if ($itype == 'gid') {
+        } elseif ($itype == 'gid') {
             $key = & $gid;
         } else {
             $key = & $name;
@@ -127,13 +127,13 @@ class ListData
                     $pgid = '<td>' . htmlspecialchars($stat['group'], ENT_NOQUOTES) . '</td>';
                 }
                 $page0[$key . '_' . $i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="' . $r_link . '"/></td>' . $pname . $pdown . $ptype . $psize . $pchange . $pdel . $pchmod . $pdate. $puid . $pgid;
-            } else if ($obj->is_dir($file)) {
+            } elseif ($obj->is_dir($file)) {
                 $type = 'DIR';
                 if (Config::get('Display', 'name')) {
                     if (Config::get('Gmanager', 'realName') == Config::REALNAME_FULL) {
                         $realpath = $obj->realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-                    } else if (Config::get('Gmanager', 'realName') == Config::REALNAME_RELATIVE_HIDE) {
+                    } elseif (Config::get('Gmanager', 'realName') == Config::REALNAME_RELATIVE_HIDE) {
                         $name = $basename;
                     } else {
                         $name = $file;
@@ -184,7 +184,7 @@ class ListData
                     if (Config::get('Gmanager', 'realName') == Config::REALNAME_FULL) {
                         $realpath = $obj->realpath($file);
                         $name = $realpath ? str_replace('\\', '/', $realpath) : $file;
-                    } else if (Config::get('Gmanager', 'realName') == Config::REALNAME_RELATIVE_HIDE) {
+                    } elseif (Config::get('Gmanager', 'realName') == Config::REALNAME_RELATIVE_HIDE) {
                         $name = $basename;
                     } else {
                         $name = $file;

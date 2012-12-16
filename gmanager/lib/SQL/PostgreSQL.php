@@ -259,7 +259,7 @@ class SQL_PostgreSQL implements SQL_Interface
                     while ($row = pg_fetch_assoc($r)) {
                         $result[] = $row;
                     }
-                } else if ($r === true) {
+                } elseif ($r === true) {
                     $rows += pg_affected_rows($this->_resource);
                 }
             }

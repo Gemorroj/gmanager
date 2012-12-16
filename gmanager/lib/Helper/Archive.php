@@ -25,13 +25,13 @@ class Helper_Archive
     {
         if ($type === 'ZIP' || $type === 'JAR' || $type === 'AAR' || $type === 'WAR') {
             return Archive::FORMAT_ZIP;
-        } else if ($type === 'TAR' || $type === 'TGZ' || $type === 'TGZ2' || $type === 'TAR.GZ' || $type === 'TAR.GZ2') {
+        } elseif ($type === 'TAR' || $type === 'TGZ' || $type === 'TGZ2' || $type === 'TAR.GZ' || $type === 'TAR.GZ2') {
             return Archive::FORMAT_TAR;
-        } else if ($type === 'GZ' || $type === 'GZ2') {
+        } elseif ($type === 'GZ' || $type === 'GZ2') {
             return Archive::FORMAT_GZ;
-        } else if (($type === 'TBZ' || $type === 'TBZ2' || $type === 'TAR.BZ' || $type === 'TAR.BZ2' || $type === 'BZ' || $type === 'BZ2') && extension_loaded('bz2')) {
+        } elseif (($type === 'TBZ' || $type === 'TBZ2' || $type === 'TAR.BZ' || $type === 'TAR.BZ2' || $type === 'BZ' || $type === 'BZ2') && extension_loaded('bz2')) {
             return Archive::FORMAT_BZ2;
-        } else if ($type === 'RAR' && extension_loaded('rar')) {
+        } elseif ($type === 'RAR' && extension_loaded('rar')) {
             return Archive::FORMAT_RAR;
         }
 

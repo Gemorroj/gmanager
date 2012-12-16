@@ -55,7 +55,7 @@ if ($_GET['go'] == 'phpinfo') {
     header('Content-Type: text/html; charset=UTF-8');
     phpinfo();
     exit;
-} else if (isset($_POST['add_archive']) && !isset($_POST['name'])) {
+} elseif (isset($_POST['add_archive']) && !isset($_POST['name'])) {
     header('Location: http://' . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/') . 'index.php?c=' . rawurlencode(dirname(Registry::get('current'))) . '&add_archive=' . Registry::get('rCurrent'), true, 301);
     exit;
 }
@@ -81,7 +81,7 @@ switch ($_GET['go']) {
                     echo Gmanager::getInstance()->fname($_POST['check'][$i], $_POST['name'], $_POST['register'], $i, isset($_POST['overwrite']));
                 }
             }
-        } else if (isset($_POST['full_del'])) {
+        } elseif (isset($_POST['full_del'])) {
             for ($i = 0; $i < $x; ++$i) {
                 $_POST['check'][$i] = rawurldecode($_POST['check'][$i]);
                 if (Gmanager::getInstance()->is_dir($_POST['check'][$i])) {
@@ -90,7 +90,7 @@ switch ($_GET['go']) {
                     echo Gmanager::getInstance()->delFile($_POST['check'][$i]);
                 }
             }
-        } else if (isset($_POST['full_chmod'])) {
+        } elseif (isset($_POST['full_chmod'])) {
             if (!isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0644"/>' . Language::get('change_chmod') . ' ' . Language::get('of files') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" name="chmod[]" value="0755"/>' . Language::get('change_chmod') . ' ' . Language::get('of folders') . '<br/><input name="full_chmod" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
@@ -107,7 +107,7 @@ switch ($_GET['go']) {
                     }
                 }
             }
-        } else if (isset($_REQUEST['mega_full_extract'])) {
+        } elseif (isset($_REQUEST['mega_full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname(Registry::get('current')), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('change_chmod') . ' ' . Language::get('of files') . '<br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod[]" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . ' ' . Language::get('of folders') . '<br/><input name="mega_full_extract" type="hidden" value="1"/><input type="submit" value="' . Language::get('extract_archive') . '"/></div></form></div>';
             } else {
@@ -116,11 +116,11 @@ switch ($_GET['go']) {
                 if ($archive && $archive != Archive::FORMAT_GZ) {
                     $obj = new Archive;
                     echo $obj->setFormat($archive)->setFile(Registry::get('current'))->factory()->extractArchive($_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
-                } else if ($archive == Archive::FORMAT_GZ) {
+                } elseif ($archive == Archive::FORMAT_GZ) {
                     echo Gmanager::getInstance()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
                 }
             }
-        } else if (isset($_POST['full_extract'])) {
+        } elseif (isset($_POST['full_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname(Registry::get('current')), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . '<br/><input name="full_extract" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
@@ -137,13 +137,13 @@ switch ($_GET['go']) {
                     echo $obj->setFormat($archive)->setFile(Registry::get('current'))->factory()->extractFile($_POST['name'], $_POST['chmod'], $_POST['check'], isset($_POST['overwrite']));
                 }
             }
-        } else if (isset($_POST['gz_extract'])) {
+        } elseif (isset($_POST['gz_extract'])) {
             if (!isset($_POST['name']) || !isset($_POST['chmod'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="' . htmlspecialchars(dirname(Registry::get('current')), ENT_COMPAT) . '/"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0755"/>' . Language::get('change_chmod') . '<br/><input name="gz_extract" type="hidden" value="1"/><input type="submit" value="' . Language::get('extract_archive') . '"/></div></form></div>';
             } else {
                 echo Gmanager::getInstance()->gzExtract(Registry::get('current'), $_POST['name'], $_POST['chmod'], isset($_POST['overwrite']));
             }
-        } else if (isset($_POST['create_archive'])) {
+        } elseif (isset($_POST['create_archive'])) {
             if (!isset($_POST['name'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_name') . '<br/><input type="text" name="name" value="' . Registry::get('hCurrent') . 'archive.zip"/><br/><input onkeypress="return Gmanager.number(event)" type="text" name="chmod" size="4" maxlength="4" style="-wap-input-format:\'4N\';width:28pt;" value="0644"/>' . Language::get('change_chmod') . '<br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/>' . Language::get('comment_archive') . '<br/><textarea name="comment" rows="2" cols="24"></textarea><br/><input name="create_archive" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
@@ -155,7 +155,7 @@ switch ($_GET['go']) {
                 $obj = new Archive;
                 echo $obj->setFormat(Archive::FORMAT_ZIP)->setFile($_POST['name'])->factory()->createArchive($_POST['chmod'], $_POST['check'], $_POST['comment'], isset($_POST['overwrite']));
             }
-        } else if (isset($_POST['add_archive'])) {
+        } elseif (isset($_POST['add_archive'])) {
             if (isset($_POST['dir'])) {
                 $_POST['check'] = array_map('rawurldecode', $_POST['check']);
                 $_POST['dir'] = rawurldecode($_POST['dir']);
@@ -174,7 +174,7 @@ switch ($_GET['go']) {
                 }
                 echo '<input type="submit" name="name" value="' . Language::get('add_archive') . '"/></div></form></div>';
             }
-        } else if (isset($_POST['full_rename'])) {
+        } elseif (isset($_POST['full_rename'])) {
             if (!isset($_GET['go2'])) {
                 echo '<div class="input"><form action="change.php?go=1&amp;go2=1&amp;c=' . Registry::get('rCurrent') . '" method="post"><div>' . Language::get('change_func2') . '<br/><input type="text" name="name" value="' . $realpath . '"/><br/><input type="checkbox" name="overwrite" id="overwrite" checked="checked"/><label for="overwrite">' . Language::get('overwrite_existing_files') . '</label><br/><input type="checkbox" name="del" id="del" value="1"/><label for="del">' . Language::get('change_del') . '</label><br/><input name="full_rename" type="hidden" value="1"/>';
                 for ($i = 0; $i < $x; ++$i) {
@@ -187,7 +187,7 @@ switch ($_GET['go']) {
                     echo Gmanager::getInstance()->frename($_POST['check'][$i], str_replace('//', '/', $_POST['name'] . '/' . Helper_System::basename($_POST['check'][$i])), '', isset($_POST['del']), $_POST['name'], isset($_POST['overwrite']));
                 }
             }
-        } else if (isset($_POST['del_archive'])) {
+        } elseif (isset($_POST['del_archive'])) {
             $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
             $_POST['check'] = array_map('rawurldecode', $_POST['check']);
 
@@ -395,7 +395,7 @@ switch ($_GET['go']) {
 
                     if (!$_POST['sql'] && !$_POST['db']) {
                         $_POST['sql'] = 'SHOW DATABASES';
-                    } else if (!$_POST['sql']) {
+                    } elseif (!$_POST['sql']) {
                         $_POST['sql'] = 'SHOW TABLES';
                     }
                     echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . $factory->query($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=mysql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::MySQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/>' : '') . '</div></form></div>';
@@ -427,7 +427,7 @@ switch ($_GET['go']) {
 
                     if (!$_POST['sql'] && !$_POST['db']) {
                         $_POST['sql'] = 'SELECT oid, * from pg_database';
-                    } else if (!$_POST['sql']) {
+                    } elseif (!$_POST['sql']) {
                         $_POST['sql'] = 'SELECT * FROM information_schema.tables';
                     }
                     echo '<div>&#160;' . $_POST['name'] . ($_POST['db'] ? ' =&gt; ' . htmlspecialchars($_POST['db'], ENT_NOQUOTES) : '') . '<br/></div>' . $factory->query($_POST['host'], $_POST['name'], $_POST['pass'], $_POST['db'], $_POST['charset'], $_POST['sql']) . '<div><form action=""><div><textarea rows="' . (mb_substr_count($_POST['sql'], "\n") + 1) . '" cols="48">' . htmlspecialchars($_POST['sql'], ENT_NOQUOTES) . '</textarea></div></form></div><div class="input"><form action="change.php?go=postgresql&amp;c=' . Registry::get('rCurrent') . '" method="post" id="post"><div>' . Language::get('sql_query') . ' <select id="ptn" onchange="Gmanager.paste(this.value);">' . $Patterns->set(array(Patterns::PostgreSQL))->getOptions() . '</select><br/><textarea id="sql" name="sql" rows="6" cols="48"></textarea><br/><input type="hidden" name="name" value="' . htmlspecialchars($_POST['name']) . '"/><input type="hidden" name="pass" value="' . htmlspecialchars($_POST['pass']) . '"/><input type="hidden" name="host" value="' . htmlspecialchars($_POST['host']) . '"/><input type="hidden" name="db" value="' . htmlspecialchars($_POST['db']) . '"/><input type="hidden" name="charset" value="' . htmlspecialchars($_POST['charset']) . '"/><input type="submit" value="' . Language::get('sql') . '"/>' . ($_POST['db'] ? ' <input type="submit" name="backup" value="' . Language::get('sql_backup') . '"/>' : '') . '</div></form></div>';
