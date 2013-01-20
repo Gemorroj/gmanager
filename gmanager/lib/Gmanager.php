@@ -1189,7 +1189,7 @@ abstract class Gmanager
             $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
         }
 
-        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
     }
 
 
@@ -1229,7 +1229,7 @@ abstract class Gmanager
         } else {
             return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
         }
-        return '<div class="input">' . Language::get('result') . '<br/><textarea cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
     }
 
 

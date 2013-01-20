@@ -180,28 +180,9 @@ var Gmanager = {
         var move = false;
         var el = document.createElement("textarea");
 
-        function setLine () {
-            el.scrollTop = ta.scrollTop;
-            el.style.top = (ta.offsetTop - 3) + "px";
-            el.style.height = (ta.offsetHeight - 4) + "px";
-        }
-        function renderLines (newLine) {
-            var str = "";
-            var l = ta.value.split("\n").length + (newLine === true ? 1 : 0);
-            if (l < 2) {
-                str += "1\n";
-            } else {
-                for (var i = 1; i <= l; i++) {
-                    str += (i + "\n");
-                }
-            }
-
-            el.value = str;
-
-            setLine();
-        }
-
-        el.onscroll = function () { setLine(); };
+        el.onscroll = function () {
+            Gmanager.textareaLinesResize(el, ta);
+        };
         el.style.height = (ta.offsetHeight - 4) + "px";
         el.style.width = "32px";
         el.style.position = "absolute";
@@ -212,52 +193,79 @@ var Gmanager = {
         el.style.paddingRight = "0.2em";
         el.style.zIndex = 0;
         el.readOnly = "readonly";
+
         ta.style.marginLeft = "32px";
         ta.style.zIndex = 1;
         ta.style.position = "relative";
         ta.parentNode.insertBefore(el, ta.nextSibling);
-        renderLines(false);
+        Gmanager.textareaLinesRender(el, ta, false);
         //ta.focus();
 
         ta.onkeydown = function (e) {
             var key = Gmanager._getKey(e);
             if (key === 13 || key === 10) {
-                renderLines(true);
+                Gmanager.textareaLinesRender(el, ta, true);
             } else {
-                setLine();
+                Gmanager.textareaLinesResize(el, ta);
             }
         };
         ta.onmousedown = function () {
-            setLine();
+            Gmanager.textareaLinesResize(el, ta);
             move = true;
         };
         ta.onmouseup = function () {
-            setLine();
+            Gmanager.textareaLinesResize(el, ta);
             move = false;
         };
         ta.onmousemove = function () {
-            if (move) {
-                setLine();
+            if (move === true) {
+                Gmanager.textareaLinesResize(el, ta);
             }
         };
         ta.onscroll = function () {
-            setLine();
+            Gmanager.textareaLinesResize(el, ta);
         };
 
-        //TODO:fix for > 1 textarea
-        window.onresize = function () {
-            setLine();
-        };
+        return el;
+    },
+    textareaLinesResize: function (el, ta) {
+        el.scrollTop = ta.scrollTop;
+        el.style.top = (ta.offsetTop - 3) + "px";
+        el.style.height = (ta.offsetHeight - 4) + "px";
+    },
+    textareaLinesRender: function (el, ta, newLine) {
+        var str = "";
+        var l = ta.value.split("\n").length + (newLine === true ? 1 : 0);
+        if (l < 2) {
+            str += "1\n";
+        } else {
+            for (var i = 1; i <= l; i++) {
+                str += (i + "\n");
+            }
+        }
+
+        el.value = str;
+
+        Gmanager.textareaLinesResize(el, ta);
     }
 };
 
 window.onload = function () {
     var t = document.getElementsByTagName("textarea");
-    var i, initT = [], l = t.length;
-    for (i = 0; i < l; i++) {
-        initT.push(t[i]);
+    var resize = {"el": [], "ta": []};
+
+    for (var i = 0, l = t.length; i < l; i++) {
+        var item = t[i];
+        var attr = item.getAttribute('class');
+        if (attr !== null && attr.indexOf('lines') !== -1) {
+            resize.ta.push(item);
+            resize.el.push(Gmanager.textareaLines(item));
+        }
     }
-    for (i = 0; i < l; i++) {
-        Gmanager.textareaLines(initT[i]);
-    }
+
+    window.onresize = function () {
+        for (var i = 0, l = resize.el.length; i < l; i++) {
+            Gmanager.textareaLinesResize(resize.el[i], resize.ta[i]);
+        }
+    };
 };

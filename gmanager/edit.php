@@ -187,7 +187,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             $appendEdit = '<input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . ($start + 1) . '" name="start" /> - <input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="' . $end . '" name="end"/> <input name="editorLine" type="submit" value="' . Language::get('look') . '"/><br/>';
         } else {
             $isLineEditor = false;
-            $edit = '<textarea name="text" rows="18" cols="64" wrap="' . (Config::get('Editor', 'wrap') ? 'on' : 'off') . '">' . htmlspecialchars($data['content'], $quotes, 'UTF-8') . '</textarea><br/>';
+            $edit = '<textarea class="lines" name="text" rows="18" cols="64" wrap="' . (Config::get('Editor', 'wrap') ? 'on' : 'off') . '">' . htmlspecialchars($data['content'], $quotes, 'UTF-8') . '</textarea><br/>';
             $appendEdit = '';
         }
 
