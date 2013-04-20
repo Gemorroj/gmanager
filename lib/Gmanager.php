@@ -849,11 +849,11 @@ abstract class Gmanager
     {
         $array = $url ? Helper_View::urlHighlight($fl) : Helper_View::xhtmlHighlight($fl);
         $all = sizeof($array);
-        $len = mb_strlen($all);
+        $len = strlen((string)$all);
         $pg = '';
         for ($i = 0; $i < $all; ++$i) {
-            $next = $i + 1;
-            $l = mb_strlen($next);
+            $next = (string)($i + 1);
+            $l = strlen($next);
             $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . "\n";
         }
 
