@@ -22,7 +22,11 @@ class FTP extends Gmanager
     /**
      * @var array
      */
-    static private $_id         = array();
+    static private $_idUser     = array();
+    /**
+     * @var array
+     */
+    static private $_idGroup    = array();
     /**
      * @var array
      */
@@ -48,7 +52,16 @@ class FTP extends Gmanager
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
 
-        Registry::set('sysType', strtoupper(substr(ftp_systype($this->_res), 0, 3)) == 'WIN' ? 'WIN' : 'NIX');
+        $systype = strtoupper(ftp_systype($this->_res));
+
+        if (substr($systype, 0, 3) === 'WIN') {
+            Registry::set('sysType', 'WIN');
+        } elseif (strpos($systype, 'BSD') !== false) {
+            Registry::set('sysType', 'BSD');
+        } else {
+            Registry::set('sysType', 'NIX');
+        }
+
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $pass . '@' . $host . ':' . $port;
@@ -551,9 +564,9 @@ class FTP extends Gmanager
         self::$_rawlist[self::$_dir][Helper_System::basename($data[10])] = array(
             'chmod' => $data[1] == 'd' && Registry::get('sysType') == 'WIN' ? 0777 : (Registry::get('sysType') == 'WIN' ? 0666 : $this->_chmodNum($data[2])),
             'uid'   => $data[3],
-            'owner' => is_numeric($data[3]) ? (isset(self::$_id[$data[3]]) ? self::$_id[$data[3]] : self::$_id[$data[3]] = Helper_System::id2name($data[3])) : $data[3],
+            'owner' => is_numeric($data[3]) ? (isset(self::$_idUser[$data[3]]) ? self::$_idUser[$data[3]] : self::$_idUser[$data[3]] = Helper_System::id2user($data[3])) : $data[3],
             'gid'   => $data[4],
-            'group' => is_numeric($data[4]) ? (isset(self::$_id[$data[4]]) ? self::$_id[$data[4]] : self::$_id[$data[4]] = Helper_System::id2name($data[4])) : $data[4],
+            'group' => is_numeric($data[4]) ? (isset(self::$_idGroup[$data[4]]) ? self::$_idGroup[$data[4]] : self::$_idGroup[$data[4]] = Helper_System::id2group($data[4])) : $data[4],
             'size'  => $data[5],
             'mtime' => strtotime($data[6] . ' ' . $data[7] . ' ' . $data[8] . ':' . $data[9]),
             'file'  => $data[10],

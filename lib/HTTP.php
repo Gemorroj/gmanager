@@ -18,11 +18,15 @@ class HTTP extends Gmanager
     /**
      * @var array
      */
-    static private $_stat   = array();
+    static private $_stat    = array();
     /**
      * @var array
      */
-    static private $_id     = array();
+    static private $_idUser  = array();
+    /**
+     * @var array
+     */
+    static private $_idGroup = array();
 
 
     /**
@@ -30,7 +34,15 @@ class HTTP extends Gmanager
      */
     public function __construct ()
     {
-        Registry::set('sysType', strtoupper(substr(PHP_OS, 0, 3)) == 'WIN' ? 'WIN' : 'NIX');
+        $systype = strtoupper(substr(PHP_OS, 0, 3));
+
+        if (substr($systype, 0, 3) === 'WIN') {
+            Registry::set('sysType', 'WIN');
+        } elseif (strpos($systype, 'BSD') !== false) {
+            Registry::set('sysType', 'BSD');
+        } else {
+            Registry::set('sysType', 'NIX');
+        }
     }
 
 
@@ -176,16 +188,16 @@ class HTTP extends Gmanager
             self::$_stat[$str] = @stat($str);
         }
 
-        if (isset(self::$_id[self::$_stat[$str]['uid']])) {
-            self::$_stat[$str]['owner'] = self::$_id[self::$_stat[$str]['uid']];
+        if (isset(self::$_idUser[self::$_stat[$str]['uid']])) {
+            self::$_stat[$str]['owner'] = self::$_idUser[self::$_stat[$str]['uid']];
         } else {
-            self::$_stat[$str]['owner'] = self::$_id[self::$_stat[$str]['uid']] = Helper_System::id2name(self::$_stat[$str]['uid']);
+            self::$_stat[$str]['owner'] = self::$_idUser[self::$_stat[$str]['uid']] = Helper_System::id2user(self::$_stat[$str]['uid']);
         }
 
-        if (isset(self::$_id[self::$_stat[$str]['gid']])) {
-            self::$_stat[$str]['group'] = self::$_id[self::$_stat[$str]['gid']];
+        if (isset(self::$_idGroup[self::$_stat[$str]['gid']])) {
+            self::$_stat[$str]['group'] = self::$_idGroup[self::$_stat[$str]['gid']];
         } else {
-            self::$_stat[$str]['group'] = self::$_id[self::$_stat[$str]['gid']] = Helper_System::id2name(self::$_stat[$str]['gid']);
+            self::$_stat[$str]['group'] = self::$_idGroup[self::$_stat[$str]['gid']] = Helper_System::id2group(self::$_stat[$str]['gid']);
         }
 
         return self::$_stat[$str];

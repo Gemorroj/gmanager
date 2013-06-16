@@ -30,24 +30,75 @@ class Helper_System
 
 
     /**
-     * id2name
+     * id2user
      *
      * @param int    $id
      * @return string
      */
-    public static function id2name ($id = 0)
+    public static function id2user ($id = 0)
     {
-        if (Registry::get('sysType') == 'WIN') {
+        if (Registry::get('sysType') === 'WIN') {
             return '';
         } else {
             if (function_exists('posix_getpwuid') && $name = posix_getpwuid($id)) {
                 return $name['name'];
-            } elseif ($name = exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellarg($id) . ');print $login;\'')) {
-                return $name;
-            } else {
-                return $id;
+            }
+
+            exec('id -n -u ' . escapeshellarg($id), $outId, $resultId);
+            if ($resultId === 0) {
+                return trim($outId[0]);
+            }
+
+            exec('getent passwd ' . escapeshellarg($id), $outGetent, $resultGetent);
+            if ($resultGetent === 0) {
+                $tmp = explode(':', $outGetent[0], 2);
+                return trim($tmp[0]);
+            }
+
+            exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellarg($id) . ');print $login;\'', $outPerl, $resultPerl);
+            if ($resultPerl === 0) {
+                return trim($outPerl);
             }
         }
+
+        return $id;
+    }
+
+
+    /**
+     * id2group
+     *
+     * @param int    $id
+     * @return string
+     */
+    public static function id2group ($id = 0)
+    {
+        if (Registry::get('sysType') === 'WIN') {
+            return '';
+        } else {
+            if (function_exists('posix_getgrgid') && $name = posix_getgrgid($id)) {
+                return $name['name'];
+            }
+/*
+            exec('id -n -u ' . escapeshellarg($id), $outId, $resultId);
+            if ($resultId === 0) {
+                return trim($outId[0]);
+            }
+*/
+            exec('getent group ' . escapeshellarg($id), $outGetent, $resultGetent);
+            if ($resultGetent === 0) {
+                $tmp = explode(':', $outGetent[0], 2);
+                return trim($tmp[0]);
+            }
+
+            exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'print getgrgid(' . escapeshellarg($id) . ');\'', $outPerl, $resultPerl);
+            if ($resultPerl === 0) {
+                $tmp = explode('*', $outPerl[0], 2);
+                return trim($tmp[0]);
+            }
+        }
+
+        return $id;
     }
 
 
