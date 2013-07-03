@@ -201,6 +201,7 @@ return array(
     'disk_free_space'               =>  'Free disk Space:',
     'disk_total_space'              =>  'Total disk Space:',
     'memory_get_usage'              =>  'RAM:',
+    'memory_get_peak_usage'         =>  'Max RAM:',
     'tables_not_found'              =>  'File with tables was not found',
     'send_report'                   =>  'Error Report',
     'set_time_limit'                =>  'Time Limit',

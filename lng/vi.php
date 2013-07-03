@@ -202,6 +202,7 @@ return array(
     'disk_free_space'               =>  'Không gian đĩa trống:',
     'disk_total_space'              =>  'Tất cả không gian đĩa:',
     'memory_get_usage'              =>  'RAM:',
+    'memory_get_peak_usage'         =>  'Max RAM:',
     'tables_not_found'              =>  'File với tables không tìm thấy',
     'send_report'                   =>  'Thông báo lỗi',
     'set_time_limit'                =>  'Thời gian giới hạn',

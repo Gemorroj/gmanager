@@ -1162,21 +1162,21 @@ abstract class Gmanager
      */
     public function showEval ($eval = '')
     {
+        $statEval = $eval . "\n" . 'return array(
+            "ram" => Helper_View::formatSize(memory_get_usage(false) - $gmanagerStatEvalInfo["ram"]),
+            "maxRam" => Helper_View::formatSize(memory_get_peak_usage(false) - $gmanagerStatEvalInfo["maxRam"]),
+            "time" => round(microtime(true) - $gmanagerStatEvalInfo["time"], 4)
+        );';
+
+        $evalFunction = create_function('$gmanagerStatEvalInfo', $statEval);
+
         ob_start();
-        $evalFunction = create_function('', $eval . "\n");
 
-        $info = array(
+        $info = $evalFunction(array(
             'time' => microtime(true),
+            'maxRam' => memory_get_peak_usage(false),
             'ram' => memory_get_usage(false)
-        );
-
-        //eval($eval);
-        $evalFunction();
-
-        $info = array(
-            'ram' => Helper_View::formatSize(memory_get_usage(false) - $info['ram'], 6),
-            'time' => round(microtime(true) - $info['time'], 6),
-        );
+        ));
 
         $buf = ob_get_contents();
         ob_end_clean();
@@ -1189,7 +1189,7 @@ abstract class Gmanager
             $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
         }
 
-        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . $info['maxRam'] . '<br/></div>';
     }
 
 

@@ -201,6 +201,7 @@ return array(
     'disk_free_space'               =>  'Вільне місце:',
     'disk_total_space'              =>  'Повний Обсяг:',
     'memory_get_usage'              =>  'RAM:',
+    'memory_get_peak_usage'         =>  'Max RAM:',
     'tables_not_found'              =>  'Не Знайдено Файлу з Таблицями',
     'send_report'                   =>  'Повідомити про Помилку',
     'set_time_limit'                =>  'Обмеження за часом (сек)',

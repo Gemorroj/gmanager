@@ -201,6 +201,7 @@ return array(
     'disk_free_space'               =>  'Доступно Места:',
     'disk_total_space'              =>  'Общий Объем:',
     'memory_get_usage'              =>  'RAM:',
+    'memory_get_peak_usage'         =>  'Max RAM:',
     'tables_not_found'              =>  'Не Найден Файл с Таблицами',
     'send_report'                   =>  'Сообщить об ошибке',
     'set_time_limit'                =>  'Ограничение по времени (сек)',
