@@ -1,5 +1,7 @@
 Файловый менеджер + Текстовый редактор
 
+[![Build Status](https://secure.travis-ci.org/Gemorroj/gmanager.png?branch=master)](http://travis-ci.org/Gemorroj/gmanager)
+
 В состав *Gmanager* входит
  * Файловый Менеджер
  * Текстовый Редактор
