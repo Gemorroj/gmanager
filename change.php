@@ -33,7 +33,7 @@ if (isset($_GET['get']) && Gmanager::getInstance()->is_file($_GET['get'])) {
         $name = Helper_System::basename($_GET['get']);
     }
 
-    Getf::download($f, $name, true, false);
+    Getf::download($f, $name, true);
     exit;
 }
 
