@@ -133,12 +133,12 @@ class SQL_PDO_SQLite implements SQL_Interface
      * @param string $db
      * @param string $charset (not used)
      * @param array  $tables
-     * @return mixed
+     * @return string|bool
      */
     public function backup ($host = null, $name = null, $pass = null, $db = '', $charset = null, $tables = array())
     {
         $connect = $this->_connect($db);
-        if (is_object($connect)) {
+        if ($connect instanceof PDO) {
             $this->_resource = $connect;
         } else {
             return $connect;

@@ -146,7 +146,7 @@ class SQL_PostgreSQL implements SQL_Interface
      * @param string $db
      * @param string $charset
      * @param array  $tables
-     * @return mixed
+     * @return string|bool
      */
     public function backup ($host = null, $name = null, $pass = null, $db = '', $charset = null, $tables = array())
     {
