@@ -2,6 +2,9 @@
 
 [![Build Status](https://secure.travis-ci.org/Gemorroj/gmanager.png?branch=master)](https://travis-ci.org/Gemorroj/gmanager)
 
+Требования:
+- PHP >= 5.2.3
+
 В состав *Gmanager* входит
  * Файловый Менеджер
  * Текстовый Редактор
