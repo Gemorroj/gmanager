@@ -155,7 +155,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
 
         $quotes = defined('ENT_IGNORE') ? ENT_COMPAT | ENT_IGNORE : ENT_COMPAT;
 
-        $data['size'] = Helper_View::formatSize(strlen($data['content']));
+        $data['size'] = Helper_View::formatSize(mb_strlen($data['content'], '8bit'));
         $data['lines'] = mb_substr_count($data['content'], "\n") + 1;
 
         $path = mb_substr(Gmanager::getInstance()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));

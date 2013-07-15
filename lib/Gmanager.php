@@ -1449,7 +1449,7 @@ abstract class Gmanager
 
             if ($post) {
                 $out .= 'Content-type: application/x-www-form-urlencoded' . "\r\n";
-                $out .= 'Content-Length: ' . strlen($post) . "\r\n";
+                $out .= 'Content-Length: ' . mb_strlen($post, '8bit') . "\r\n";
                 $out = 'POST ' . $path . ' HTTP/1.0' . "\r\n" . $out . "\r\n" . $post;
             } else {
                 $out = 'GET ' . $path . ' HTTP/1.0' . "\r\n" . $out . "\r\n";

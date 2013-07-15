@@ -229,7 +229,7 @@ class Getf
         ini_set('zlib.output_compression', 'Off');
         ini_set('output_handler', '');
 
-        $sz = $len = strlen($f);
+        $sz = $len = mb_strlen($f, '8bit');
 
         // "От" и  "До" по умолчанию
         $file_range = array(
