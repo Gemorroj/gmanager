@@ -362,7 +362,7 @@ class Archive_Zip implements Archive_Interface
             if ($str) {
                 return $ext[0]['content'];
             } else {
-                return Helper_View::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="edit.php?c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Helper_View::MESSAGE_SUCCESS) . Gmanager::getInstance()->code(trim($ext[0]['content']));
+                return Helper_View::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($ext[0]['compressed_size']) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($ext[0]['size']) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), $ext[0]['mtime']) . '<br/>&#187;<a href="?gmanager_action=edit&amp;c=' . $r_current . '&amp;f=' . $r_f . '">' . Language::get('edit') . '</a>', Helper_View::MESSAGE_SUCCESS) . Gmanager::getInstance()->code(trim($ext[0]['content']));
             }
         }
     }
@@ -485,7 +485,7 @@ class Archive_Zip implements Archive_Interface
                     $type = htmlspecialchars(Helper_System::getType($list[$i]['filename']), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
                     $size = Helper_View::formatSize($list[$i]['size']);
-                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
+                    $down = '<a href="?gmanager_action=change&amp;get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
@@ -502,10 +502,10 @@ class Archive_Zip implements Archive_Interface
                     $l .= '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
-                    $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
+                    $l .= '<td><a href="?gmanager_action=change&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::get('Display', 'del')) {
-                    $l .= '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
+                    $l .= '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del_zip_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::get('Display', 'chmod')) {
                     $l .= '<td> </td>';

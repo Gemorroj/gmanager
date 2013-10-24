@@ -91,9 +91,9 @@ class ListData
                     $name = htmlspecialchars(Helper_View::strLink($tmp[0] . ' (' . $tmp[1] . ($is_dir ? '/' : '') . ')', true), ENT_NOQUOTES);
 
                     if ($is_dir) {
-                        $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '</a></td>';
+                        $pname = '<td><a href="?c=' . $r_file . '/' . $add . '">' . $name . '</a></td>';
                     } else {
-                        $pname = '<td><a href="edit.php?' . $r_file . '">' . $name. '</a></td>';
+                        $pname = '<td><a href="?gmanager_action=edit&amp;c=' . $r_file . '">' . $name. '</a></td>';
                     }
                 }
                 if (Config::get('Display', 'down')) {
@@ -108,14 +108,14 @@ class ListData
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
-                    $pchange = '<td><a href="change.php?' . $r_link . '">' . Language::get('ch') . '</a></td>';
+                    $pchange = '<td><a href="?gmanager_action=change&amp;с=' . $r_link . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::get('Display', 'del')) {
-                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_link . '">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c=' . $r_link . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::get('Display', 'chmod')) {
                     $chmod = $obj->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_link . '">' . $chmod . '</a></td>';
+                    $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c=' . $r_link . '">' . $chmod . '</a></td>';
                 }
                 if (Config::get('Display', 'date')) {
                     $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
@@ -139,7 +139,7 @@ class ListData
                         $name = $file;
                     }
                     $name = htmlspecialchars(Helper_View::strLink($name, true), ENT_NOQUOTES);
-                    $pname = '<td><a href="index.php?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
+                    $pname = '<td><a href="?c=' . $r_file . '/' . $add . '">' . $name . '/</a></td>';
                 }
                 if (Config::get('Display', 'down')) {
                     $pdown = '<td> </td>';
@@ -157,14 +157,14 @@ class ListData
                         $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '/">' . Language::get('ch') . '</a></td>';
+                    $pchange = '<td><a href="?gmanager_action=change&amp;c=' . $r_file . '/">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::get('Display', 'del')) {
-                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c=' . $r_file . '/">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::get('Display', 'chmod')) {
                     $chmod = $obj->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
+                    $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
                 if (Config::get('Display', 'date')) {
                     $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
@@ -192,17 +192,17 @@ class ListData
                     $name = htmlspecialchars(Helper_View::strLink($name, true), ENT_NOQUOTES);
 
                     if ($archive) {
-                        $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a><br/><a class="submit" href="change.php?go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . Language::get('extract_archive') . '</a></td>';
+                        $pname = '<td><a href="?c=' . $r_file . '">' . $name . '</a><br/><a class="submit" href="?gmanager_action=change&amp;go=1&amp;c=' . $r_file . '&amp;mega_full_extract=1">' . Language::get('extract_archive') . '</a></td>';
                     } else {
                         if ($type == 'SQL') {
-                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="change.php?go=sql_tables&amp;c=' . $r_file . '">' . Language::get('tables') . '</a><br/><a class="submit" href="change.php?go=sql_installer&amp;c=' . $r_file . '">' . Language::get('create_sql_installer') . '</a></td>';
+                            $pname = '<td><a href="?gmanager_action=edit&amp;c=' . $r_file . '"' . $t . '>' . $name . '</a><br/><a class="submit" href="?gmanager_action=change&amp;go=sql_tables&amp;c=' . $r_file . '">' . Language::get('tables') . '</a><br/><a class="submit" href="?gmanager_action=change&amp;go=sql_installer&amp;c=' . $r_file . '">' . Language::get('create_sql_installer') . '</a></td>';
                         } else {
-                            $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a></td>';
+                            $pname = '<td><a href="?gmanager_action=edit&amp;c=' . $r_file . '"' . $t . '>' . $name . '</a></td>';
                         }
                     }
                 }
                 if (Config::get('Display', 'down')) {
-                    $pdown = '<td><a href="change.php?get=' . $r_file . '">' . Language::get('get') . '</a></td>';
+                    $pdown = '<td><a href="?gmanager_action=change&amp;get=' . $r_file . '">' . Language::get('get') . '</a></td>';
                 }
                 if (Config::get('Display', 'type')) {
                     $ptype = '<td>' . $type . '</td>';
@@ -213,14 +213,14 @@ class ListData
                     $psize = '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
-                    $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
+                    $pchange = '<td><a href="?gmanager_action=change&amp;c=' . $r_file . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::get('Display', 'del')) {
-                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
+                    $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::get('Display', 'chmod')) {
                     $chmod = $obj->lookChmod($file);
-                    $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
+                    $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c=' . $r_file . '">' . $chmod . '</a></td>';
                 }
                 if (Config::get('Display', 'date')) {
                     $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $time) . '</td>';
@@ -322,13 +322,13 @@ class ListData
             if (Config::get('Display', 'name')) {
                 $name = htmlspecialchars(Helper_View::strLink($where . $f, true), ENT_NOQUOTES);
                 if ($arch) {
-                    $pname = '<td><a href="index.php?' . $r_file . '">' . $name . '</a>' . $in . '</td>';
+                    $pname = '<td><a href="?c=' . $r_file . '">' . $name . '</a>' . $in . '</td>';
                 } else {
-                    $pname = '<td><a href="edit.php?' . $r_file . '"' . $t . '>' . $name . '</a>' . $in . '</td>';
+                    $pname = '<td><a href="?gmanager_action=edit&amp;c=' . $r_file . '"' . $t . '>' . $name . '</a>' . $in . '</td>';
                 }
             }
             if (Config::get('Display', 'down')) {
-                $pdown = '<td><a href="change.php?get=' . $r_file . '">' . Language::get('get') . '</a></td>';
+                $pdown = '<td><a href="?gmanager_action=change&amp;get=' . $r_file . '">' . Language::get('get') . '</a></td>';
             }
             if (Config::get('Display', 'type')) {
                 $ptype = '<td>' . $type . '</td>';
@@ -337,13 +337,13 @@ class ListData
                 $psize = '<td>' . Helper_View::formatSize($stat['size']) . '</td>';
             }
             if (Config::get('Display', 'change')) {
-                $pchange = '<td><a href="change.php?' . $r_file . '">' . Language::get('ch') . '</a></td>';
+                $pchange = '<td><a href="?gmanager_action=change&amp;c=' . $r_file . '">' . Language::get('ch') . '</a></td>';
             }
             if (Config::get('Display', 'del')) {
-                $pdel = '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
+                $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c=' . $r_file . '">' . Language::get('dl') . '</a></td>';
             }
             if (Config::get('Display', 'chmod')) {
-                $pchmod = '<td><a href="change.php?go=chmod&amp;c=' . $r_file . '">' . $obj->lookChmod($where . $f) . '</a></td>';
+                $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c=' . $r_file . '">' . $obj->lookChmod($where . $f) . '</a></td>';
             }
             if (Config::get('Display', 'date')) {
                 $pdate = '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), $stat['mtime']) . '</td>';

@@ -391,7 +391,7 @@ class Archive_Tars implements Archive_Interface
                     $type = htmlspecialchars(Helper_System::getType($list[$i]['filename']), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($list[$i]['filename'], true), ENT_NOQUOTES) . '</a>';
                     $size = Helper_View::formatSize($list[$i]['size']);
-                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
+                    $down = '<a href="?gmanager_action=change&amp;get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
                 if (Config::get('Display', 'name')) {
@@ -407,10 +407,10 @@ class Archive_Tars implements Archive_Interface
                     $l .= '<td>' . $size . '</td>';
                 }
                 if (Config::get('Display', 'change')) {
-                    $l .= '<td><a href="change.php?c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
+                    $l .= '<td><a href="?gmanager_action=change&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('ch') . '</a></td>';
                 }
                 if (Config::get('Display', 'del')) {
-                    $l .= '<td><a onclick="return Gmanager.delNotify();" href="change.php?go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
+                    $l .= '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del_tar_archive&amp;c=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('dl') . '</a></td>';
                 }
                 if (Config::get('Display', 'chmod')) {
                     $l .= '<td> </td>';

@@ -51,11 +51,12 @@ class HTTP extends Gmanager
      * 
      * @param string $dir
      * @param int|string $chmod
+     * @param bool $recursive
      * @return bool
      */
-    public function mkdir ($dir, $chmod = 0755)
+    public function mkdir ($dir, $chmod = 0755, $recursive = false)
     {
-        return @mkdir(IOWrapper::set($dir), $this->_chmoder($chmod), true);
+        return @mkdir(IOWrapper::set($dir), $this->_chmoder($chmod), $recursive);
     }
 
 

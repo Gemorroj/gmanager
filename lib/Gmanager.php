@@ -87,7 +87,7 @@ abstract class Gmanager
      */
     private function _setCurrent ()
     {
-        $c = !empty($_POST['c']) ? rawurldecode($_POST['c']) : (!empty($_GET['c']) ? $_GET['c'] : (!empty($_GET['get']) ? $_GET['get'] : rawurldecode($_SERVER['QUERY_STRING'])));
+        $c = !empty($_POST['c']) ? rawurldecode($_POST['c']) : (!empty($_GET['c']) ? $_GET['c'] : (!empty($_GET['get']) ? $_GET['get'] : null));
 
         if ($c) {
             if ($c == '/') {
@@ -152,16 +152,16 @@ abstract class Gmanager
 
         if (Registry::get('currentType') == 'dir' || Registry::get('currentTypeLink') == 'dir') {
             if (Registry::get('current') == '.') {
-                return '<div class="border">' . Language::get('dir') . ' <a href="index.php">' . htmlspecialchars(Helper_View::strLink(self::$_instance->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(self::$_instance->getcwd()) . ')<br/></div>';
+                return '<div class="border">' . Language::get('dir') . ' <a href="?">' . htmlspecialchars(Helper_View::strLink(self::$_instance->getcwd()), ENT_NOQUOTES) . '</a> (' . $this->lookChmod(self::$_instance->getcwd()) . ')<br/></div>';
             } else {
-                return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+                return '<div class="border">' . Language::get('back') . ' <a href="?c=' . Helper_View::getRawurl($d) . '">' . $d . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="?c=' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
             }
         } elseif (Registry::get('currentType') == 'file' && $archive) {
             $up = dirname($d);
-            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="index.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="?c=' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="?c=' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="?c=' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         } else {
             $up = dirname($d);
-            return '<div class="border">' . Language::get('back') . ' <a href="index.php?' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="index.php?' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="edit.php?' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
+            return '<div class="border">' . Language::get('back') . ' <a href="?c=' . Helper_View::getRawurl($up) . '">' . htmlspecialchars(Helper_View::strLink($up), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($up) . ')<br/></div><div class="border">' . Language::get('dir') . ' <a href="?c=' . Helper_View::getRawurl($d) . '">' . htmlspecialchars(Helper_View::strLink($d), ENT_NOQUOTES) . '</a> (' . $this->lookChmod($d) . ')<br/></div><div class="border">' . Language::get('file') . ' <a href="?gmanager_action=edit&amp;c=' . Registry::get('rCurrent') . '">' . htmlspecialchars(str_replace('\\', '/', Helper_View::strLink($realpath)), ENT_NOQUOTES) . '</a> (' . $chmod . ')<br/></div>';
         }
     }
 
@@ -257,6 +257,11 @@ abstract class Gmanager
      */
     public function copyD ($source = '', $to = '')
     {
+        if (!self::$_instance->is_dir($to)) {
+            self::$_instance->mkdir($to, null, true);
+        }
+
+        /*
         $arrSource = explode('/', $source);
         $tmpSet = $tmpSource = '';
         $tmpAdd = array();
@@ -290,6 +295,7 @@ abstract class Gmanager
                 }
             }
         }
+        */
     }
 
 

@@ -320,7 +320,7 @@ class Archive_Rar implements Archive_Interface
                     $type = htmlspecialchars(Helper_System::getType($entry->getName()), ENT_NOQUOTES);
                     $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($entry->getName(), true), ENT_NOQUOTES) . '</a>';
                     $size = Helper_View::formatSize($entry->getUnpackedSize());
-                    $down = '<a href="change.php?get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
+                    $down = '<a href="?gmanager_action=change&amp;get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';

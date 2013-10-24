@@ -92,14 +92,27 @@ class FTP extends Gmanager
      * 
      * @param string $dir
      * @param int|string $chmod
+     * @param bool $recursive
      * @return bool
      */
-    public function mkdir ($dir, $chmod = 0755)
+    public function mkdir ($dir, $chmod = 0755, $recursive = false)
     {
         ftp_chdir($this->_res, '/');
         if (!$this->is_dir($dir)) {
-            if (!@ftp_mkdir($this->_res, IOWrapper::set($dir))) {
-                return false;
+            if ($recursive) {
+                foreach (explode('/', $dir) as $part) {
+                    $part = IOWrapper::set($part);
+                    if (!@ftp_chdir($this->_res, $part)) {
+                        if (!@ftp_mkdir($this->_res, $part)) {
+                            return false;
+                        }
+                        ftp_chdir($this->_res, $part);
+                    }
+                }
+            } else {
+                if (!@ftp_mkdir($this->_res, IOWrapper::set($dir))) {
+                    return false;
+                }
             }
         }
 

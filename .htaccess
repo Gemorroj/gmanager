@@ -2,7 +2,7 @@
 Allow from all
 
 # Lock config
-<Files "config.ini">
+<Files ".config.ini">
     Deny from all
 </Files>
 
