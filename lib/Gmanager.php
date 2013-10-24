@@ -1168,26 +1168,24 @@ abstract class Gmanager
             "time" => round(microtime(true) - $gmanagerStatEvalInfo["time"], 4)
         );';
 
+
+        Errors::initHandlerEval();
         $evalFunction = create_function('$gmanagerStatEvalInfo', $statEval);
-
-        ob_start();
-
-        $info = $evalFunction(array(
-            'time' => microtime(true),
-            'maxRam' => memory_get_peak_usage(false),
-            'ram' => memory_get_usage(false)
-        ));
-
-        $buf = ob_get_contents();
-        ob_end_clean();
-
-
-        if (mb_substr($buf, 0, mb_strlen(ini_get('error_prepend_string'))) == ini_get('error_prepend_string')) {
-            $buf = mb_substr($buf, mb_strlen(ini_get('error_prepend_string')));
+        if ($evalFunction !== false) {
+            $info = $evalFunction(array(
+                'time' => microtime(true),
+                'maxRam' => memory_get_peak_usage(false),
+                'ram' => memory_get_usage(false)
+            ));
+        } else {
+            $info = array(
+                'time' => '?',
+                'maxRam' => '?',
+                'ram' => '?'
+            );
         }
-        if (mb_substr($buf, -mb_strlen(ini_get('error_append_string'))) == ini_get('error_append_string')) {
-            $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
-        }
+        $buf = Errors::getResultHandlerEval();
+        Errors::initHandler();
 
         return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . $info['maxRam'] . '<br/></div>';
     }

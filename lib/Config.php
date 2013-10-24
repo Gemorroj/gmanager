@@ -51,11 +51,11 @@ class Config
         ini_set('max_execution_time', self::get('PHP', 'timeLimit'));
         ini_set('memory_limit', self::get('PHP', 'memoryLimit'));
 
+        ini_set('error_log', Errors::getTraceFile());
         ini_set('error_prepend_string', '<div class="red">');
         ini_set('error_append_string', '</div><div class="rb"><br/></div>' . Registry::get('foot'));
-        ini_set('error_log', Errors::getTraceFile());
-        set_error_handler('Errors::errorHandler');
 
+        Errors::initHandler();
 
         if (self::get('Auth', 'enable')) {
             Auth::main();
