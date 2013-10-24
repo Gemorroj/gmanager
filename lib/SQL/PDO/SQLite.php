@@ -186,7 +186,7 @@ class SQL_PDO_SQLite implements SQL_Interface
             if ($true) {
                 $dir = dirname($tables['file']);
                 if (!Gmanager::getInstance()->is_dir($dir)) {
-                    Gmanager::getInstance()->mkdir($dir);
+                    Gmanager::getInstance()->mkdir($dir, null, true);
                 }
                 if (!Gmanager::getInstance()->file_put_contents($tables['file'], $true)) {
                     $false .= Errors::get() . "\n";

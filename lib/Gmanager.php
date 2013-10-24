@@ -254,48 +254,13 @@ abstract class Gmanager
      *
      * @param string $source
      * @param string $to
+     * @todo copy source chmods
      */
     public function copyD ($source = '', $to = '')
     {
         if (!self::$_instance->is_dir($to)) {
             self::$_instance->mkdir($to, null, true);
         }
-
-        /*
-        $arrSource = explode('/', $source);
-        $tmpSet = $tmpSource = '';
-        $tmpAdd = array();
-        $i = 0;
-
-        foreach (explode('/', $to) as $var) {
-            $instSource = isset($arrSource[$i]) ? $arrSource[$i] : null;
-            $i++;
-
-            $tmpSet .= $var . '/';
-            if ($instSource !== null) {
-                $tmpSource .= $instSource . '/';
-
-                if ($var != $instSource) {
-                    $tmpAdd[] = array('dir' => $instSource, 'chmod' => $this->lookChmod($tmpSource));
-                }
-            }
-
-            if (!self::$_instance->is_dir($tmpSet)) {
-                self::$_instance->mkdir($tmpSet, $instSource !== null ? $this->lookChmod($tmpSource) : null);
-            }
-        }
-
-        if ($tmpAdd) {
-            $checkTo = $to;
-            foreach ($tmpAdd as $v) {
-                $checkTo .= '/' . $v['dir'];
-
-                if (!self::$_instance->is_dir($checkTo)) {
-                    self::$_instance->mkdir($checkTo, $v['chmod']);
-                }
-            }
-        }
-        */
     }
 
 
@@ -622,30 +587,10 @@ abstract class Gmanager
      */
     public function createDir ($dir = '', $chmod = 0755)
     {
-        $tmp = $tmp2 = $err = '';
-        $i = 0;
-        $g = explode(DIRECTORY_SEPARATOR, self::$_instance->getcwd());
-
-        foreach (explode('/', $dir) as $d) {
-            $tmp .= $d . '/';
-            if (isset($g[$i])) {
-                $tmp2 .= $g[$i] . '/';
-            }
-
-            if ($tmp == $tmp2 || self::$_instance->is_dir($tmp)) {
-                $i++;
-                continue;
-            }
-            if (!self::$_instance->mkdir($tmp, $chmod)) {
-                $err .= Errors::get() . ' -&gt; ' . htmlspecialchars($tmp, ENT_NOQUOTES) . '<br/>';
-            }
-            $i++;
-        }
-
-        if ($err) {
-            return Helper_View::message(Language::get('create_dir_false') . '<br/>' . $err, Helper_View::MESSAGE_ERROR_EMAIL);
-        } else {
+        if (self::$_instance->mkdir($dir, $chmod, true)) {
             return Helper_View::message(Language::get('create_dir_true'), Helper_View::MESSAGE_SUCCESS);
+        } else {
+            return Helper_View::message(Language::get('create_dir_false') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR_EMAIL);
         }
     }
 
@@ -1116,7 +1061,7 @@ abstract class Gmanager
         foreach ($tmp as $v) {
             $dir = dirname($v[1]);
             if (!self::$_instance->is_dir($dir)) {
-                self::$_instance->mkdir($dir, 0755);
+                self::$_instance->mkdir($dir, 0755, true);
             }
 
             if (Config::get('Gmanager', 'mode') == 'FTP') {
