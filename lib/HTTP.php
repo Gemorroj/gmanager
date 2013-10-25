@@ -34,15 +34,7 @@ class HTTP extends Gmanager
      */
     public function __construct ()
     {
-        $systype = strtoupper(substr(PHP_OS, 0, 3));
-
-        if (substr($systype, 0, 3) === 'WIN') {
-            Registry::set('sysType', 'WIN');
-        } elseif (strpos($systype, 'BSD') !== false) {
-            Registry::set('sysType', 'BSD');
-        } else {
-            Registry::set('sysType', 'NIX');
-        }
+        $this->setSysType(php_uname('s'));
     }
 
 

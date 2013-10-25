@@ -328,7 +328,7 @@ switch ($_GET['go']) {
             $only_headers = isset($_POST['oh']);
             if ($url = Gmanager::getInstance()->getData($_POST['url'], $_POST['headers'], $only_headers, $_POST['post'])) {
                 $url = $url['headers'] . ($only_headers ? '' : "\r\n\r\n" . $url['body']);
-                echo '<div class="code">IP: <span style="font-weight: normal;">' . implode(', ', gethostbynamel(parse_url($_POST['url'], PHP_URL_HOST))) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Helper_View::formatSize(mb_strlen($url, '8bit')) . '</span><br/></div>' . Gmanager::getInstance()->code($url, 0, true);
+                echo '<div class="code">IP: <span style="font-weight: normal;">' . Gmanager::getInstance()->getIp($_POST['url']) . '</span><br/>' . Language::get('size') . ': <span style="font-weight: normal;">' . Helper_View::formatSize(mb_strlen($url, '8bit')) . '</span><br/></div>' . Gmanager::getInstance()->code($url, 0, true);
             } else {
                 echo Helper_View::message(Language::get('not_connect'), Helper_View::MESSAGE_ERROR_EMAIL);
             }

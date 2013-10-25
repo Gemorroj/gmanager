@@ -83,6 +83,25 @@ abstract class Gmanager
 
 
     /**
+     * Set stsType
+     *
+     * @param string $sysType
+     */
+    protected function setSysType($sysType)
+    {
+        $sysType = strtoupper($sysType);
+
+        if (strpos($sysType, 'BSD') !== false) {
+            Registry::set('sysType', 'BSD');
+        } elseif (strpos($sysType, 'WIN') !== false) {
+            Registry::set('sysType', 'WIN');
+        } else {
+            Registry::set('sysType', 'NIX');
+        }
+    }
+
+
+    /**
      * _setCurrent
      */
     private function _setCurrent ()
@@ -997,6 +1016,7 @@ abstract class Gmanager
      */
     private function _getUrlName ($url)
     {
+        $url = NetworkWrapper::set($url);
         $name = '';
 
         $h = @get_headers($url, 1);
@@ -1035,6 +1055,7 @@ abstract class Gmanager
 
         $tmp = array();
         $url = trim($url);
+        $url = NetworkWrapper::set($url);
 
         if (mb_strpos($url, "\n") !== false) {
             foreach (explode("\n", $url) as $v) {
@@ -1363,6 +1384,8 @@ abstract class Gmanager
      */
     public function getData ($url = '', $headers = '', $only_headers = false, $post = '')
     {
+        $url = NetworkWrapper::set($url);
+
         $u = parse_url($url);
 
         $host = $u['host'];
@@ -1418,6 +1441,20 @@ abstract class Gmanager
         }
 
         return array('headers' => $headers, 'body' => $body);
+    }
+
+
+    /**
+     * getIp
+     *
+     * @param string $url
+     * @return string
+     */
+    public function getIp($url = '')
+    {
+        $url = NetworkWrapper::set($url);
+
+        return implode(', ', gethostbynamel(parse_url($url, PHP_URL_HOST)));
     }
 
 

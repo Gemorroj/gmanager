@@ -52,16 +52,7 @@ class FTP extends Gmanager
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
 
-        $systype = strtoupper(ftp_systype($this->_res));
-
-        if (substr($systype, 0, 3) === 'WIN') {
-            Registry::set('sysType', 'WIN');
-        } elseif (strpos($systype, 'BSD') !== false) {
-            Registry::set('sysType', 'BSD');
-        } else {
-            Registry::set('sysType', 'NIX');
-        }
-
+        $this->setSysType(ftp_systype($this->_res));
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $pass . '@' . $host . ':' . $port;
