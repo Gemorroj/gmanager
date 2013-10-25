@@ -34,7 +34,7 @@ class HTTP extends Gmanager
      */
     public function __construct ()
     {
-        $this->setSysType(php_uname('s'));
+        $this->_setSysType(php_uname('s'));
     }
 
 

@@ -87,7 +87,7 @@ abstract class Gmanager
      *
      * @param string $sysType
      */
-    protected function setSysType($sysType)
+    protected function _setSysType($sysType)
     {
         $sysType = strtoupper($sysType);
 

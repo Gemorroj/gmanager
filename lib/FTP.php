@@ -52,7 +52,7 @@ class FTP extends Gmanager
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
 
-        $this->setSysType(ftp_systype($this->_res));
+        $this->_setSysType(ftp_systype($this->_res));
 
         // URL
         //$this->_url = 'ftp://' . $user . ':' . $pass . '@' . $host . ':' . $port;
