@@ -48,6 +48,7 @@ class FTP extends Gmanager
      */
     public function __construct ($user = 'root', $pass = '', $host = 'localhost', $port = 21)
     {
+        $host = NetworkWrapper::set($host);
         $this->_res = ftp_connect($host, $port, 10);
         ftp_login($this->_res, $user, $pass);
         ftp_pasv($this->_res, true);
