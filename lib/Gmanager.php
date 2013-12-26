@@ -236,7 +236,10 @@ abstract class Gmanager
             $current = $link[1] . '/';
         }
 
-        if (!self::$_instance->is_dir($current) || !self::$_instance->is_readable($current)) {
+        if (!self::$_instance->is_dir($current)) {
+            return ListData::getListNotFoundData();
+        }
+        if (!self::$_instance->is_readable($current)) {
             return ListData::getListDenyData();
         }
 

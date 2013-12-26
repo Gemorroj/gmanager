@@ -494,4 +494,14 @@ class ListData
     {
         return '<tr><td class="red" colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('permission_denided') . '</td></tr>';
     }
+
+    /**
+     * getListNotFoundData
+     *
+     * @return string
+     */
+    public static function getListNotFoundData ()
+    {
+        return '<tr class="border"><th colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Language::get('directory_not_found') . '</th></tr>';
+    }
 }

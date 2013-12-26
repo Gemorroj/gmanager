@@ -107,7 +107,7 @@ if (Gmanager::getInstance()->file_exists(Registry::get('current')) || Registry::
         $found = '<form action="?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_COMPAT, 'UTF-8') . '" method="post"><div><input name="limit" value="' . Registry::get('limit') . '" type="text" onkeypress="return Gmanager.number(event)" class="pinput"/><input type="submit" value="' . Language::get('limit') . '"/></div></form><div class="rb">' . Language::get('create') . ' <a href="?gmanager_action=change&amp;go=create_file&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('file') . '</a> / <a href="?gmanager_action=change&amp;go=create_dir&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('dir') . '</a><br/></div><div class="rb"><a href="?gmanager_action=change&amp;go=upload&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('upload') . '</a><br/></div><div class="rb"><a href="?gmanager_action=change&amp;go=mod&amp;c=' . Registry::get('rCurrent') . '">' . Language::get('mod') . '</a><br/></div>';
     }
 } else {
-    $found = '<div class="red">' . Language::get('not_found') . '(' . Registry::get('hCurrent') . ')' . '<br/></div>';
+    $found = '<div class="red">' . Language::get('file_not_found') . '(' . Registry::get('hCurrent') . ')' . '<br/></div>';
 }
 
 

@@ -603,7 +603,7 @@ switch ($_GET['go']) {
 
     default:
         if (!Gmanager::getInstance()->file_exists(Registry::get('current'))) {
-            echo Helper_View::message(Language::get('not_found'), Helper_View::MESSAGE_ERROR);
+            echo Helper_View::message(Language::get('file_not_found'), Helper_View::MESSAGE_ERROR);
             break;
         }
 
