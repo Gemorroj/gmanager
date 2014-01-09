@@ -738,7 +738,7 @@ abstract class Gmanager
 
         $wr = fwrite(
             $fp,
-            'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
+            'POST /syntax HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
             'Content-length: ' . (mb_strlen($content) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
