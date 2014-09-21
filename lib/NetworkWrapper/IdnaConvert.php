@@ -16,8 +16,7 @@
 // |                                                                      |
 // | You should have received a copy of the GNU Lesser General Public     |
 // | License along with this library; if not, write to the Free Software  |
-// | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 |
-// | USA.                                                                 |
+// | Foundation, Inc., 51 Franklin St, Boston, MA 02110, United States    |
 // +----------------------------------------------------------------------+
 //
 
@@ -36,7 +35,7 @@
  * simple strings and complete email addresses as well. That means, that you might
  * use any of the following notations:
  *
- * - www.n??er.com
+ * - www.nörgler.com
  * - xn--nrgler-wxa
  * - xn--brse-5qa.xn--knrz-1ra.info
  *
@@ -47,8 +46,8 @@
  * ACE input and output is always expected to be ASCII.
  *
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @copyright 2004-2011 phlyLabs Berlin, http://phlylabs.de
- * @version 0.8.1 2011-12-19
+ * @copyright 2004-2014 phlyLabs Berlin, http://phlylabs.de
+ * @version 0.8.2 2014-09-15
  */
 class NetworkWrapper_IdnaConvert
 {
@@ -1603,4 +1602,3 @@ class NetworkWrapper_IdnaConvert
                     )
             );
 }
-?>
