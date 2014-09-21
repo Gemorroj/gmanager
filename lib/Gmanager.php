@@ -236,7 +236,10 @@ abstract class Gmanager
             $current = $link[1] . '/';
         }
 
-        if (!self::$_instance->is_dir($current) || !self::$_instance->is_readable($current)) {
+        if (!self::$_instance->is_dir($current)) {
+            return ListData::getListNotFoundData();
+        }
+        if (!self::$_instance->is_readable($current)) {
             return ListData::getListDenyData();
         }
 
@@ -735,7 +738,7 @@ abstract class Gmanager
 
         $wr = fwrite(
             $fp,
-            'POST /syntax2/index.php HTTP/1.0' . "\r\n" .
+            'POST /syntax HTTP/1.0' . "\r\n" .
             'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
             'Content-length: ' . (mb_strlen($content) + 2) . "\r\n" .
             'Host: wapinet.ru' . "\r\n" .
