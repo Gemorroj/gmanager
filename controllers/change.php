@@ -309,7 +309,7 @@ switch ($_GET['go']) {
 
     case 'new_version':
         $new = Gmanager::getInstance()->getData('http://wapinet.ru/gmanager/gmanager.txt');
-        if ($new['body']) {
+        if ($new) {
             if (version_compare($new['body'], Config::getVersion(), '<=')) {
                 echo Helper_View::message(Language::get('version_new') . ': ' . $new['body'] . '<br/>' . Language::get('version_old') . ': ' . Config::getVersion() . '<br/>' . Language::get('new_version_false'), Helper_View::MESSAGE_SUCCESS);
             } else {

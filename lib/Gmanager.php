@@ -26,7 +26,6 @@ abstract class Gmanager
 
     private function __construct(){}
     private function __clone(){}
-    private function __wakeup(){}
 
 
     /**
@@ -992,7 +991,7 @@ abstract class Gmanager
     /**
      * _setIniHeaders
      *
-     * @param array $headers
+     * @param string $headers
      * @return string
      */
     private function _setIniHeaders ($headers)
@@ -1406,7 +1405,7 @@ abstract class Gmanager
 
         $fp = fsockopen($host, $port, $errno, $errstr, 10);
         if (!$fp) {
-            return false;
+            return array();
         } else {
             $out = 'Host: ' . $host . "\r\n";
 
