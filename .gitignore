@@ -1,3 +1,6 @@
 .idea
 /data/*
 !data/index.html
+composer.phar
+composer.lock
+vendor/

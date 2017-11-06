@@ -1,0 +1,28 @@
+{
+    "name": "gemorroj/gmanager",
+    "description": "php file manager and more",
+    "license": "GPLv3",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Gemorroj"
+        }
+    ],
+    "autoload": {
+        "classmap": [
+            "lib/"
+        ]
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
+    },
+    "require": {
+        "php": ">=5.3.3",
+        "pear/archive_tar": "^1.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8|^5.0"
+    }
+}

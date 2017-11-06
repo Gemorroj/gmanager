@@ -76,7 +76,6 @@ class Archive
 
             case self::FORMAT_TAR:
             case self::FORMAT_BZ2:
-                // Archive_Tar exists =(
                 return new Archive_Tars($this->_file);
                 break;
 

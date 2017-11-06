@@ -587,7 +587,9 @@ abstract class Gmanager
      */
     public function createFile ($file = '', $text = '', $chmod = 0644)
     {
-        $this->createDir(dirname($file));
+        if (!self::$_instance->is_dir(dirname($file))) {
+            $this->createDir(dirname($file));
+        }
 
         if (self::$_instance->file_put_contents($file, $text)) {
             return Helper_View::message(Language::get('fputs_file_true'), Helper_View::MESSAGE_SUCCESS) . $this->rechmod($file, $chmod);
