@@ -2,13 +2,11 @@
 /**
  * 
  * This software is distributed under the GNU GPL v3.0 license.
- * @author Gemorroj
- * @copyright 2008-2012 http://wapinet.ru
- * @license http://www.gnu.org/licenses/gpl-3.0.txt
- * @link http://wapinet.ru/gmanager/
- * @version 0.8.1 beta
  * 
- * PHP version >= 5.2.3
+ * @author    Gemorroj
+ * @copyright 2008-2017 http://wapinet.ru
+ * @license   http://www.gnu.org/licenses/gpl-3.0.txt
+ * @link      https://github.com/Gemorroj/gmanager
  * 
  */
 
@@ -97,11 +95,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             $content = Gmanager::getInstance()->file_get_contents(Registry::get('current'));
         }
 
-        if (Config::get('Gmanager', 'syntax') == Config::SYNTAX_WAPINET) {
-            echo Gmanager::getInstance()->syntaxWapinet($content, $charset);
-        } else {
-            echo Gmanager::getInstance()->syntax($content, $charset);
-        }
+        echo Gmanager::getInstance()->syntax($content, $charset);
         break;
 
 

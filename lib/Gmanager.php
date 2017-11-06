@@ -1,15 +1,13 @@
 <?php
 /**
- * 
+ *
  * This software is distributed under the GNU GPL v3.0 license.
- * @author Gemorroj
- * @copyright 2008-2012 http://wapinet.ru
- * @license http://www.gnu.org/licenses/gpl-3.0.txt
- * @link http://wapinet.ru/gmanager/
- * @version 0.8.1 beta
- * 
- * PHP version >= 5.2.3
- * 
+ *
+ * @author    Gemorroj
+ * @copyright 2008-2017 http://wapinet.ru
+ * @license   http://www.gnu.org/licenses/gpl-3.0.txt
+ * @link      https://github.com/Gemorroj/gmanager
+ *
  */
 
 
@@ -717,55 +715,6 @@ abstract class Gmanager
 
 
     /**
-     * syntaxWapinet
-     * 
-     * @param string $content
-     * @param array  $charset
-     * @return string
-     */
-    public function syntaxWapinet ($content = '', $charset = array())
-    {
-        if (!$charset[0]) {
-            $charset[0] = 'UTF-8';
-        }
-        $fp = fsockopen('wapinet.ru', 80, $er1, $er2, 10);
-        if (!$fp) {
-            return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
-        }
-
-        $content = rawurlencode($content);
-
-        $wr = fwrite(
-            $fp,
-            'POST /syntax HTTP/1.0' . "\r\n" .
-            'Content-type: application/x-www-form-urlencoded; charset=' . $charset[0] . "\r\n" .
-            'Content-length: ' . (mb_strlen($content) + 2) . "\r\n" .
-            'Host: wapinet.ru' . "\r\n" .
-            'Connection: close' . "\r\n" .
-            'User-Agent: GManager ' . Config::getVersion() . "\r\n\r\n" .
-            'f=' . $content . "\r\n\r\n"
-        );
-        if ($wr === false) {
-            return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
-        }
-
-        $r = '';
-        while ($r !== "\r\n") {
-            $r = fgets($fp);
-            if ($r === false) {
-                return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
-            }
-        }
-        $r = '';
-        while (!feof($fp)) {
-            $r .= fread($fp, 1024);
-        }
-        fclose($fp);
-        return $r;
-    }
-
-
-    /**
      * beautify
      * 
      * @param string $str
@@ -828,6 +777,8 @@ abstract class Gmanager
             $l = strlen($next);
             $pg .= '<span class="' . ($line == $next ? 'fail_code' : 'true_code') . '">' . ($l < $len ? str_repeat('&#160;', $len - $l) : '') . $next . '</span> ' . $array[$i] . "\n";
         }
+
+        $pg = rtrim(rtrim($pg), '</span>');
 
         return '<div class="code"><pre><code>' . $pg . '</code></pre></div>';
     }

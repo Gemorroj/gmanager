@@ -1,9 +1,8 @@
 Файловый Менеджер + Текстовый Редактор
 Gmanager
 
-Версия: 0.8.1 beta
 Автор: Gemorroj
-http://wapinet.ru/gmanager/
+https://github.com/Gemorroj/gmanager
 
 
 На папку data требуются права на чтение/запись. (0777)
