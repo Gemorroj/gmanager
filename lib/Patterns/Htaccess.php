@@ -33,12 +33,6 @@ DirectoryIndex index.php index.html
 
 php_value default_mimetype text/html
 
-php_flag register_globals Off
-
-php_flag magic_quotes_gpc Off
-php_flag magic_quotes_runtime Off
-php_flag magic_quotes_sybase Off
-
 # Debug
 php_value error_reporting -1
 php_flag display_errors Off
@@ -61,12 +55,6 @@ Satisfy All
 DirectoryIndex index.php index.html
 
 php_value default_mimetype text/html
-
-php_flag register_globals Off
-
-php_flag magic_quotes_gpc Off
-php_flag magic_quotes_runtime Off
-php_flag magic_quotes_sybase Off
 
 
 # Debug

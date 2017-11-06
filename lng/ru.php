@@ -216,4 +216,6 @@ return array(
     'empty'                         =>  'Пусто',
     'select_database'               =>  'Выберите СУБД',
     'not_supported'                 =>  'Операция не поддерживается',
+    'not_create_tmp_file'           =>  'Не удалось создать временный файл',
+    'not_create_process'            =>  'Не удалось создать процесс',
 );

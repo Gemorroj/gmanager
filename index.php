@@ -15,10 +15,8 @@
 
 
 define('GMANAGER_START', microtime(true));
-define('GMANAGER_PATH', dirname(__FILE__));
+define('GMANAGER_PATH', __DIR__);
 define('GMANAGER_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/'));
-
-Config::setConfig('.config.ini');
 
 set_include_path(
     get_include_path() . PATH_SEPARATOR .
@@ -26,16 +24,15 @@ set_include_path(
     GMANAGER_PATH . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'PEAR'
 );
 
-
 /**
  * Autoloader
- *
- * @param string $class
  */
-function __autoload($class)
-{
+spl_autoload_register(function ($class) {
     require GMANAGER_PATH . '/lib/' . str_replace('_', '/', $class) . '.php';
-}
+});
+
+
+Config::setConfig('.config.ini');
 
 
 switch (isset($_GET['gmanager_action']) ? $_GET['gmanager_action'] : 'index') {

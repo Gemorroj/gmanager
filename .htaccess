@@ -14,14 +14,6 @@ Allow from all
 # Index file
 DirectoryIndex index.php
 
-# Magic quotes
-php_flag magic_quotes_gpc Off
-php_flag magic_quotes_runtime Off
-php_flag magic_quotes_sybase Off
-
-# Global vars
-php_flag register_globals Off
-
 # Debug
 php_value error_reporting -1
 php_flag display_errors On

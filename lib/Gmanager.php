@@ -1136,32 +1136,35 @@ abstract class Gmanager
      */
     public function showEval ($eval = '')
     {
-        $statEval = $eval . "\n" . 'return array(
-            "ram" => Helper_View::formatSize(memory_get_usage(false) - $gmanagerStatEvalInfo["ram"]),
-            "maxRam" => Helper_View::formatSize(memory_get_peak_usage(false) - $gmanagerStatEvalInfo["maxRam"]),
-            "time" => round(microtime(true) - $gmanagerStatEvalInfo["time"], 4)
-        );';
+        $filename = uniqid('gmanager', true) . '.tmp';
 
+        $token = ' --- ' . $filename . ' --- ';
+        $statEval = '<?php $gmanagerStatEvalInfoTime = microtime(true);' . $eval . '
+        echo "' . $token . '";
+        echo json_encode(array(
+            "ram" => memory_get_usage(false),
+            "maxRam" => memory_get_peak_usage(false),
+            "time" => microtime(true) - $gmanagerStatEvalInfoTime
+        ));';
 
-        Errors::initHandlerEval();
-        $evalFunction = create_function('$gmanagerStatEvalInfo', $statEval);
-        if ($evalFunction !== false) {
-            $info = $evalFunction(array(
-                'time' => microtime(true),
-                'maxRam' => memory_get_peak_usage(false),
-                'ram' => memory_get_usage(false)
-            ));
-        } else {
-            $info = array(
-                'time' => '?',
-                'maxRam' => '?',
-                'ram' => '?'
-            );
+        if (false === file_put_contents(Config::getTemp() . '/' . $filename, $statEval)) {
+            throw new Exception(Language::get('not_create_tmp_file'));
         }
-        $buf = Errors::getResultHandlerEval();
-        Errors::initHandler();
 
-        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', $info['time'], Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . $info['ram'] . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . $info['maxRam'] . '<br/></div>';
+
+        // todo: сначала проверить корректность синтаксиса
+        $process = popen(escapeshellcmd(Config::get('PHP', 'path')) . ' -f ' . escapeshellarg(Config::getTemp() . '/' . $filename), 'r');
+        if (false === $process) {
+            throw new Exception(Language::get('not_create_process'));
+        }
+
+        $buf = stream_get_contents($process);
+        $data = Errors::getResultHandlerEval($buf, $token);
+
+        pclose($process);
+        @unlink(Config::getTemp() . '/' . $filename);
+
+        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($data['content']) . '">' . htmlspecialchars($data['content'], ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', round($data['stat']['time'], 4), Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . Helper_View::formatSize($data['stat']['ram']) . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . Helper_View::formatSize($data['stat']['maxRam']) . '<br/></div>';
     }
 
 

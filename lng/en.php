@@ -216,4 +216,6 @@ return array(
     'empty'                         =>  'Empty',
     'select_database'               =>  'Select Database',
     'not_supported'                 =>  'Operation not supported',
+    'not_create_tmp_file'           =>  'Can not create tamp file',
+    'not_create_process'            =>  'Can not create process',
 );

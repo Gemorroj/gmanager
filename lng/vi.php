@@ -217,4 +217,6 @@ return array(
     'empty'                         =>  'Trống',
     'select_database'               =>  'Chọn Database',
     'not_supported'                 =>  'Hoạt động không được hỗ trợ',
+    'not_create_tmp_file'           =>  'Can not create tamp file',
+    'not_create_process'            =>  'Can not create process',
 );

@@ -216,4 +216,6 @@ return array(
     'empty'                         =>  'Порожній',
     'select_database'               =>  'Виберіть СУБД',
     'not_supported'                 =>  'Операція не підтримується',
+    'not_create_tmp_file'           =>  'Can not create tamp file',
+    'not_create_process'            =>  'Can not create process',
 );

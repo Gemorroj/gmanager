@@ -43,33 +43,27 @@ class Errors
 
 
     /**
-     * Init error handler for eval
-     */
-    public static function initHandlerEval()
-    {
-        ob_start();
-        set_error_handler('Errors::errorHandlerEval');
-    }
-
-
-    /**
      * Get result errors for eval error handler
      *
-     * @return string
+     * @param string $content
+     * @param string $token
+     * @return array
      */
-    public static function getResultHandlerEval()
+    public static function getResultHandlerEval($content, $token)
     {
-        $buf = ob_get_contents();
-        ob_end_clean();
-
-        if (mb_substr($buf, 0, mb_strlen(ini_get('error_prepend_string'))) === ini_get('error_prepend_string')) {
-            $buf = mb_substr($buf, mb_strlen(ini_get('error_prepend_string')));
+        if (mb_substr($content, 0, mb_strlen(ini_get('error_prepend_string'))) === ini_get('error_prepend_string')) {
+            $content = mb_substr($content, mb_strlen(ini_get('error_prepend_string')));
         }
-        if (mb_substr($buf, -mb_strlen(ini_get('error_append_string'))) === ini_get('error_append_string')) {
-            $buf = mb_substr($buf, 0, -mb_strlen(ini_get('error_append_string')));
+        if (mb_substr($content, -mb_strlen(ini_get('error_append_string'))) === ini_get('error_append_string')) {
+            $content = mb_substr($content, 0, -mb_strlen(ini_get('error_append_string')));
         }
 
-        return $buf;
+        list($data, $stat) = explode($token, $content);
+
+        return array(
+            'content' => $data,
+            'stat' => json_decode($stat, true)
+        );
     }
 
 
@@ -145,21 +139,6 @@ class Errors
         file_put_contents(self::getTraceFile(), '[' . date('r') . '] ' . self::$_php_errormsg . ', PHP ' . PHP_VERSION . ' (' . PHP_OS . ')' . "\n" . print_r(debug_backtrace(), true) . "\n\n", FILE_APPEND);
 
         return true;
-    }
-
-
-    /**
-     * errorHandlerEval
-     *
-     * @param int    $errno
-     * @param string $errstr
-     * @param string $errfile
-     * @param int    $errline
-     * @return bool
-     */
-    public static function errorHandlerEval($errno, $errstr, $errfile, $errline)
-    {
-        return false;
     }
 
 
