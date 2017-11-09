@@ -678,40 +678,24 @@ abstract class Gmanager
      */
     public function syntax ($content = '', $charset = array())
     {
-        $tmp = Config::getTemp() . '/GmanagerSyntax' . GMANAGER_REQUEST_TIME . '.tmp';
-        $fp = fopen($tmp, 'w');
-        if (!$fp) {
-            return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . Errors::get(), Helper_View::MESSAGE_ERROR);
-        }
-        fputs($fp, $content);
-        fclose($fp); 
+        try {
+            $syntax = new \Syntax\Php();
+            $syntax->setCli(Config::get('PHP', 'path'));
+            $resultCheck = $syntax->check($content);
 
-        exec(escapeshellcmd(Config::get('PHP', 'path')) . ' -c -f -l ' . escapeshellarg($tmp), $rt, $v);
-        unlink($tmp);
-        $error = Errors::get();
-        $size = sizeof($rt);
-
-        if (!$size) {
-            return Helper_View::message(Language::get('syntax_not_check') . '<br/>' . $error, Helper_View::MESSAGE_ERROR_EMAIL);
-        }
-
-        $erl = false;
-        if ($v == 255 || $size > 2) {
-            if ($st = trim(strip_tags($rt[1]))) {
-                $erl = preg_replace('/.*\s(\d*)$/', '$1', $st, 1);
-                $pg = str_replace($tmp, '...', $st);
-            } else {
-                $pg = Language::get('syntax_unknown');
+            if ($charset[0]) {
+                $content = mb_convert_encoding($content, $charset[1], $charset[0]);
             }
-        } else {
-            $pg = Language::get('syntax_true');
-        }
 
-        if ($charset[0]) {
-            $content = mb_convert_encoding($content, $charset[1], $charset[0]);
-        }
+            if ($resultCheck['validity']) {
+                return Helper_View::message(Language::get('syntax_true'), Helper_View::MESSAGE_SUCCESS) . $this->code($content);
+            }
 
-        return Helper_View::message($pg, $erl ? Helper_View::MESSAGE_ERROR : Helper_View::MESSAGE_SUCCESS) . $this->code($content, $erl);
+            $error = $resultCheck['errors'][0];
+            return Helper_View::message(htmlspecialchars($error['type'], ENT_NOQUOTES) . '<br />' . htmlspecialchars($error['message'], ENT_NOQUOTES), Helper_View::MESSAGE_ERROR . $this->code($content, $error['line']));
+        } catch (Exception $e) {
+            return Helper_View::message(htmlspecialchars($e->getMessage(), ENT_NOQUOTES), Helper_View::MESSAGE_ERROR);
+        }
     }
 
 
@@ -1087,9 +1071,7 @@ abstract class Gmanager
      */
     public function showEval ($eval = '')
     {
-        $filename = uniqid('gmanager', true) . '.tmp';
-
-        $token = ' --- ' . $filename . ' --- ';
+        $token = ' --- ' . uniqid('gmanager', true) . ' --- ';
         $statEval = '<?php $gmanagerStatEvalInfoTime = microtime(true);' . $eval . '
         echo "' . $token . '";
         echo json_encode(array(
@@ -1098,22 +1080,17 @@ abstract class Gmanager
             "time" => microtime(true) - $gmanagerStatEvalInfoTime
         ));';
 
-        if (false === file_put_contents(Config::getTemp() . '/' . $filename, $statEval)) {
-            throw new Exception(Language::get('not_create_tmp_file'));
+        $process = new \Symfony\Component\Process\PhpProcess($statEval);
+        $process->run();
+
+        $buf = $process->getOutput();
+        $buf = Helper_System::makeConsoleOutput($buf);
+
+        if (!$process->isSuccessful()) {
+            return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
         }
 
-
-        // todo: сначала проверить корректность синтаксиса
-        $process = popen(escapeshellcmd(Config::get('PHP', 'path')) . ' -f ' . escapeshellarg(Config::getTemp() . '/' . $filename), 'r');
-        if (false === $process) {
-            throw new Exception(Language::get('not_create_process'));
-        }
-
-        $buf = stream_get_contents($process);
         $data = Errors::getResultHandlerEval($buf, $token);
-
-        pclose($process);
-        @unlink(Config::getTemp() . '/' . $filename);
 
         return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($data['content']) . '">' . htmlspecialchars($data['content'], ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', round($data['stat']['time'], 4), Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . Helper_View::formatSize($data['stat']['ram']) . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . Helper_View::formatSize($data['stat']['maxRam']) . '<br/></div>';
     }
@@ -1127,35 +1104,21 @@ abstract class Gmanager
      */
     public function showCmd ($cmd = '')
     {
-        /*
-            $h = popen($cmd, 'r');
-            $buf = '';
-            while (!feof($h)) {
-                $buf .= fgets($h, 4096);
-            }
-            pclose($h);
-        */
+        $process = new \Symfony\Component\Process\Process($cmd);
+        $process->run();
 
-        if (Config::get('Gmanager', 'altEncoding') != 'UTF-8') {
-            $cmd = mb_convert_encoding($cmd, Config::get('Gmanager', 'altEncoding'), 'UTF-8');
+        if ($process->isSuccessful()) {
+            $output = $process->getOutput();
+            $output = Helper_System::makeConsoleOutput($output);
+
+            return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($output) . '">' . htmlspecialchars($output, ENT_NOQUOTES) . '</textarea></div>';
         }
 
-        if ($h = proc_open($cmd, array(array('pipe', 'r'), array('pipe', 'w')), $pipes)) {
-            //fwrite($pipes[0], '');
-            fclose($pipes[0]);
+        $errorOutput = $process->getErrorOutput();
+        $errorOutput = Helper_System::makeConsoleOutput($errorOutput);
+        $errorCode = $process->getExitCode() . ': [' . $process->getExitCodeText() . ']';
 
-            $buf = stream_get_contents($pipes[1]);
-            fclose($pipes[1]);
-
-            proc_close($h);
-
-            if (Config::get('Gmanager', 'consoleEncoding') != 'UTF-8') {
-                $buf = mb_convert_encoding($buf, 'UTF-8', Config::get('Gmanager', 'consoleEncoding'));
-            }
-        } else {
-            return '<div class="red">' . Language::get('cmd_error') . '<br/></div>';
-        }
-        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
+        return '<div class="red">' . Language::get('cmd_error') . ' (' . htmlspecialchars($errorCode, ENT_NOQUOTES) . ')' . ($errorOutput ? '<br />' . htmlspecialchars($errorOutput, ENT_NOQUOTES) : '') . '</div>';
     }
 
 
@@ -1499,11 +1462,7 @@ abstract class Gmanager
      */
     public function getUname ()
     {
-        $uname = php_uname();
-        if (Config::get('Gmanager', 'altEncoding') != 'UTF-8') {
-            $uname = mb_convert_encoding($uname, 'UTF-8', Config::get('Gmanager', 'altEncoding'));
-        }
-        return $uname;
+        return php_uname();
     }
 
 

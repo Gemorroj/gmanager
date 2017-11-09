@@ -23,6 +23,8 @@ require __DIR__ . '/vendor/autoload.php';
 
 Config::setConfig('.config.ini');
 
+// for PhpProcess
+putenv('PHP_PATH=' . Config::get('PHP', 'path'));
 
 switch (isset($_GET['gmanager_action']) ? $_GET['gmanager_action'] : 'index') {
     case 'edit':

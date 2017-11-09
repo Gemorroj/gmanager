@@ -499,9 +499,6 @@ class Archive_Zip implements Archive_Interface
 
             $comment = $zip->getArchiveComment();
             if ($comment != '') {
-                if (mb_convert_encoding($comment, 'UTF-8', 'UTF-8') != $comment) {
-                    $comment = mb_convert_encoding($comment, 'UTF-8', Config::get('Gmanager', 'altEncoding'));
-                }
                 $l .= '<tr class="border"><td>' . Language::get('comment_archive') . '</td><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '"><pre>' . htmlspecialchars($comment, ENT_NOQUOTES) . '</pre></td></tr>';
             }
 

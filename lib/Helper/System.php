@@ -42,20 +42,21 @@ class Helper_System
                 return $name['name'];
             }
 
-            exec('id -n -u ' . escapeshellarg($id), $outId, $resultId);
-            if ($resultId === 0) {
-                return trim($outId[0]);
+            $processBuilder = new \Symfony\Component\Process\ProcessBuilder();
+            $processBuilder->setPrefix('id');
+            $processBuilder->setArguments(array('-n', '-u', $id));
+            $processBuilder->getProcess()->run();
+            if ($processBuilder->getProcess()->isSuccessful()) {
+                return $processBuilder->getProcess()->getOutput();
             }
 
-            exec('getent passwd ' . escapeshellarg($id), $outGetent, $resultGetent);
-            if ($resultGetent === 0) {
-                $tmp = explode(':', $outGetent[0], 2);
+            $processBuilder = new \Symfony\Component\Process\ProcessBuilder();
+            $processBuilder->setPrefix('getent');
+            $processBuilder->setArguments(array('passwd', $id));
+            $processBuilder->getProcess()->run();
+            if ($processBuilder->getProcess()->isSuccessful()) {
+                $tmp = explode(':', $processBuilder->getProcess()->getOutput(), 2);
                 return trim($tmp[0]);
-            }
-
-            exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'($login, $pass, $uid, $gid) = getpwuid(' . escapeshellarg($id) . ');print $login;\'', $outPerl, $resultPerl);
-            if ($resultPerl === 0) {
-                return trim($outPerl);
             }
         }
 
@@ -77,21 +78,13 @@ class Helper_System
             if (function_exists('posix_getgrgid') && $name = posix_getgrgid($id)) {
                 return $name['name'];
             }
-/*
-            exec('id -n -u ' . escapeshellarg($id), $outId, $resultId);
-            if ($resultId === 0) {
-                return trim($outId[0]);
-            }
-*/
-            exec('getent group ' . escapeshellarg($id), $outGetent, $resultGetent);
-            if ($resultGetent === 0) {
-                $tmp = explode(':', $outGetent[0], 2);
-                return trim($tmp[0]);
-            }
 
-            exec(escapeshellcmd(Config::get('Perl', 'path')) . ' -e \'print getgrgid(' . escapeshellarg($id) . ');\'', $outPerl, $resultPerl);
-            if ($resultPerl === 0) {
-                $tmp = explode('*', $outPerl[0], 2);
+            $processBuilder = new \Symfony\Component\Process\ProcessBuilder();
+            $processBuilder->setPrefix('getent');
+            $processBuilder->setArguments(array('group', $id));
+            $processBuilder->getProcess()->run();
+            if ($processBuilder->getProcess()->isSuccessful()) {
+                $tmp = explode(':', $processBuilder->getProcess()->getOutput(), 2);
                 return trim($tmp[0]);
             }
         }
@@ -142,5 +135,25 @@ class Helper_System
         }
         closedir($h);
         rmdir($dir);
+    }
+
+
+    /**
+     * @param string $output
+     * @return string
+     */
+    public static function makeConsoleOutput($output)
+    {
+        $isUtf8 = mb_convert_encoding($output, 'UTF-8', 'UTF-8') === $output;
+
+        if ($isUtf8) {
+            return $isUtf8;
+        }
+
+        if (Registry::get('sysType') === 'WIN') {
+            return mb_convert_encoding($output, 'UTF-8', 'CP866');
+        }
+
+        return mb_convert_encoding($output, 'UTF-8');
     }
 }
