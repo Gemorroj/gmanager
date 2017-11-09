@@ -13,11 +13,6 @@
             "lib/"
         ]
     },
-    "autoload-dev": {
-        "classmap": [
-            "tests/"
-        ]
-    },
     "require": {
         "php": ">=5.3.3",
         "ext-zip": "*",
