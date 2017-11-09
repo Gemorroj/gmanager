@@ -15,7 +15,7 @@ class Patterns_HTML implements Patterns_Interface
 {
     /**
      * pattern
-     * 
+     *
      * @return array
      */
     public static function get ()

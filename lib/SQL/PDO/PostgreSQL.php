@@ -70,19 +70,14 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
         $out = '<?php' . "\n"
              . '// PDO PostgreSQL Installer' . "\n"
              . '// Created in Gmanager ' . Config::getVersion() . "\n"
-             . '// http://wapinet.ru/gmanager/' . "\n\n"
+             . '// https://github.com/Gemorroj/gmanager' . "\n\n"
 
              . 'error_reporting(0);' . "\n\n"
 
-            . 'if (isset($_SERVER[\'HTTP_ACCEPT\']) && stripos($_SERVER[\'HTTP_ACCEPT\'], \'application/xhtml+xml\') !== false) {' . "\n"
-            . '    header(\'Content-type: text/xhtml+xml; charset=UTF-8\');' . "\n"
-            . '} else {' . "\n"
-            . '    header(\'Content-type: application/html; charset=UTF-8\');' . "\n"
-            . '}' . "\n\n"
+             . 'header(\'Content-type: text/html; charset=UTF-8\');' . "\n\n"
 
-             . 'echo \'<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-             . '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n"
-             . '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">' . "\n"
+             . 'echo \'<!DOCTYPE html>' . "\n"
+             . '<html>' . "\n"
              . '<head>' . "\n"
              . '<title>PDO PostgreSQL Installer</title>' . "\n"
              . '<style type="text/css">' . "\n"

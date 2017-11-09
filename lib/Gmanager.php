@@ -141,8 +141,7 @@ abstract class Gmanager
      */
     public function sendHeader ()
     {
-        //header('Content-type: text/html; charset=UTF-8');
-        header('Content-Type: ' . Config::getContentType() . '; charset=UTF-8');
+        header('Content-type: text/html; charset=UTF-8');
         header('Cache-Control: no-cache');
     }
 
