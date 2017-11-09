@@ -129,7 +129,6 @@ return array(
     'extract_file_false_ext'        =>  'Tập tin %file% chưa được giải nén',
     'extract_true'                  =>  'Tập tin nén đã được giải nén',
     'extract_false'                 =>  'Tập tin nén chưa được giải nén',
-    'archive_error'                 =>  'Lỗi mở tập tin nén',
     'archive_error_encrypt'         =>  'File nén có mật khẩu',
     'create_archive'                =>  'Tạo file ZIP',
     'create_archive_true'           =>  'File ZIP đã được tạo',

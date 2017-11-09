@@ -440,17 +440,17 @@ class Archive_Tars implements Archive_Interface
     /**
      * renameFile
      *
-     * @param string $name
+     * @param string $new_name
      * @param string $arch_name
      * @param bool   $del
      * @param bool   $overwrite
      * @return string
      */
-    public function renameFile ($name, $arch_name, $del = false, $overwrite = false)
+    public function renameFile ($new_name, $arch_name, $del = false, $overwrite = false)
     {
         $tmp        = Config::getTemp() . '/GmanagerTar' . GMANAGER_REQUEST_TIME;
         $tgz        = $this->_open();
-        $sysName    = IOWrapper::set($name);
+        $sysName    = IOWrapper::set($new_name);
 
         $folder = '';
         foreach ($tgz->listContent() as $f) {
@@ -492,9 +492,9 @@ class Archive_Tars implements Archive_Interface
 
         if ($folder) {
             if ($del) {
-                $result = Gmanager::getInstance()->moveFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
+                $result = Gmanager::getInstance()->moveFiles($tmp . '/' . $new_name, $tmp . '/' . $arch_name);
             } else {
-                $result = Gmanager::getInstance()->copyFiles($tmp . '/' . $name, $tmp . '/' . $arch_name);
+                $result = Gmanager::getInstance()->copyFiles($tmp . '/' . $new_name, $tmp . '/' . $arch_name);
             }
         } else {
             if ($del) {

@@ -37,7 +37,6 @@ class Config
 
         Language::setLanguage(self::get('Gmanager', 'language'));
 
-        define('PCLZIP_TEMPORARY_DIR', self::getTemp() . '/');
         define('GMANAGER_REQUEST_TIME', time());
 
         mb_internal_encoding('UTF-8');

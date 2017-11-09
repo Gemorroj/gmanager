@@ -14,7 +14,7 @@
 interface Archive_Interface
 {
     public function __construct ($name);
-    public function renameFile ($name, $arch_name, $del = false, $overwrite = false);
+    public function renameFile ($new_name, $arch_name, $del = false, $overwrite = false);
     public function listArchive ($down = '');
     public function getEditFile ($f = '');
     public function setEditFile ($f = '', $text = '');

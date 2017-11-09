@@ -20,13 +20,13 @@
     },
     "require": {
         "php": ">=5.3.3",
+        "ext-zip": "*",
         "pear/archive_tar": "^1.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.8|^5.0"
     },
     "suggest": {
-        "ext-rar": "Support RAR archives",
-        "ext-zip": "Support ZIP archives"
+        "ext-rar": "Support RAR archives"
     }
 }

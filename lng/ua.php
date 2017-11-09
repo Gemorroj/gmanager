@@ -130,7 +130,6 @@ return array(
     'extract_true'                  =>  'Архів Розпаковано',
     'extract_false'                 =>  'Архів не Розпаковано',
     'archive_error'                 =>  'Неможливо Відкрити Архів',
-    'archive_error_encrypt'         =>  'На Архів Встановлено Пароль',
     'create_archive'                =>  'Створити ZIP Архів',
     'create_archive_true'           =>  'ZIP Архів Створено',
     'create_archive_false'          =>  'ZIP Архів не Створено',

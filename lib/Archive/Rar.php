@@ -370,13 +370,13 @@ class Archive_Rar implements Archive_Interface
     /**
      * renameFile
      *
-     * @param string $name
+     * @param string $new_name
      * @param string $arch_name
      * @param bool   $del
      * @param bool   $overwrite
      * @return string
      */
-    public function renameFile ($name, $arch_name, $del = false, $overwrite = false)
+    public function renameFile ($new_name, $arch_name, $del = false, $overwrite = false)
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
