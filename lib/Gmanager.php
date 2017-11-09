@@ -817,8 +817,7 @@ abstract class Gmanager
         }
         fclose($fo);
 
-
-        return array('name' => IOWrapper::get($name), 'length' => $length);
+        return array('name' => $name, 'length' => $length);
     }
 
 
@@ -847,7 +846,7 @@ abstract class Gmanager
      */
     public function gz ($c = '')
     {
-        $data = Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c);
+        $data = Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($c) : $c;
 
         $info = $this->getGzInfo($data);
         $ext = $this->getGzContent($data);
@@ -877,7 +876,7 @@ abstract class Gmanager
     {
         $this->createDir($name, $chmod[1]);
 
-        $tmp = (Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($c) : IOWrapper::set($c));
+        $tmp = (Config::get('Gmanager', 'mode') == 'FTP' ? $this->ftpArchiveStart($c) : $c);
 
         $info = $this->getGzInfo($tmp);
 
@@ -1285,10 +1284,6 @@ abstract class Gmanager
         // $f = rawurldecode($f);
 
         $info = pathinfo($f);
-        $info['dirname'] = IOWrapper::get($info['dirname']);
-        $info['basename'] = IOWrapper::get($info['basename']);
-        $info['extension'] = IOWrapper::get($info['extension']);
-        $info['filename'] = IOWrapper::get($info['filename']);
 
 
         if (preg_match_all('/\[replace=([^,]),([^\]])/U', $name, $arr, PREG_SET_ORDER)) {

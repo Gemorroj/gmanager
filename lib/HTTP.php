@@ -46,7 +46,7 @@ class HTTP extends Gmanager
      */
     public function mkdir ($dir, $chmod = 0755, $recursive = false)
     {
-        return @mkdir(IOWrapper::set($dir), $this->_chmoder($chmod), $recursive);
+        return @mkdir($dir, $this->_chmoder($chmod), $recursive);
     }
 
 
@@ -64,7 +64,7 @@ class HTTP extends Gmanager
             return true;
         }
 
-        return @chmod(IOWrapper::set($file), $this->_chmoder($chmod));
+        return @chmod($file, $this->_chmoder($chmod));
     }
 
 
@@ -76,7 +76,7 @@ class HTTP extends Gmanager
      */
     public function file_get_contents ($file)
     {
-        return file_get_contents(IOWrapper::set($file));
+        return file_get_contents($file);
     }
 
 
@@ -89,7 +89,7 @@ class HTTP extends Gmanager
      */
     public function file_put_contents ($file, $data = '')
     {
-        if (!$f = @fopen(IOWrapper::set($file), 'a')) {
+        if (!$f = @fopen($file, 'a')) {
             return 0;
         }
 
@@ -113,7 +113,7 @@ class HTTP extends Gmanager
      */
     public function is_dir ($str)
     {
-        return is_dir(IOWrapper::set($str));
+        return is_dir($str);
     }
 
 
@@ -125,7 +125,7 @@ class HTTP extends Gmanager
      */
     public function is_file ($str)
     {
-        return is_file(IOWrapper::set($str));
+        return is_file($str);
     }
 
 
@@ -137,7 +137,7 @@ class HTTP extends Gmanager
      */
     public function is_link ($str)
     {
-        return is_link(IOWrapper::set($str));
+        return is_link($str);
     }
 
 
@@ -149,7 +149,7 @@ class HTTP extends Gmanager
      */
     public function is_readable ($str)
     {
-        return is_readable(IOWrapper::set($str));
+        return is_readable($str);
     }
 
 
@@ -161,7 +161,7 @@ class HTTP extends Gmanager
      */
     public function is_writable ($str)
     {
-        return is_writable(IOWrapper::set($str));
+        return is_writable($str);
     }
 
 
@@ -173,8 +173,6 @@ class HTTP extends Gmanager
      */
     public function stat ($str)
     {
-        $str = IOWrapper::set($str);
-
         if (!isset(self::$_stat[$str])) {
             self::$_stat[$str] = @stat($str);
         }
@@ -203,8 +201,6 @@ class HTTP extends Gmanager
      */
     public function fileperms ($str)
     {
-        $str = IOWrapper::set($str);
-
         if (!isset(self::$_stat[$str][2])) {
             self::$_stat[$str] = @stat($str);
         }
@@ -220,8 +216,6 @@ class HTTP extends Gmanager
      */
     public function filesize ($file)
     {
-        $file = IOWrapper::set($file);
-
         if (!isset(self::$_stat[$file][7])) {
             self::$_stat[$file] = stat($file);
         }
@@ -237,8 +231,6 @@ class HTTP extends Gmanager
      */
     public function filemtime ($str)
     {
-        $str = IOWrapper::set($str);
-
         if (!isset(self::$_stat[$str][9])) {
             self::$_stat[$str] = stat($str);
         }
@@ -254,7 +246,7 @@ class HTTP extends Gmanager
      */
     public function filetype ($str)
     {
-        return filetype(IOWrapper::set($str));
+        return filetype($str);
     }
 
 
@@ -269,7 +261,7 @@ class HTTP extends Gmanager
     {
         $chdir = Registry::get('currentType') == 'dir' ? Registry::get('current') : dirname(Registry::get('current'));
         chdir($chdir);
-        return array(Helper_System::basename($link), IOWrapper::get(realpath(readlink(IOWrapper::set($link)))));
+        return array(Helper_System::basename($link), (realpath(readlink($link))));
     }
 
 
@@ -281,7 +273,7 @@ class HTTP extends Gmanager
      */
     public function file_exists ($str)
     {
-        return file_exists(IOWrapper::set($str));
+        return file_exists($str);
     }
 
 
@@ -293,7 +285,7 @@ class HTTP extends Gmanager
      */
     public function unlink ($file)
     {
-        return unlink(IOWrapper::set($file));
+        return unlink($file);
     }
 
 
@@ -306,7 +298,7 @@ class HTTP extends Gmanager
      */
     public function rename ($from, $to)
     {
-        return rename(IOWrapper::set($from), IOWrapper::set($to));
+        return rename($from, $to);
     }
 
 
@@ -320,9 +312,6 @@ class HTTP extends Gmanager
      */
     public function copy ($from, $to, $chmod = 0644)
     {
-        $from = IOWrapper::set($from);
-        $to   = IOWrapper::set($to);
-
         $result = copy($from, $to);
         if ($result) {
             $this->chmod($to, $chmod);
@@ -342,9 +331,6 @@ class HTTP extends Gmanager
      */
     public function symlink ($from, $to, $chmod = 0644)
     {
-        $from = IOWrapper::set($from);
-        $to   = IOWrapper::set($to);
-
         $result = symlink($from, $to);
         if ($result) {
             $this->chmod($to, $chmod);
@@ -362,8 +348,6 @@ class HTTP extends Gmanager
      */
     public function rmdir ($dir)
     {
-        $dir = IOWrapper::set($dir);
-
         return is_dir($dir) ? rmdir($dir) : true;
     }
 
@@ -375,7 +359,7 @@ class HTTP extends Gmanager
      */
     public function getcwd ()
     {
-        return IOWrapper::get(getcwd());
+        return getcwd();
     }
 
 
@@ -387,7 +371,7 @@ class HTTP extends Gmanager
      */
     public function realpath ($path)
     {
-        return IOWrapper::get(realpath(IOWrapper::set($path)));
+        return realpath($path);
     }
 
 
@@ -399,6 +383,6 @@ class HTTP extends Gmanager
      */
     public function iterator ($dir)
     {
-        return array_map(array('IOWrapper', 'get'), (array)array_diff(scandir(IOWrapper::set($dir), 0), array('.', '..')));
+        return (array)array_diff(scandir($dir, 0), array('.', '..'));
     }
 }

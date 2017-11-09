@@ -91,7 +91,6 @@ class FTP extends Gmanager
         if (!$this->is_dir($dir)) {
             if ($recursive) {
                 foreach (explode('/', $dir) as $part) {
-                    $part = IOWrapper::set($part);
                     if (!@ftp_chdir($this->_res, $part)) {
                         if (!@ftp_mkdir($this->_res, $part)) {
                             return false;
@@ -100,7 +99,7 @@ class FTP extends Gmanager
                     }
                 }
             } else {
-                if (!@ftp_mkdir($this->_res, IOWrapper::set($dir))) {
+                if (!@ftp_mkdir($this->_res, $dir)) {
                     return false;
                 }
             }
@@ -129,7 +128,7 @@ class FTP extends Gmanager
         if ($file[0] != '/') {
             $file = '/' . $file;
         }
-        return ftp_chmod($this->_res, $this->_chmoder($chmod), IOWrapper::set($file));
+        return ftp_chmod($this->_res, $this->_chmoder($chmod), $file);
     }
 
 
@@ -144,7 +143,7 @@ class FTP extends Gmanager
         ftp_chdir($this->_res, '/');
         $tmp = fopen('php://temp', 'r+');
 
-        if (ftp_fget($this->_res, $tmp, IOWrapper::set($file), FTP_BINARY, 0)) {
+        if (ftp_fget($this->_res, $tmp, $file, FTP_BINARY, 0)) {
             rewind($tmp);
             return stream_get_contents($tmp);
         } else {
@@ -166,8 +165,8 @@ class FTP extends Gmanager
         file_put_contents($php_temp, $data);
         chmod($php_temp, 0666);
 
-        ftp_chdir($this->_res, IOWrapper::set(mb_substr($file, 0, mb_strrpos($file, '/'))));
-        $result = ftp_put($this->_res, Helper_System::basename(IOWrapper::set($file)), $php_temp, FTP_BINARY);
+        ftp_chdir($this->_res, mb_substr($file, 0, mb_strrpos($file, '/')));
+        $result = ftp_put($this->_res, Helper_System::basename($file), $php_temp, FTP_BINARY);
 
         unlink($php_temp);
         return ($result ? 1 : 0);
@@ -328,7 +327,7 @@ class FTP extends Gmanager
     {
         //$file = self::_change_symbol($file);
         ftp_chdir($this->_res, '/');
-        return ftp_delete($this->_res, IOWrapper::set($file));
+        return ftp_delete($this->_res, $file);
     }
 
 
@@ -344,7 +343,7 @@ class FTP extends Gmanager
         //$from = self::_change_symbol($from);
         //$to = self::_change_symbol($to);
         ftp_chdir($this->_res, '/');
-        return ftp_rename($this->_res, IOWrapper::set($from), IOWrapper::set($to));
+        return ftp_rename($this->_res, $from, $to);
     }
 
 
@@ -398,7 +397,7 @@ class FTP extends Gmanager
     {
         //$dir = self::_change_symbol($dir);
         ftp_chdir($this->_res, '/');
-        return @ftp_rmdir($this->_res, IOWrapper::set($dir));
+        return @ftp_rmdir($this->_res, $dir);
     }
 
 
@@ -484,7 +483,7 @@ class FTP extends Gmanager
      */
     public function getcwd ()
     {
-        return IOWrapper::get(ftp_pwd($this->_res));
+        return ftp_pwd($this->_res);
     }
 
 
@@ -496,7 +495,7 @@ class FTP extends Gmanager
      */
     public function realpath ($path)
     {
-        //return IOWrapper::get(realpath(IOWrapper::set($path)));
+        //return realpath($path);
 
         $str = preg_replace('/\/(?:\/*)/', '/', preg_replace('/\w+\/\.\.\//', '', str_replace('\\', '/', $path)));
         if (mb_substr($str, -1) === '/') {
@@ -527,7 +526,7 @@ class FTP extends Gmanager
             $dir = $match[1] ? '/' . $match[1] : '/';
         }
 
-        foreach ((array)ftp_rawlist($this->_res, '-A /' . IOWrapper::set($dir)) as $var) {
+        foreach ((array)ftp_rawlist($this->_res, '-A /' . $dir) as $var) {
             if (mb_substr($var, -3) == ' ..') {
                 continue;
             } else {
@@ -562,7 +561,7 @@ class FTP extends Gmanager
      */
     private function _rawlistCallback ($data)
     {
-        $data[10] = IOWrapper::get(trim($data[10]));
+        $data[10] = trim($data[10]);
 
         self::$_rawlist[self::$_dir][Helper_System::basename($data[10])] = array(
             'chmod' => $data[1] == 'd' && Registry::get('sysType') == 'WIN' ? 0777 : (Registry::get('sysType') == 'WIN' ? 0666 : $this->_chmodNum($data[2])),

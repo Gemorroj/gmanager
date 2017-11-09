@@ -53,7 +53,7 @@ class Archive_Rar implements Archive_Interface
     private function _open()
     {
         if ($this->_archive === null) {
-            $this->_archive = RarArchive::open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
+            $this->_archive = RarArchive::open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name);
         }
         return $this->_archive;
     }
@@ -130,10 +130,10 @@ class Archive_Rar implements Archive_Interface
             return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
 
-        $sysName = IOWrapper::set($name);
+        $sysName = $name;
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
@@ -177,10 +177,10 @@ class Archive_Rar implements Archive_Interface
      */
     public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
     {
-        $sysName = IOWrapper::set($name);
+        $sysName = $name;
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
@@ -190,7 +190,7 @@ class Archive_Rar implements Archive_Interface
         foreach ($rar->getEntries() as $entry) {
             $n = $entry->getName();
 
-            if (!$overwrite && Gmanager::getInstance()->file_exists($name . '/' . IOWrapper::get($n))) {
+            if (!$overwrite && Gmanager::getInstance()->file_exists($name . '/' . $n)) {
                 $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
             } else {
                 if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
@@ -202,10 +202,10 @@ class Archive_Rar implements Archive_Interface
                 }
             }
 
-            if (Gmanager::getInstance()->is_dir($name . '/' . IOWrapper::get($n))) {
-                Gmanager::getInstance()->rechmod($name . '/' . IOWrapper::get($n), $chmod[1]);
+            if (Gmanager::getInstance()->is_dir($name . '/' . $n)) {
+                Gmanager::getInstance()->rechmod($name . '/' . $n, $chmod[1]);
             } else {
-                Gmanager::getInstance()->rechmod($name . '/' . IOWrapper::get($n), $chmod[0]);
+                Gmanager::getInstance()->rechmod($name . '/' . $n, $chmod[0]);
             }
         }
 

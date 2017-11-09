@@ -42,7 +42,7 @@ class Archive_Tars implements Archive_Interface
     private function _open()
     {
         if ($this->_archive === null) {
-            $this->_archive = new Archive_Tar(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name));
+            $this->_archive = new Archive_Tar(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name);
         }
         return $this->_archive;
     }
@@ -78,7 +78,7 @@ class Archive_Tars implements Archive_Interface
 
             $tmp = array();
             foreach ($ext as $v) {
-                $b = IOWrapper::set(Helper_System::basename($v));
+                $b = Helper_System::basename($v);
                 $tmp[] = $ftp_name . $b;
                 file_put_contents($ftp_name . $b, Gmanager::getInstance()->file_get_contents($v));
             }
@@ -180,10 +180,10 @@ class Archive_Tars implements Archive_Interface
             return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
 
-        $sysName = IOWrapper::set($name);
+        $sysName = $name;
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-               $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
+               $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
                $ftp_name = Config::getTemp() . '/GmanagerFtpTarFile' . GMANAGER_REQUEST_TIME . '.tmp';
         }
 
@@ -223,10 +223,10 @@ class Archive_Tars implements Archive_Interface
      */
     public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
     {
-        $sysName = IOWrapper::set($name);
+        $sysName = $name;
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpTar' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
@@ -240,7 +240,7 @@ class Archive_Tars implements Archive_Interface
         } else {
             $list = array();
             foreach ($extract as $f) {
-                if (Gmanager::getInstance()->file_exists($name . '/' . IOWrapper::get($f['filename']))) {
+                if (Gmanager::getInstance()->file_exists($name . '/' . $f['filename'])) {
                     $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f['filename'], ENT_NOQUOTES) . ')<br/>';
                 } else {
                     $list[] = $f['filename'];
@@ -263,10 +263,10 @@ class Archive_Tars implements Archive_Interface
         }
 
         foreach ($extract as $f) {
-            if (Gmanager::getInstance()->is_dir($name . '/' . IOWrapper::get($f['filename']))) {
-                Gmanager::getInstance()->rechmod($name . '/' . IOWrapper::get($f['filename']), $chmod[1]);
+            if (Gmanager::getInstance()->is_dir($name . '/' . $f['filename'])) {
+                Gmanager::getInstance()->rechmod($name . '/' . $f['filename'], $chmod[1]);
             } else {
-                Gmanager::getInstance()->rechmod($name . '/' . IOWrapper::get($f['filename']), $chmod[0]);
+                Gmanager::getInstance()->rechmod($name . '/' . $f['filename'], $chmod[0]);
             }
         }
 
@@ -450,7 +450,7 @@ class Archive_Tars implements Archive_Interface
     {
         $tmp        = Config::getTemp() . '/GmanagerTar' . GMANAGER_REQUEST_TIME;
         $tgz        = $this->_open();
-        $sysName    = IOWrapper::set($new_name);
+        $sysName    = $new_name;
 
         $folder = '';
         foreach ($tgz->listContent() as $f) {

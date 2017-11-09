@@ -150,7 +150,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
         $data['size'] = Helper_View::formatSize(mb_strlen($data['content'], '8bit'));
         $data['lines'] = mb_substr_count($data['content'], "\n") + 1;
 
-        $path = mb_substr(Gmanager::getInstance()->realpath(Registry::get('current')), mb_strlen(IOWrapper::get($_SERVER['DOCUMENT_ROOT'])));
+        $path = mb_substr(Gmanager::getInstance()->realpath(Registry::get('current')), mb_strlen($_SERVER['DOCUMENT_ROOT']));
 
         if (Config::get('Gmanager', 'mode') == 'HTTP' && $path) {
             $http = '<div class="rb"><a href="http://' . $_SERVER['HTTP_HOST'] . str_replace('//', '/', '/' . Helper_View::getRawurl(str_replace('\\', '/', $path))) . '">' . Language::get('look') . '</a><br/></div>';

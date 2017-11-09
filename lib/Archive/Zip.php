@@ -44,7 +44,7 @@ class Archive_Zip implements Archive_Interface
      */
     private function _open($mode = null)
     {
-        $result = $this->_archive->open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : IOWrapper::set($this->_name), $mode);
+        $result = $this->_archive->open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name, $mode);
         if (true !== $result) {
             throw new Exception('Error. Code: ' . $result);
         }
@@ -91,7 +91,7 @@ class Archive_Zip implements Archive_Interface
             $temp = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
             mkdir($temp, 0755, true);
             foreach ($ext as $f) {
-                $tmp = $temp . '/' . IOWrapper::get(Helper_System::basename($f));
+                $tmp = $temp . '/' . Helper_System::basename($f);
                 if (Gmanager::getInstance()->is_dir($f)) {
                     mkdir($tmp, 0755, true);
                     Gmanager::getInstance()->ftpCopyFiles($f, $tmp);
@@ -145,7 +145,7 @@ class Archive_Zip implements Archive_Interface
 
         $tmp = array();
         foreach ($ext as $v) {
-            $b = IOWrapper::set(Helper_System::basename($v));
+            $b = Helper_System::basename($v);
             $tmp[] = $tmpFolder . '/' . $b;
             if (Gmanager::getInstance()->is_dir($v)) {
                 mkdir($tmpFolder . '/' . $b, 0777, true);
@@ -225,10 +225,10 @@ class Archive_Zip implements Archive_Interface
             return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR) . ($err ? Helper_View::message(nl2br(implode("\n", $err)), Helper_View::MESSAGE_ERROR) : '');
         }
 
-        $sysName = IOWrapper::set($name);
+        $sysName = $name;
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpZipFile' . GMANAGER_REQUEST_TIME;
         }
 
@@ -269,12 +269,12 @@ class Archive_Zip implements Archive_Interface
      */
     public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
     {
-        $sysName = IOWrapper::set($name);
+        $sysName = $name;
         Registry::set('extractArchiveDirectoryChmod', $chmod[1]);
         Registry::set('extractArchiveFileChmod', $chmod[0]);
 
         if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname(IOWrapper::set($this->_name) . '/') . '/' . $sysName);
+            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
             $ftp_name = Config::getTemp() . '/GmanagerFtpZip' . GMANAGER_REQUEST_TIME;
             mkdir($ftp_name, 0777);
         }
