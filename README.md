@@ -1,7 +1,5 @@
 Файловый менеджер + Текстовый редактор
 
-[![Build Status](https://secure.travis-ci.org/Gemorroj/gmanager.png?branch=master)](https://travis-ci.org/Gemorroj/gmanager)
-
 Требования:
 - PHP >= 5.3.3
 - mbstring
