@@ -147,7 +147,7 @@ class Helper_System
         $isUtf8 = mb_convert_encoding($output, 'UTF-8', 'UTF-8') === $output;
 
         if ($isUtf8) {
-            return $isUtf8;
+            return $output;
         }
 
         if (Registry::get('sysType') === 'WIN') {
