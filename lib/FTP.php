@@ -60,12 +60,10 @@ class FTP extends Gmanager
 
     /**
      * __destruct
-     * 
-     * @return bool
      */
     public function __destruct ()
     {
-        return ftp_close($this->_res);
+        ftp_close($this->_res);
     }
 
 

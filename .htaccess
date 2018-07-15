@@ -41,8 +41,6 @@ php_value mbstring.func_overload 0
 
 
 # Compression
-#php_flag zlib.output_compression On
-#php_value zlib.output_compression_level 6
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/css application/javascript text/html application/xhtml+xml application/xml text/xml application/rss+xml text/vnd.wap.wml text/plain
     <IfModule mod_setenvif.c>

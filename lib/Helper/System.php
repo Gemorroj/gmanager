@@ -26,6 +26,22 @@ class Helper_System
         return rtrim(end($file), $suffix);
     }
 
+    /**
+     * @internal support symfony process 2.8|3.0|4.0
+     * @param array $params
+     * @return \Symfony\Component\Process\Process
+     */
+    private static function _makeProcess(array $params)
+    {
+        if (class_exists('\Symfony\Component\Process\ProcessBuilder')) {
+            $process = new \Symfony\Component\Process\ProcessBuilder();
+            $process->setArguments($params);
+        } else {
+            $process = new \Symfony\Component\Process\Process($params);
+        }
+
+        return $process;
+    }
 
     /**
      * id2user
@@ -37,28 +53,25 @@ class Helper_System
     {
         if (Registry::get('sysType') === 'WIN') {
             return '';
-        } else {
-            if (function_exists('posix_getpwuid') && $name = posix_getpwuid($id)) {
-                return $name['name'];
-            }
-
-            $processBuilder = new \Symfony\Component\Process\ProcessBuilder();
-            $processBuilder->setPrefix('id');
-            $processBuilder->setArguments(array('-n', '-u', $id));
-            $processBuilder->getProcess()->run();
-            if ($processBuilder->getProcess()->isSuccessful()) {
-                return $processBuilder->getProcess()->getOutput();
-            }
-
-            $processBuilder = new \Symfony\Component\Process\ProcessBuilder();
-            $processBuilder->setPrefix('getent');
-            $processBuilder->setArguments(array('passwd', $id));
-            $processBuilder->getProcess()->run();
-            if ($processBuilder->getProcess()->isSuccessful()) {
-                $tmp = explode(':', $processBuilder->getProcess()->getOutput(), 2);
-                return trim($tmp[0]);
-            }
         }
+
+        if (function_exists('posix_getpwuid') && $name = posix_getpwuid($id)) {
+            return $name['name'];
+        }
+
+        $process = self::_makeProcess(array('id', '-n', '-u', $id));
+        $process->run();
+        if ($process->isSuccessful()) {
+            return $process->getOutput();
+        }
+
+        $process = self::_makeProcess(array('getent', 'passwd', $id));
+        $process->run();
+        if ($process->isSuccessful()) {
+            $tmp = explode(':', $process->getOutput(), 2);
+            return trim($tmp[0]);
+        }
+
 
         return $id;
     }
@@ -74,19 +87,17 @@ class Helper_System
     {
         if (Registry::get('sysType') === 'WIN') {
             return '';
-        } else {
-            if (function_exists('posix_getgrgid') && $name = posix_getgrgid($id)) {
-                return $name['name'];
-            }
+        }
 
-            $processBuilder = new \Symfony\Component\Process\ProcessBuilder();
-            $processBuilder->setPrefix('getent');
-            $processBuilder->setArguments(array('group', $id));
-            $processBuilder->getProcess()->run();
-            if ($processBuilder->getProcess()->isSuccessful()) {
-                $tmp = explode(':', $processBuilder->getProcess()->getOutput(), 2);
-                return trim($tmp[0]);
-            }
+        if (function_exists('posix_getgrgid') && $name = posix_getgrgid($id)) {
+            return $name['name'];
+        }
+
+        $process = self::_makeProcess(array('getent', 'group', $id));
+        $process->run();
+        if ($process->isSuccessful()) {
+            $tmp = explode(':', $process->getOutput(), 2);
+            return trim($tmp[0]);
         }
 
         return $id;
@@ -123,7 +134,7 @@ class Helper_System
         }
 
         while (($f = readdir($h)) !== false) {
-            if ($f == '.' || $f == '..') {
+            if ($f === '.' || $f === '..') {
                 continue;
             }
 

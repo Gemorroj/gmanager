@@ -25,7 +25,7 @@ class Registry
      * @param string $key
      * @param mixed $val
      */
-    static public function set ($key, $val)
+    public static function set ($key, $val)
     {
         self::$_data[$key] = $val;
     }
@@ -37,7 +37,7 @@ class Registry
      * @param string $key
      * @return mixed
      */
-    static public function get ($key)
+    public static function get ($key)
     {
         return self::$_data[$key];
     }
@@ -48,7 +48,7 @@ class Registry
      * 
      * @param string $key
      */
-    static public function remove ($key)
+    public static function remove ($key)
     {
         unset(self::$_data[$key]);
     }
@@ -60,7 +60,7 @@ class Registry
      * @param string $key
      * @return bool
      */
-    static public function exists ($key)
+    public static function exists ($key)
     {
         return array_key_exists($key, self::$_data);
     }

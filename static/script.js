@@ -191,11 +191,11 @@ var Gmanager = {
         el.style.resize = "none";
         el.style.left = "0px";
         el.style.paddingRight = "0.2em";
-        el.style.zIndex = 0;
-        el.readOnly = "readonly";
+        el.style.zIndex = "0";
+        el.readOnly = true;
 
         ta.style.marginLeft = "32px";
-        ta.style.zIndex = 1;
+        ta.style.zIndex = "1";
         ta.style.position = "relative";
         ta.parentNode.insertBefore(el, ta.nextSibling);
         Gmanager.textareaLinesRender(el, ta, false);

@@ -32,7 +32,7 @@ class Config
     {
         self::$_config = new Config_Ini($config);
 
-        Registry::set('top', '<!DOCTYPE html><html><head><title>%title% - Gmanager 0.9 beta</title><meta charset="UTF-8" /><link rel="stylesheet" type="text/css" href="public/style.min.css"/><script type="text/javascript" src="public/script.min.js"></script></head><body>');
+        Registry::set('top', '<!DOCTYPE html><html><head><title>%title% - Gmanager 0.9 beta</title><meta charset="UTF-8" /><link rel="stylesheet" type="text/css" href="static/style.css"/><script type="text/javascript" src="static/script.js"></script></head><body>');
         Registry::set('foot', '<div class="w">Powered by Gemorroj<br/><a href="https://github.com/Gemorroj/gmanager">Gmanager v 0.9 beta</a></div></body></html>');
 
         Language::setLanguage(self::get('Gmanager', 'language'));
