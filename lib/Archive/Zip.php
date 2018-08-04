@@ -443,7 +443,7 @@ class Archive_Zip implements Archive_Interface
                 $list = array_reverse($list);
             }
 
-            $s = sizeof($list);
+            $s = count($list);
             for ($i = 0; $i < $s; ++$i) {
                 $r_name = Helper_View::getRawurl($list[$i]['name']);
 

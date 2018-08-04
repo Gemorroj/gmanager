@@ -555,7 +555,7 @@ abstract class Gmanager
                         $sz += self::$_instance->filesize($d . '/' . $file);
                     }
                 }
-            } while (sizeof($ds) > 0);
+            } while (count($ds) > 0);
 
             return $sz;
         }
@@ -754,7 +754,7 @@ abstract class Gmanager
     public function code ($fl = '', $line = 0, $url = false)
     {
         $array = $url ? Helper_View::urlHighlight($fl) : Helper_View::xhtmlHighlight($fl);
-        $all = sizeof($array);
+        $all = count($array);
         $len = strlen((string)$all);
         $pg = '';
         for ($i = 0; $i < $all; ++$i) {
@@ -1087,12 +1087,12 @@ abstract class Gmanager
         $buf = Helper_System::makeConsoleOutput($buf);
 
         if (!$process->isSuccessful()) {
-            return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
+            return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getCountRows($buf) . '">' . htmlspecialchars($buf, ENT_NOQUOTES) . '</textarea></div>';
         }
 
         $data = Errors::getResultHandlerEval($buf, $token);
 
-        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($data['content']) . '">' . htmlspecialchars($data['content'], ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', round($data['stat']['time'], 4), Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . Helper_View::formatSize($data['stat']['ram']) . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . Helper_View::formatSize($data['stat']['maxRam']) . '<br/></div>';
+        return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getCountRows($data['content']) . '">' . htmlspecialchars($data['content'], ENT_NOQUOTES) . '</textarea><br/>' . str_replace('%time%', round($data['stat']['time'], 4), Language::get('microtime')) . '<br/>' . Language::get('memory_get_usage') . ' ' . Helper_View::formatSize($data['stat']['ram']) . '<br/>' . Language::get('memory_get_peak_usage') . ' ' . Helper_View::formatSize($data['stat']['maxRam']) . '<br/></div>';
     }
 
 
@@ -1111,7 +1111,7 @@ abstract class Gmanager
             $output = $process->getOutput();
             $output = Helper_System::makeConsoleOutput($output);
 
-            return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getRows($output) . '">' . htmlspecialchars($output, ENT_NOQUOTES) . '</textarea></div>';
+            return '<div class="input">' . Language::get('result') . '<br/><textarea class="lines" cols="48" rows="' . Helper_View::getCountRows($output) . '">' . htmlspecialchars($output, ENT_NOQUOTES) . '</textarea></div>';
         }
 
         $errorOutput = $process->getErrorOutput();

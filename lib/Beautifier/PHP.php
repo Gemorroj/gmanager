@@ -31,7 +31,7 @@ class Beautifier_PHP implements Beautifier_Interface
         $out = null;
         $tab = 0;
         $str = str_split(str_replace("\r", '', $str), 1);
-        $all = sizeof($str);
+        $all = count($str);
         $block = array(false, false, false, false, false);
         $array = false;
 

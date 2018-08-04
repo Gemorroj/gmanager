@@ -49,14 +49,17 @@ class Errors
      */
     public static function getResultHandlerEval($content, $token)
     {
-        if (mb_substr($content, 0, mb_strlen(ini_get('error_prepend_string'))) === ini_get('error_prepend_string')) {
-            $content = mb_substr($content, mb_strlen(ini_get('error_prepend_string')));
+        $errorPrependString = ini_get('error_prepend_string');
+        $errorAppendString = ini_get('error_append_string');
+
+        if ($errorPrependString && mb_substr($content, 0, mb_strlen($errorPrependString)) === $errorPrependString) {
+            $content = mb_substr($content, mb_strlen($errorPrependString));
         }
-        if (mb_substr($content, -mb_strlen(ini_get('error_append_string'))) === ini_get('error_append_string')) {
-            $content = mb_substr($content, 0, -mb_strlen(ini_get('error_append_string')));
+        if ($errorAppendString && mb_substr($content, -mb_strlen($errorAppendString)) === $errorAppendString) {
+            $content = mb_substr($content, 0, -mb_strlen($errorAppendString));
         }
 
-        list($data, $stat) = explode($token, $content);
+        list($data, $stat) = explode($token, $content, 2);
 
         return array(
             'content' => $data,
@@ -76,13 +79,6 @@ class Errors
      */
     public static function errorHandler ($errno, $errstr, $errfile, $errline)
     {
-        if (!defined('E_DEPRECATED')) {
-            define('E_DEPRECATED', 8192);
-        }
-        if (!defined('E_USER_DEPRECATED')) {
-            define('E_USER_DEPRECATED', 16384);
-        }
-
         if (!Config::get('Gmanager', 'trace') || !is_writable(dirname(self::getTraceFile())) || (file_exists(self::getTraceFile()) && !is_writable(self::getTraceFile()))) {
             return true;
         }

@@ -60,7 +60,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             }
 
 
-            $all = sizeof($tmp);
+            $all = count($tmp);
             for ($i = 0; $i <= $all; ++$i) {
                 if (isset($fill[$i])) {
                     if (isset($_POST['line'][$i])) {

@@ -35,9 +35,9 @@ class Helper_View
      * @param string $str
      * @return int
      */
-    public static function getRows ($str)
+    public static function getCountRows ($str)
     {
-        $rows = sizeof(explode("\n", $str)) + 1;
+        $rows = count(explode("\n", $str)) + 1;
         if ($rows < 3) {
             $rows = 3;
         }

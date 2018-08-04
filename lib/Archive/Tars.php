@@ -121,7 +121,7 @@ class Archive_Tars implements Archive_Interface
         $list = $tgz->listContent();
 
         $new_tar = array();
-        $s = sizeof($list);
+        $s = count($list);
         for ($i = 0; $i < $s; ++$i) {
             if ($list[$i]['filename'] == $f) {
                 continue;
@@ -309,7 +309,7 @@ class Archive_Tars implements Archive_Interface
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
 
-            $s = sizeof($list);
+            $s = count($list);
             for ($i = 0; $i < $s; ++$i) {
                 if ($list[$i]['filename'] != $f) {
                     continue;
@@ -375,7 +375,7 @@ class Archive_Tars implements Archive_Interface
                 $list = array_reverse($list);
             }
 
-            $s = sizeof($list);
+            $s = count($list);
             for ($i = 0; $i < $s; ++$i) {
                 $r_name = Helper_View::getRawurl($list[$i]['filename']);
     

@@ -380,7 +380,7 @@ class ListData
         $data = self::_getListArray($current, $itype, $down, $addArchive);
 
         if ($data) {
-            self::$getListCountPages = ceil(sizeof($data) / Registry::get('limit'));
+            self::$getListCountPages = ceil(count($data) / Registry::get('limit'));
             $pg   = $pg < 1 ? 1 : $pg;
             $data = array_slice($data, ($pg * Registry::get('limit')) - Registry::get('limit'), Registry::get('limit'));
 
