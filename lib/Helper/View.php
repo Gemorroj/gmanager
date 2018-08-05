@@ -168,7 +168,8 @@ class Helper_View
     {
         if ($error == self::MESSAGE_ERROR_EMAIL) {
             return '<div class="red">' . $text . '<br/></div><div><form action="?gmanager_action=change&amp;go=send_mail&amp;c=' . Registry::get('rCurrent') . '" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager ' . Config::getVersion() . ' Error (' . Config::get('Gmanager', 'mode') . ')"/><input type="hidden" name="mess" value="' . htmlspecialchars('URI: ' . Helper_System::basename($_SERVER['PHP_SELF']) . '?' . $_SERVER['QUERY_STRING'] . "\n" . 'PHP: ' . PHP_VERSION . "\n" . htmlspecialchars_decode(str_replace('<br/>', "\n", $text), ENT_COMPAT), ENT_COMPAT) . '"/><input type="submit" value="' . Language::get('send_report') . '"/></div></form></div>';
-        } elseif ($error == self::MESSAGE_ERROR) {
+        }
+        if ($error == self::MESSAGE_ERROR) {
             return '<div class="red">' . $text . '<br/></div>';
         }
 
