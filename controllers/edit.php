@@ -4,7 +4,7 @@
  * This software is distributed under the GNU GPL v3.0 license.
  * 
  * @author    Gemorroj
- * @copyright 2008-2017 http://wapinet.ru
+ * @copyright 2008-2018 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
  * @link      https://github.com/Gemorroj/gmanager
  * 
@@ -37,7 +37,7 @@ if (isset($_POST['editorLine']) || isset($_POST['editorReplace'])) {
 $charset = array('', '');
 $full_charset = '';
 
-if ($_GET['charset'] && $_GET['charset'] != 'default') {
+if ($_GET['charset'] && $_GET['charset'] !== 'default') {
     list($charset[0], $charset[1]) = explode(' -> ', $_GET['charset']);
     $full_charset = 'charset=' . htmlspecialchars($charset[0], ENT_COMPAT, 'UTF-8') . '&amp;';
 }

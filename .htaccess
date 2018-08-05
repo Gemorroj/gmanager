@@ -43,6 +43,7 @@ php_value mbstring.func_overload 0
 # Compression
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/css application/javascript text/html application/xhtml+xml application/xml text/xml application/rss+xml text/vnd.wap.wml text/plain
+    DeflateCompressionLevel 6
     <IfModule mod_setenvif.c>
         BrowserMatch ^Mozilla/4 gzip-only-text/html
         BrowserMatch ^Mozilla/4\.0[678] no-gzip

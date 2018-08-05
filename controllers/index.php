@@ -4,21 +4,21 @@
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
- * @copyright 2008-2017 http://wapinet.ru
+ * @copyright 2008-2018 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
  * @link      https://github.com/Gemorroj/gmanager
  *
  */
 
 
-if (Registry::get('current') == '.') {
+if (Registry::get('current') === '.') {
     Registry::set('current', Gmanager::getInstance()->getcwd() . '/');
     Registry::set('hCurrent', htmlspecialchars(Gmanager::getInstance()->getcwd(), ENT_COMPAT) . '/');
     Registry::set('rCurrent', Helper_View::getRawurl(Gmanager::getInstance()->getcwd()));
 }
 
 
-if (Registry::get('currentType') == 'dir') {
+if (Registry::get('currentType') === 'dir') {
     $archive = null;
 } else {
     $archive = Helper_Archive::isArchive(Helper_System::getType(Helper_System::basename(Registry::get('current'))));
