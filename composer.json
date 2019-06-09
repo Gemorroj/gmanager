@@ -14,7 +14,7 @@
         ]
     },
     "require": {
-        "php": ">=5.3.9",
+        "php": "^5.3.9|^7.0",
         "ext-zip": "*",
         "pear/archive_tar": "^1.4",
         "symfony/polyfill-mbstring": "^1.8",
