@@ -19,28 +19,23 @@ class Config
      */
     private static $_config;
 
-    /**
-     * setConfig.
-     *
-     * @param string $config
-     */
-    public static function setConfig($config)
+    public static function setConfig(string $configFile): void
     {
-        self::$_config = new Config_Ini($config);
+        self::$_config = new Config_Ini($configFile);
 
         Registry::set('top', '<!DOCTYPE html><html><head><title>%title% - Gmanager 0.9 beta</title><meta charset="UTF-8" /><link rel="stylesheet" type="text/css" href="static/style.css"/><script type="text/javascript" src="static/script.js"></script></head><body>');
         Registry::set('foot', '<div class="w">Powered by Gemorroj<br/><a href="https://github.com/Gemorroj/gmanager">Gmanager v 0.9 beta</a></div></body></html>');
 
-        Language::setLanguage(self::get('Gmanager', 'language'));
+        Language::setLanguage(self::get('language'));
 
         \define('GMANAGER_REQUEST_TIME', \time());
 
         \mb_internal_encoding('UTF-8');
-        \setlocale(\LC_ALL, self::get('PHP', 'locale'));
-        \date_default_timezone_set(self::get('PHP', 'timeZone'));
-        @\set_time_limit(self::get('PHP', 'timeLimit'));
-        \ini_set('max_execution_time', self::get('PHP', 'timeLimit'));
-        \ini_set('memory_limit', self::get('PHP', 'memoryLimit'));
+        \setlocale(\LC_ALL, self::get('locale', 'PHP'));
+        \date_default_timezone_set(self::get('timeZone', 'PHP'));
+        @\set_time_limit(self::get('timeLimit', 'PHP'));
+        \ini_set('max_execution_time', self::get('timeLimit', 'PHP'));
+        \ini_set('memory_limit', self::get('memoryLimit', 'PHP'));
 
         \ini_set('error_log', Errors::getTraceFile());
         \ini_set('error_prepend_string', '<div class="red">');
@@ -48,54 +43,29 @@ class Config
 
         Errors::initHandler();
 
-        if (self::get('Auth', 'enable')) {
+        if (self::get('enable', 'Auth')) {
             Auth::main();
         }
 
         Gmanager::getInstance()->init();
     }
 
-    /**
-     * get.
-     *
-     * @param string $section
-     * @param string $property
-     *
-     * @return string
-     */
-    public static function get($section = 'Gmanager', $property)
+    public static function get(string $property, string $section = 'Gmanager'): ?string
     {
-        return self::$_config->get($section, $property);
+        return self::$_config->get($property, $section);
     }
 
-    /**
-     * get.
-     *
-     * @param string $section
-     *
-     * @return array
-     */
-    public static function getSection($section = 'Gmanager')
+    public static function getSection(string $section = 'Gmanager'): array
     {
         return self::$_config->getSection($section);
     }
 
-    /**
-     * getTemp.
-     *
-     * @return string
-     */
-    public static function getTemp()
+    public static function getTemp(): string
     {
         return GMANAGER_PATH.\DIRECTORY_SEPARATOR.'data';
     }
 
-    /**
-     * getVersion.
-     *
-     * @return string
-     */
-    public static function getVersion()
+    public static function getVersion(): string
     {
         return '0.9b';
     }

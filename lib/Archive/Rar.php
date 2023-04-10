@@ -47,7 +47,7 @@ class Archive_Rar implements Archive_Interface
     private function _open()
     {
         if (null === $this->_archive) {
-            $this->_archive = RarArchive::open('FTP' == Config::get('Gmanager', 'mode') ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name);
+            $this->_archive = RarArchive::open('FTP' == Config::get('mode') ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name);
         }
 
         return $this->_archive;
@@ -127,7 +127,7 @@ class Archive_Rar implements Archive_Interface
 
         $sysName = $name;
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $sysName = ('/' == $sysName[0] ? $sysName : \dirname($this->_name.'/').'/'.$sysName);
             $ftp_name = Config::getTemp().'/GmanagerFtpRarFile'.GMANAGER_REQUEST_TIME.'.tmp';
         }
@@ -136,22 +136,22 @@ class Archive_Rar implements Archive_Interface
 
         foreach ($ext as $var) {
             $entry = $rar->getEntry($var);
-            if (!$entry->extract('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $sysName)) {
+            if (!$entry->extract('FTP' == Config::get('mode') ? $ftp_name : $sysName)) {
                 $err .= \str_replace('%file%', \htmlspecialchars($var, \ENT_NOQUOTES), Language::get('extract_file_false_ext')).'<br/>';
-            } elseif (!Gmanager::getInstance()->file_exists(('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $name).'/'.$var)) {
+            } elseif (!Gmanager::getInstance()->file_exists(('FTP' == Config::get('mode') ? $ftp_name : $name).'/'.$var)) {
                 // fix bug in rar extension
                 // method extract already returned "true"
                 $err .= \str_replace('%file%', \htmlspecialchars($var, \ENT_NOQUOTES), Language::get('extract_file_false_ext')).'<br/>';
             }
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             Gmanager::getInstance()->createDir($sysName);
             Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode') || Gmanager::getInstance()->is_dir($name)) {
+        if ('FTP' == Config::get('mode') || Gmanager::getInstance()->is_dir($name)) {
             if ($chmod) {
                 Gmanager::getInstance()->rechmod($name, $chmod);
             }
@@ -175,7 +175,7 @@ class Archive_Rar implements Archive_Interface
     {
         $sysName = $name;
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $sysName = ('/' == $sysName[0] ? $sysName : \dirname($this->_name.'/').'/'.$sysName);
             $ftp_name = Config::getTemp().'/GmanagerFtpRar'.GMANAGER_REQUEST_TIME;
             \mkdir($ftp_name, 0777);
@@ -189,8 +189,8 @@ class Archive_Rar implements Archive_Interface
             if (!$overwrite && Gmanager::getInstance()->file_exists($name.'/'.$n)) {
                 $err .= Language::get('overwrite_false').' ('.\htmlspecialchars($n, \ENT_NOQUOTES).')<br/>';
             } else {
-                if (!$entry->extract('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $sysName)) {
-                    if ('FTP' == Config::get('Gmanager', 'mode')) {
+                if (!$entry->extract('FTP' == Config::get('mode') ? $ftp_name : $sysName)) {
+                    if ('FTP' == Config::get('mode')) {
                         Gmanager::getInstance()->ftpArchiveEnd();
                         \rmdir($ftp_name);
                     }
@@ -205,13 +205,13 @@ class Archive_Rar implements Archive_Interface
             }
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             Gmanager::getInstance()->createDir($sysName, $chmod[1]);
             Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode') || Gmanager::getInstance()->is_dir($name)) {
+        if ('FTP' == Config::get('mode') || Gmanager::getInstance()->is_dir($name)) {
             Gmanager::getInstance()->rechmod($name, $chmod[1]);
 
             return Helper_View::message(Language::get('extract_true'), Helper_View::MESSAGE_SUCCESS).($err ? Helper_View::message(\rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
@@ -235,7 +235,7 @@ class Archive_Rar implements Archive_Interface
         $stream = $entry->getStream();
         $ext = \stream_get_contents($stream);
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
@@ -246,7 +246,7 @@ class Archive_Rar implements Archive_Interface
             return $ext;
         }
 
-        return Helper_View::message(Language::get('archive_size').': '.Helper_View::formatSize($entry->getPackedSize()).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($entry->getUnpackedSize()).'<br/>'.Language::get('archive_date').': '.\strftime(Config::get('Gmanager', 'dateFormat'), \strtotime($entry->getFileTime())), Helper_View::MESSAGE_SUCCESS).Gmanager::getInstance()->code(\trim($ext));
+        return Helper_View::message(Language::get('archive_size').': '.Helper_View::formatSize($entry->getPackedSize()).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($entry->getUnpackedSize()).'<br/>'.Language::get('archive_date').': '.\date(Config::get('dateFormat'), \strtotime($entry->getFileTime())), Helper_View::MESSAGE_SUCCESS).Gmanager::getInstance()->code(\trim($ext));
     }
 
     /**
@@ -289,7 +289,7 @@ class Archive_Rar implements Archive_Interface
         $list = $rar->getEntries();
 
         if (!$list) {
-            if ('FTP' == Config::get('Gmanager', 'mode')) {
+            if ('FTP' == Config::get('mode')) {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
 
@@ -319,44 +319,44 @@ class Archive_Rar implements Archive_Interface
             }
 
             $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="'.$r_name.'"/></td>';
-            if (Config::get('Display', 'name')) {
+            if (Config::get('name', 'Display')) {
                 $l .= '<td>'.$name.'</td>';
             }
-            if (Config::get('Display', 'down')) {
+            if (Config::get('down', 'Display')) {
                 $l .= '<td>'.$down.'</td>';
             }
-            if (Config::get('Display', 'type')) {
+            if (Config::get('type', 'Display')) {
                 $l .= '<td>'.$type.'</td>';
             }
-            if (Config::get('Display', 'size')) {
+            if (Config::get('size', 'Display')) {
                 $l .= '<td>'.$size.'</td>';
             }
-            if (Config::get('Display', 'change')) {
+            if (Config::get('change', 'Display')) {
                 $l .= '<td> </td>';
             }
-            if (Config::get('Display', 'del')) {
+            if (Config::get('del', 'Display')) {
                 $l .= '<td>'.Language::get('dl').'</td>';
             }
-            if (Config::get('Display', 'chmod')) {
+            if (Config::get('chmod', 'Display')) {
                 $l .= '<td> </td>';
             }
-            if (Config::get('Display', 'date')) {
-                $l .= '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), \strtotime($entry->getFileTime())).'</td>';
+            if (Config::get('date', 'Display')) {
+                $l .= '<td>'.\date(Config::get('dateFormat'), \strtotime($entry->getFileTime())).'</td>';
             }
-            if (Config::get('Display', 'uid')) {
+            if (Config::get('uid', 'Display')) {
                 $l .= '<td> </td>';
             }
-            if (Config::get('Display', 'gid')) {
+            if (Config::get('gid', 'Display')) {
                 $l .= '<td> </td>';
             }
-            if (Config::get('Display', 'n')) {
+            if (Config::get('n', 'Display')) {
                 $l .= '<td>'.(++$i).'</td>';
             }
 
             $l .= '</tr>';
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 

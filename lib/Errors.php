@@ -75,7 +75,7 @@ class Errors
      */
     public static function errorHandler($errno, $errstr, $errfile, $errline)
     {
-        if (!Config::get('Gmanager', 'trace') || !\is_writable(\dirname(self::getTraceFile())) || (\file_exists(self::getTraceFile()) && !\is_writable(self::getTraceFile()))) {
+        if (!Config::get('trace') || !\is_writable(\dirname(self::getTraceFile())) || (\file_exists(self::getTraceFile()) && !\is_writable(self::getTraceFile()))) {
             return true;
         }
 

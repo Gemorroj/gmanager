@@ -102,7 +102,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             break;
         }
         $start = isset($_POST['start']) ? \intval($_POST['start']) - 1 : 0;
-        $end = isset($_POST['end']) ? \intval($_POST['end']) : Config::get('LineEditor', 'lines');
+        $end = isset($_POST['end']) ? \intval($_POST['end']) : Config::get('lines', 'LineEditor');
 
         if (isset($_POST['editorReplace'], $_POST['from'], $_POST['to'])) {
             if (Archive::FORMAT_ZIP == $archive) {
@@ -144,13 +144,13 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
 
         $path = \mb_substr(Gmanager::getInstance()->realpath(Registry::get('current')), \mb_strlen($_SERVER['DOCUMENT_ROOT']));
 
-        if ('HTTP' == Config::get('Gmanager', 'mode') && $path) {
+        if ('HTTP' == Config::get('mode') && $path) {
             $http = '<div class="rb"><a href="http://'.$_SERVER['HTTP_HOST'].\str_replace('//', '/', '/'.Helper_View::getRawurl(\str_replace('\\', '/', $path))).'">'.Language::get('look').'</a><br/></div>';
         } else {
             $http = '';
         }
 
-        if (Registry::get('lineEditor') && $data['lines'] > Config::get('LineEditor', 'minLines')) {
+        if (Registry::get('lineEditor') && $data['lines'] > Config::get('minLines', 'LineEditor')) {
             $isLineEditor = true;
             $i = $start;
             $j = 0;
@@ -171,7 +171,7 @@ switch (isset($_POST['editorSave']) ? 'save' : $_GET['go']) {
             $appendEdit = '<input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="'.($start + 1).'" name="start" /> - <input onkeypress="return Gmanager.number(event)" style="-wap-input-format:\'*N\';width:24pt;" type="text" value="'.$end.'" name="end"/> <input name="editorLine" type="submit" value="'.Language::get('look').'"/><br/>';
         } else {
             $isLineEditor = false;
-            $edit = '<textarea class="lines" name="text" rows="18" cols="64" wrap="'.(Config::get('Editor', 'wrap') ? 'on' : 'off').'">'.\htmlspecialchars($data['content'], $quotes, 'UTF-8').'</textarea><br/>';
+            $edit = '<textarea class="lines" name="text" rows="18" cols="64" wrap="'.(Config::get('wrap', 'Editor') ? 'on' : 'off').'">'.\htmlspecialchars($data['content'], $quotes, 'UTF-8').'</textarea><br/>';
             $appendEdit = '';
         }
 

@@ -81,7 +81,7 @@ class Helper_View
         }
 
         $len = \mb_strlen($str);
-        $maxLen = Config::get('Gmanager', 'maxLinkSize');
+        $maxLen = Config::get('maxLinkSize');
 
         if ($len > $maxLen) {
             $start = \ceil($maxLen / 2);
@@ -171,7 +171,7 @@ class Helper_View
     public static function message($text = '', $error = Helper_View::MESSAGE_SUCCESS)
     {
         if (self::MESSAGE_ERROR_EMAIL == $error) {
-            return '<div class="red">'.$text.'<br/></div><div><form action="?gmanager_action=change&amp;go=send_mail&amp;c='.Registry::get('rCurrent').'" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager '.Config::getVersion().' Error ('.Config::get('Gmanager', 'mode').')"/><input type="hidden" name="mess" value="'.\htmlspecialchars('URI: '.Helper_System::basename($_SERVER['PHP_SELF']).'?'.$_SERVER['QUERY_STRING']."\n".'PHP: '.\PHP_VERSION."\n".\htmlspecialchars_decode(\str_replace('<br/>', "\n", $text), \ENT_COMPAT), \ENT_COMPAT).'"/><input type="submit" value="'.Language::get('send_report').'"/></div></form></div>';
+            return '<div class="red">'.$text.'<br/></div><div><form action="?gmanager_action=change&amp;go=send_mail&amp;c='.Registry::get('rCurrent').'" method="post"><div><input type="hidden" name="to" value="wapinet@mail.ru"/><input type="hidden" name="theme" value="Gmanager '.Config::getVersion().' Error ('.Config::get('mode').')"/><input type="hidden" name="mess" value="'.\htmlspecialchars('URI: '.Helper_System::basename($_SERVER['PHP_SELF']).'?'.$_SERVER['QUERY_STRING']."\n".'PHP: '.\PHP_VERSION."\n".\htmlspecialchars_decode(\str_replace('<br/>', "\n", $text), \ENT_COMPAT), \ENT_COMPAT).'"/><input type="submit" value="'.Language::get('send_report').'"/></div></form></div>';
         }
         if (self::MESSAGE_ERROR == $error) {
             return '<div class="red">'.$text.'<br/></div>';

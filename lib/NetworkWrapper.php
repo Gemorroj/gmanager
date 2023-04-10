@@ -10,24 +10,14 @@
  */
 class NetworkWrapper
 {
-    /**
-     * @param string $url
-     *
-     * @return string
-     */
-    public static function convertUrl($url)
+    public static function convertUrl(string $url): string
     {
         $idna = new \Algo26\IdnaConvert\ToIdn();
 
         return $idna->convertUrl($url);
     }
 
-    /**
-     * @param string $host
-     *
-     * @return string
-     */
-    public static function convertHost($host)
+    public static function convertHost(string $host): string
     {
         $idna = new \Algo26\IdnaConvert\ToIdn();
 

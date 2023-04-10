@@ -11,9 +11,9 @@
  */
 
 
-define('GMANAGER_START', microtime(true));
-define('GMANAGER_PATH', __DIR__);
-define('GMANAGER_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . str_replace(array('\\', '//'), '/', dirname($_SERVER['PHP_SELF']) . '/'));
+\define('GMANAGER_START', \microtime(true));
+\define('GMANAGER_PATH', __DIR__);
+\define('GMANAGER_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . \str_replace(array('\\', '//'), '/', \dirname($_SERVER['PHP_SELF']) . '/'));
 
 /**
  * Composer autoloader
@@ -21,21 +21,21 @@ define('GMANAGER_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVE
 require __DIR__ . '/vendor/autoload.php';
 
 
-Config::setConfig('.config.ini');
+Config::setConfig(__DIR__ . '/.config.ini');
 
 // for PhpProcess
-putenv('PHP_PATH=' . Config::get('PHP', 'path'));
+\putenv('PHP_PATH=' . Config::get('path', 'PHP'));
 
-switch (isset($_GET['gmanager_action']) ? $_GET['gmanager_action'] : 'index') {
+switch ($_GET['gmanager_action'] ?? 'index') {
     case 'edit':
-        include GMANAGER_PATH . '/controllers/edit.php';
+        include __DIR__ . '/controllers/edit.php';
         break;
 
     case 'change':
-        include GMANAGER_PATH . '/controllers/change.php';
+        include __DIR__ . '/controllers/change.php';
         break;
 
     default:
-        include GMANAGER_PATH . '/controllers/index.php';
+        include __DIR__ . '/controllers/index.php';
         break;
 }

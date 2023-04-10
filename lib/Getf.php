@@ -10,12 +10,7 @@
  */
 class Getf
 {
-    /**
-     * @param string $file
-     *
-     * @return string
-     */
-    protected static function _getMime($file)
+    private static function _getMime(string $file): string
     {
         switch (\strtolower(\pathinfo($file, \PATHINFO_EXTENSION))) {
             case 'jar':
@@ -178,15 +173,7 @@ class Getf
         return $mime;
     }
 
-    /**
-     * Downloader.
-     *
-     * @param string $f      Content
-     * @param string $name   Output filename
-     * @param bool   $attach
-     * @param string $mime   Mime type
-     */
-    public static function download($f, $name, $attach = false, $mime = null)
+    public static function download(string $content, string $name, bool $attach = false, ?string $mime = null): void
     {
         \ob_implicit_flush(1);
         @\set_time_limit(9999);
@@ -194,7 +181,7 @@ class Getf
         \ini_set('zlib.output_compression', 'Off');
         \ini_set('output_handler', '');
 
-        $sz = $len = \mb_strlen($f, '8bit');
+        $sz = $len = \mb_strlen($content, '8bit');
 
         // "От" и  "До" по умолчанию
         $file_range = [
@@ -210,18 +197,18 @@ class Getf
                 $file_range = ['from' => $matches[1], 'to' => (!$matches[2]) ? $len : $matches[2]];
                 // Режем переменную в соответствии с данными
                 if ($file_range) {
-                    $f = \substr($f, $file_range['from'], $file_range['to']);
+                    $content = \substr($content, $file_range['from'], $file_range['to']);
                     $sz = $file_range['to'] - $file_range['from'];
                 }
             }
         }
 
         // Хэш
-        $etag = \md5($f);
+        $etag = \md5($content);
         $etag = \substr($etag, 0, 4).'-'.\substr($etag, 5, 5).'-'.\substr($etag, 10, 8);
 
         if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
-            if ($_SERVER['HTTP_IF_NONE_MATCH'] == '"'.$etag.'"') {
+            if ($_SERVER['HTTP_IF_NONE_MATCH'] === '"'.$etag.'"') {
                 \header($_SERVER['SERVER_PROTOCOL'].' 304 Not Modified');
                 //header('Date: ' . gmdate('r'));
                 exit;
@@ -267,7 +254,7 @@ class Getf
         if ($attach) {
             \header('Content-Type: '.$mime);
             \header('Content-Disposition: attachment; filename="'.$name.'"');
-        } elseif ('text/plain' == $mime) {
+        } elseif ('text/plain' === $mime) {
             // header('Content-Type: text/plain; charset=' . $charset);
             \header('Content-Type: text/plain;');
         } else {
@@ -275,6 +262,7 @@ class Getf
         }
         //ob_end_flush();
 
-        exit($f);
+        echo $content;
+        exit();
     }
 }

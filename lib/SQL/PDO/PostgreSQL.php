@@ -158,7 +158,7 @@ class SQL_PDO_PostgreSQL implements SQL_Interface
             if ($tables['tables']) {
                 foreach ($tables['tables'] as $f) {
                     $out = [];
-                    \exec(\escapeshellcmd(Config::get('Postgres', 'path')).' -U '.\escapeshellarg($name).' -F p -b -s -t '.\escapeshellarg($f).' '.\escapeshellarg($db), $out);
+                    \exec(\escapeshellcmd(Config::get('path', 'Postgres')).' -U '.\escapeshellarg($name).' -F p -b -s -t '.\escapeshellarg($f).' '.\escapeshellarg($db), $out);
                     if ($out) {
                         $true .= \implode("\n", $out);
                     } else {

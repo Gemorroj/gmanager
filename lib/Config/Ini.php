@@ -15,38 +15,18 @@ class Config_Ini implements Config_Interface
      */
     private $_config = [];
 
-    /**
-     * Constructor.
-     *
-     * @param string $config
-     */
-    public function __construct($config)
+    public function __construct(string $configFile)
     {
-        $this->_config = \parse_ini_file($config, true);
+        $this->_config = \parse_ini_file($configFile, true);
     }
 
-    /**
-     * get.
-     *
-     * @param string $section
-     * @param string $property
-     *
-     * @return string
-     */
-    public function get($section, $property)
+    public function get(string $property, string $section): ?string
     {
-        return $this->_config[$section][$property];
+        return $this->_config[$section][$property] ?? null;
     }
 
-    /**
-     * getSection.
-     *
-     * @param string $section
-     *
-     * @return array
-     */
-    public function getSection($section)
+    public function getSection(string $section): array
     {
-        return $this->_config[$section];
+        return $this->_config[$section] ?? [];
     }
 }

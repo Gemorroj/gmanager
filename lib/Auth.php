@@ -10,10 +10,7 @@
  */
 class Auth
 {
-    /**
-     * Auth.
-     */
-    public static function main()
+    public static function main(): void
     {
         // CGI fix
         if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
@@ -24,8 +21,8 @@ class Auth
         }
         // CGI fix
 
-        if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) || $_SERVER['PHP_AUTH_USER'] != Config::get('Auth', 'user') || $_SERVER['PHP_AUTH_PW'] != Config::get('Auth', 'pass')) {
-            \header('WWW-Authenticate: Basic realm="Authentification"');
+        if (!isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) || $_SERVER['PHP_AUTH_USER'] != Config::get('user', 'Auth') || $_SERVER['PHP_AUTH_PW'] != Config::get('pass', 'Auth')) {
+            \header('WWW-Authenticate: Basic realm="Authentication"');
             \header($_SERVER['SERVER_PROTOCOL'].' 401 Unauthorized');
             \header('Content-type: text/html; charset=UTF-8');
             exit(\str_replace('%title%', 'Error', Registry::get('top')).'<p style="color:red;font-size:24pt;text-align:center">Unauthorized</p>'.Registry::get('foot'));

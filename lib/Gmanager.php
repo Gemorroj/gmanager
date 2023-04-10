@@ -35,12 +35,12 @@ abstract class Gmanager
     public static function getInstance()
     {
         if (null === self::$_instance) {
-            if ('FTP' === Config::get('Gmanager', 'mode')) {
+            if ('FTP' === Config::get('mode')) {
                 self::$_instance = new FTP(
-                    Config::get('FTP', 'user'),
-                    Config::get('FTP', 'pass'),
-                    Config::get('FTP', 'host'),
-                    Config::get('FTP', 'port')
+                    Config::get('user', 'FTP'),
+                    Config::get('pass', 'FTP'),
+                    Config::get('host', 'FTP'),
+                    Config::get('port', 'FTP')
                 );
             } else {
                 self::$_instance = new HTTP();
@@ -60,7 +60,7 @@ abstract class Gmanager
         // кол-во файлов на странице
         $ip = isset($_POST['limit']);
         $ig = isset($_GET['limit']);
-        Registry::set('limit', \abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : ($_COOKIE['gmanager_limit'] ?? Config::get('Gmanager', 'defaultLimit')))));
+        Registry::set('limit', \abs($ip ? $_POST['limit'] : ($ig ? $_GET['limit'] : ($_COOKIE['gmanager_limit'] ?? Config::get('defaultLimit')))));
 
         if ($ip || $ig) {
             \setcookie('gmanager_limit', Registry::get('limit'), 2592000 + GMANAGER_REQUEST_TIME, \str_replace('\\', '/', \dirname($_SERVER['PHP_SELF'])), $_SERVER['HTTP_HOST']);
@@ -74,7 +74,7 @@ abstract class Gmanager
         } elseif (isset($_COOKIE['Gmanager_lineEditor'])) {
             Registry::set('lineEditor', (bool) $_COOKIE['Gmanager_lineEditor']);
         } else {
-            Registry::set('lineEditor', Config::get('LineEditor', 'defaultEnable'));
+            Registry::set('lineEditor', Config::get('defaultEnable', 'LineEditor'));
         }
     }
 
@@ -121,10 +121,10 @@ abstract class Gmanager
                 }
             }
         } else {
-            if ('/' != \mb_substr(Config::get('Gmanager', 'defaultDirectory'), -1)) {
-                Registry::set('current', Config::get('Gmanager', 'defaultDirectory').'/');
+            if ('/' != \mb_substr(Config::get('defaultDirectory'), -1)) {
+                Registry::set('current', Config::get('defaultDirectory').'/');
             } else {
-                Registry::set('current', Config::get('Gmanager', 'defaultDirectory'));
+                Registry::set('current', Config::get('defaultDirectory'));
             }
             Registry::set('currentType', 'dir');
         }
@@ -149,7 +149,7 @@ abstract class Gmanager
      */
     public function head()
     {
-        if ('FTP' != Config::get('Gmanager', 'mode')) {
+        if ('FTP' != Config::get('mode')) {
             $realpath = self::$_instance->realpath(Registry::get('current'));
             $realpath = $realpath ? $realpath : Registry::get('current');
         } else {
@@ -669,7 +669,7 @@ abstract class Gmanager
     {
         try {
             $syntax = new \Syntax\Php();
-            $syntax->setCli(Config::get('PHP', 'path'));
+            $syntax->setCli(Config::get('path', 'PHP'));
             $resultCheck = $syntax->check($content);
 
             if ($charset[0]) {
@@ -821,17 +821,17 @@ abstract class Gmanager
      */
     public function gz($c = '')
     {
-        $data = 'FTP' == Config::get('Gmanager', 'mode') ? $this->ftpArchiveStart($c) : $c;
+        $data = 'FTP' == Config::get('mode') ? $this->ftpArchiveStart($c) : $c;
 
         $info = $this->getGzInfo($data);
         $ext = $this->getGzContent($data);
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $this->ftpArchiveEnd();
         }
 
         if ($ext) {
-            return Helper_View::message(Language::get('name').': '.\htmlspecialchars($info['name'], \ENT_NOQUOTES).'<br/>'.Language::get('archive_size').': '.Helper_View::formatSize($this->size($c)).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($info['length']).'<br/>'.Language::get('archive_date').': '.\strftime(Config::get('Gmanager', 'dateFormat'), self::$_instance->filemtime($c)), Helper_View::MESSAGE_SUCCESS).$this->code(\trim($ext));
+            return Helper_View::message(Language::get('name').': '.\htmlspecialchars($info['name'], \ENT_NOQUOTES).'<br/>'.Language::get('archive_size').': '.Helper_View::formatSize($this->size($c)).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($info['length']).'<br/>'.Language::get('archive_date').': '.\date(Config::get('dateFormat'), self::$_instance->filemtime($c)), Helper_View::MESSAGE_SUCCESS).$this->code(\trim($ext));
         }
 
         return Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL);
@@ -851,7 +851,7 @@ abstract class Gmanager
     {
         $this->createDir($name, $chmod[1]);
 
-        $tmp = ('FTP' == Config::get('Gmanager', 'mode') ? $this->ftpArchiveStart($c) : $c);
+        $tmp = ('FTP' == Config::get('mode') ? $this->ftpArchiveStart($c) : $c);
 
         $info = $this->getGzInfo($tmp);
 
@@ -864,7 +864,7 @@ abstract class Gmanager
             $data = Helper_View::message(Language::get('overwrite_false').' ('.\htmlspecialchars($name.'/'.$info['name'], \ENT_NOQUOTES).')', Helper_View::MESSAGE_ERROR);
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $this->ftpArchiveEnd();
         }
         if ($data) {
@@ -1015,7 +1015,7 @@ abstract class Gmanager
                 self::$_instance->mkdir($dir, 0755, true);
             }
 
-            if ('FTP' == Config::get('Gmanager', 'mode')) {
+            if ('FTP' == Config::get('mode')) {
                 if ($tmp) {
                     $r = self::$_instance->file_put_contents($v[1], $tmp['body']);
                     self::$_instance->chmod($v[1], $chmod);
@@ -1254,12 +1254,12 @@ abstract class Gmanager
         }
         if (\preg_match_all('/\[rand=*(\d*),*(\d*)\]/U', $name, $arr, \PREG_SET_ORDER)) {
             foreach ($arr as $var) {
-                $name = \str_replace($var[0], \mb_substr(\str_shuffle(Config::get('Gmanager', 'rand')), 0, \mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
+                $name = \str_replace($var[0], \mb_substr(\str_shuffle(Config::get('rand')), 0, \mt_rand((!empty($var[1]) ? $var[1] : 8), (!empty($var[2]) ? $var[2] : 16))), $name);
             }
         }
         $name = \str_replace('[f]', $info['extension'], $name);
         $name = \str_replace('[name]', $info['filename'], $name);
-        $name = \str_replace('[date]', \strftime('%d_%m_%Y'), $name);
+        $name = \str_replace('[date]', \date('d_m_Y'), $name);
 
         if (1 == $register) {
             $tmp = \mb_strtolower($name);

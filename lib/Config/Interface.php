@@ -10,9 +10,9 @@
  */
 interface Config_Interface
 {
-    public function __construct($config);
+    public function __construct(string $configFile);
 
-    public function get($section, $property);
+    public function get(string $property, string $section): ?string;
 
-    public function getSection($section);
+    public function getSection(string $section): array;
 }

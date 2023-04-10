@@ -33,7 +33,7 @@ class ListData
         $page = $page0 = $page1 = $page2 = [];
         $i = 0;
 
-        $t = (Config::get('Editor', 'target') ? ' target="_blank"' : '');
+        $t = (Config::get('target', 'Editor') ? ' target="_blank"' : '');
         $add = ($addArchive ? '&amp;go=1&amp;add_archive='.Helper_View::getRawurl($addArchive) : '');
 
         if ('time' == $itype) {
@@ -81,7 +81,7 @@ class ListData
                 $r_link = Helper_View::getRawurl($file);
                 $is_dir = $obj->is_dir($tmp[1]);
 
-                if (Config::get('Display', 'name')) {
+                if (Config::get('name', 'Display')) {
                     $name = \htmlspecialchars(Helper_View::strLink($tmp[0].' ('.$tmp[1].($is_dir ? '/' : '').')', true), \ENT_NOQUOTES);
 
                     if ($is_dir) {
@@ -90,44 +90,44 @@ class ListData
                         $pname = '<td><a href="?gmanager_action=edit&amp;c='.$r_file.'">'.$name.'</a></td>';
                     }
                 }
-                if (Config::get('Display', 'down')) {
+                if (Config::get('down', 'Display')) {
                     $pdown = '<td> </td>';
                 }
-                if (Config::get('Display', 'type')) {
+                if (Config::get('type', 'Display')) {
                     $ptype = '<td>LINK</td>';
                 }
-                if (Config::get('Display', 'size')) {
+                if (Config::get('size', 'Display')) {
                     $isize = $stat['size'];
                     $size = Helper_View::formatSize($isize);
                     $psize = '<td>'.$size.'</td>';
                 }
-                if (Config::get('Display', 'change')) {
+                if (Config::get('change', 'Display')) {
                     $pchange = '<td><a href="?gmanager_action=change&amp;с='.$r_link.'">'.Language::get('ch').'</a></td>';
                 }
-                if (Config::get('Display', 'del')) {
+                if (Config::get('del', 'Display')) {
                     $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c='.$r_link.'">'.Language::get('dl').'</a></td>';
                 }
-                if (Config::get('Display', 'chmod')) {
+                if (Config::get('chmod', 'Display')) {
                     $chmod = $obj->lookChmod($file);
                     $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c='.$r_link.'">'.$chmod.'</a></td>';
                 }
-                if (Config::get('Display', 'date')) {
-                    $pdate = '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), $time).'</td>';
+                if (Config::get('date', 'Display')) {
+                    $pdate = '<td>'.\date(Config::get('dateFormat'), $time).'</td>';
                 }
-                if (Config::get('Display', 'uid')) {
+                if (Config::get('uid', 'Display')) {
                     $puid = '<td>'.\htmlspecialchars($stat['owner'], \ENT_NOQUOTES).'</td>';
                 }
-                if (Config::get('Display', 'gid')) {
+                if (Config::get('gid', 'Display')) {
                     $pgid = '<td>'.\htmlspecialchars($stat['group'], \ENT_NOQUOTES).'</td>';
                 }
                 $page0[$key.'_'.$i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="'.$r_link.'"/></td>'.$pname.$pdown.$ptype.$psize.$pchange.$pdel.$pchmod.$pdate.$puid.$pgid;
             } elseif ($obj->is_dir($file)) {
                 $type = 'DIR';
-                if (Config::get('Display', 'name')) {
-                    if (Config::REALNAME_FULL == Config::get('Gmanager', 'realName')) {
+                if (Config::get('name', 'Display')) {
+                    if (Config::REALNAME_FULL == Config::get('realName')) {
                         $realpath = $obj->realpath($file);
                         $name = $realpath ? \str_replace('\\', '/', $realpath) : $file;
-                    } elseif (Config::REALNAME_RELATIVE_HIDE == Config::get('Gmanager', 'realName')) {
+                    } elseif (Config::REALNAME_RELATIVE_HIDE == Config::get('realName')) {
                         $name = $basename;
                     } else {
                         $name = $file;
@@ -135,14 +135,14 @@ class ListData
                     $name = \htmlspecialchars(Helper_View::strLink($name, true), \ENT_NOQUOTES);
                     $pname = '<td><a href="?c='.$r_file.'/'.$add.'">'.$name.'/</a></td>';
                 }
-                if (Config::get('Display', 'down')) {
+                if (Config::get('down', 'Display')) {
                     $pdown = '<td> </td>';
                 }
-                if (Config::get('Display', 'type')) {
+                if (Config::get('type', 'Display')) {
                     $ptype = '<td>DIR</td>';
                 }
-                if (Config::get('Display', 'size')) {
-                    if (Config::get('Gmanager', 'dirSize')) {
+                if (Config::get('size', 'Display')) {
+                    if (Config::get('dirSize')) {
                         $isize = $obj->size($file, true);
                         $size = Helper_View::formatSize($isize);
                     } else {
@@ -150,23 +150,23 @@ class ListData
                     }
                     $psize = '<td>'.$size.'</td>';
                 }
-                if (Config::get('Display', 'change')) {
+                if (Config::get('change', 'Display')) {
                     $pchange = '<td><a href="?gmanager_action=change&amp;c='.$r_file.'/">'.Language::get('ch').'</a></td>';
                 }
-                if (Config::get('Display', 'del')) {
+                if (Config::get('del', 'Display')) {
                     $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c='.$r_file.'/">'.Language::get('dl').'</a></td>';
                 }
-                if (Config::get('Display', 'chmod')) {
+                if (Config::get('chmod', 'Display')) {
                     $chmod = $obj->lookChmod($file);
                     $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c='.$r_file.'">'.$chmod.'</a></td>';
                 }
-                if (Config::get('Display', 'date')) {
-                    $pdate = '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), $time).'</td>';
+                if (Config::get('date', 'Display')) {
+                    $pdate = '<td>'.\date(Config::get('dateFormat'), $time).'</td>';
                 }
-                if (Config::get('Display', 'uid')) {
+                if (Config::get('uid', 'Display')) {
                     $puid = '<td>'.\htmlspecialchars($stat['owner'], \ENT_NOQUOTES).'</td>';
                 }
-                if (Config::get('Display', 'gid')) {
+                if (Config::get('gid', 'Display')) {
                     $pgid = '<td>'.\htmlspecialchars($stat['group'], \ENT_NOQUOTES).'</td>';
                 }
                 $page1[$key.'_'.$i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="'.$r_file.'"/></td>'.$pname.$pdown.$ptype.$psize.$pchange.$pdel.$pchmod.$pdate.$puid.$pgid;
@@ -174,11 +174,11 @@ class ListData
                 $type = \htmlspecialchars(Helper_System::getType($basename), \ENT_NOQUOTES);
                 $archive = Helper_Archive::isArchive($type);
 
-                if (Config::get('Display', 'name')) {
-                    if (Config::REALNAME_FULL == Config::get('Gmanager', 'realName')) {
+                if (Config::get('name', 'Display')) {
+                    if (Config::REALNAME_FULL == Config::get('realName')) {
                         $realpath = $obj->realpath($file);
                         $name = $realpath ? \str_replace('\\', '/', $realpath) : $file;
-                    } elseif (Config::REALNAME_RELATIVE_HIDE == Config::get('Gmanager', 'realName')) {
+                    } elseif (Config::REALNAME_RELATIVE_HIDE == Config::get('realName')) {
                         $name = $basename;
                     } else {
                         $name = $file;
@@ -195,34 +195,34 @@ class ListData
                         }
                     }
                 }
-                if (Config::get('Display', 'down')) {
+                if (Config::get('down', 'Display')) {
                     $pdown = '<td><a href="?gmanager_action=change&amp;get='.$r_file.'">'.Language::get('get').'</a></td>';
                 }
-                if (Config::get('Display', 'type')) {
+                if (Config::get('type', 'Display')) {
                     $ptype = '<td>'.$type.'</td>';
                 }
-                if (Config::get('Display', 'size')) {
+                if (Config::get('size', 'Display')) {
                     $isize = $stat['size'];
                     $size = Helper_View::formatSize($stat['size']);
                     $psize = '<td>'.$size.'</td>';
                 }
-                if (Config::get('Display', 'change')) {
+                if (Config::get('change', 'Display')) {
                     $pchange = '<td><a href="?gmanager_action=change&amp;c='.$r_file.'">'.Language::get('ch').'</a></td>';
                 }
-                if (Config::get('Display', 'del')) {
+                if (Config::get('del', 'Display')) {
                     $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c='.$r_file.'">'.Language::get('dl').'</a></td>';
                 }
-                if (Config::get('Display', 'chmod')) {
+                if (Config::get('chmod', 'Display')) {
                     $chmod = $obj->lookChmod($file);
                     $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c='.$r_file.'">'.$chmod.'</a></td>';
                 }
-                if (Config::get('Display', 'date')) {
-                    $pdate = '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), $time).'</td>';
+                if (Config::get('date', 'Display')) {
+                    $pdate = '<td>'.\date(Config::get('dateFormat'), $time).'</td>';
                 }
-                if (Config::get('Display', 'uid')) {
+                if (Config::get('uid', 'Display')) {
                     $puid = '<td>'.\htmlspecialchars($stat['owner'], \ENT_NOQUOTES).'</td>';
                 }
-                if (Config::get('Display', 'gid')) {
+                if (Config::get('gid', 'Display')) {
                     $pgid = '<td>'.\htmlspecialchars($stat['group'], \ENT_NOQUOTES).'</td>';
                 }
                 $page2[$key.'_'.$i][$i] = '<td class="check"><input name="check[]" type="checkbox" value="'.$r_file.'"/></td>'.$pname.$pdown.$ptype.$psize.$pchange.$pdel.$pchmod.$pdate.$puid.$pgid;
@@ -312,7 +312,7 @@ class ListData
             //$h_file = htmlspecialchars($c . $f, ENT_COMPAT);
             $r_file = Helper_View::getRawurl($where.$f);
 
-            if (Config::get('Display', 'name')) {
+            if (Config::get('name', 'Display')) {
                 $name = \htmlspecialchars(Helper_View::strLink($where.$f, true), \ENT_NOQUOTES);
                 if ($arch) {
                     $pname = '<td><a href="?c='.$r_file.'">'.$name.'</a>'.$in.'</td>';
@@ -320,34 +320,34 @@ class ListData
                     $pname = '<td><a href="?gmanager_action=edit&amp;c='.$r_file.'"'.$t.'>'.$name.'</a>'.$in.'</td>';
                 }
             }
-            if (Config::get('Display', 'down')) {
+            if (Config::get('down', 'Display')) {
                 $pdown = '<td><a href="?gmanager_action=change&amp;get='.$r_file.'">'.Language::get('get').'</a></td>';
             }
-            if (Config::get('Display', 'type')) {
+            if (Config::get('type', 'Display')) {
                 $ptype = '<td>'.$type.'</td>';
             }
-            if (Config::get('Display', 'size')) {
+            if (Config::get('size', 'Display')) {
                 $psize = '<td>'.Helper_View::formatSize($stat['size']).'</td>';
             }
-            if (Config::get('Display', 'change')) {
+            if (Config::get('change', 'Display')) {
                 $pchange = '<td><a href="?gmanager_action=change&amp;c='.$r_file.'">'.Language::get('ch').'</a></td>';
             }
-            if (Config::get('Display', 'del')) {
+            if (Config::get('del', 'Display')) {
                 $pdel = '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del&amp;c='.$r_file.'">'.Language::get('dl').'</a></td>';
             }
-            if (Config::get('Display', 'chmod')) {
+            if (Config::get('chmod', 'Display')) {
                 $pchmod = '<td><a href="?gmanager_action=change&amp;go=chmod&amp;c='.$r_file.'">'.$obj->lookChmod($where.$f).'</a></td>';
             }
-            if (Config::get('Display', 'date')) {
-                $pdate = '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), $stat['mtime']).'</td>';
+            if (Config::get('date', 'Display')) {
+                $pdate = '<td>'.\date(Config::get('dateFormat'), $stat['mtime']).'</td>';
             }
-            if (Config::get('Display', 'uid')) {
+            if (Config::get('uid', 'Display')) {
                 $puid = '<td>'.\htmlspecialchars($stat['owner'], \ENT_NOQUOTES).'</td>';
             }
-            if (Config::get('Display', 'gid')) {
+            if (Config::get('gid', 'Display')) {
                 $pgid = '<td>'.\htmlspecialchars($stat['group'], \ENT_NOQUOTES).'</td>';
             }
-            if (Config::get('Display', 'n')) {
+            if (Config::get('n', 'Display')) {
                 $pn = '<td>'.$count.'</td>';
             }
 
@@ -382,7 +382,7 @@ class ListData
             $i = 1;
             $line = false;
 
-            if (Config::get('Display', 'n')) {
+            if (Config::get('n', 'Display')) {
                 foreach ($data as $var) {
                     $line = !$line;
                     if ($line) {
@@ -431,7 +431,7 @@ class ListData
             return self::getListIncorrectSearchString();
         }
 
-        $data = self::_getListSearchArray($where, $pattern, $inText, $limit, $archive, (Config::get('Editor', 'target') ? ' target="_blank"' : ''));
+        $data = self::_getListSearchArray($where, $pattern, $inText, $limit, $archive, (Config::get('target', 'Editor') ? ' target="_blank"' : ''));
 
         if ($data) {
             $line = false;

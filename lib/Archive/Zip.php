@@ -41,7 +41,7 @@ class Archive_Zip implements Archive_Interface
      */
     private function _open($mode = null)
     {
-        $result = $this->_archive->open('FTP' == Config::get('Gmanager', 'mode') ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name, $mode);
+        $result = $this->_archive->open('FTP' == Config::get('mode') ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name, $mode);
         if (true !== $result) {
             throw new Exception('Error. Code: '.$result);
         }
@@ -54,7 +54,7 @@ class Archive_Zip implements Archive_Interface
      */
     private function _close()
     {
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
@@ -84,7 +84,7 @@ class Archive_Zip implements Archive_Interface
             Gmanager::getInstance()->createDir($dirname);
         }
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $temp = Config::getTemp().'/GmanagerFtpZip'.GMANAGER_REQUEST_TIME;
             \mkdir($temp, 0755, true);
             foreach ($ext as $f) {
@@ -101,7 +101,7 @@ class Archive_Zip implements Archive_Interface
         try {
             $zip = $this->_open(ZipArchive::CREATE);
             if (!$zip->addGlob($dirname.'/*', \GLOB_BRACE, ['add_path' => \basename($dirname).'/', 'remove_all_path' => true])) {
-                if ('FTP' == Config::get('Gmanager', 'mode')) {
+                if ('FTP' == Config::get('mode')) {
                     Helper_System::clean($temp);
                 }
                 throw new Exception($zip->getStatusString());
@@ -111,7 +111,7 @@ class Archive_Zip implements Archive_Interface
                 $zip->setArchiveComment($comment);
             }
 
-            if ('FTP' == Config::get('Gmanager', 'mode')) {
+            if ('FTP' == Config::get('mode')) {
                 Helper_System::clean($temp);
             }
 
@@ -230,24 +230,24 @@ class Archive_Zip implements Archive_Interface
 
         $sysName = $name;
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $sysName = ('/' == $sysName[0] ? $sysName : \dirname($this->_name.'/').'/'.$sysName);
             $ftp_name = Config::getTemp().'/GmanagerFtpZipFile'.GMANAGER_REQUEST_TIME;
         }
 
         try {
             $zip = $this->_open();
-            if (!$zip->extractTo('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $sysName, $fl)) {
+            if (!$zip->extractTo('FTP' == Config::get('mode') ? $ftp_name : $sysName, $fl)) {
                 throw new Exception($zip->getStatusString());
             }
 
-            if ('FTP' == Config::get('Gmanager', 'mode')) {
+            if ('FTP' == Config::get('mode')) {
                 Gmanager::getInstance()->createDir($sysName);
                 Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             }
 
             $this->_close();
-            if ('FTP' == Config::get('Gmanager', 'mode') || Gmanager::getInstance()->is_dir($name)) {
+            if ('FTP' == Config::get('mode') || Gmanager::getInstance()->is_dir($name)) {
                 if ($chmod) {
                     Gmanager::getInstance()->rechmod($name, $chmod);
                 }
@@ -278,7 +278,7 @@ class Archive_Zip implements Archive_Interface
         Registry::set('extractArchiveDirectoryChmod', $chmod[1]);
         Registry::set('extractArchiveFileChmod', $chmod[0]);
 
-        if ('FTP' == Config::get('Gmanager', 'mode')) {
+        if ('FTP' == Config::get('mode')) {
             $sysName = ('/' == $sysName[0] ? $sysName : \dirname($this->_name.'/').'/'.$sysName);
             $ftp_name = Config::getTemp().'/GmanagerFtpZip'.GMANAGER_REQUEST_TIME;
             \mkdir($ftp_name, 0777);
@@ -295,13 +295,13 @@ class Archive_Zip implements Archive_Interface
                 if (!$overwrite && Gmanager::getInstance()->file_exists(\str_replace('//', '/', $name.'/'.$f))) {
                     $err[] = Language::get('overwrite_false').' ('.$f.')';
                 } else {
-                    $dir = 'FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $sysName;
+                    $dir = 'FTP' == Config::get('mode') ? $ftp_name : $sysName;
                     if ($zip->extractTo($dir, [$f])) {
                         $res = true;
 
                         if (Gmanager::getInstance()->is_dir($dir.'/'.$f)) {
                             Gmanager::getInstance()->rechmod($dir.'/'.$f, Registry::get('extractArchiveDirectoryChmod'));
-                        } elseif ('FTP' != Config::get('Gmanager', 'mode')) {
+                        } elseif ('FTP' != Config::get('mode')) {
                             Gmanager::getInstance()->rechmod($dir.'/'.$f, Registry::get('extractArchiveFileChmod'));
                         }
                     } else {
@@ -311,20 +311,20 @@ class Archive_Zip implements Archive_Interface
             }
 
             if (!$res) {
-                if ('FTP' == Config::get('Gmanager', 'mode')) {
+                if ('FTP' == Config::get('mode')) {
                     \rmdir($ftp_name);
                 }
                 throw new Exception(\implode("\n", $err));
             }
 
-            if ('FTP' == Config::get('Gmanager', 'mode')) {
+            if ('FTP' == Config::get('mode')) {
                 Gmanager::getInstance()->createDir($sysName, Registry::get('extractArchiveDirectoryChmod'));
                 Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, Registry::get('extractArchiveFileChmod'), Registry::get('extractArchiveDirectoryChmod'), $overwrite);
             }
 
             $this->_close();
 
-            if ('FTP' == Config::get('Gmanager', 'mode') || Gmanager::getInstance()->is_dir($sysName)) {
+            if ('FTP' == Config::get('mode') || Gmanager::getInstance()->is_dir($sysName)) {
                 if ($chmod) {
                     Gmanager::getInstance()->rechmod($sysName, $chmod[1]);
                 }
@@ -367,7 +367,7 @@ class Archive_Zip implements Archive_Interface
                 return $content;
             }
 
-            return Helper_View::message(Language::get('archive_size').': '.Helper_View::formatSize($stat['comp_size']).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($stat['size']).'<br/>'.Language::get('archive_date').': '.\strftime(Config::get('Gmanager', 'dateFormat'), $stat['mtime']).'<br/>&#187;<a href="?gmanager_action=edit&amp;c='.$r_current.'&amp;f='.$r_f.'">'.Language::get('edit').'</a>', Helper_View::MESSAGE_SUCCESS).Gmanager::getInstance()->code($content);
+            return Helper_View::message(Language::get('archive_size').': '.Helper_View::formatSize($stat['comp_size']).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($stat['size']).'<br/>'.Language::get('archive_date').': '.\date(Config::get('dateFormat'), $stat['mtime']).'<br/>&#187;<a href="?gmanager_action=edit&amp;c='.$r_current.'&amp;f='.$r_f.'">'.Language::get('edit').'</a>', Helper_View::MESSAGE_SUCCESS).Gmanager::getInstance()->code($content);
         } catch (Exception $e) {
             $this->_close();
 
@@ -471,37 +471,37 @@ class Archive_Zip implements Archive_Interface
                 }
 
                 $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="'.$r_name.'"/></td>';
-                if (Config::get('Display', 'name')) {
+                if (Config::get('name', 'Display')) {
                     $l .= '<td>'.$name.'</td>';
                 }
-                if (Config::get('Display', 'down')) {
+                if (Config::get('down', 'Display')) {
                     $l .= '<td>'.$down.'</td>';
                 }
-                if (Config::get('Display', 'type')) {
+                if (Config::get('type', 'Display')) {
                     $l .= '<td>'.$type.'</td>';
                 }
-                if (Config::get('Display', 'size')) {
+                if (Config::get('size', 'Display')) {
                     $l .= '<td>'.$size.'</td>';
                 }
-                if (Config::get('Display', 'change')) {
+                if (Config::get('change', 'Display')) {
                     $l .= '<td><a href="?gmanager_action=change&amp;c='.$r_current.'&amp;f='.$r_name.'">'.Language::get('ch').'</a></td>';
                 }
-                if (Config::get('Display', 'del')) {
+                if (Config::get('del', 'Display')) {
                     $l .= '<td><a onclick="return Gmanager.delNotify();" href="?gmanager_action=change&amp;go=del_zip_archive&amp;c='.$r_current.'&amp;f='.$r_name.'">'.Language::get('dl').'</a></td>';
                 }
-                if (Config::get('Display', 'chmod')) {
+                if (Config::get('chmod', 'Display')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::get('Display', 'date')) {
-                    $l .= '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), $list[$i]['mtime']).'</td>';
+                if (Config::get('date', 'Display')) {
+                    $l .= '<td>'.\date(Config::get('dateFormat'), $list[$i]['mtime']).'</td>';
                 }
-                if (Config::get('Display', 'uid')) {
+                if (Config::get('uid', 'Display')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::get('Display', 'gid')) {
+                if (Config::get('gid', 'Display')) {
                     $l .= '<td> </td>';
                 }
-                if (Config::get('Display', 'n')) {
+                if (Config::get('n', 'Display')) {
                     $l .= '<td>'.($i + 1).'</td>';
                 }
 
