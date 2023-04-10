@@ -1,180 +1,176 @@
 <?php
 /**
- *
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
  * @copyright 2008-2018 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/gmanager
  *
+ * @see      https://github.com/Gemorroj/gmanager
  */
-
-
 class HTTP extends Gmanager
 {
     /**
      * @var array
      */
-    static private $_stat    = array();
+    private static $_stat = [];
     /**
      * @var array
      */
-    static private $_idUser  = array();
+    private static $_idUser = [];
     /**
      * @var array
      */
-    static private $_idGroup = array();
-
+    private static $_idGroup = [];
 
     /**
-     * __construct
+     * __construct.
      */
-    public function __construct ()
+    public function __construct()
     {
-        $this->_setSysType(php_uname('s'));
+        $this->_setSysType(\php_uname('s'));
     }
 
-
     /**
-     * mkdir
-     * 
-     * @param string $dir
+     * mkdir.
+     *
+     * @param string     $dir
      * @param int|string $chmod
-     * @param bool $recursive
+     * @param bool       $recursive
+     *
      * @return bool
      */
-    public function mkdir ($dir, $chmod = 0755, $recursive = false)
+    public function mkdir($dir, $chmod = 0755, $recursive = false)
     {
-        return @mkdir($dir, $this->_chmoder($chmod), $recursive);
+        return @\mkdir($dir, $this->_chmoder($chmod), $recursive);
     }
 
-
     /**
-     * chmod
-     * 
-     * @param string $file
+     * chmod.
+     *
+     * @param string     $file
      * @param int|string $chmod
+     *
      * @return bool
      */
-    public function chmod ($file, $chmod = 0755)
+    public function chmod($file, $chmod = 0755)
     {
-        if (Registry::get('sysType') == 'WIN') {
+        if ('WIN' == Registry::get('sysType')) {
             //trigger_error(Language::get('win_chmod'));
             return true;
         }
 
-        return @chmod($file, $this->_chmoder($chmod));
+        return @\chmod($file, $this->_chmoder($chmod));
     }
 
-
     /**
-     * file_get_contents
-     * 
+     * file_get_contents.
+     *
      * @param string $file
+     *
      * @return string
      */
-    public function file_get_contents ($file)
+    public function file_get_contents($file)
     {
-        return file_get_contents($file);
+        return \file_get_contents($file);
     }
 
-
     /**
-     * file_put_contents
-     * 
+     * file_put_contents.
+     *
      * @param string $file
      * @param string $data
+     *
      * @return int (0 or 1)
      */
-    public function file_put_contents ($file, $data = '')
+    public function file_put_contents($file, $data = '')
     {
-        if (!$f = @fopen($file, 'a')) {
+        if (!$f = @\fopen($file, 'a')) {
             return 0;
         }
 
-        ftruncate($f, 0);
+        \ftruncate($f, 0);
 
-        if ($data != '') {
-            fputs($f, $data);
+        if ('' != $data) {
+            \fputs($f, $data);
         }
 
-        fclose($f);
+        \fclose($f);
 
         return 1;
     }
 
-
     /**
-     * is_dir
-     * 
+     * is_dir.
+     *
      * @param string $str
+     *
      * @return bool
      */
-    public function is_dir ($str)
+    public function is_dir($str)
     {
-        return is_dir($str);
+        return \is_dir($str);
     }
 
-
     /**
-     * is_file
-     * 
+     * is_file.
+     *
      * @param string $str
+     *
      * @return bool
      */
-    public function is_file ($str)
+    public function is_file($str)
     {
-        return is_file($str);
+        return \is_file($str);
     }
 
-
     /**
-     * is_link
-     * 
+     * is_link.
+     *
      * @param string $str
+     *
      * @return bool
      */
-    public function is_link ($str)
+    public function is_link($str)
     {
-        return is_link($str);
+        return \is_link($str);
     }
 
-
     /**
-     * is_readable
-     * 
+     * is_readable.
+     *
      * @param string $str
+     *
      * @return bool
      */
-    public function is_readable ($str)
+    public function is_readable($str)
     {
-        return is_readable($str);
+        return \is_readable($str);
     }
 
-
     /**
-     * is_writable
-     * 
+     * is_writable.
+     *
      * @param string $str
+     *
      * @return bool
      */
-    public function is_writable ($str)
+    public function is_writable($str)
     {
-        return is_writable($str);
+        return \is_writable($str);
     }
 
-
     /**
-     * stat
-     * 
+     * stat.
+     *
      * @param string $str
+     *
      * @return array
      */
-    public function stat ($str)
+    public function stat($str)
     {
         if (!isset(self::$_stat[$str])) {
-            self::$_stat[$str] = @stat($str);
+            self::$_stat[$str] = @\stat($str);
         }
 
         if (isset(self::$_idUser[self::$_stat[$str]['uid']])) {
@@ -192,146 +188,132 @@ class HTTP extends Gmanager
         return self::$_stat[$str];
     }
 
-
     /**
-     * fileperms
-     * 
+     * fileperms.
+     *
      * @param string $str
+     *
      * @return int
      */
-    public function fileperms ($str)
+    public function fileperms($str)
     {
         if (!isset(self::$_stat[$str][2])) {
-            self::$_stat[$str] = @stat($str);
+            self::$_stat[$str] = @\stat($str);
         }
+
         return self::$_stat[$str][2];
     }
 
-
     /**
-     * filesize
-     * 
+     * filesize.
+     *
      * @param string $file
+     *
      * @return int
      */
-    public function filesize ($file)
+    public function filesize($file)
     {
         if (!isset(self::$_stat[$file][7])) {
-            self::$_stat[$file] = stat($file);
+            self::$_stat[$file] = \stat($file);
         }
+
         return self::$_stat[$file][7];
     }
 
-
     /**
-     * filemtime
-     * 
+     * filemtime.
+     *
      * @param string $str
+     *
      * @return int
      */
-    public function filemtime ($str)
+    public function filemtime($str)
     {
         if (!isset(self::$_stat[$str][9])) {
-            self::$_stat[$str] = stat($str);
+            self::$_stat[$str] = \stat($str);
         }
+
         return self::$_stat[$str][9];
     }
 
-
     /**
-     * filetype
-     * 
+     * filetype.
+     *
      * @param string $str
+     *
      * @return string
      */
-    public function filetype ($str)
+    public function filetype($str)
     {
-        return filetype($str);
+        return \filetype($str);
     }
 
-
     /**
-     * readlink
-     * 
-     * @link http://www.php.net/manual/ru/function.readlink.php for Windows
+     * readlink.
+     *
+     * @see http://www.php.net/manual/ru/function.readlink.php for Windows
+     *
      * @param string $link
+     *
      * @return array
      */
-    public function readlink ($link)
+    public function readlink($link)
     {
-        $chdir = Registry::get('currentType') == 'dir' ? Registry::get('current') : dirname(Registry::get('current'));
-        chdir($chdir);
-        return array(Helper_System::basename($link), (realpath(readlink($link))));
+        $chdir = 'dir' == Registry::get('currentType') ? Registry::get('current') : \dirname(Registry::get('current'));
+        \chdir($chdir);
+
+        return [Helper_System::basename($link), (\realpath(\readlink($link)))];
     }
 
-
     /**
-     * file_exists
-     * 
+     * file_exists.
+     *
      * @param string $str
+     *
      * @return bool
      */
-    public function file_exists ($str)
+    public function file_exists($str)
     {
-        return file_exists($str);
+        return \file_exists($str);
     }
 
-
     /**
-     * unlink
-     * 
+     * unlink.
+     *
      * @param string $file
+     *
      * @return bool
      */
-    public function unlink ($file)
+    public function unlink($file)
     {
-        return unlink($file);
+        return \unlink($file);
     }
 
-
     /**
-     * rename
-     * 
-     * @param string $from
-     * @param string $to
-     * @return bool
-     */
-    public function rename ($from, $to)
-    {
-        return rename($from, $to);
-    }
-
-
-    /**
-     * copy
-     * 
-     * @param string $from
-     * @param string $to
-     * @param int|string  $chmod
-     * @return bool
-     */
-    public function copy ($from, $to, $chmod = 0644)
-    {
-        $result = copy($from, $to);
-        if ($result) {
-            $this->chmod($to, $chmod);
-        }
-
-        return $result;
-    }
-
-
-    /**
-     * copy
+     * rename.
      *
      * @param string $from
      * @param string $to
-     * @param int|string  $chmod
+     *
      * @return bool
      */
-    public function symlink ($from, $to, $chmod = 0644)
+    public function rename($from, $to)
     {
-        $result = symlink($from, $to);
+        return \rename($from, $to);
+    }
+
+    /**
+     * copy.
+     *
+     * @param string     $from
+     * @param string     $to
+     * @param int|string $chmod
+     *
+     * @return bool
+     */
+    public function copy($from, $to, $chmod = 0644)
+    {
+        $result = \copy($from, $to);
         if ($result) {
             $this->chmod($to, $chmod);
         }
@@ -339,50 +321,68 @@ class HTTP extends Gmanager
         return $result;
     }
 
-
     /**
-     * rmdir
-     * 
-     * @param string $dir
+     * copy.
+     *
+     * @param string     $from
+     * @param string     $to
+     * @param int|string $chmod
+     *
      * @return bool
      */
-    public function rmdir ($dir)
+    public function symlink($from, $to, $chmod = 0644)
     {
-        return is_dir($dir) ? rmdir($dir) : true;
+        $result = \symlink($from, $to);
+        if ($result) {
+            $this->chmod($to, $chmod);
+        }
+
+        return $result;
     }
 
-
     /**
-     * getcwd
-     * 
-     * @return string
-     */
-    public function getcwd ()
-    {
-        return getcwd();
-    }
-
-
-    /**
-     * realpath
-     * 
-     * @param string $path
-     * @return string
-     */
-    public function realpath ($path)
-    {
-        return realpath($path);
-    }
-
-
-    /**
-     * iterator
-     * 
+     * rmdir.
+     *
      * @param string $dir
+     *
+     * @return bool
+     */
+    public function rmdir($dir)
+    {
+        return \is_dir($dir) ? \rmdir($dir) : true;
+    }
+
+    /**
+     * getcwd.
+     *
+     * @return string
+     */
+    public function getcwd()
+    {
+        return \getcwd();
+    }
+
+    /**
+     * realpath.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function realpath($path)
+    {
+        return \realpath($path);
+    }
+
+    /**
+     * iterator.
+     *
+     * @param string $dir
+     *
      * @return array
      */
-    public function iterator ($dir)
+    public function iterator($dir)
     {
-        return (array)array_diff(scandir($dir, 0), array('.', '..'));
+        return (array) \array_diff(\scandir($dir, 0), ['.', '..']);
     }
 }

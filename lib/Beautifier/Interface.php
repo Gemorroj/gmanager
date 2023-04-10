@@ -1,17 +1,14 @@
 <?php
 /**
- *
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
  * @copyright 2008-2018 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/gmanager
  *
+ * @see      https://github.com/Gemorroj/gmanager
  */
-
-
 interface Beautifier_Interface
 {
-    public static function beautify ($str);
+    public static function beautify($str);
 }

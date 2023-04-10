@@ -1,16 +1,13 @@
 <?php
 /**
- *
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
  * @copyright 2008-2018 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/gmanager
  *
+ * @see      https://github.com/Gemorroj/gmanager
  */
-
-
 class Archive_Rar implements Archive_Interface
 {
     /**
@@ -22,167 +19,166 @@ class Archive_Rar implements Archive_Interface
      */
     private $_archive;
 
-
     /**
-     * Constructor
+     * Constructor.
      *
      * @param string $name Archive filename
      */
-    public function __construct ($name)
+    public function __construct($name)
     {
         $this->_name = $name;
     }
 
-
     /**
-     * Destructor
+     * Destructor.
      */
-    public function __destruct ()
+    public function __destruct()
     {
-        if ($this->_archive !== null) {
+        if (null !== $this->_archive) {
             $this->_archive->close();
         }
     }
 
-
     /**
-     * Open Archive
+     * Open Archive.
      *
      * @return RarArchive
      */
     private function _open()
     {
-        if ($this->_archive === null) {
-            $this->_archive = RarArchive::open(Config::get('Gmanager', 'mode') == 'FTP' ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name);
+        if (null === $this->_archive) {
+            $this->_archive = RarArchive::open('FTP' == Config::get('Gmanager', 'mode') ? Gmanager::getInstance()->ftpArchiveStart($this->_name) : $this->_name);
         }
+
         return $this->_archive;
     }
 
-
     /**
-     * createArchive
+     * createArchive.
      *
      * @param mixed  $chmod
      * @param array  $ext
      * @param string $comment
      * @param bool   $overwrite
+     *
      * @return string
      */
-    public function createArchive ($chmod = 0644, $ext = array(), $comment = '', $overwrite = false)
+    public function createArchive($chmod = 0644, $ext = [], $comment = '', $overwrite = false)
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
-
     /**
-     * addFile
+     * addFile.
      *
      * @param mixed  $ext
      * @param string $dir
+     *
      * @return string
      */
-    public function addFile ($ext = array(), $dir = '')
+    public function addFile($ext = [], $dir = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
-
     /**
-     * delFile
+     * delFile.
      *
      * @param string $f
+     *
      * @return string
      */
-    public function delFile ($f = '')
+    public function delFile($f = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
-
     /**
-     * extractFile
+     * extractFile.
      *
      * @param string $name
      * @param mixed  $chmod
-     * @param array $ext
+     * @param array  $ext
      * @param bool   $overwrite
+     *
      * @return string
      */
-    public function extractFile ($name = '', $chmod = '', $ext = array(), $overwrite = false)
+    public function extractFile($name = '', $chmod = '', $ext = [], $overwrite = false)
     {
-        $tmp = array();
+        $tmp = [];
         $err = '';
         foreach ($ext as $f) {
-            if (Gmanager::getInstance()->file_exists(str_replace('//', '/', $name . '/' . $f))) {
+            if (Gmanager::getInstance()->file_exists(\str_replace('//', '/', $name.'/'.$f))) {
                 if ($overwrite) {
-                    unlink($name . '/' . $f);
+                    \unlink($name.'/'.$f);
                     $tmp[] = $f;
                 } else {
-                    $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($f, ENT_NOQUOTES) . ')<br/>';
+                    $err .= Language::get('overwrite_false').' ('.\htmlspecialchars($f, \ENT_NOQUOTES).')<br/>';
                 }
             } else {
                 $tmp[] = $f;
             }
         }
-        $ext = & $tmp;
+        $ext = &$tmp;
 
         if (!$ext) {
-            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
+            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR).($err ? Helper_View::message(\rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
 
         $sysName = $name;
 
-        if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpRarFile' . GMANAGER_REQUEST_TIME . '.tmp';
+        if ('FTP' == Config::get('Gmanager', 'mode')) {
+            $sysName = ('/' == $sysName[0] ? $sysName : \dirname($this->_name.'/').'/'.$sysName);
+            $ftp_name = Config::getTemp().'/GmanagerFtpRarFile'.GMANAGER_REQUEST_TIME.'.tmp';
         }
 
         $rar = $this->_open();
 
         foreach ($ext as $var) {
             $entry = $rar->getEntry($var);
-            if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
-                $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
-            } elseif (!Gmanager::getInstance()->file_exists((Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $name) . '/' . $var)) {
+            if (!$entry->extract('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $sysName)) {
+                $err .= \str_replace('%file%', \htmlspecialchars($var, \ENT_NOQUOTES), Language::get('extract_file_false_ext')).'<br/>';
+            } elseif (!Gmanager::getInstance()->file_exists(('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $name).'/'.$var)) {
                 // fix bug in rar extension
                 // method extract already returned "true"
-                $err .= str_replace('%file%', htmlspecialchars($var, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
+                $err .= \str_replace('%file%', \htmlspecialchars($var, \ENT_NOQUOTES), Language::get('extract_file_false_ext')).'<br/>';
             }
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP') {
+        if ('FTP' == Config::get('Gmanager', 'mode')) {
             Gmanager::getInstance()->createDir($sysName);
             Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $overwrite);
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($name)) {
+        if ('FTP' == Config::get('Gmanager', 'mode') || Gmanager::getInstance()->is_dir($name)) {
             if ($chmod) {
                 Gmanager::getInstance()->rechmod($name, $chmod);
             }
-            return Helper_View::message(Language::get('extract_file_true'), Helper_View::MESSAGE_SUCCESS) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
-        } else {
-            return Helper_View::message(Language::get('extract_file_false'), Helper_View::MESSAGE_ERROR_EMAIL);
+
+            return Helper_View::message(Language::get('extract_file_true'), Helper_View::MESSAGE_SUCCESS).($err ? Helper_View::message(\rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
+
+        return Helper_View::message(Language::get('extract_file_false'), Helper_View::MESSAGE_ERROR_EMAIL);
     }
 
-
     /**
-     * extractArchive
+     * extractArchive.
      *
      * @param string $name
      * @param array  $chmod
      * @param bool   $overwrite
+     *
      * @return string
      */
-    public function extractArchive ($name = '', $chmod = array(), $overwrite = false)
+    public function extractArchive($name = '', $chmod = [], $overwrite = false)
     {
         $sysName = $name;
 
-        if (Config::get('Gmanager', 'mode') == 'FTP') {
-            $sysName = ($sysName[0] == '/' ? $sysName : dirname($this->_name . '/') . '/' . $sysName);
-            $ftp_name = Config::getTemp() . '/GmanagerFtpRar' . GMANAGER_REQUEST_TIME;
-            mkdir($ftp_name, 0777);
+        if ('FTP' == Config::get('Gmanager', 'mode')) {
+            $sysName = ('/' == $sysName[0] ? $sysName : \dirname($this->_name.'/').'/'.$sysName);
+            $ftp_name = Config::getTemp().'/GmanagerFtpRar'.GMANAGER_REQUEST_TIME;
+            \mkdir($ftp_name, 0777);
         }
 
         $rar = $this->_open();
@@ -190,193 +186,194 @@ class Archive_Rar implements Archive_Interface
         foreach ($rar->getEntries() as $entry) {
             $n = $entry->getName();
 
-            if (!$overwrite && Gmanager::getInstance()->file_exists($name . '/' . $n)) {
-                $err .= Language::get('overwrite_false') . ' (' . htmlspecialchars($n, ENT_NOQUOTES) . ')<br/>';
+            if (!$overwrite && Gmanager::getInstance()->file_exists($name.'/'.$n)) {
+                $err .= Language::get('overwrite_false').' ('.\htmlspecialchars($n, \ENT_NOQUOTES).')<br/>';
             } else {
-                if (!$entry->extract(Config::get('Gmanager', 'mode') == 'FTP' ? $ftp_name : $sysName)) {
-                    if (Config::get('Gmanager', 'mode') == 'FTP') {
+                if (!$entry->extract('FTP' == Config::get('Gmanager', 'mode') ? $ftp_name : $sysName)) {
+                    if ('FTP' == Config::get('Gmanager', 'mode')) {
                         Gmanager::getInstance()->ftpArchiveEnd();
-                        rmdir($ftp_name);
+                        \rmdir($ftp_name);
                     }
-                    $err .= str_replace('%file%', htmlspecialchars($n, ENT_NOQUOTES), Language::get('extract_file_false_ext')) . '<br/>';
+                    $err .= \str_replace('%file%', \htmlspecialchars($n, \ENT_NOQUOTES), Language::get('extract_file_false_ext')).'<br/>';
                 }
             }
 
-            if (Gmanager::getInstance()->is_dir($name . '/' . $n)) {
-                Gmanager::getInstance()->rechmod($name . '/' . $n, $chmod[1]);
+            if (Gmanager::getInstance()->is_dir($name.'/'.$n)) {
+                Gmanager::getInstance()->rechmod($name.'/'.$n, $chmod[1]);
             } else {
-                Gmanager::getInstance()->rechmod($name . '/' . $n, $chmod[0]);
+                Gmanager::getInstance()->rechmod($name.'/'.$n, $chmod[0]);
             }
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP') {
+        if ('FTP' == Config::get('Gmanager', 'mode')) {
             Gmanager::getInstance()->createDir($sysName, $chmod[1]);
             Gmanager::getInstance()->ftpMoveFiles($ftp_name, $sysName, $chmod[0], $chmod[1], $overwrite);
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
-        if (Config::get('Gmanager', 'mode') == 'FTP' || Gmanager::getInstance()->is_dir($name)) {
+        if ('FTP' == Config::get('Gmanager', 'mode') || Gmanager::getInstance()->is_dir($name)) {
             Gmanager::getInstance()->rechmod($name, $chmod[1]);
-            return Helper_View::message(Language::get('extract_true'), Helper_View::MESSAGE_SUCCESS) . ($err ? Helper_View::message(rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
-        } else {
-            return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR_EMAIL);
+
+            return Helper_View::message(Language::get('extract_true'), Helper_View::MESSAGE_SUCCESS).($err ? Helper_View::message(\rtrim($err, '<br/>'), Helper_View::MESSAGE_ERROR) : '');
         }
+
+        return Helper_View::message(Language::get('extract_false'), Helper_View::MESSAGE_ERROR_EMAIL);
     }
 
-
     /**
-     * lookFile
+     * lookFile.
      *
      * @param string $f
      * @param string $str
+     *
      * @return string
      */
-    public function lookFile ($f = '', $str = null)
+    public function lookFile($f = '', $str = null)
     {
         $rar = $this->_open();
         $entry = $rar->getEntry($f);
         $stream = $entry->getStream();
-        $ext = stream_get_contents($stream);
+        $ext = \stream_get_contents($stream);
 
-        if (Config::get('Gmanager', 'mode') == 'FTP') {
+        if ('FTP' == Config::get('Gmanager', 'mode')) {
             Gmanager::getInstance()->ftpArchiveEnd();
         }
 
         if (!$ext) {
             return Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL);
-        } else {
-            if ($str) {
-                return $ext;
-            } else {
-                return Helper_View::message(Language::get('archive_size') . ': ' . Helper_View::formatSize($entry->getPackedSize()) . '<br/>' . Language::get('real_size') . ': ' . Helper_View::formatSize($entry->getUnpackedSize()) . '<br/>' . Language::get('archive_date') . ': ' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())), Helper_View::MESSAGE_SUCCESS) . Gmanager::getInstance()->code(trim($ext));
-            }
         }
+        if ($str) {
+            return $ext;
+        }
+
+        return Helper_View::message(Language::get('archive_size').': '.Helper_View::formatSize($entry->getPackedSize()).'<br/>'.Language::get('real_size').': '.Helper_View::formatSize($entry->getUnpackedSize()).'<br/>'.Language::get('archive_date').': '.\strftime(Config::get('Gmanager', 'dateFormat'), \strtotime($entry->getFileTime())), Helper_View::MESSAGE_SUCCESS).Gmanager::getInstance()->code(\trim($ext));
     }
 
-
     /**
-     * getEditFile
+     * getEditFile.
      *
      * @param string $f
+     *
      * @return array
      */
-    public function getEditFile ($f = '')
+    public function getEditFile($f = '')
     {
-        return array('text' => Language::get('not_supported'), 'size' => 0, 'lines' => 0);
+        return ['text' => Language::get('not_supported'), 'size' => 0, 'lines' => 0];
     }
 
-
     /**
-     * setEditFile
+     * setEditFile.
      *
      * @param string $f
      * @param string $text
+     *
      * @return string
      */
-    public function setEditFile ($f = '', $text = '')
+    public function setEditFile($f = '', $text = '')
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
 
-
     /**
-     * listArchive
+     * listArchive.
      *
      * @todo refactoring to ListData
+     *
      * @param string $down
+     *
      * @return string
      */
-    public function listArchive ($down = '')
+    public function listArchive($down = '')
     {
         $rar = $this->_open();
         $list = $rar->getEntries();
 
         if (!$list) {
-            if (Config::get('Gmanager', 'mode') == 'FTP') {
-                Gmanager::getInstance()->ftpArchiveEnd();
-            }
-            return '<tr class="border"><td colspan="' . (array_sum(Config::getSection('Display')) + 1) . '">' . Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL) . '</td></tr>';
-        } else {
-            $r_current = Helper_View::getRawurl($this->_name);
-            $l = '';
-            $i = 0;
-
-            if ($down) {
-                $list = array_reverse($list);
-            }
-
-            foreach ($list as $entry) {
-                $r_name = Helper_View::getRawurl($entry->getName());
-
-                if ($entry->isDirectory()) {
-                    $type = 'DIR';
-                    $name = htmlspecialchars($entry->getName(), ENT_NOQUOTES);
-                    $size = ' ';
-                    $down = ' ';
-                } else {
-                    $type = htmlspecialchars(Helper_System::getType($entry->getName()), ENT_NOQUOTES);
-                    $name = '<a href="?c=' . $r_current . '&amp;f=' . $r_name . '">' . htmlspecialchars(Helper_View::strLink($entry->getName(), true), ENT_NOQUOTES) . '</a>';
-                    $size = Helper_View::formatSize($entry->getUnpackedSize());
-                    $down = '<a href="?gmanager_action=change&amp;get=' . $r_current . '&amp;f=' . $r_name . '">' . Language::get('get') . '</a>';
-                }
-
-                $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="' . $r_name . '"/></td>';
-                if (Config::get('Display', 'name')) {
-                    $l .= '<td>' . $name . '</td>';
-                }
-                if (Config::get('Display', 'down')) {
-                    $l .= '<td>' . $down . '</td>';
-                }
-                if (Config::get('Display', 'type')) {
-                    $l .= '<td>' . $type . '</td>';
-                }
-                if (Config::get('Display', 'size')) {
-                    $l .= '<td>' . $size . '</td>';
-                }
-                if (Config::get('Display', 'change')) {
-                    $l .= '<td> </td>';
-                }
-                if (Config::get('Display', 'del')) {
-                    $l .= '<td>' . Language::get('dl') . '</td>';
-                }
-                if (Config::get('Display', 'chmod')) {
-                    $l .= '<td> </td>';
-                }
-                if (Config::get('Display', 'date')) {
-                    $l .= '<td>' . strftime(Config::get('Gmanager', 'dateFormat'), strtotime($entry->getFileTime())) . '</td>';
-                }
-                if (Config::get('Display', 'uid')) {
-                    $l .= '<td> </td>';
-                }
-                if (Config::get('Display', 'gid')) {
-                    $l .= '<td> </td>';
-                }
-                if (Config::get('Display', 'n')) {
-                    $l .= '<td>' . (++$i) . '</td>';
-                }
-
-                $l .= '</tr>';
-            }
-
-            if (Config::get('Gmanager', 'mode') == 'FTP') {
+            if ('FTP' == Config::get('Gmanager', 'mode')) {
                 Gmanager::getInstance()->ftpArchiveEnd();
             }
 
-            return $l;
+            return '<tr class="border"><td colspan="'.(\array_sum(Config::getSection('Display')) + 1).'">'.Helper_View::message(Language::get('archive_error'), Helper_View::MESSAGE_ERROR_EMAIL).'</td></tr>';
         }
+        $r_current = Helper_View::getRawurl($this->_name);
+        $l = '';
+        $i = 0;
+
+        if ($down) {
+            $list = \array_reverse($list);
+        }
+
+        foreach ($list as $entry) {
+            $r_name = Helper_View::getRawurl($entry->getName());
+
+            if ($entry->isDirectory()) {
+                $type = 'DIR';
+                $name = \htmlspecialchars($entry->getName(), \ENT_NOQUOTES);
+                $size = ' ';
+                $down = ' ';
+            } else {
+                $type = \htmlspecialchars(Helper_System::getType($entry->getName()), \ENT_NOQUOTES);
+                $name = '<a href="?c='.$r_current.'&amp;f='.$r_name.'">'.\htmlspecialchars(Helper_View::strLink($entry->getName(), true), \ENT_NOQUOTES).'</a>';
+                $size = Helper_View::formatSize($entry->getUnpackedSize());
+                $down = '<a href="?gmanager_action=change&amp;get='.$r_current.'&amp;f='.$r_name.'">'.Language::get('get').'</a>';
+            }
+
+            $l .= '<tr class="border"><td class="check"><input name="check[]" type="checkbox" value="'.$r_name.'"/></td>';
+            if (Config::get('Display', 'name')) {
+                $l .= '<td>'.$name.'</td>';
+            }
+            if (Config::get('Display', 'down')) {
+                $l .= '<td>'.$down.'</td>';
+            }
+            if (Config::get('Display', 'type')) {
+                $l .= '<td>'.$type.'</td>';
+            }
+            if (Config::get('Display', 'size')) {
+                $l .= '<td>'.$size.'</td>';
+            }
+            if (Config::get('Display', 'change')) {
+                $l .= '<td> </td>';
+            }
+            if (Config::get('Display', 'del')) {
+                $l .= '<td>'.Language::get('dl').'</td>';
+            }
+            if (Config::get('Display', 'chmod')) {
+                $l .= '<td> </td>';
+            }
+            if (Config::get('Display', 'date')) {
+                $l .= '<td>'.\strftime(Config::get('Gmanager', 'dateFormat'), \strtotime($entry->getFileTime())).'</td>';
+            }
+            if (Config::get('Display', 'uid')) {
+                $l .= '<td> </td>';
+            }
+            if (Config::get('Display', 'gid')) {
+                $l .= '<td> </td>';
+            }
+            if (Config::get('Display', 'n')) {
+                $l .= '<td>'.(++$i).'</td>';
+            }
+
+            $l .= '</tr>';
+        }
+
+        if ('FTP' == Config::get('Gmanager', 'mode')) {
+            Gmanager::getInstance()->ftpArchiveEnd();
+        }
+
+        return $l;
     }
 
-
     /**
-     * renameFile
+     * renameFile.
      *
      * @param string $new_name
      * @param string $arch_name
      * @param bool   $del
      * @param bool   $overwrite
+     *
      * @return string
      */
-    public function renameFile ($new_name, $arch_name, $del = false, $overwrite = false)
+    public function renameFile($new_name, $arch_name, $del = false, $overwrite = false)
     {
         return Helper_View::message(Language::get('not_supported'), Helper_View::MESSAGE_ERROR);
     }
