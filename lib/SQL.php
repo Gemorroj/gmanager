@@ -1,27 +1,23 @@
 <?php
 /**
- *
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
  * @copyright 2008-2018 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/gmanager
  *
+ * @see      https://github.com/Gemorroj/gmanager
  */
-
-
 class SQL
 {
     /**
-     * Database
+     * Database.
      *
      * @const string
      */
-    const DB_MYSQL      = 'mysql';
-    const DB_POSTGRESQL = 'postgresql';
-    const DB_SQLITE     = 'sqlite';
-
+    public const DB_MYSQL = 'mysql';
+    public const DB_POSTGRESQL = 'postgresql';
+    public const DB_SQLITE = 'sqlite';
 
     /**
      * @var string
@@ -32,64 +28,61 @@ class SQL
      */
     private $_force = false;
 
-
     /**
-     * setDb
+     * setDb.
      *
      * @param string $db
+     *
      * @return SQL
      */
-    public function setDb ($db)
+    public function setDb($db)
     {
         $this->_db = $db;
+
         return $this;
     }
 
-
     /**
-     * setForce
+     * setForce.
      *
      * @param bool $force
+     *
      * @return SQL
      */
-    public function setForce ($force = false)
+    public function setForce($force = false)
     {
         $this->_force = $force;
+
         return $this;
     }
 
-
     /**
-     * factory
+     * factory.
      *
-     * @return SQL_PDO_MySQL|SQL_MySQLi|SQL_MySQL|SQL_PDO_PostgreSQL|SQL_PostgreSQL|SQL_PDO_SQLite|null
+     * @return SQL_PDO_MySQL|SQL_MySQLi|SQL_PDO_PostgreSQL|SQL_PostgreSQL|SQL_PDO_SQLite|null
      */
-    public function factory ()
+    public function factory()
     {
         switch ($this->_db) {
             case self::DB_MYSQL:
-                if ($this->_force || extension_loaded('pdo_mysql')) {
-                    return new SQL_PDO_MySQL;
-                } elseif ($this->_force || extension_loaded('mysqli')) {
-                    return new SQL_MySQLi;
-                } elseif ($this->_force || extension_loaded('mysql')) {
-                    return new SQL_MySQL;
+                if ($this->_force || \extension_loaded('pdo_mysql')) {
+                    return new SQL_PDO_MySQL();
+                } elseif ($this->_force || \extension_loaded('mysqli')) {
+                    return new SQL_MySQLi();
                 }
                 break;
-
 
             case self::DB_POSTGRESQL:
-                if ($this->_force || extension_loaded('pdo_pgsql')) {
-                    return new SQL_PDO_PostgreSQL;
-                } elseif ($this->_force || extension_loaded('pgsql')) {
-                    return new SQL_PostgreSQL;
+                if ($this->_force || \extension_loaded('pdo_pgsql')) {
+                    return new SQL_PDO_PostgreSQL();
+                } elseif ($this->_force || \extension_loaded('pgsql')) {
+                    return new SQL_PostgreSQL();
                 }
                 break;
 
-
             case self::DB_SQLITE:
-                if ($this->_force || extension_loaded('pdo_sqlite')) {
-                    return new SQL_PDO_SQLite;
+                if ($this->_force || \extension_loaded('pdo_sqlite')) {
+                    return new SQL_PDO_SQLite();
                 }
                 break;
         }
@@ -97,50 +90,49 @@ class SQL
         return null;
     }
 
-
     /**
-     * SQL Parser
-     * 
+     * SQL Parser.
+     *
      * @param string $str
+     *
      * @return array
      */
-    public static function parser ($str)
+    public static function parser($str)
     {
         //TODO: supported '' or ""
-        $queries  = array();
+        $queries = [];
         $position = 0;
-        $query    = '';
+        $query = '';
 
-        for ($len = mb_strlen($str); $position < $len; ++$position) {
-            $char  = $str[$position];
+        for ($len = \mb_strlen($str); $position < $len; ++$position) {
+            $char = $str[$position];
 
             switch ($char) {
                 case '-':
-                    if (mb_substr($str, $position, 3) != '-- ') {
+                    if ('-- ' != \mb_substr($str, $position, 3)) {
                         $query .= $char;
                         break;
                     }
 
-
+                    // no break
                 case '#':
-                    while ($char != "\r" && $char != "\n" && $position < $len - 1) {
+                    while ("\r" != $char && "\n" != $char && $position < $len - 1) {
                         $char = $str[++$position];
                     }
                     break;
 
-
                 case '`':
                 case "'":
                 case '"':
-                    $quote  = $char;
+                    $quote = $char;
                     $query .= $quote;
 
                     while ($position < $len - 1) {
                         $char = $str[++$position];
-                        if ($char == '\\') {
+                        if ('\\' == $char) {
                             $query .= $char;
                             if ($position < $len - 1) {
-                                $char   = $str[++$position];
+                                $char = $str[++$position];
                                 $query .= $char;
                                 if ($position < $len - 1) {
                                     $char = $str[++$position];
@@ -159,15 +151,13 @@ class SQL
                     $query .= $quote;
                     break;
 
-
                 case ';':
-                    $query = trim($query);
+                    $query = \trim($query);
                     if ($query) {
                         $queries[] = $query;
                     }
                     $query = '';
                     break;
-
 
                 default:
                     $query .= $char;
@@ -175,7 +165,7 @@ class SQL
             }
         }
 
-        $query = trim($query);
+        $query = \trim($query);
         if ($query) {
             $queries[] = $query;
         }

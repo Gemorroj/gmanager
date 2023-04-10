@@ -1,39 +1,36 @@
 <?php
 /**
- *
  * This software is distributed under the GNU GPL v3.0 license.
  *
  * @author    Gemorroj
- * @copyright 2008-2018 http://wapinet.ru
+ * @copyright 2008-2023 http://wapinet.ru
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt
- * @link      https://github.com/Gemorroj/gmanager
  *
+ * @see      https://github.com/Gemorroj/gmanager
  */
-
-
 class NetworkWrapper
 {
     /**
-     * Getter
+     * @param string $url
      *
-     * @param string $data
      * @return string
      */
-    public static function get ($data)
+    public static function convertUrl($url)
     {
-        return $data;
+        $idna = new \Algo26\IdnaConvert\ToIdn();
+
+        return $idna->convertUrl($url);
     }
 
-
     /**
-     * Setter
+     * @param string $host
      *
-     * @param string $data
      * @return string
      */
-    public static function set ($data)
+    public static function convertHost($host)
     {
-        $idna = new NetworkWrapper_IdnaConvert();
-        return $idna->encode_uri($data);
+        $idna = new \Algo26\IdnaConvert\ToIdn();
+
+        return $idna->convert($host);
     }
 }
